@@ -2,8 +2,8 @@ use num::Num;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq)]
 pub struct Point<T> {
-    x: T,
-    y: T,
+    pub x: T,
+    pub y: T,
 }
 
 impl<T: Num> Point<T> {
