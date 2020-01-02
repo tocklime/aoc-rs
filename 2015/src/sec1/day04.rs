@@ -1,3 +1,4 @@
+#![allow(clippy::maybe_infinite_iter)]
 use md5;
 
 #[aoc(day4,part1)]

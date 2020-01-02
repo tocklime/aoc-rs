@@ -4,7 +4,6 @@ pub fn p1(input: &str) -> u32 {
     input.lines()
         .map(|x|
                  x.split('x')
-                     .into_iter()
                      .map(|x| x.parse::<u32>().unwrap())
                      .sorted()
                      .collect_vec()
@@ -16,7 +15,6 @@ pub fn p2(input: &str) -> u32 {
     input.lines()
         .map(|x|
             x.split('x')
-                .into_iter()
                 .map(|x| x.parse::<u32>().unwrap())
                 .sorted()
                 .collect_vec()

@@ -38,12 +38,12 @@ pub fn gen(input: &str) -> Vec<Line> {
 pub fn p1(input: &[Line]) -> usize {
     let mut grid = vec![vec![false; 1000]; 1000];
     for l in input {
-        for x in l.a.x..=l.b.x {
-            for y in l.a.y..=l.b.y {
-                grid[x][y] = match l.i {
+        for row in grid.iter_mut().take(l.b.x + 1).skip(l.a.x) {
+            for cell in row.iter_mut().take(l.b.y + 1).skip(l.a.y) {
+                *cell = match l.i {
                     Instr::On => true,
                     Instr::Off => false,
-                    Instr::Toggle => !grid[x][y]
+                    Instr::Toggle => !*cell
                 };
             }
         }
@@ -56,13 +56,12 @@ pub fn p1(input: &[Line]) -> usize {
 pub fn p2(input: &[Line]) -> u32 {
     let mut grid = vec![vec![0; 1000]; 1000];
     for l in input {
-        for x in l.a.x..=l.b.x {
-            for y in l.a.y..=l.b.y {
-                let curr = grid[x][y];
-                grid[x][y] = match l.i {
-                    Instr::On => curr + 1,
-                    Instr::Off => if curr > 0 { curr - 1 } else { 0 }
-                    Instr::Toggle => curr + 2
+        for row in grid.iter_mut().take(l.b.x + 1).skip(l.a.x) {
+            for cell in row.iter_mut().take(l.b.y + 1).skip(l.a.y) {
+                *cell = match l.i {
+                    Instr::On => *cell + 1,
+                    Instr::Off => if *cell > 0 { *cell - 1 } else { 0 }
+                    Instr::Toggle => *cell + 2
                 };
             }
         }
