@@ -1,3 +1,5 @@
+#![allow(clippy::redundant_pattern_matching)]
+
 use reformation::Reformation;
 use itertools::Itertools;
 use nom::lib::std::collections::HashMap;
@@ -22,7 +24,7 @@ fn gen(input: &str) -> DistMap {
 }
 
 fn all_dists<'a>(dist_map: &'a DistMap<'a>) -> impl Iterator<Item=u32> + 'a {
-    dist_map.keys().into_iter().permutations(dist_map.len())
+    dist_map.keys().permutations(dist_map.len())
         .map(move |p| {
             p.into_iter().tuple_windows().map(|(a, b)| dist_map[a][b]).sum()
         })

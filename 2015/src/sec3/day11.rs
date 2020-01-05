@@ -21,7 +21,7 @@ impl<'a> Iterator for Password {
 }
 impl From<&str> for Password {
     fn from(s: &str) -> Self {
-        Password(s.chars().collect())
+        Self(s.chars().collect())
     }
 }
 impl From<Password> for String {
