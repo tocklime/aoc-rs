@@ -2,7 +2,7 @@
 
 use reformation::Reformation;
 use itertools::Itertools;
-use nom::lib::std::collections::HashMap;
+use std::collections::HashMap;
 
 #[derive(Reformation, Debug)]
 #[reformation(r"{from} to {to} = {distance}")]
