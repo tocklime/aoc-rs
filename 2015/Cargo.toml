@@ -22,6 +22,7 @@ nom = "5.0.1"
 reformation = "0.5.0"
 json = "0.12.0"
 counter = "0.4.3"
+primal = "0.2.3"
 
 [profile.release]
 debug = true
