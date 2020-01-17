@@ -20,28 +20,32 @@ pub enum Dir {
 }
 
 impl Dir {
+    pub fn from_x(udlr: &str, c: char) -> Self {
+        let ix = udlr.find(c).expect("Unknown direction");
+        [Self::Up, Self::Down, Self::Left, Self::Right][ix]
+    }
     pub fn turn_right(self) -> Self {
         match self {
-            Dir::Up => Dir::Right,
-            Dir::Down => Dir::Left,
-            Dir::Left => Dir::Up,
-            Dir::Right => Dir::Down,
+            Self::Up => Self::Right,
+            Self::Down => Self::Left,
+            Self::Left => Self::Up,
+            Self::Right => Self::Down,
         }
     }
     pub fn turn_left(self) -> Self {
         match self {
-            Dir::Up => Dir::Left,
-            Dir::Down => Dir::Right,
-            Dir::Left => Dir::Down,
-            Dir::Right => Dir::Up,
+            Self::Up => Self::Left,
+            Self::Down => Self::Right,
+            Self::Left => Self::Down,
+            Self::Right => Self::Up,
         }
     }
     pub fn as_point_step<T: From<i8> + Num>(self) -> Point<T> {
         match self {
-            Dir::Up => Point::new(T::zero(), T::one()),
-            Dir::Down => Point::new(T::zero(), (-1).into()),
-            Dir::Left => Point::new((-1).into(), T::zero()),
-            Dir::Right => Point::new(T::one(), T::zero()),
+            Self::Up => Point::new(T::zero(), T::one()),
+            Self::Down => Point::new(T::zero(), (-1).into()),
+            Self::Left => Point::new((-1).into(), T::zero()),
+            Self::Right => Point::new(T::one(), T::zero()),
         }
     }
 }
@@ -69,14 +73,12 @@ impl<T: Num> Point<T> {
             Dir::Right => self.right(),
         }
     }
+    pub fn follow_x(self, udlr: &str, c: char) -> Self {
+        self.step(Dir::from_x(udlr,c))
+    }
+
     pub fn follow_arrow(self, arrow: char) -> Self {
-        match arrow {
-            '^' => self.up(),
-            '<' => self.left(),
-            '>' => self.right(),
-            'v' => self.down(),
-            _ => panic!("Unknown char")
-        }
+        self.follow_x("^v<>",arrow)
     }
     pub fn neighbours_with_diagonals(&self) -> [Self; 8]
         where T: Copy
