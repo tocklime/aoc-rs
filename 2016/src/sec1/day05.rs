@@ -1,7 +1,6 @@
 #![allow(clippy::maybe_infinite_iter)]
 
 use md5;
-use itertools::Itertools;
 
 #[aoc(day5, part1)]
 pub fn p1(input: &str) -> String {
@@ -27,7 +26,7 @@ pub fn p2(input: &str) -> String {
         .filter(|md5|
             md5[0] == 0 && md5[1] == 0 && (md5[2] & 0xF0) == 0
         );
-    let mut pw = vec!['_';8];
+    let mut pw = vec!['_'; 8];
     for x in matches {
         let pos = (x[2] & 0x0F) as usize;
         if pos < pw.len() && pw[pos] == '_' {

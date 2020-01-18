@@ -1,6 +1,5 @@
 use reformation::Reformation;
 use counter::Counter;
-use itertools::Itertools;
 
 #[derive(Reformation, Debug)]
 #[reformation(r"{name}-{id}\[{checksum}\]")]
