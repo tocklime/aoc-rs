@@ -1,6 +1,4 @@
-/*rotate row y=0 by 8
-rotate column x=0 by 1
-rect 7x1*/
+#![allow(clippy::redundant_pattern_matching)]
 
 use reformation::Reformation;
 use itertools::Itertools;
@@ -43,6 +41,7 @@ fn screen(input: &str) -> Vec<Vec<bool>> {
 }
 
 #[aoc(day8,part1)]
+#[post(ret == 123)]
 fn p1(input: &str) -> usize {
     screen(input).iter().flat_map(|x| x.iter()).filter(|&&x| x).count()
 }

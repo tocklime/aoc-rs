@@ -3,20 +3,22 @@
 use md5;
 
 #[aoc(day5, part1)]
+#[post(ret == "2414bc77")]
 pub fn p1(input: &str) -> String {
     (0..)
-        .map(|i| {
+        .filter_map(|i| {
             let str = format!("{}{}", input, i);
-            md5::compute(&str)
+            let md5 = md5::compute(&str);
+            if md5[0] == 0 && md5[1] == 0 && (md5[2] & 0xF0) == 0 {
+                Some(format!("{:?}", md5).chars().nth(5).unwrap())
+            }else { None }
         })
-        .filter(|md5|
-            md5[0] == 0 && md5[1] == 0 && (md5[2] & 0xF0) == 0
-        ).map(|x| format!("{:?}", x).chars().nth(5).unwrap())
         .take(8)
         .collect()
 }
 
 #[aoc(day5, part2)]
+#[post(ret == "437e60fc")]
 pub fn p2(input: &str) -> String {
     let matches = (0..)
         .map(|i| {
@@ -30,7 +32,7 @@ pub fn p2(input: &str) -> String {
     for x in matches {
         let pos = (x[2] & 0x0F) as usize;
         if pos < pw.len() && pw[pos] == '_' {
-            pw[pos] = std::char::from_digit(((x[3] & 0xF0) >> 4) as u32, 16).unwrap();
+            pw[pos] = std::char::from_digit(u32::from(x[3] & 0xF0) >> 4, 16).unwrap();
             if pw.iter().all(|&x| x != '_') {
                 break;
             }

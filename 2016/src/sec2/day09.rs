@@ -23,7 +23,7 @@ impl Seg {
     fn full_depth(&self) -> usize {
         match self {
             Self::Literal(s) => s.len(),
-            Self::Repeated(x,_,v) => x * v.iter().map(|x| x.full_depth()).sum::<usize>()
+            Self::Repeated(x,_,v) => x * v.iter().map(Self::full_depth).sum::<usize>()
         }
     }
     fn expand_marker(i: &str) -> IResult<&str, Self> {
@@ -53,10 +53,12 @@ impl Seg {
 
 
 #[aoc(day9, part1)]
+#[post(ret == 107035)]
 fn p1(input: &str) -> usize {
     Seg::parse(input).into_iter().map(|x| x.shallow_depth()).sum()
 }
 #[aoc(day9, part2)]
+#[post(ret == 11451628995)]
 fn p2(input: &str) -> usize {
     Seg::parse(input).into_iter().map(|x| x.full_depth()).sum()
 }

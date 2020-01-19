@@ -10,6 +10,7 @@ fn gen(input: &str) -> Vec<Vec<usize>> {
 }
 
 #[aoc(day3,part1)]
+#[post(ret == 1050)]
 fn p1(input: &[Vec<usize>]) -> usize {
     input.iter().filter(|&l| {
         let mut t : Vec<usize> = l.clone();
@@ -19,13 +20,14 @@ fn p1(input: &[Vec<usize>]) -> usize {
 }
 
 #[aoc(day3,part2)]
+#[post(ret == 1921)]
 fn p2(input: &[Vec<usize>]) -> usize {
     input.chunks(3).flat_map(|ch|{
         let mut ts = vec![
             vec![ch[0][0],ch[1][0],ch[2][0]],
             vec![ch[0][1],ch[1][1],ch[2][1]],
             vec![ch[0][2],ch[1][2],ch[2][2]]];
-        for t in ts.iter_mut() {
+        for t in &mut ts {
             t.sort();
         }
         ts

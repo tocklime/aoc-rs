@@ -133,7 +133,7 @@ impl<T: AddAssign> AddAssign for Point<T> {
 impl<T: Add + Num> Add for Point<T> {
     type Output = Self;
     fn add(self, other: Self) -> Self {
-        Point::new(self.x + other.x, self.y + other.y)
+        Self::new(self.x + other.x, self.y + other.y)
     }
 }
 
