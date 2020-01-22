@@ -40,22 +40,6 @@ enum GiveTarget {
     Bot(usize),
 }
 
-impl Item {
-    fn is_generator(&self) -> bool {
-        match self {
-            Item::Microchip(_) => false,
-            Item::Generator(_) => true,
-        }
-    }
-    fn is_compatible_with(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Item::Microchip(a), Item::Generator(b)) => a == b,
-            (Item::Generator(a), Item::Microchip(b)) => a == b,
-            _ => true
-        }
-    }
-}
-
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 struct World {
     elevator: usize,
@@ -72,7 +56,7 @@ impl World {
     }
 
     fn is_done(&self) -> bool {
-        (0..3).all(|f| self.chips[f] == 0 && self.gens[f] == 0)
+        self.heuristic() == 0
     }
     fn is_safe(&self) -> bool {
         (0..=3).all(|f| {
@@ -81,24 +65,18 @@ impl World {
     }
     fn heuristic(&self) -> usize {
         //for each item, 3-floor num.
-        (0..=3).map::<usize,_>(|f| {
-            let pc:usize = (self.chips[f].popcnt() + self.gens[f].popcnt()).into();
+        (0..=3).map::<usize, _>(|f| {
+            let pc: usize = (self.chips[f].popcnt() + self.gens[f].popcnt()).into();
             (3 - f) * pc
         }).sum()
     }
-    fn adjacent_floors(&self) -> Vec<usize> {
-        let mut ans = Vec::new();
-        if self.elevator > 0 { ans.push(self.elevator - 1); }
-        if self.elevator < 3 { ans.push(self.elevator + 1); }
-        ans
-    }
 
     fn step_world(&self, new_f: usize, with_chips: u8, with_gens: u8) -> World {
-        assert!(with_chips.popcnt() + with_gens.popcnt() <= 2);
-        assert!(with_chips.popcnt() + with_gens.popcnt() > 0);
-        assert!(new_f < self.chips.len());
-        assert_eq!(self.chips[self.elevator] & with_chips, with_chips);
-        assert_eq!(self.gens[self.elevator] & with_gens, with_gens);
+        debug_assert!(with_chips.popcnt() + with_gens.popcnt() <= 2);
+        debug_assert!(with_chips.popcnt() + with_gens.popcnt() > 0);
+        debug_assert!(new_f < self.chips.len());
+        debug_assert_eq!(self.chips[self.elevator] & with_chips, with_chips);
+        debug_assert_eq!(self.gens[self.elevator] & with_gens, with_gens);
         let mut w = World {
             elevator: new_f,
             chips: self.chips.clone(),
@@ -112,86 +90,66 @@ impl World {
     }
 
     //options to take
-    //1: any lone chip or gen
+    //1: any chip or gen
     //2: any pair of lone chips or lone gens (not one of each)
     //2: Any arbitrary... matching chip/gen pair.
 
     fn neighbours(&self) -> Vec<(World, usize)> {
-        //take 1 thing.
         let f = self.elevator;
         let this_pairs = self.chips[f] & self.gens[f];
-        let this_lone_gens = self.gens[f] & !self.chips[f];
-        let this_lone_chips = self.chips[f] & !self.gens[f];
-        let next_fs = self.adjacent_floors();
-        let mut ans = Vec::new();
+        let mut opts = Vec::new();
         //any chip
         let mut x = self.chips[f];
         while x != 0 {
-            let opt = 1 << x.tzcnt(); //get ix of least sig 1 bit.
+            let opt = x.blsi();
             x = opt.andn(x);
-            if f > 0 {
-                ans.push(self.step_world(f - 1, opt, 0));
-            }
-            if f < 3 {
-                ans.push(self.step_world(f + 1, opt, 0));
-            }
+            opts.push((opt,0));
         }
         //any gen
         let mut x = self.gens[f];
         while x != 0 {
-            let opt = 1 << x.tzcnt();
+            let opt = x.blsi();
             x = opt.andn(x);
-            if f > 0 {
-                ans.push(self.step_world(f - 1, 0, opt));
-            }
-            if f < 3 {
-                ans.push(self.step_world(f + 1, 0, opt));
-            }
+            opts.push((0,opt));
         }
         //an arbitrary pair.
-        let mut x = this_pairs;
-        if x != 0 {
-            let opt = 1 << x.tzcnt();
-            x = opt.andn(x);
-            if f > 0 {
-                ans.push(self.step_world(f - 1, opt, opt));
-            }
-            if f < 3 {
-                ans.push(self.step_world(f + 1, opt, opt));
-            }
+        if this_pairs != 0 {
+            let opt = this_pairs.blsi();
+            opts.push((opt,opt));
         }
         //any pair of lone chips
         let mut x = self.chips[f];
         while x != 0 {
-            let opt = 1 << x.tzcnt();
+            let opt = x.blsi();
             x = opt.andn(x);
             let mut y = x;
             while y != 0 {
-                let opt2 = 1 << y.tzcnt();
+                let opt2 = y.blsi();
                 y = opt2.andn(y);
-                if f > 0 {
-                    ans.push(self.step_world(f - 1, opt | opt2, 0));
-                }
-                if f < 3 {
-                    ans.push(self.step_world(f + 1, opt | opt2, 0));
-                }
+                opts.push((opt|opt2, 0));
             }
         }
         //any pair of lone gens
         let mut x = self.gens[f];
         while x != 0 {
-            let opt = 1 << x.tzcnt();
+            let opt = x.blsi();
             x = opt.andn(x);
             let mut y = x;
             while y != 0 {
-                let opt2 = 1 << y.tzcnt();
+                let opt2 = y.blsi();
                 y = opt2.andn(y);
-                if f > 0 {
-                    ans.push(self.step_world(f - 1, 0, opt | opt2));
-                }
-                if f < 3 {
-                    ans.push(self.step_world(f + 1, 0, opt | opt2));
-                }
+                opts.push((0,opt|opt2));
+            }
+        }
+        let mut ans = Vec::new();
+        if f > 0 {
+            for (chs, gs) in &opts {
+                ans.push(self.step_world(f-1,*chs,*gs));
+            }
+        }
+        if f < 3 {
+            for (chs, gs) in &opts {
+                ans.push(self.step_world(f+1,*chs,*gs));
             }
         }
         (ans.into_iter()
