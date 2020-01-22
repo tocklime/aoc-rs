@@ -1,25 +1,52 @@
-/*The first floor contains a promethium generator and a promethium-compatible microchip.
-The second floor contains a cobalt generator, a curium generator, a ruthenium generator, and a plutonium generator.
-The third floor contains a cobalt-compatible microchip, a curium-compatible microchip, a ruthenium-compatible microchip, and a plutonium-compatible microchip.
-The fourth floor contains nothing relevant.
-*/
-/*
-F4 .
-F3 . CoM CuM RM PlG
-F2 . CoG CuG RG PlG
-F1 E PrG PrM
+#![allow(clippy::redundant_pattern_matching)]
 
-*/
-use itertools::Itertools;
-use std::collections::HashSet;
+use reformation::Reformation;
+use pathfinding::directed::astar::astar;
+use num::traits::ToPrimitive;
+use bitintr::*;
 
-#[derive(Copy,Clone,Eq,Hash,PartialEq)]
-enum Item<'a> {
-    Microchip(&'a str),
-    Generator(&'a str),
+#[derive(Reformation, Copy, Clone, Eq, Hash, PartialEq, Debug, PartialOrd, Ord, ToPrimitive)]
+enum Element {
+    #[reformation("promethium")]
+    Promethium,
+    #[reformation("cobalt")]
+    Cobalt,
+    #[reformation("curium")]
+    Curium,
+    #[reformation("ruthenium")]
+    Ruthenium,
+    #[reformation("plutonium")]
+    Plutonium,
+    #[reformation("elerium")]
+    Elerium,
+    #[reformation("dilithium")]
+    Dilithium,
 }
 
-impl<'a> Item<'a> {
+#[derive(Reformation, Copy, Clone, Eq, Hash, PartialEq, Debug, PartialOrd, Ord)]
+enum Item {
+    #[reformation("{}-compatible microchip.*")]
+    Microchip(Element),
+    #[reformation("{} generator.*")]
+    Generator(Element),
+}
+
+
+#[derive(Reformation, Debug, Hash, PartialEq, Eq, Clone, Copy)]
+enum GiveTarget {
+    #[reformation("output {}")]
+    Output(usize),
+    #[reformation("bot {}")]
+    Bot(usize),
+}
+
+impl Item {
+    fn is_generator(&self) -> bool {
+        match self {
+            Item::Microchip(_) => false,
+            Item::Generator(_) => true,
+        }
+    }
     fn is_compatible_with(&self, other: &Self) -> bool {
         match (self, other) {
             (Item::Microchip(a), Item::Generator(b)) => a == b,
@@ -29,48 +56,182 @@ impl<'a> Item<'a> {
     }
 }
 
-#[derive(Clone)]
-struct World<'a> {
+#[derive(Clone, Hash, Eq, PartialEq, Debug)]
+struct World {
     elevator: usize,
-    floors: [HashSet<Item<'a>>; 4],
+    chips: [u8; 4],
+    gens: [u8; 4],
 }
 
-impl<'a> World<'a> {
+impl World {
+    fn add(&mut self, i: Item, f: usize) {
+        match i {
+            Item::Microchip(i) => { self.chips[f] |= 1 << i.to_u8().unwrap() }
+            Item::Generator(i) => { self.gens[f] |= 1 << i.to_u8().unwrap() }
+        }
+    }
+
     fn is_done(&self) -> bool {
-        (0..3).all(|f| self.floors[f].len() == 0)
+        (0..3).all(|f| self.chips[f] == 0 && self.gens[f] == 0)
     }
     fn is_safe(&self) -> bool {
-        self.floors.iter().all(|f| f.iter().combinations(2).all(|c| c[0].is_compatible_with(c[1])))
+        (0..=3).all(|f| {
+            self.gens[f] == 0 || self.gens[f].andn(self.chips[f]) == 0
+        })
     }
-    fn adjacent_floors(&self) ->Vec<usize> {
+    fn heuristic(&self) -> usize {
+        //for each item, 3-floor num.
+        (0..=3).map::<usize,_>(|f| {
+            let pc:usize = (self.chips[f].popcnt() + self.gens[f].popcnt()).into();
+            (3 - f) * pc
+        }).sum()
+    }
+    fn adjacent_floors(&self) -> Vec<usize> {
         let mut ans = Vec::new();
-        if self.elevator > 0 {ans.push(self.elevator - 1);}
-        if self.elevator < 3 {ans.push(self.elevator + 1);}
+        if self.elevator > 0 { ans.push(self.elevator - 1); }
+        if self.elevator < 3 { ans.push(self.elevator + 1); }
         ans
     }
-    fn neighbours(&self) -> Vec<World<'a>> {
+
+    fn step_world(&self, new_f: usize, with_chips: u8, with_gens: u8) -> World {
+        assert!(with_chips.popcnt() + with_gens.popcnt() <= 2);
+        assert!(with_chips.popcnt() + with_gens.popcnt() > 0);
+        assert!(new_f < self.chips.len());
+        assert_eq!(self.chips[self.elevator] & with_chips, with_chips);
+        assert_eq!(self.gens[self.elevator] & with_gens, with_gens);
+        let mut w = World {
+            elevator: new_f,
+            chips: self.chips.clone(),
+            gens: self.gens.clone(),
+        };
+        w.chips[self.elevator] = with_chips.andn(w.chips[self.elevator]);
+        w.chips[w.elevator] |= with_chips;
+        w.gens[self.elevator] = with_gens.andn(w.gens[self.elevator]);
+        w.gens[w.elevator] |= with_gens;
+        w
+    }
+
+    //options to take
+    //1: any lone chip or gen
+    //2: any pair of lone chips or lone gens (not one of each)
+    //2: Any arbitrary... matching chip/gen pair.
+
+    fn neighbours(&self) -> Vec<(World, usize)> {
         //take 1 thing.
-        let this_f = &self.floors[self.elevator];
-        let next_fs= self.adjacent_floors();
-        (1..3)
-            .flat_map(|i| this_f.iter().combinations(i) )
-            .filter(|c| c.len() < 2 || (c[0].is_compatible_with(c[1])))
-            .flat_map(|c| {
-                next_fs.iter()
-                    .map(move |&new_f| {
-                        let mut new_w = self.clone();
-                        for &i in &c {
-                            new_w.floors[new_w.elevator].remove(i);
-                            new_w.floors[new_f].insert(*i);
-                        }
-                        new_w.elevator = new_f;
-                        new_w
-                    })
-            }).collect()
+        let f = self.elevator;
+        let this_pairs = self.chips[f] & self.gens[f];
+        let this_lone_gens = self.gens[f] & !self.chips[f];
+        let this_lone_chips = self.chips[f] & !self.gens[f];
+        let next_fs = self.adjacent_floors();
+        let mut ans = Vec::new();
+        //any chip
+        let mut x = self.chips[f];
+        while x != 0 {
+            let opt = 1 << x.tzcnt(); //get ix of least sig 1 bit.
+            x = opt.andn(x);
+            if f > 0 {
+                ans.push(self.step_world(f - 1, opt, 0));
+            }
+            if f < 3 {
+                ans.push(self.step_world(f + 1, opt, 0));
+            }
+        }
+        //any gen
+        let mut x = self.gens[f];
+        while x != 0 {
+            let opt = 1 << x.tzcnt();
+            x = opt.andn(x);
+            if f > 0 {
+                ans.push(self.step_world(f - 1, 0, opt));
+            }
+            if f < 3 {
+                ans.push(self.step_world(f + 1, 0, opt));
+            }
+        }
+        //an arbitrary pair.
+        let mut x = this_pairs;
+        if x != 0 {
+            let opt = 1 << x.tzcnt();
+            x = opt.andn(x);
+            if f > 0 {
+                ans.push(self.step_world(f - 1, opt, opt));
+            }
+            if f < 3 {
+                ans.push(self.step_world(f + 1, opt, opt));
+            }
+        }
+        //any pair of lone chips
+        let mut x = self.chips[f];
+        while x != 0 {
+            let opt = 1 << x.tzcnt();
+            x = opt.andn(x);
+            let mut y = x;
+            while y != 0 {
+                let opt2 = 1 << y.tzcnt();
+                y = opt2.andn(y);
+                if f > 0 {
+                    ans.push(self.step_world(f - 1, opt | opt2, 0));
+                }
+                if f < 3 {
+                    ans.push(self.step_world(f + 1, opt | opt2, 0));
+                }
+            }
+        }
+        //any pair of lone gens
+        let mut x = self.gens[f];
+        while x != 0 {
+            let opt = 1 << x.tzcnt();
+            x = opt.andn(x);
+            let mut y = x;
+            while y != 0 {
+                let opt2 = 1 << y.tzcnt();
+                y = opt2.andn(y);
+                if f > 0 {
+                    ans.push(self.step_world(f - 1, 0, opt | opt2));
+                }
+                if f < 3 {
+                    ans.push(self.step_world(f + 1, 0, opt | opt2));
+                }
+            }
+        }
+        (ans.into_iter()
+            .filter_map(|w| if w.is_safe() { Some((w, 1)) } else { None }).collect())
     }
 }
 
-#[aoc(day11,part1)]
+fn gen(input: &str) -> World {
+    let fs: Vec<Vec<Item>> = input.lines().map(|f|
+        f.split(" a ").filter_map(|x|
+            Item::parse(x).ok()
+        ).collect()
+    ).collect();
+    let mut w = World {
+        elevator: 0,
+        chips: [0, 0, 0, 0],
+        gens: [0, 0, 0, 0],
+    };
+    fs.iter().enumerate().for_each(|(f, i_vec)|
+        i_vec.into_iter().for_each(|i| w.add(*i, f))
+    );
+    w
+}
+
+#[aoc(day11, part1)]
+#[post(ret == 33)]
 fn p1(input: &str) -> usize {
-    unimplemented!("TODO: Parse input...");
+    let w = gen(input);
+    astar(&w, |s| s.neighbours(), |s| s.heuristic(), |s| s.is_done())
+        .unwrap().0.len() - 1
+}
+
+#[aoc(day11, part2)]
+#[post(ret == 57)]
+fn p2(input: &str) -> usize {
+    let mut w = gen(input);
+    w.add(Item::Generator(Element::Elerium), 0);
+    w.add(Item::Microchip(Element::Elerium), 0);
+    w.add(Item::Generator(Element::Dilithium), 0);
+    w.add(Item::Microchip(Element::Dilithium), 0);
+    astar(&w, |s| s.neighbours(), |s| s.heuristic(), |s| s.is_done())
+        .unwrap().0.len() - 1
 }
