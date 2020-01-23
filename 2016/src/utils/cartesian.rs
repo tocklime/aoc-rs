@@ -3,7 +3,7 @@ use std::convert::{TryInto, TryFrom, Into};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
-use std::ops::{AddAssign, Mul, Add};
+use std::ops::{AddAssign, Mul, Add, Sub};
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
 pub struct Point<T> {
@@ -80,6 +80,16 @@ impl<T: Num> Point<T> {
     pub fn follow_arrow(self, arrow: char) -> Self {
         self.follow_x("^v<>",arrow)
     }
+    pub fn neighbours(&self) -> [Self; 4]
+        where T: Copy
+    {
+        [
+            self.up(),
+            self.right(),
+            self.down(),
+            self.left(),
+        ]
+    }
     pub fn neighbours_with_diagonals(&self) -> [Self; 8]
         where T: Copy
     {
@@ -135,6 +145,10 @@ impl<T: Add + Num> Add for Point<T> {
     fn add(self, other: Self) -> Self {
         Self::new(self.x + other.x, self.y + other.y)
     }
+}
+impl<T: Sub + Num> Sub for Point<T> {
+    type  Output = Self;
+    fn sub(self, other: Self) -> Self {Self::new(self.x - other.x, self.y - other.y)}
 }
 
 impl<T: Mul + Copy + Num> Mul<T> for Point<T> {
