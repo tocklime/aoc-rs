@@ -28,6 +28,7 @@ primal = "0.2.3"
 contracts = "0.3.0"
 bitvec = "0.17.1"
 bitintr = "0.3.0"
+rust-crypto = "0.2.36"
 
 [profile.release]
 debug = true
