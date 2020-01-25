@@ -24,6 +24,14 @@ impl Dir {
         let ix = udlr.find(c).expect("Unknown direction");
         [Self::Up, Self::Down, Self::Left, Self::Right][ix]
     }
+    pub fn to_udlr(&self) -> char {
+        match self{
+            Dir::Up => 'U',
+            Dir::Down => 'D',
+            Dir::Left => 'L',
+            Dir::Right => 'R'
+        }
+    }
     pub fn turn_right(self) -> Self {
         match self {
             Self::Up => Self::Right,
@@ -85,9 +93,9 @@ impl<T: Num> Point<T> {
     {
         [
             self.up(),
-            self.right(),
             self.down(),
             self.left(),
+            self.right(),
         ]
     }
     pub fn neighbours_with_diagonals(&self) -> [Self; 8]
