@@ -1,5 +1,3 @@
-use itertools::Itertools;
-
 fn calc(l: char, c: char, r: char) -> char {
     let l = l == '^';
     let c = c == '^';
