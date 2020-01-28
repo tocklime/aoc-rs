@@ -1,3 +1,5 @@
+#![allow(clippy::redundant_pattern_matching)]
+#![allow(clippy::maybe_infinite_iter)]
 use reformation::Reformation;
 use itertools::Itertools;
 

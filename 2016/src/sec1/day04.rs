@@ -39,7 +39,7 @@ fn gen(input: &str) -> Vec<Room> {
 }
 
 #[aoc(day4, part1)]
-#[post(ret == 245102)]
+#[post(ret == 245_102)]
 fn p1(input: &str) -> usize {
     gen(input).into_iter().filter_map(|r| {
         if r.is_valid() { Some(r.id) } else { None }

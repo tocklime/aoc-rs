@@ -22,7 +22,7 @@ fn p1(input: &str) -> String {
 #[aoc(day16, part2)]
 #[post(ret == "01010100101011100")]
 fn p2(input: &str) -> String {
-    solve(input.trim(), 35651584)
+    solve(input.trim(), 35_651_584)
 }
 
 fn solve(input: &str, size: usize) -> String {

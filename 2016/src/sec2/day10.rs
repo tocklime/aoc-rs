@@ -42,8 +42,8 @@ fn gen(input: &str) -> Vec<Line> {
 
 fn process(input: &[Line]) -> HashMap<GiveTarget, Vec<usize>> {
     let mut known_handlings: HashMap<GiveTarget, Vec<usize>> = HashMap::new();
-    let mut to_handle: VecDeque<&Line> = input.into_iter().collect();
-    while to_handle.len() > 0 {
+    let mut to_handle: VecDeque<&Line> = input.iter().collect();
+    while !to_handle.is_empty() {
         let item = to_handle.pop_front().unwrap();
         match item {
             Line::Input { bot, value } => known_handlings.entry(GiveTarget::Bot(*bot)).or_insert_with(Vec::new).push(*value),

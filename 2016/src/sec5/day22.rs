@@ -1,3 +1,4 @@
+#![allow(clippy::redundant_pattern_matching)]
 use reformation::Reformation;
 use itertools::Itertools;
 use crate::utils::cartesian::Point;
@@ -38,7 +39,7 @@ fn p2(input: &str) -> usize {
     let nodes = gen(input);
     //assumptions: This is a true sliding tiles puzzle, and we're never going to manage
     //to squeeze two sets of data onto one node. Max(free) = 99, Min(used) = 64.
-    let target_data_x = nodes.iter().filter(|n| n.y == 0).map(|n| n.x).max().unwrap();
+    let target_data_x = nodes.iter().filter_map(|n| if n.y == 0{Some(n.x)} else {None}).max().unwrap();
     let drawn: HashMap<Point<usize>, char> = nodes.iter().map(|x| {
         (Point::new(x.x, x.y), match (x.x, x.y, x.used) {
             (x, 0, _) if x == target_data_x => 'G',
@@ -54,7 +55,7 @@ fn p2(input: &str) -> usize {
               |n|
                   {
                       let ns = n.neighbours();
-                      ns.into_iter().filter_map(|nn| {
+                      ns.iter().filter_map(|nn| {
                           if Some(&'.') == drawn.get(nn) {
                               Some((*nn, 1))
                           } else { None }

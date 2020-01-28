@@ -1,3 +1,4 @@
+#![allow(clippy::redundant_pattern_matching)]
 use reformation::Reformation;
 use std::collections::VecDeque;
 
@@ -22,17 +23,17 @@ enum Op {
 impl Op {
     fn unapply(self, arr: &mut VecDeque<char>) {
         match self {
-            Op::SwapPos(a, b) => arr.swap(a,b),
-            Op::SwapLet(a, b) => {
+            Self::SwapPos(a, b) => arr.swap(a,b),
+            Self::SwapLet(a, b) => {
                 let a_pos = arr.iter().position(|&x| x == a).expect("can't find a");
                 let b_pos = arr.iter().position(|&x| x == b).expect("can't find b");
                 arr.swap(a_pos,b_pos);
             },
-            Op::RotateLeft(a) => {
+            Self::RotateLeft(a) => {
                 arr.rotate_right(a);
             },
-            Op::RotateRight(a) => {arr.rotate_left(a);},
-            Op::RotateOnCharPos(c) => {
+            Self::RotateRight(a) => {arr.rotate_left(a);},
+            Self::RotateOnCharPos(c) => {
                 //before, func was:
                 //0 -> 1 (and became pos 1)
                 //1 -> 2 (3)
@@ -47,12 +48,12 @@ impl Op {
                 let dist = [1,1,6,2,7,3,8,4][a_pos];
                 arr.rotate_left(dist);
             },
-            Op::ReverseRange(a, b) => {
+            Self::ReverseRange(a, b) => {
                 for x in 0..(b-a+1)/2 {
                     arr.swap(a+x,b-x);
                 }
             },
-            Op::Move(y, x) => {
+            Self::Move(y, x) => {
                 if x < y {
                     let orig = arr[x];
                     for p in x..y {
@@ -71,27 +72,27 @@ impl Op {
     }
     fn apply(self, arr: &mut VecDeque<char>) {
         match self {
-            Op::SwapPos(a, b) => arr.swap(a,b),
-            Op::SwapLet(a, b) => {
+            Self::SwapPos(a, b) => arr.swap(a,b),
+            Self::SwapLet(a, b) => {
                 let a_pos = arr.iter().position(|&x| x == a).expect("can't find a");
                 let b_pos = arr.iter().position(|&x| x == b).expect("can't find b");
                 arr.swap(a_pos,b_pos);
             },
-            Op::RotateLeft(a) => {
+            Self::RotateLeft(a) => {
                 arr.rotate_left(a);
             },
-            Op::RotateRight(a) => {arr.rotate_right(a);},
-            Op::RotateOnCharPos(c) => {
+            Self::RotateRight(a) => {arr.rotate_right(a);},
+            Self::RotateOnCharPos(c) => {
                 let a_pos = arr.iter().position(|&x| x == c).expect("can't find c");
                 let dist = (if a_pos >= 4 {a_pos + 2} else {a_pos + 1}) % arr.len();
                 arr.rotate_right(dist);
             },
-            Op::ReverseRange(a, b) => {
+            Self::ReverseRange(a, b) => {
                 for x in 0..(b-a+1)/2 {
                     arr.swap(a+x,b-x);
                 }
             },
-            Op::Move(x, y) => {
+            Self::Move(x, y) => {
                 if x < y {
                     let orig = arr[x];
                     for p in x..y {

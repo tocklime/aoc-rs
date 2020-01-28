@@ -71,16 +71,16 @@ impl World {
         }).sum()
     }
 
-    fn step_world(&self, new_f: usize, with_chips: u8, with_gens: u8) -> World {
+    fn step_world(&self, new_f: usize, with_chips: u8, with_gens: u8) -> Self {
         debug_assert!(with_chips.popcnt() + with_gens.popcnt() <= 2);
         debug_assert!(with_chips.popcnt() + with_gens.popcnt() > 0);
         debug_assert!(new_f < self.chips.len());
         debug_assert_eq!(self.chips[self.elevator] & with_chips, with_chips);
         debug_assert_eq!(self.gens[self.elevator] & with_gens, with_gens);
-        let mut w = World {
+        let mut w = Self {
             elevator: new_f,
-            chips: self.chips.clone(),
-            gens: self.gens.clone(),
+            chips: self.chips,
+            gens: self.gens,
         };
         w.chips[self.elevator] = with_chips.andn(w.chips[self.elevator]);
         w.chips[w.elevator] |= with_chips;
@@ -94,7 +94,7 @@ impl World {
     //2: any pair of lone chips or lone gens (not one of each)
     //2: Any arbitrary... matching chip/gen pair.
 
-    fn neighbours(&self) -> Vec<(World, usize)> {
+    fn neighbours(&self) -> Vec<(Self, usize)> {
         let f = self.elevator;
         let this_pairs = self.chips[f] & self.gens[f];
         let mut opts = Vec::new();
@@ -106,10 +106,10 @@ impl World {
             opts.push((opt,0));
         }
         //any gen
-        let mut x = self.gens[f];
-        while x != 0 {
-            let opt = x.blsi();
-            x = opt.andn(x);
+        let mut gen = self.gens[f];
+        while gen != 0 {
+            let opt = gen.blsi();
+            gen = opt.andn(gen);
             opts.push((0,opt));
         }
         //an arbitrary pair.
@@ -118,27 +118,27 @@ impl World {
             opts.push((opt,opt));
         }
         //any pair of lone chips
-        let mut x = self.chips[f];
-        while x != 0 {
-            let opt = x.blsi();
-            x = opt.andn(x);
-            let mut y = x;
+        let mut chips = self.chips[f];
+        while chips != 0 {
+            let opt = chips.blsi();
+            chips = opt.andn(chips);
+            let mut y = chips;
             while y != 0 {
-                let opt2 = y.blsi();
-                y = opt2.andn(y);
-                opts.push((opt|opt2, 0));
+                let opt_2 = y.blsi();
+                y = opt_2.andn(y);
+                opts.push((opt|opt_2, 0));
             }
         }
         //any pair of lone gens
-        let mut x = self.gens[f];
-        while x != 0 {
-            let opt = x.blsi();
-            x = opt.andn(x);
-            let mut y = x;
+        let mut gens = self.gens[f];
+        while gens != 0 {
+            let opt = gens.blsi();
+            gens = opt.andn(gens);
+            let mut y = gens;
             while y != 0 {
-                let opt2 = y.blsi();
-                y = opt2.andn(y);
-                opts.push((0,opt|opt2));
+                let opt_2 = y.blsi();
+                y = opt_2.andn(y);
+                opts.push((0,opt|opt_2));
             }
         }
         let mut ans = Vec::new();
@@ -169,7 +169,7 @@ fn gen(input: &str) -> World {
         gens: [0, 0, 0, 0],
     };
     fs.iter().enumerate().for_each(|(f, i_vec)|
-        i_vec.into_iter().for_each(|i| w.add(*i, f))
+        i_vec.iter().for_each(|i| w.add(*i, f))
     );
     w
 }
@@ -178,7 +178,7 @@ fn gen(input: &str) -> World {
 #[post(ret == 33)]
 fn p1(input: &str) -> usize {
     let w = gen(input);
-    astar(&w, |s| s.neighbours(), |s| s.heuristic(), |s| s.is_done())
+    astar(&w, World::neighbours,World::heuristic,World::is_done)
         .unwrap().0.len() - 1
 }
 
@@ -190,6 +190,6 @@ fn p2(input: &str) -> usize {
     w.add(Item::Microchip(Element::Elerium), 0);
     w.add(Item::Generator(Element::Dilithium), 0);
     w.add(Item::Microchip(Element::Dilithium), 0);
-    astar(&w, |s| s.neighbours(), |s| s.heuristic(), |s| s.is_done())
+    astar(&w, World::neighbours, World::heuristic, World::is_done)
         .unwrap().0.len() - 1
 }

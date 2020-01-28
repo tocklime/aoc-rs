@@ -62,22 +62,22 @@ impl<T> Aabb<T>
         let mut v = vec![vec![Default::default(); self.width()]; self.height()];
         for p in self.all_points() {
             let rel = p - offset;
-            let x: usize = Self::to_usize(rel.x);
-            let y: usize = Self::to_usize(rel.y);
+            let x: usize = Self::t_as_usize(rel.x);
+            let y: usize = Self::t_as_usize(rel.y);
             v[y][x] = ft(p);
         }
         v
     }
-    fn to_usize(t: T) -> usize {
-        match t.try_into() {
-            Ok(x) => x,
-            Err(_) => panic!("Can't convert to usize"),
+    fn t_as_usize(t: T) -> usize {
+        match t.try_into().ok() {
+            Some(x) => x,
+            None => panic!("Can't convert to usize"),
         }
     }
     pub fn width(&self) -> usize {
-        Self::to_usize(T::one() + self.top_right.x - self.bottom_left.x)
+        Self::t_as_usize(T::one() + self.top_right.x - self.bottom_left.x)
     }
     pub fn height(&self) -> usize {
-        Self::to_usize(T::one() + self.top_right.y - self.bottom_left.y)
+        Self::t_as_usize(T::one() + self.top_right.y - self.bottom_left.y)
     }
 }

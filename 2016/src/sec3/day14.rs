@@ -35,14 +35,14 @@ fn solve(input: &str,hash_reps:usize) -> usize {
             hashes.push(h);
             hi_ix += 1;
         }
-        for (_, v) in memory.iter_mut() {
+        for v in memory.values_mut() {
             while !v.is_empty() && v[0] <= ix {
                 v.pop_front();
             }
         }
         let h = &hashes[ix];
         for &t in groups(&h, 3).iter().take(1) {
-            if memory.entry(t).or_insert_with(VecDeque::new).len() > 0 {
+            if !memory.entry(t).or_insert_with(VecDeque::new).is_empty() {
                 answers.push(ix);
             }
         }
