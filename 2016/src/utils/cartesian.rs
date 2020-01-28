@@ -2,8 +2,9 @@ use num::{Num, abs, Signed, Unsigned};
 use std::convert::{TryInto, TryFrom, Into};
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::hash::Hash;
-use std::ops::{AddAssign, Mul, Add, Sub};
+use std::hash::{Hash, BuildHasher};
+use std::ops::{AddAssign, Mul, Add, Sub, RangeInclusive};
+use crate::utils::aabb::Aabb;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
 pub struct Point<T> {
@@ -25,7 +26,7 @@ impl Dir {
         [Self::Up, Self::Down, Self::Left, Self::Right][ix]
     }
     pub fn to_udlr(&self) -> char {
-        match self{
+        match self {
             Dir::Up => 'U',
             Dir::Down => 'D',
             Dir::Left => 'L',
@@ -82,11 +83,11 @@ impl<T: Num> Point<T> {
         }
     }
     pub fn follow_x(self, udlr: &str, c: char) -> Self {
-        self.step(Dir::from_x(udlr,c))
+        self.step(Dir::from_x(udlr, c))
     }
 
     pub fn follow_arrow(self, arrow: char) -> Self {
-        self.follow_x("^v<>",arrow)
+        self.follow_x("^v<>", arrow)
     }
     pub fn neighbours(&self) -> [Self; 4]
         where T: Copy
@@ -154,9 +155,10 @@ impl<T: Add + Num> Add for Point<T> {
         Self::new(self.x + other.x, self.y + other.y)
     }
 }
+
 impl<T: Sub + Num> Sub for Point<T> {
-    type  Output = Self;
-    fn sub(self, other: Self) -> Self {Self::new(self.x - other.x, self.y - other.y)}
+    type Output = Self;
+    fn sub(self, other: Self) -> Self { Self::new(self.x - other.x, self.y - other.y) }
 }
 
 impl<T: Mul + Copy + Num> Mul<T> for Point<T> {
@@ -164,4 +166,34 @@ impl<T: Mul + Copy + Num> Mul<T> for Point<T> {
     fn mul(self, rhs: T) -> Self {
         Self::new(self.x * rhs, self.y * rhs)
     }
+}
+
+pub fn point_map_bounding_box<N, T, S>(hm: &HashMap<Point<N>, T, S>) -> Aabb<N>
+    where N: Copy + Num + TryInto<usize> + Ord,
+          RangeInclusive<N>: Iterator<Item=N>,
+          S: BuildHasher {
+    let a_point = hm.keys().nth(0).unwrap();
+    hm.keys().fold(Aabb::new(*a_point), |bb, &k| bb.extend(k))
+}
+
+pub fn render_char_map_w<N, S>(
+    m: &HashMap<Point<N>, char, S>,
+    width: u8,
+    default: char,
+) -> String
+    where S: BuildHasher,
+          N: Copy + Num + TryInto<usize> + Ord + Eq + Hash,
+          RangeInclusive<N>: Iterator<Item=N>
+{
+    let bb = point_map_bounding_box(&m);
+    let v = bb.vec_with(|p| *m.get(&p).unwrap_or(&default));
+    v.iter()
+        .map(|l| {
+            "\n".to_string()
+                + &l.iter()
+                .flat_map(|&x| (0..width).map(move |_| x))
+                .collect::<String>()
+        })
+        .rev() //looks upside down...
+        .collect()
 }

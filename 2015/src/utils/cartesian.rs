@@ -2,7 +2,7 @@ use num::Num;
 use std::convert::{TryInto, TryFrom};
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::hash::Hash;
+use std::hash::{Hash, BuildHasher};
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
 pub struct Point<T> {
@@ -63,3 +63,4 @@ pub fn as_point_map<T>(input: &str) -> HashMap<Point<T>, char>
         })
         .collect()
 }
+
