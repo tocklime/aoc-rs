@@ -21,14 +21,17 @@ pub enum Instr {
     #[reformation("jnz {} {}")]
     Jnz(Value, Value),
     #[reformation("tgl {}")]
-    Tgl(Value)
+    Tgl(Value),
+    #[reformation("out {}")]
+    Out(Value),
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Computer {
     registers: [i64; 4],
     pub(crate) instruction_pointer: usize,
     memory: Vec<Instr>,
+    pub(crate) output: Vec<i64>,
 }
 
 impl Computer {
@@ -37,6 +40,7 @@ impl Computer {
             registers: [0, 0, 0, 0],
             instruction_pointer: 0,
             memory: input.lines().map(|x| Instr::parse(x).unwrap()).collect(),
+            output: Vec::new()
         }
     }
     pub fn set_reg(&mut self, c: char, i: i64) {
@@ -77,9 +81,11 @@ impl Computer {
                         Instr::Inc(a) => Instr::Dec(*a),
                         Instr::Dec(a) => Instr::Inc(*a),
                         Instr::Tgl(a) => Instr::Inc(*a),
+                        Instr::Out(a) => Instr::Inc(*a),
                     };
                 }
             }
+            Instr::Out(x) => self.output.push(self.get(x))
         }
         self.instruction_pointer = next_pc.try_into().unwrap();
     }
@@ -90,5 +96,13 @@ impl Computer {
         while self.running() {
             self.step();
         }
+    }
+    pub fn run_to_output(&mut self) -> Option<i64> {
+        while self.running() && self.output.is_empty() {
+            self.step();
+        }
+        let out = self.output.get(0).cloned();
+        self.output.clear();
+        out
     }
 }
