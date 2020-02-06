@@ -5,7 +5,7 @@ use std::collections::HashMap;
 #[aoc(day3, part1)]
 fn p1(input: &str) -> u32 {
     let n = input.parse::<u32>().unwrap();
-    let mut sqrt = (n as f64).sqrt() as u32;
+    let mut sqrt = (f64::from(n)).sqrt() as u32;
     if sqrt % 2 == 0 {
         sqrt -= 1;
     }

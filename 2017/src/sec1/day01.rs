@@ -4,7 +4,7 @@ use itertools::Itertools;
 fn p1(input: &str) -> u32 {
     let mut digs = input.chars().map(|x| x.to_digit(10).unwrap()).collect_vec();
     digs.push(digs[0]);
-    digs.into_iter().tuple_windows()
+    digs.iter().tuple_windows()
         .filter_map(|(a, b)| if a == b { Some(a) } else { None })
         .sum()
 }

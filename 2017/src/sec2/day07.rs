@@ -32,8 +32,7 @@ impl<'a> Program<'a> {
             e.1 += 1;
         }
         let good = seen.iter().find(|(_,b)| b.1 > 1).unwrap().0;
-        seen.iter().find(|(_,b)| b.1 == 1)
-            .map(|(a,b)| (*b.0,*good - *a))
+        seen.iter().find_map(|(a,b)| if b.1 == 1 {Some((*b.0,*good - *a)) } else {None})
     }
 }
 
