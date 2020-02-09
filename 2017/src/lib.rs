@@ -6,8 +6,8 @@ extern crate aoc_runner_derive;
 #[macro_use]
 extern crate contracts;
 
-#[macro_use]
-extern crate num_derive;
+//#[macro_use]
+//extern crate num_derive;
 
 pub mod sec1;
 pub mod sec2;
