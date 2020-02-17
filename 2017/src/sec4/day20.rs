@@ -1,7 +1,6 @@
 use regex::Regex;
 use num::abs;
 use itertools::Itertools;
-use crate::utils::collections::ToLookup;
 use std::iter::Iterator;
 
 struct Particle {
@@ -53,12 +52,6 @@ fn p1(input: &str) -> usize {
 fn p2(input: &str) -> usize {
     let mut ps = input.lines().enumerate().map(|(x,l)| Particle::new(x,l)).collect_vec();
     for _ in 0..50 {
-        let lu = ps.iter().map(|p| (p.pos,p.id)).collect_lookup();
-        for (p,i) in lu.iter().filter(|x| x.1.len() > 1) {
-            for &id in i {
-                ps.remove(ps.iter().position(|x| x.id == id).unwrap());
-            }
-        }
         ps.iter_mut().for_each(|p|p.step());
     }
     ps.len()
