@@ -22,6 +22,13 @@ impl<T> Aabb<T>
         }
     }
 
+    pub fn center(&self) -> Point<T> {
+        let two = T::one() + T::one();
+        let x = (self.bottom_left.x + self.top_right.x) / two;
+        let y = (self.bottom_left.y + self.top_right.y) / two;
+        Point::new(x,y)
+    }
+
     pub fn extend(&self, p: Point<T>) -> Self {
         let mut ans = *self;
         ans.bottom_left.x = min(ans.bottom_left.x, p.x);

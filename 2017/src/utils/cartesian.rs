@@ -49,6 +49,14 @@ impl Dir {
             Self::Right => Self::Up,
         }
     }
+    pub fn turn_about(self) -> Self {
+        match self {
+            Self::Up => Self::Down,
+            Self::Down => Self::Up,
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+        }
+    }
     pub fn as_point_step<T: From<i8> + Num>(self) -> Point<T> {
         match self {
             Self::Up => Point::new(T::zero(), T::one()),
@@ -127,12 +135,16 @@ impl<T: Num + Unsigned> Point<T> {
     }
 }
 
-pub fn as_point_map<T>(input: &str) -> HashMap<Point<T>, char>
+pub fn as_point_map<T>(input: &str, increasing_y_is_up: bool) -> HashMap<Point<T>, char>
     where T: Num + TryFrom<usize> + Hash + Eq
     , <T as TryFrom<usize>>::Error: Debug
 {
-    input
-        .lines()
+    let boxed: Box<dyn Iterator<Item=_>> = if increasing_y_is_up {
+        Box::new(input.lines().rev())
+    } else {
+        Box::new(input.lines())
+    };
+    boxed
         .enumerate()
         .flat_map(move |(y, line)| {
             line.chars()

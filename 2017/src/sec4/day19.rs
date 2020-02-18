@@ -2,7 +2,7 @@ use crate::utils::cartesian::{as_point_map, Dir};
 
 #[aoc(day19,part1)]
 fn p1(input: &str) -> String {
-    let hm = as_point_map::<u32>(input);
+    let hm = as_point_map::<u32>(input,false);
     let mut pos = hm.iter().find(|&(&p,&x)| x == '|' && p.y == 0).unwrap().0.clone();
     let mut dir = Dir::Up;
     let mut found = String::new();
@@ -25,7 +25,7 @@ fn p1(input: &str) -> String {
 }
 #[aoc(day19,part2)]
 fn p2(input: &str) -> u32 {
-    let hm = as_point_map::<u32>(input);
+    let hm = as_point_map::<u32>(input,false);
     let mut pos = hm.iter().find(|&(&p,&x)| x == '|' && p.y == 0).unwrap().0.clone();
     let mut dir = Dir::Up;
     let mut count = 0;
