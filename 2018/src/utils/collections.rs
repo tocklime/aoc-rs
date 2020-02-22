@@ -1,23 +1,24 @@
 use std::collections::HashMap;
-use std::ops::AddAssign;
 use std::hash::Hash;
+use std::ops::AddAssign;
 
-pub trait ToLookup<K,V> : Iterator {
-    fn collect_lookup(&mut self) -> HashMap<K,Vec<V>>;
+pub trait ToLookup<K, V>: Iterator {
+    fn collect_lookup(&mut self) -> HashMap<K, Vec<V>>;
 }
 
-impl<K,V, I : Iterator<Item=(K,V)>> ToLookup<K,V> for I
-    where K : Hash + Eq
+impl<K, V, I: Iterator<Item=(K, V)>> ToLookup<K, V> for I
+    where K: Hash + Eq
 {
-    fn collect_lookup(&mut self) -> HashMap<K,Vec<V>>
+    fn collect_lookup(&mut self) -> HashMap<K, Vec<V>>
     {
         let mut ans = HashMap::new();
-        for (k,v) in self {
-            ans.entry(k).or_insert_with( Vec::new).push(v);
+        for (k, v) in self {
+            ans.entry(k).or_insert_with(Vec::new).push(v);
         }
         ans
     }
 }
+
 
 pub fn de_prefixsum<T: AddAssign + Default + Copy>(input: &[T]) -> Vec<T> {
     let mut total: T = Default::default();
