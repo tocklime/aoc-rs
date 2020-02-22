@@ -1,17 +1,18 @@
 use std::convert::TryInto;
 use itertools::Itertools;
 use regex::Regex;
+use std::collections::{HashSet, HashMap};
 
 type N = i64;
 
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq,Hash)]
 enum Mode {
     I,
     R,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq,Hash)]
 enum Op {
     Add(Mode),
     Mul(Mode),
@@ -144,10 +145,10 @@ fn p1(input: &str) -> usize {
 #[aoc(day16,part2)]
 fn p2(input: &str) -> N {
     let input = input.replace("\r", "");
-    let secs: Vec<&str> = input.split("\n\n\n").collect();
-    let mut match_count = 0;
+    let secs: Vec<&str> = input.split("\n\n\n\n").collect();
     let lines = secs[0].lines().collect_vec();
     let ops = Op::all();
+    let mut options = HashMap::new();
     let state_re = Regex::new(r"\w+:\s+\[(\d+), (\d+), (\d+), (\d+)\]").unwrap();
     for ch in lines.chunks(4) {
         let b = state_re.captures(ch[0]).unwrap();
@@ -165,15 +166,41 @@ fn p2(input: &str) -> N {
                 a[4].parse().unwrap()]
         };
         let insn = Insn::parse_basic(ch[1]);
-        let c = ops.iter().filter(|o| {
+        let opts : HashSet::<Op> = ops.iter().filter(|o| {
             let i = Insn { op: **o, args: insn.1 };
             let mut x = before.clone();
             x.eval(i);
             x == after
-        }).count();
-        if c >= 3 {
-            match_count += 1;
+        }).cloned().collect();
+        options.entry(insn.0).and_modify(|x: &mut HashSet<Op>| *x = x.intersection(&opts).cloned().collect()).or_insert(opts);
+    }
+    let mut known = HashMap::new();
+    loop {
+        let singleton = options.iter().find(|(_,v)| v.len() == 1);
+        match singleton {
+            None => break,
+            Some((&n,single)) => {
+                let op = *single.iter().nth(0).unwrap();
+                known.insert(n,op);
+                options.remove(&n);
+                for hs in options.values_mut() {
+                    hs.remove(&op);
+                }
+            }
         }
     }
-    match_count
+    assert_eq!(options.len(),0);
+    //now, evaluate the rest.
+    let mut state = Device {
+        regs : [0,0,0,0]
+    };
+    for l in secs[1].lines() {
+        let p = Insn::parse_basic(l);
+        let insn = Insn {
+            args : p.1,
+            op : known[&p.0]
+        };
+        state.eval(insn);
+    }
+    state.regs[0]
 }
