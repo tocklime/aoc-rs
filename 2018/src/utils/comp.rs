@@ -141,7 +141,6 @@ impl Device {
     {
         let ip = self.ip.unwrap();
         loop {
-            println!("{:?}", &self);
             let as_u: Option<usize> = self.regs[ip].try_into().ok();
             match as_u.and_then(|l| prog.get(l)) {
                 None => return false,
