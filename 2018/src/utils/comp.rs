@@ -84,14 +84,14 @@ impl Insn {
 impl Device {
     pub fn new(reg_count: usize) -> Self {
         Self {
-            regs: vec![0;reg_count],
+            regs: vec![0; reg_count],
             ip: None,
         }
     }
     pub fn with_regs(regs: Vec<N>) -> Self {
         Self {
             regs,
-            ip: None
+            ip: None,
         }
     }
     pub fn get_r(&self, reg: N) -> N {
@@ -131,37 +131,54 @@ impl Device {
             Insn::Op(Op::Eq(m, n), a, b, c) => {
                 self.set(c, if self.get(a, m) == self.get(b, n) { 1 } else { 0 });
             }
-         //   Insn::Macro(Macro::SetIp(i)) => {
-         //       self.ip = Some(i)
-         //   }
+            //   Insn::Macro(Macro::SetIp(i)) => {
+            //       self.ip = Some(i)
+            //   }
         }
     }
-    pub fn run_to_ip(&mut self, prog: &[Insn],target: usize) {
+    pub fn run_to_fn<F>(&mut self, prog: &[Insn], breaks: F) -> bool
+        where F: Fn(i64) -> bool
+    {
         let ip = self.ip.unwrap();
         loop {
-            let as_u : Option<usize> = self.regs[ip].try_into().ok();
+            println!("{:?}", &self);
+            let as_u: Option<usize> = self.regs[ip].try_into().ok();
+            match as_u.and_then(|l| prog.get(l)) {
+                None => return false,
+                Some(m) => {
+                    self.eval(*m);
+                    self.regs[ip] += 1;
+                    if breaks(self.regs[ip]) { return true; }
+                }
+            }
+        }
+    }
+    pub fn run_to_ip(&mut self, prog: &[Insn], target: usize) {
+        let ip = self.ip.unwrap();
+        loop {
+            let as_u: Option<usize> = self.regs[ip].try_into().ok();
             if as_u == Some(target) {
                 break;
             }
-            match as_u.and_then(|l|prog.get(l)) {
+            match as_u.and_then(|l| prog.get(l)) {
                 None => break,
                 Some(m) => {
                     self.eval(*m);
                     self.regs[ip] += 1;
-                },
+                }
             }
         }
     }
     pub fn run(&mut self, prog: &[Insn]) {
         let ip = self.ip.unwrap();
         loop {
-            let as_u : Option<usize> = self.regs[ip].try_into().ok();
-            match as_u.and_then(|l|prog.get(l)) {
+            let as_u: Option<usize> = self.regs[ip].try_into().ok();
+            match as_u.and_then(|l| prog.get(l)) {
                 None => break,
                 Some(m) => {
                     self.eval(*m);
                     self.regs[ip] += 1;
-                },
+                }
             }
         }
     }
