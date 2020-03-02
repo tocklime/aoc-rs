@@ -1,21 +1,7 @@
 use crate::utils::cartesian::Point;
 use nom::lib::std::collections::HashMap;
 use crate::utils::aabb::Aabb;
-use pathfinding::directed::dijkstra::dijkstra;
 use pathfinding::directed::astar::astar;
-
-//WET: =
-//ROCKY = .
-//NARROW = |
-
-fn erosion_level_to_type(erosion_level: i32) -> char {
-    match erosion_level % 3 {
-        0 => '.',
-        1 => '=',
-        2 => '|',
-        _ => panic!("Maths!?!")
-    }
-}
 
 fn erosion_level(geologic_index: i32, depth: i32) -> i32 {
     (geologic_index + depth) % 20183
