@@ -15,7 +15,6 @@ fn gen(input: &str) -> Vec<Step> {
     ).collect()
 }
 
-
 #[aoc(day7, part1)]
 fn p1(input: &[Step]) -> String {
     let mut map = BTreeMap::new();

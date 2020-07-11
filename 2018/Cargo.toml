@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-parse-display = "0.1"
+parse-display = "0.1.2"
 aoc-runner = "0.3.0"
 aoc-runner-derive="0.3.0"
 itertools  = "0.8.2"

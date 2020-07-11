@@ -21,6 +21,15 @@ impl<T> Aabb<T>
             top_right: p,
         }
     }
+    pub fn from_iter<I>(i: &mut I) -> Self 
+     where I : Iterator<Item = Point<T>>
+    {
+        let b = Self::new(i.next().expect("Non empty iterator"));
+        i.fold(b, |b,n| b.extend(n))
+    }
+    pub fn area(&self) -> usize {
+        self.width() * self.height()
+    }
 
     pub fn center(&self) -> Point<T> {
         let two = T::one() + T::one();
