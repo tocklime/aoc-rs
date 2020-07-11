@@ -37,6 +37,14 @@ impl<T> Aabb<T>
         ans.top_right.y = max(ans.top_right.y, p.y);
         ans
     }
+    pub fn grow(&self, n: T) -> Self {
+        let mut ans = *self;
+        ans.bottom_left.x = ans.bottom_left.x - n;
+        ans.bottom_left.y = ans.bottom_left.y - n;
+        ans.top_right.x = ans.top_right.x + n;
+        ans.top_right.y = ans.top_right.y + n;
+        ans
+    }
     pub fn contains(&self, p: Point<T>) -> bool {
         self.bottom_left.x <= p.x
             && self.bottom_left.y <= p.y
