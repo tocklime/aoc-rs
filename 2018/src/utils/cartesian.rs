@@ -1,10 +1,10 @@
-use num::{Num, abs, Signed, Unsigned};
-use std::convert::{TryInto, TryFrom, Into};
-use std::collections::HashMap;
-use std::fmt::Debug;
-use std::hash::{Hash, BuildHasher};
-use std::ops::{AddAssign, Mul, Add, Sub, RangeInclusive};
 use crate::utils::aabb::Aabb;
+use num::{abs, Num, Signed, Unsigned};
+use std::collections::HashMap;
+use std::convert::{Into, TryFrom, TryInto};
+use std::fmt::{Debug, Display};
+use std::hash::{BuildHasher, Hash};
+use std::ops::{Add, AddAssign, Mul, RangeInclusive, Sub};
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
 pub struct Point<T> {
@@ -22,15 +22,18 @@ pub enum Dir {
 
 impl Dir {
     pub fn from_x(udlr: &str, c: char) -> Self {
-        let ix = udlr.find(c).expect("Unknown direction");
-        [Self::Up, Self::Down, Self::Left, Self::Right][ix]
+        Self::try_from_x(udlr, c).expect("Unknown direction")
+    }
+    pub fn try_from_x(udlr: &str, c: char) -> Option<Self> {
+        udlr.find(c)
+            .map(|x| [Self::Up, Self::Down, Self::Left, Self::Right][x])
     }
     pub fn to_udlr(self) -> char {
         match self {
             Self::Up => 'U',
             Self::Down => 'D',
             Self::Left => 'L',
-            Self::Right => 'R'
+            Self::Right => 'R',
         }
     }
     pub fn turn_right(self) -> Self {
@@ -70,25 +73,44 @@ impl Dir {
 impl<T: Default> Default for Point<T> {
     fn default() -> Self {
         Self {
-            x: Default::default(), 
-            y: Default::default()
+            x: Default::default(),
+            y: Default::default(),
         }
+    }
+}
+impl<T: Display> Display for Point<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})", self.x, self.y)
     }
 }
 
 impl<T: Num> Point<T> {
-    pub fn new(x: T, y: T) -> Self { Self { x, y } }
+    pub fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
     pub fn up(self) -> Self {
-        Self { x: self.x, y: self.y + T::one() }
+        Self {
+            x: self.x,
+            y: self.y + T::one(),
+        }
     }
     pub fn down(self) -> Self {
-        Self { x: self.x, y: self.y - T::one() }
+        Self {
+            x: self.x,
+            y: self.y - T::one(),
+        }
     }
     pub fn left(self) -> Self {
-        Self { x: self.x - T::one(), y: self.y }
+        Self {
+            x: self.x - T::one(),
+            y: self.y,
+        }
     }
     pub fn right(self) -> Self {
-        Self { x: self.x + T::one(), y: self.y }
+        Self {
+            x: self.x + T::one(),
+            y: self.y,
+        }
     }
     pub fn step(self, d: Dir) -> Self {
         match d {
@@ -106,17 +128,14 @@ impl<T: Num> Point<T> {
         self.follow_x("^v<>", arrow)
     }
     pub fn neighbours(&self) -> [Self; 4]
-        where T: Copy
+    where
+        T: Copy,
     {
-        [
-            self.up(),
-            self.down(),
-            self.left(),
-            self.right(),
-        ]
+        [self.up(), self.down(), self.left(), self.right()]
     }
     pub fn neighbours_with_diagonals(&self) -> [Self; 8]
-        where T: Copy
+    where
+        T: Copy,
     {
         [
             self.up(),
@@ -126,7 +145,7 @@ impl<T: Num> Point<T> {
             self.down(),
             self.down().left(),
             self.left(),
-            self.left().up()
+            self.left().up(),
         ]
     }
 }
@@ -144,10 +163,11 @@ impl<T: Num + Unsigned> Point<T> {
 }
 
 pub fn as_point_map<T>(input: &str, increasing_y_is_up: bool) -> HashMap<Point<T>, char>
-    where T: Num + TryFrom<usize> + Hash + Eq
-    , <T as TryFrom<usize>>::Error: Debug
+where
+    T: Num + TryFrom<usize> + Hash + Eq,
+    <T as TryFrom<usize>>::Error: Debug,
 {
-    let boxed: Box<dyn Iterator<Item=_>> = if increasing_y_is_up {
+    let boxed: Box<dyn Iterator<Item = _>> = if increasing_y_is_up {
         Box::new(input.lines().rev())
     } else {
         Box::new(input.lines())
@@ -178,7 +198,9 @@ impl<T: Add + Num> Add for Point<T> {
 
 impl<T: Sub + Num> Sub for Point<T> {
     type Output = Self;
-    fn sub(self, other: Self) -> Self { Self::new(self.x - other.x, self.y - other.y) }
+    fn sub(self, other: Self) -> Self {
+        Self::new(self.x - other.x, self.y - other.y)
+    }
 }
 
 impl<T: Mul + Copy + Num> Mul<T> for Point<T> {
@@ -189,9 +211,11 @@ impl<T: Mul + Copy + Num> Mul<T> for Point<T> {
 }
 
 pub fn point_map_bounding_box<N, T, S>(hm: &HashMap<Point<N>, T, S>) -> Aabb<N>
-    where N: Copy + Num + TryInto<usize> + Ord,
-          RangeInclusive<N>: Iterator<Item=N>,
-          S: BuildHasher {
+where
+    N: Copy + Num + TryInto<usize> + Ord,
+    RangeInclusive<N>: Iterator<Item = N>,
+    S: BuildHasher,
+{
     Aabb::from_iter(&mut hm.keys().cloned())
 }
 
@@ -199,22 +223,21 @@ pub fn render_char_map_w<N, S>(
     m: &HashMap<Point<N>, char, S>,
     width: u8,
     default: char,
-    flip: bool
+    flip: bool,
 ) -> String
-    where S: BuildHasher,
-          N: Copy + Num + TryInto<usize> + Ord + Eq + Hash,
-          RangeInclusive<N>: Iterator<Item=N>
+where
+    S: BuildHasher,
+    N: Copy + Num + TryInto<usize> + Ord + Eq + Hash,
+    RangeInclusive<N>: Iterator<Item = N>,
 {
     let bb = point_map_bounding_box(&m);
     let v = bb.vec_with(|p| *m.get(&p).unwrap_or(&default));
-    let x = v.iter()
-        .map(|l| {
-            "\n".to_string()
-                + &l.iter()
+    let x = v.iter().map(|l| {
+        "\n".to_string()
+            + &l.iter()
                 .flat_map(|&x| (0..width).map(move |_| x))
                 .collect::<String>()
-        })
-        ;
+    });
     if flip {
         x.rev().collect()
     } else {
