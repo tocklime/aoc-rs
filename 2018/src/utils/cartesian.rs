@@ -67,6 +67,14 @@ impl Dir {
     }
 }
 
+impl<T: Default> Default for Point<T> {
+    fn default() -> Self {
+        Self {
+            x: Default::default(), 
+            y: Default::default()
+        }
+    }
+}
 
 impl<T: Num> Point<T> {
     pub fn new(x: T, y: T) -> Self { Self { x, y } }
@@ -184,14 +192,14 @@ pub fn point_map_bounding_box<N, T, S>(hm: &HashMap<Point<N>, T, S>) -> Aabb<N>
     where N: Copy + Num + TryInto<usize> + Ord,
           RangeInclusive<N>: Iterator<Item=N>,
           S: BuildHasher {
-    let a_point = hm.keys().nth(0).unwrap();
-    hm.keys().fold(Aabb::new(*a_point), |bb, &k| bb.extend(k))
+    Aabb::from_iter(&mut hm.keys().cloned())
 }
 
 pub fn render_char_map_w<N, S>(
     m: &HashMap<Point<N>, char, S>,
     width: u8,
     default: char,
+    flip: bool
 ) -> String
     where S: BuildHasher,
           N: Copy + Num + TryInto<usize> + Ord + Eq + Hash,
@@ -199,13 +207,17 @@ pub fn render_char_map_w<N, S>(
 {
     let bb = point_map_bounding_box(&m);
     let v = bb.vec_with(|p| *m.get(&p).unwrap_or(&default));
-    v.iter()
+    let x = v.iter()
         .map(|l| {
             "\n".to_string()
                 + &l.iter()
                 .flat_map(|&x| (0..width).map(move |_| x))
                 .collect::<String>()
         })
-        .rev() //looks upside down...
-        .collect()
+        ;
+    if flip {
+        x.rev().collect()
+    } else {
+        x.collect()
+    }
 }

@@ -21,6 +21,15 @@ impl<T> Aabb<T>
             top_right: p,
         }
     }
+    pub fn from_iter<I>(i: &mut I) -> Self 
+     where I : Iterator<Item = Point<T>>
+    {
+        let b = Self::new(i.next().expect("Non empty iterator"));
+        i.fold(b, |b,n| b.extend(n))
+    }
+    pub fn area(&self) -> usize {
+        self.width() * self.height()
+    }
 
     pub fn center(&self) -> Point<T> {
         let two = T::one() + T::one();
@@ -35,6 +44,14 @@ impl<T> Aabb<T>
         ans.bottom_left.y = min(ans.bottom_left.y, p.y);
         ans.top_right.x = max(ans.top_right.x, p.x);
         ans.top_right.y = max(ans.top_right.y, p.y);
+        ans
+    }
+    pub fn grow(&self, n: T) -> Self {
+        let mut ans = *self;
+        ans.bottom_left.x = ans.bottom_left.x - n;
+        ans.bottom_left.y = ans.bottom_left.y - n;
+        ans.top_right.x = ans.top_right.x + n;
+        ans.top_right.y = ans.top_right.y + n;
         ans
     }
     pub fn contains(&self, p: Point<T>) -> bool {
