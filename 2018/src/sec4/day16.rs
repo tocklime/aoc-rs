@@ -1,8 +1,7 @@
+use crate::utils::comp::*;
 use itertools::Itertools;
 use regex::Regex;
-use std::collections::{HashSet, HashMap};
-use crate::utils::comp::*;
-
+use std::collections::{HashMap, HashSet};
 
 #[aoc(day16, part1)]
 fn p1(input: &str) -> usize {
@@ -14,26 +13,29 @@ fn p1(input: &str) -> usize {
     let state_re = Regex::new(r"\w+:\s+\[(\d+), (\d+), (\d+), (\d+)\]").unwrap();
     for ch in lines.chunks(4) {
         let b = state_re.captures(ch[0]).unwrap();
-        let before = Device::with_regs(
-            vec![b[1].parse().unwrap(),
-                b[2].parse().unwrap(),
-                b[3].parse().unwrap(),
-                b[4].parse().unwrap()]
-        );
+        let before = Device::with_regs(vec![
+            b[1].parse().unwrap(),
+            b[2].parse().unwrap(),
+            b[3].parse().unwrap(),
+            b[4].parse().unwrap(),
+        ]);
         let a = state_re.captures(ch[2]).unwrap();
-        let after = Device::with_regs(
-            vec![a[1].parse().unwrap(),
-                a[2].parse().unwrap(),
-                a[3].parse().unwrap(),
-                a[4].parse().unwrap()]
-        );
+        let after = Device::with_regs(vec![
+            a[1].parse().unwrap(),
+            a[2].parse().unwrap(),
+            a[3].parse().unwrap(),
+            a[4].parse().unwrap(),
+        ]);
         let insn = Insn::parse_basic(ch[1]);
-        let c = ops.iter().filter(|o| {
-            let i = Insn::Op(**o, insn.1[0], insn.1[1], insn.1[2]);
-            let mut x = before.clone();
-            x.eval(i);
-            x == after
-        }).count();
+        let c = ops
+            .iter()
+            .filter(|o| {
+                let i = Insn::Op(**o, insn.1[0], insn.1[1], insn.1[2]);
+                let mut x = before.clone();
+                x.eval(i);
+                x == after
+            })
+            .count();
         if c >= 3 {
             match_count += 1;
         }
@@ -51,27 +53,34 @@ fn p2(input: &str) -> N {
     let state_re = Regex::new(r"\w+:\s+\[(\d+), (\d+), (\d+), (\d+)\]").unwrap();
     for ch in lines.chunks(4) {
         let b = state_re.captures(ch[0]).unwrap();
-        let before = Device::with_regs(
-            vec![b[1].parse().unwrap(),
-                 b[2].parse().unwrap(),
-                 b[3].parse().unwrap(),
-                 b[4].parse().unwrap()]
-        );
+        let before = Device::with_regs(vec![
+            b[1].parse().unwrap(),
+            b[2].parse().unwrap(),
+            b[3].parse().unwrap(),
+            b[4].parse().unwrap(),
+        ]);
         let a = state_re.captures(ch[2]).unwrap();
-        let after = Device::with_regs(
-            vec![a[1].parse().unwrap(),
-                 a[2].parse().unwrap(),
-                 a[3].parse().unwrap(),
-                 a[4].parse().unwrap()]
-        );
+        let after = Device::with_regs(vec![
+            a[1].parse().unwrap(),
+            a[2].parse().unwrap(),
+            a[3].parse().unwrap(),
+            a[4].parse().unwrap(),
+        ]);
         let insn = Insn::parse_basic(ch[1]);
-        let opts: HashSet::<Op> = ops.iter().filter(|o| {
-            let i = Insn::Op(**o, insn.1[0], insn.1[1], insn.1[2]);
-            let mut x = before.clone();
-            x.eval(i);
-            x == after
-        }).cloned().collect();
-        options.entry(insn.0).and_modify(|x: &mut HashSet<Op>| *x = x.intersection(&opts).cloned().collect()).or_insert(opts);
+        let opts: HashSet<Op> = ops
+            .iter()
+            .filter(|o| {
+                let i = Insn::Op(**o, insn.1[0], insn.1[1], insn.1[2]);
+                let mut x = before.clone();
+                x.eval(i);
+                x == after
+            })
+            .cloned()
+            .collect();
+        options
+            .entry(insn.0)
+            .and_modify(|x: &mut HashSet<Op>| *x = x.intersection(&opts).cloned().collect())
+            .or_insert(opts);
     }
     let mut known = HashMap::new();
     loop {
@@ -79,7 +88,7 @@ fn p2(input: &str) -> N {
         match singleton {
             None => break,
             Some((&n, single)) => {
-                let op = *single.iter().nth(0).unwrap();
+                let op = *single.iter().next().unwrap();
                 known.insert(n, op);
                 options.remove(&n);
                 for hs in options.values_mut() {

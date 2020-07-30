@@ -1,7 +1,7 @@
-use parse_display;
-use std::fmt;
+#![allow(clippy::trivial_regex)]
 use crate::utils::collections::de_prefixsum;
-
+use std::fmt;
+#[allow(clippy::trivial_regex)]
 #[derive(parse_display::Display, parse_display::FromStr, PartialEq, Debug)]
 pub enum LogEvent {
     #[display("Guard #{guard_id} begins shift")]
@@ -47,7 +47,7 @@ pub fn gen(input: &str) -> Vec<LogLine> {
         .map(|x| x.parse().expect("Bad line"))
         .collect();
     v.sort_unstable_by(|e1, e2| (&e1.date, e1.minute).cmp(&(&e2.date, e2.minute)));
-    return v;
+    v
 }
 
 #[test]
@@ -80,9 +80,7 @@ pub fn part1(input: &[LogLine]) -> Answer {
     for i in input {
         match i.event {
             LogEvent::BeginShift { guard_id: g_id } => {
-                if !mins_per_guard.contains_key(&g_id) {
-                    mins_per_guard.insert(g_id, vec![0; 60]);
-                }
+                mins_per_guard.entry(g_id).or_insert_with(|| vec![0; 60]);
                 guard_id = g_id;
             }
             LogEvent::Asleep => mins_per_guard.get_mut(&guard_id).unwrap()[i.minute] += 1,

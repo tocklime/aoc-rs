@@ -1,9 +1,9 @@
 use crate::utils::cartesian::Point;
-use std::cmp::{max, min};
 use num::Num;
+use std::cmp::{max, min};
 use std::convert::TryInto;
 use std::fmt::Debug;
-use std::ops::{RangeInclusive};
+use std::{iter::FromIterator, ops::RangeInclusive};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Aabb<T> {
@@ -11,21 +11,27 @@ pub struct Aabb<T> {
     pub top_right: Point<T>,
 }
 
+impl<T> FromIterator<Point<T>> for Aabb<T>
+where
+    T: Num + Copy + TryInto<usize> + Ord,
+    RangeInclusive<T>: std::iter::Iterator<Item = T>,
+{
+    fn from_iter<I: IntoIterator<Item = Point<T>>>(iter: I) -> Self {
+        let mut i = iter.into_iter();
+        let b = Self::new(i.next().expect("Non empty iterator"));
+        i.fold(b, |b, n| b.extend(n))
+    }
+}
 impl<T> Aabb<T>
-    where T: Num + Copy + TryInto<usize> + Ord,
-          RangeInclusive<T>: std::iter::Iterator<Item = T>,
+where
+    T: Num + Copy + TryInto<usize> + Ord,
+    RangeInclusive<T>: std::iter::Iterator<Item = T>,
 {
     pub fn new(p: Point<T>) -> Self {
         Self {
             bottom_left: p,
             top_right: p,
         }
-    }
-    pub fn from_iter<I>(i: &mut I) -> Self 
-     where I : Iterator<Item = Point<T>>
-    {
-        let b = Self::new(i.next().expect("Non empty iterator"));
-        i.fold(b, |b,n| b.extend(n))
     }
     pub fn area(&self) -> usize {
         self.width() * self.height()
@@ -35,7 +41,7 @@ impl<T> Aabb<T>
         let two = T::one() + T::one();
         let x = (self.bottom_left.x + self.top_right.x) / two;
         let y = (self.bottom_left.y + self.top_right.y) / two;
-        Point::new(x,y)
+        Point::new(x, y)
     }
 
     pub fn extend(&self, p: Point<T>) -> Self {
@@ -75,11 +81,10 @@ impl<T> Aabb<T>
             ),
         }
     }
-    pub fn all_points(&self) -> impl Iterator<Item=Point<T>> + '_ {
-        (self.bottom_left.y..=self.top_right.y)
-            .flat_map(move |y|
-                (self.bottom_left.x..=self.top_right.x)
-                    .map(move |x| Point::new(x, y)))
+    pub fn all_points(&self) -> impl Iterator<Item = Point<T>> + '_ {
+        (self.bottom_left.y..=self.top_right.y).flat_map(move |y| {
+            (self.bottom_left.x..=self.top_right.x).map(move |x| Point::new(x, y))
+        })
     }
     pub fn vec_with<TO: Default + Clone>(&self, ft: impl Fn(Point<T>) -> TO) -> Vec<Vec<TO>> {
         let offset = self.bottom_left;

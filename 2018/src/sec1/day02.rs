@@ -18,7 +18,7 @@ pub fn part1(input: &str) -> u32 {
             c3 += 1;
         }
     }
-    return c2 * c3;
+    c2 * c3
 }
 
 #[aoc(day2, part2)]

@@ -1,12 +1,12 @@
 use std::collections::VecDeque;
 
 fn solve(input: &str, last_marble_scale: usize) -> usize {
-    let player_count : usize = input.split(' ').nth(0).unwrap().parse().unwrap();
-    let last_marble : usize = input.split(' ').nth(6).unwrap().parse().unwrap();
+    let player_count: usize = input.split(' ').next().unwrap().parse().unwrap();
+    let last_marble: usize = input.split(' ').nth(6).unwrap().parse().unwrap();
     let last_marble = last_marble * last_marble_scale;
     let mut scores = vec![0; player_count];
     let mut list = VecDeque::new();
-    dbg!(player_count,last_marble);
+    dbg!(player_count, last_marble);
     list.push_back(0);
     for turn in 0..last_marble {
         let marble = turn + 1;

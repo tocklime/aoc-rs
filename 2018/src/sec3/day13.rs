@@ -36,13 +36,12 @@ impl State {
                 },
                 _ => (d, turn_count),
             };
-            if orig_posses.contains(&new_pos) {
+            if orig_posses.remove(&new_pos) {
                 //crash into a not-yet-moved cart.
                 orig_posses.remove(&new_pos);
                 crashes.push(new_pos);
-            } else if new_carts.contains_key(&new_pos) {
+            } else if new_carts.remove(&new_pos).is_some() {
                 //crash into a moved cart.
-                new_carts.remove(&new_pos);
                 crashes.push(new_pos);
             } else {
                 //dodged everything.
@@ -59,7 +58,7 @@ fn gen(input: &str) -> State {
     let map = as_point_map(input, false);
     let carts = map
         .iter()
-        .filter_map(|(k, &v)| Dir::try_from_x("v^<>", v).map(|d| (k.clone(), (d, 0))))
+        .filter_map(|(k, &v)| Dir::try_from_x("v^<>", v).map(|d| (*k, (d, 0))))
         .collect();
     State { map, carts }
 }
@@ -69,7 +68,7 @@ fn p1(input: &State) -> Point<u32> {
     let mut s = input.clone();
     loop {
         let crashes = s.step_carts();
-        if crashes.len() > 0 {
+        if !crashes.is_empty() {
             return crashes[0];
         }
     }
@@ -81,9 +80,7 @@ fn p2(input: &State) -> Point<u32> {
     loop {
         s.step_carts();
         if s.carts.len() == 1 {
-            for c in &s.carts {
-                return c.0.clone();
-            }
+            return *s.carts.iter().next().unwrap().0;
         }
     }
 }

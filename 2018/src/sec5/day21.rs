@@ -3,13 +3,17 @@ use itertools::Itertools;
 use reformation::Reformation;
 use std::collections::HashSet;
 
-#[aoc(day21,part1)]
+#[aoc(day21, part1)]
 fn p1(input: &str) -> i64 {
-    let Macro::SetIp(ip) = Macro::parse(input.lines().nth(0).unwrap()).unwrap();
+    let Macro::SetIp(ip) = Macro::parse(input.lines().next().unwrap()).unwrap();
     let mut d = Device::new(6);
     d.ip = Some(ip);
-    let prog : Vec<Insn> = input.lines().skip(1).map(|l| Insn::parse(l).unwrap()).collect_vec();
-    while d.run_to_fn(&prog,|x| x == 18 || x == 28) {
+    let prog: Vec<Insn> = input
+        .lines()
+        .skip(1)
+        .map(|l| Insn::parse(l).unwrap())
+        .collect_vec();
+    while d.run_to_fn(&prog, |x| x == 18 || x == 28) {
         match d.get_r(2) {
             18 => {
                 //now find value for r3 such that (r3+1) * 256 > r1.
@@ -18,8 +22,8 @@ fn p1(input: &str) -> i64 {
                 while (t + 1) * 256 <= r1 {
                     t += 1;
                 }
-                d.set(3,t);
-            },
+                d.set(3, t);
+            }
             28 => {
                 break;
             }
@@ -28,15 +32,19 @@ fn p1(input: &str) -> i64 {
     }
     d.regs[4]
 }
-#[aoc(day21,part2)]
+#[aoc(day21, part2)]
 fn p2(input: &str) -> i64 {
-    let Macro::SetIp(ip) = Macro::parse(input.lines().nth(0).unwrap()).unwrap();
+    let Macro::SetIp(ip) = Macro::parse(input.lines().next().unwrap()).unwrap();
     let mut d = Device::new(6);
     d.ip = Some(ip);
-    let prog : Vec<Insn> = input.lines().skip(1).map(|l| Insn::parse(l).unwrap()).collect_vec();
+    let prog: Vec<Insn> = input
+        .lines()
+        .skip(1)
+        .map(|l| Insn::parse(l).unwrap())
+        .collect_vec();
     let mut seen = HashSet::new();
     let mut last_insert = None;
-    while d.run_to_fn(&prog,|x| x == 18 || x == 28) {
+    while d.run_to_fn(&prog, |x| x == 18 || x == 28) {
         match d.get_r(2) {
             18 => {
                 //now find value for r3 such that (r3+1) * 256 > r1.
@@ -45,12 +53,12 @@ fn p2(input: &str) -> i64 {
                 while (t + 1) * 256 <= r1 {
                     t += 1;
                 }
-                d.set(3,t);
-            },
+                d.set(3, t);
+            }
             28 => {
                 if !seen.insert(d.regs[4]) {
                     break;
-                }else {
+                } else {
                     last_insert = Some(d.regs[4]);
                 }
             }

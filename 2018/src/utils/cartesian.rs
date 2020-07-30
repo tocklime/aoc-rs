@@ -4,12 +4,13 @@ use std::collections::HashMap;
 use std::convert::{Into, TryFrom, TryInto};
 use std::fmt::{Debug, Display};
 use std::hash::{BuildHasher, Hash};
+use std::iter::FromIterator;
 use std::ops::{Add, AddAssign, Mul, RangeInclusive, Sub};
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
 pub struct Point<T> {
-    pub x: T,
     pub y: T,
+    pub x: T,
 }
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
@@ -131,7 +132,7 @@ impl<T: Num> Point<T> {
     where
         T: Copy,
     {
-        [self.up(), self.down(), self.left(), self.right()]
+        [self.up(), self.left(), self.right(), self.down()]
     }
     pub fn neighbours_with_diagonals(&self) -> [Self; 8]
     where
