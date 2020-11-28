@@ -1,5 +1,5 @@
 [package]
-name = "aoc-2020-rs"
+name = "aoc-2018-2-rs"
 version = "0.1.0"
 authors = ["Greg Manning <greg@gregmanning.uk>"]
 edition = "2018"
@@ -7,16 +7,15 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-parse-display = "0.4.0"
 aoc-runner = "0.3.0"
 aoc-runner-derive="0.3.0"
-itertools  = "0.9.0"
-num_enum = "0.5.1"
-rayon = "1.5.0"
+itertools  = "0.9"
+num_enum = "0.5"
+rayon = "1.5"
 transpose = "0.2.0"
-num = "0.3.1"
-rand = "0.7.3"
-regex = "1.4.2"
+num = "0.3"
+rand = "0.7"
+regex = "1.4"
 pathfinding = "2.0.4"
 md5 = "0.7.0"
 nom = "6.0.1"
@@ -24,6 +23,7 @@ reformation = "0.5.0"
 json = "0.12.4"
 counter = "0.5.2"
 primal = "0.3.0"
+parse-display = "0.4.0"
 
 [profile.release]
 debug = true
