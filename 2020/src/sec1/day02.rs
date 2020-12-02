@@ -15,9 +15,12 @@ impl Password {
         (self.min..=self.max).contains(&self.password.chars().filter(|&x| x == self.letter).count())
     }
     pub fn is_valid_2(&self) -> bool {
-        [self.min,self.max].iter()
-            .map(|n| self.password.chars().nth(n-1))
-            .filter(|&c| c == Some(self.letter))
+        self.password.chars()
+            //decorate with indices
+            .zip(1..)
+            //limit to self.max (as we're only interested in the characters at min and max)
+            .take(self.max)
+            .filter(|(c,ix)| *c == self.letter && [self.min,self.max].contains(ix))
             .count() == 1
     }
 }
