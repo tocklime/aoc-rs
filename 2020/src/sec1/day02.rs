@@ -12,8 +12,7 @@ pub struct Password {
 
 impl Password {
     pub fn is_valid_1(&self) -> bool {
-        let c = self.password.chars().filter(|&x| x == self.letter).count();
-        c >= self.min && c <= self.max
+        (self.min..=self.max).contains(&self.password.chars().filter(|&x| x == self.letter).count())
     }
     pub fn is_valid_2(&self) -> bool {
         [self.min,self.max].iter()
