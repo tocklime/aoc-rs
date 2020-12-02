@@ -1,6 +1,5 @@
 #![warn(clippy::all)]
 use parse_display::{Display, FromStr};
-use std::collections::HashMap;
 
 #[derive(FromStr, Display, Debug)]
 #[display(r"{min}-{max} {letter}: {password}")]
@@ -13,11 +12,7 @@ pub struct Password {
 
 impl Password {
     pub fn is_valid_1(&self) -> bool {
-        let mut hm: HashMap<char, usize> = HashMap::new();
-        for c in self.password.chars() {
-            *hm.entry(c).or_default() += 1;
-        }
-        let c = *hm.entry(self.letter).or_default();
+        let c = self.password.chars().filter(|&x| x == self.letter).count();
         c >= self.min && c <= self.max
     }
     pub fn is_valid_2(&self) -> bool {
