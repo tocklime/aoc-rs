@@ -1,3 +1,4 @@
+#![warn(clippy::all)]
 #[aoc_generator(day3)]
 pub fn gen(input: &str) -> Vec<Vec<bool>> {
     input
@@ -11,7 +12,7 @@ pub fn solve(tm: &[Vec<bool>], x: usize, y: usize) -> usize {
     tm.iter()
         .step_by(y)
         .enumerate()
-        .filter(|(ix, r)| r[(ix * x) % w])
+        .filter(|(ix, r)| r[(ix * x) % w]) 
         .count()
 }
 
