@@ -1,4 +1,5 @@
 #![warn(clippy::all)]
+use itertools::Itertools;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
@@ -33,32 +34,28 @@ fn validate(k: &str, v: &str) -> Option<bool> {
     Some(a)
 }
 
-#[aoc_generator(day4)]
-pub fn gen(input: &str) -> Vec<HashMap<String, String>> {
+pub fn gen(input: &str) -> Vec<HashMap<&str, &str>> {
     input
         .split("\n\n")
         .map(|p| {
-            p.split(|c| c == ' ' || c == '\n')
-                .map(|x| {
-                    let a: Vec<&str> = x.split(':').collect();
-                    (a[0].to_string(), a[1].to_string())
-                })
+            p.split_whitespace()
+                .flat_map(|p| p.split(":")).tuples()
                 .collect()
         })
         .collect()
 }
 
 #[aoc(day4, part1)]
-pub fn p1(input: &[HashMap<String, String>]) -> usize {
-    input
+pub fn p1(input: &str) -> usize {
+    gen(input)
         .iter()
         .filter(|&fns| REQUIRED_SET.iter().all(|&k| fns.contains_key(k)))
         .count()
 }
 
 #[aoc(day4, part2)]
-pub fn p2(input: &[HashMap<String, String>]) -> usize {
-    input
+pub fn p2(input: &str) -> usize {
+    gen(input)
         .iter()
         .filter(|&fns| {
             REQUIRED_SET
