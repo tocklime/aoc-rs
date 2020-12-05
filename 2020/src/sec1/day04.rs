@@ -39,7 +39,7 @@ pub fn gen(input: &str) -> Vec<HashMap<&str, &str>> {
         .split("\n\n")
         .map(|p| {
             p.split_whitespace()
-                .flat_map(|p| p.split(":")).tuples()
+                .flat_map(|p| p.split(':')).tuples()
                 .collect()
         })
         .collect()
