@@ -1,3 +1,13 @@
+#![warn(
+     clippy::all,
+     clippy::cargo,
+     clippy::pedantic,
+     clippy::nursery,
+ )]
+#![allow(clippy::must_use_candidate)]
+#![allow(clippy::cargo_common_metadata)]
+#![allow(clippy::implicit_hasher)]
+
 extern crate aoc_runner;
 
 #[macro_use]

@@ -25,7 +25,7 @@ impl Dir {
         let ix = udlr.find(c).expect("Unknown direction");
         [Self::Up, Self::Down, Self::Left, Self::Right][ix]
     }
-    pub fn to_udlr(self) -> char {
+    pub const fn to_udlr(self) -> char {
         match self {
             Self::Up => 'U',
             Self::Down => 'D',
@@ -33,7 +33,7 @@ impl Dir {
             Self::Right => 'R'
         }
     }
-    pub fn turn_right(self) -> Self {
+    pub const fn turn_right(self) -> Self {
         match self {
             Self::Up => Self::Right,
             Self::Down => Self::Left,
@@ -41,7 +41,7 @@ impl Dir {
             Self::Right => Self::Down,
         }
     }
-    pub fn turn_left(self) -> Self {
+    pub const fn turn_left(self) -> Self {
         match self {
             Self::Up => Self::Left,
             Self::Down => Self::Right,
@@ -49,7 +49,7 @@ impl Dir {
             Self::Right => Self::Up,
         }
     }
-    pub fn turn_about(self) -> Self {
+    pub const fn turn_about(self) -> Self {
         match self {
             Self::Up => Self::Down,
             Self::Down => Self::Up,
@@ -205,7 +205,7 @@ pub fn render_char_map_w<N, S>(
           N: Copy + Num + TryInto<usize> + Ord + Eq + Hash,
           RangeInclusive<N>: Iterator<Item=N>
 {
-    let bb = point_map_bounding_box(&m);
+    let bb = point_map_bounding_box(m);
     let v = bb.vec_with(|p| *m.get(&p).unwrap_or(&default));
     let x = v.iter()
         .map(|l| {
