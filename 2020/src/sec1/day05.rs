@@ -8,7 +8,7 @@ pub fn gen(input: &str) -> HashSet<usize> {
         .map(|c| {
             c.chars()
                 .fold(0,|acc,x| 
-                    acc * 2 + ("BR".contains(x) as usize)
+                    acc * 2 + ("Binary go BRRRR!".contains(x) as usize)
                 )
         })
         .collect()
