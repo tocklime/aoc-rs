@@ -26,6 +26,7 @@ json = "0.12.4"
 counter = "0.5.2"
 primal = "0.3.0"
 lazy_static = "1.4.0"
+petgraph = "0.5.1"
 
 [profile.release]
 debug = true

@@ -1,25 +1,36 @@
 use crate::utils::collections::ToLookupSet;
 use itertools::Itertools;
-use parse_display::FromStr;
+use petgraph::{
+    graphmap::DiGraphMap,
+    visit::{Dfs, Reversed, Walker},
+};
 use std::collections::{HashMap, HashSet};
-#[derive(FromStr, Debug, Hash, PartialEq, Eq, Clone)]
-#[from_str(regex = r"(?P<n>[0-9]+) (?P<colour>[a-z ]*) bags?")]
+#[derive(Hash, PartialEq, Eq, Clone)]
 pub struct Bags {
     n: usize,
     colour: String,
 }
 
-#[aoc_generator(day7)]
 pub fn gen(input: &str) -> Vec<(String, Vec<Bags>)> {
     input
         .lines()
         .map(|l| {
-            let (n, bags) : (&str,&str) = l.split(" bags contain ").next_tuple().unwrap();
+            let (n, bags): (&str, &str) = l.split(" bags contain ").next_tuple().unwrap();
             let inners = bags
                 .trim_end_matches('.')
                 .split(", ")
-                .map(|i| i.parse::<Bags>().ok())
-                .filter_map(|x| x)
+                .filter_map(|i| {
+                    let (c, a) = i.splitn(2, ' ').next_tuple().unwrap();
+                    if let Ok(x) = c.parse() {
+                        let t = a.trim_end_matches(" bag").trim_end_matches(" bags");
+                        Some(Bags {
+                            n: x,
+                            colour: t.to_string(),
+                        })
+                    } else {
+                        None
+                    }
+                })
                 .collect();
             (n.to_string(), inners)
         })
@@ -27,8 +38,9 @@ pub fn gen(input: &str) -> Vec<(String, Vec<Bags>)> {
 }
 
 #[aoc(day7, part1)]
-pub fn p1(input: &[(String, Vec<Bags>)]) -> usize {
-    let cs = input
+pub fn p1(input: &str) -> usize {
+    let v = gen(input);
+    let cs = v
         .iter()
         .flat_map(|(n, bags)| bags.iter().map(move |b| (b.colour.as_ref(), n.as_ref())))
         .collect_lookup_set();
@@ -49,11 +61,45 @@ pub fn count_bags(m: &HashMap<&str, HashSet<&Bags>>, name: &str) -> usize {
 }
 
 #[aoc(day7, part2)]
-pub fn p2(input: &[(String, Vec<Bags>)]) -> usize {
-    let cs = input
+pub fn p2(input: &str) -> usize {
+    let v = gen(input);
+    let cs = v
         .iter()
         .flat_map(|(n, bags)| bags.iter().map(move |b| (n.as_ref(), b)))
         .collect_lookup_set();
 
     count_bags(&cs, "shiny gold")
+}
+
+fn gen2(inp: &str) -> DiGraphMap<&str, usize> {
+    let mut g: DiGraphMap<&str, usize> = DiGraphMap::new();
+    for l in inp.lines() {
+        let (container, bags): (&str, &str) = l.split(" bags contain ").next_tuple().unwrap();
+        bags.trim_end_matches('.').split(", ").for_each(|i| {
+            let (w_str, content) = i.splitn(2, ' ').next_tuple().unwrap();
+            if let Ok(weight) = w_str.parse() {
+                let content = content.trim_end_matches(" bag").trim_end_matches(" bags");
+                g.add_edge(container, content, weight);
+            }
+        });
+    }
+    g
+}
+
+#[aoc(day7, part1, graph)]
+pub fn p1_graph(input: &str) -> usize {
+    let g = gen2(input);
+    Dfs::new(&g, "shiny gold").iter(Reversed(&g)).count() - 1
+}
+
+pub fn count_bags_from_graph(g: &DiGraphMap<&str, usize>, name: &str) -> usize {
+    g.edges(name)
+        .map(|(_, t, w)| w * (1 + count_bags_from_graph(g, t)))
+        .sum()
+}
+
+#[aoc(day7, part2, graph)]
+pub fn p2_graph(input: &str) -> usize {
+    let g = gen2(input);
+    count_bags_from_graph(&g, "shiny gold")
 }
