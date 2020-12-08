@@ -1,5 +1,6 @@
 use itertools::Itertools;
 use petgraph::{
+//    dot::Dot,
     graphmap::DiGraphMap,
     visit::{Dfs, Reversed, Walker},
 };
@@ -35,5 +36,7 @@ pub fn count_bags_from_graph(g: &G, name: &str) -> usize {
 #[aoc(day7, part2)]
 pub fn p2_graph(input: &str) -> usize {
     let input = gen(input);
+    //let r = Dot::new(&input);
+    //std::fs::write("d07-bags.dot", format!(r#"{:?}"#,r)).expect("Failed to write graph file");
     count_bags_from_graph(&input, "shiny gold")
 }
