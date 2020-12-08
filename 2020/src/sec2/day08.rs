@@ -1,38 +1,75 @@
 use crate::utils::nums::add_isize;
 use parse_display::{Display, FromStr};
+use pathfinding::prelude::dijkstra;
 use std::collections::HashSet;
 
-#[derive(Display, FromStr, PartialEq, Debug)]
+#[derive(Display, FromStr, PartialEq, Debug,Clone,Copy)]
 #[display(style = "lowercase")]
 pub enum Op {
     Jmp,
     Acc,
     Nop,
 }
+impl Op {
+    const fn switch(self) -> Self {
+        match self {
+            Self::Jmp => {Self::Nop}
+            Self::Acc => {Self::Acc}
+            Self::Nop => {Self::Jmp}
+        }
+    }
+}
 
-#[derive(Display, FromStr, PartialEq, Debug)]
+#[derive(Display, FromStr, PartialEq, Debug,Clone,Copy)]
 #[display("{op} {n}")]
 pub struct Inst {
     op: Op,
     n: isize,
 }
 
-pub fn go(prog: &[Inst], change: Option<usize>) -> (isize, bool) {
-    let mut acc: isize = 0;
-    let mut visited = HashSet::new();
-    let mut pc = 0;
-    while pc < prog.len() && !visited.contains(&pc) {
-        let inst = &prog[pc];
-        visited.insert(pc);
-        let mut pc_delta = 1;
-        match (&inst.op, Some(pc) == change) {
-            (Op::Acc, _) => acc += inst.n,
-            (Op::Jmp, false) | (Op::Nop, true) => pc_delta = inst.n,
-            (Op::Nop, false) | (Op::Jmp, true) => {}
-        }
-        pc = add_isize(pc, pc_delta);
+#[derive(Debug, Clone, Copy, Eq)]
+pub struct State {
+    pc: usize,
+    acc: isize
+}
+
+impl std::hash::Hash for State {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.pc.hash(state)
     }
-    (acc, pc == prog.len())
+}
+
+impl PartialEq for State {
+    fn eq(&self, other: &Self) -> bool {
+        self.pc == other.pc
+    }
+}
+impl State {
+    pub fn step(&self, inst: &Inst) -> Self {
+        let mut new = *self;
+        let mut pc_delta = 1;
+        match &inst.op {
+            Op::Acc => new.acc += inst.n,
+            Op::Jmp => pc_delta = inst.n,
+            Op::Nop => {}
+        }
+        new.pc = add_isize(self.pc, pc_delta);
+        new
+    }
+}
+
+pub fn go(prog: &[Inst], change: Option<usize>) -> (isize, bool) {
+    let mut visited = HashSet::new();
+    let mut state = State{pc: 0,acc:0};
+    while state.pc < prog.len() && !visited.contains(&state.pc) {
+        let mut inst = prog[state.pc];
+        visited.insert(state.pc);
+        if Some(state.pc) == change {
+            inst.op = inst.op.switch();
+        }
+        state = state.step(&inst);
+    }
+    (state.acc, state.pc == prog.len())
 }
 
 #[aoc_generator(day8)]
@@ -58,4 +95,24 @@ pub fn p2(input: &[Inst]) -> Option<isize> {
             }
         }
     })
+}
+
+#[aoc(day8,part2,dijkstra)]
+pub fn p2d(input: &[Inst]) -> Option<isize> {
+    let start = (false,State{pc:0,acc:0});
+    let d = dijkstra(&start,
+         |&(have_switched,s)| {
+            let inst = input[s.pc];
+            let mut v = vec![(have_switched, s.step(&inst))];
+            if !have_switched {
+                let switched = Inst {
+                    op: inst.op.switch(),
+                    n: inst.n
+                };
+                v.push((true, s.step(&switched)));
+            }
+            v.into_iter().map(|x| (x,1))
+         },
+         |s| s.1.pc == input.len());
+    d.and_then(|(x,_)|x.last().copied()).map(|x|x.1.acc)
 }
