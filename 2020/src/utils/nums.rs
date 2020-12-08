@@ -1,5 +1,5 @@
 use num::Num;
-use std::ops::Shr;
+use std::{convert::TryInto, ops::Shr};
 
 pub fn mod_pow<T>(mut base: T, mut exp: T, modulus: T) -> T
     where T: Num + Copy + Shr<Output = T> + From<u8> + PartialOrd
@@ -17,4 +17,20 @@ pub fn mod_pow<T>(mut base: T, mut exp: T, modulus: T) -> T
         base = base * base % modulus
     }
     result
+}
+pub fn add_isize(u : usize, i: isize) -> usize {
+    let i_as_u : usize = i.abs().try_into().unwrap();
+    if i < 0 {
+        u - i_as_u
+    } else {
+        u + i_as_u
+    }
+}
+pub fn add_assign_isize(u : &mut usize, i: isize) {
+    let i_as_u : usize = i.abs().try_into().unwrap();
+    if i < 0 {
+        *u -= i_as_u;
+    } else {
+        *u += i_as_u;
+    }
 }

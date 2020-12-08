@@ -12,7 +12,7 @@ fn gen(inp: &str) -> G {
         bags.trim_end_matches('.').split(", ").for_each(|i| {
             let (w_str, content) = i.splitn(2, ' ').next_tuple().unwrap();
             if let Ok(weight) = w_str.parse() {
-                let content = content.trim_end_matches("s").trim_end_matches(" bag");
+                let content = content.trim_end_matches('s').trim_end_matches(" bag");
                 g.add_edge(container, content, weight);
             }
         });
@@ -21,7 +21,7 @@ fn gen(inp: &str) -> G {
 }
 
 #[aoc(day7, part1)]
-pub fn p1<'a>(input: &str) -> usize {
+pub fn p1(input: &str) -> usize {
     let input = gen(input);
     Dfs::new(&input, "shiny gold").iter(Reversed(&input)).count() - 1
 }
