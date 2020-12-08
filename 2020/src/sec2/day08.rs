@@ -46,7 +46,16 @@ pub fn p1(input: &[Inst]) -> isize {
 
 #[aoc(day8, part2)]
 pub fn p2(input: &[Inst]) -> Option<isize> {
-    (0..input.len())
-        .map(|i| go(input, Some(i)))
-        .find_map(|x| if x.1 {Some(x.0)} else {None})
+    (0..input.len()).find_map(|i| {
+        if input[i].op == Op::Acc {
+            None
+        } else {
+            let (acc, fin) = go(input, Some(i));
+            if fin {
+                Some(acc)
+            } else {
+                None
+            }
+        }
+    })
 }
