@@ -74,7 +74,7 @@ pub fn go(prog: &[Inst], change: Option<usize>) -> (isize, bool) {
 
 #[aoc_generator(day8)]
 pub fn gen(input: &str) -> Vec<Inst> {
-    input.lines().map(|x| x.parse().unwrap()).collect()
+    input.trim().lines().map(|x| x.parse().unwrap()).collect()
 }
 #[aoc(day8, part1)]
 pub fn p1(input: &[Inst]) -> isize {
@@ -119,4 +119,34 @@ pub fn p2d(input: &[Inst]) -> Option<isize> {
         |s| s.1.pc == input.len(),
     );
     d.and_then(|x| x.last().copied()).map(|x| x.1.acc)
+}
+
+pub fn explore(input: &[Inst], mut state: State, visited: &mut HashSet<(bool,usize)>, allow_flip: bool) -> Option<isize>{
+    //in visited, we store the state and whether there had been a flip or not. We may get to the same state via
+    //different means, and this nicely prunes those after the first exploration.
+    while !visited.contains(&(allow_flip,state.pc)) {
+        if state.pc == input.len() {
+            return Some(state.acc);
+        }
+        let inst = input[state.pc];
+        visited.insert((allow_flip,state.pc));
+        if allow_flip && inst.op != Op::Acc {
+            //try flipping it and running to the end.
+            let flipped = Inst { op : inst.op.switch(), n: inst.n};
+            if let Some(x) = explore(input, state.step(&flipped),visited,false) {
+                return Some(x);
+            }
+            //nope, that didn't work. carry on with the normal one.
+        }
+        state = state.step(&inst);
+    }
+    None
+}
+
+#[aoc(day8, part2, optimal)]
+pub fn p2_optimal(input: &[Inst]) -> Option<isize> {
+    let state = State { pc: 0, acc: 0 };
+    let mut visited = HashSet::new();
+    explore(input,state,&mut visited,true)
+
 }
