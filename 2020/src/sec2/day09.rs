@@ -1,4 +1,4 @@
-use crate::utils::collections::{prefix_sum, minmax};
+use crate::utils::collections::{minmax, prefix_sum};
 
 #[aoc_generator(day9)]
 pub fn gen(input: &str) -> Vec<usize> {
@@ -30,7 +30,7 @@ pub fn p2(is: &[usize]) -> Option<usize> {
             // ..such that the difference on the prefix sum array ==target (that is, is[ix_1..=ix_2].sum() == target)
             .find_map(|ix_2| {
                 if ps[ix_2] - ps[ix_1] == target {
-                    let (&a, &b) = minmax(is[ix_1 + 1..=ix_2].iter()).unwrap();
+                    let (&a, &b) = minmax(&is[ix_1 + 1..=ix_2]).unwrap();
                     Some(a + b)
                 } else {
                     None

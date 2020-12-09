@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}};
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::ops::AddAssign;
 
@@ -6,11 +6,11 @@ pub trait ToLookup<K, V>: Iterator {
     fn collect_lookup(&mut self) -> HashMap<K, Vec<V>>;
 }
 
-impl<K, V, I: Iterator<Item=(K, V)>> ToLookup<K, V> for I
-    where K: Hash + Eq
+impl<K, V, I: Iterator<Item = (K, V)>> ToLookup<K, V> for I
+where
+    K: Hash + Eq,
 {
-    fn collect_lookup(&mut self) -> HashMap<K, Vec<V>>
-    {
+    fn collect_lookup(&mut self) -> HashMap<K, Vec<V>> {
         let mut ans = HashMap::new();
         for (k, v) in self {
             ans.entry(k).or_insert_with(Vec::new).push(v);
@@ -22,11 +22,12 @@ pub trait ToLookupSet<K, V>: Iterator {
     fn collect_lookup_set(&mut self) -> HashMap<K, HashSet<V>>;
 }
 
-impl<K, V, I: Iterator<Item=(K, V)>> ToLookupSet<K, V> for I
-    where K: Hash + Eq, V : Eq + Hash
+impl<K, V, I: Iterator<Item = (K, V)>> ToLookupSet<K, V> for I
+where
+    K: Hash + Eq,
+    V: Eq + Hash,
 {
-    fn collect_lookup_set(&mut self) -> HashMap<K, HashSet<V>>
-    {
+    fn collect_lookup_set(&mut self) -> HashMap<K, HashSet<V>> {
         let mut ans = HashMap::new();
         for (k, v) in self {
             ans.entry(k).or_insert_with(HashSet::new).insert(v);
@@ -46,14 +47,21 @@ pub fn prefix_sum_vec<T: AddAssign + Default + Copy>(input: &[T]) -> Vec<T> {
 }
 
 pub fn prefix_sum<'a, T, I>(input: I) -> impl Iterator<Item = T> + 'a
-    where T : 'a + AddAssign + Default + Copy,
-          I : 'a + IntoIterator<Item = &'a T>
+where
+    T: 'a + AddAssign + Default + Copy,
+    I: 'a + IntoIterator<Item = &'a T>,
 {
-    input.into_iter().scan(T::default(), |acc, x| {*acc += *x; Some(*acc)})
+    input.into_iter().scan(T::default(), |acc, x| {
+        *acc += *x;
+        Some(*acc)
+    })
 }
 
-pub fn minmax<'a, T, I : Iterator<Item = &'a T>>(mut input: I) -> Option<(&'a T,&'a T)> 
-  where T : Ord
+pub fn minmax<'a, T, I: IntoIterator<Item = &'a T>>(input: I) -> Option<(&'a T, &'a T)>
+where
+    T: Ord,
 {
-    input.next().map(|x|input.fold((x,x),|(min,max),c| (min.min(c),max.max(c))))
+    let mut i = input.into_iter();
+    i.next()
+        .map(|x| i.fold((x, x), |(min, max), c| (min.min(c), max.max(c))))
 }
