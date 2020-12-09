@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}};
 use std::hash::Hash;
 use std::ops::AddAssign;
 
@@ -35,7 +35,7 @@ impl<K, V, I: Iterator<Item=(K, V)>> ToLookupSet<K, V> for I
     }
 }
 
-pub fn prefix_sum<T: AddAssign + Default + Copy>(input: &[T]) -> Vec<T> {
+pub fn prefix_sum_vec<T: AddAssign + Default + Copy>(input: &[T]) -> Vec<T> {
     let mut total: T = Default::default();
     let mut ans = Vec::with_capacity(input.len());
     for i in input {
@@ -43,6 +43,13 @@ pub fn prefix_sum<T: AddAssign + Default + Copy>(input: &[T]) -> Vec<T> {
         ans.push(total);
     }
     ans
+}
+
+pub fn prefix_sum<'a, T, I>(input: I) -> impl Iterator<Item = T> + 'a
+    where T : 'a + AddAssign + Default + Copy,
+          I : 'a + IntoIterator<Item = &'a T>
+{
+    input.into_iter().scan(T::default(), |acc, x| {*acc += *x; Some(*acc)})
 }
 
 pub fn minmax<'a, T, I : Iterator<Item = &'a T>>(mut input: I) -> Option<(&'a T,&'a T)> 
