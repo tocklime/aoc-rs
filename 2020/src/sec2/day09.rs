@@ -38,3 +38,25 @@ pub fn p2(is: &[usize]) -> Option<usize> {
             })
     })
 }
+
+#[aoc(day9, part2,other)]
+pub fn p2_other(is: &[usize]) -> Option<usize> {
+    let target = p1(is)?;
+    let ps = prefix_sum(is).collect::<Vec<usize>>();
+    //for each possible window size
+    (1..=is.len()).find_map(|win_size| {
+        //find a start index such that..
+        (0..is.len() - win_size)
+            //(optimisation: give up once the difference is too big)
+            .take_while(|&ix_1| ps[ix_1+win_size] - ps[ix_1] <= target)
+            // ..such that the difference on the prefix sum array ==target (that is, is[ix_1..=ix_2].sum() == target)
+            .find_map(|ix_1| {
+                if ps[ix_1+win_size] - ps[ix_1] == target {
+                    let (&a, &b) = minmax(&is[ix_1 + 1..=ix_1 + win_size]).unwrap();
+                    Some(a + b)
+                } else {
+                    None
+                }
+            })
+    })
+}
