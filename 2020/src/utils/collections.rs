@@ -35,7 +35,6 @@ impl<K, V, I: Iterator<Item=(K, V)>> ToLookupSet<K, V> for I
     }
 }
 
-
 pub fn de_prefixsum<T: AddAssign + Default + Copy>(input: &[T]) -> Vec<T> {
     let mut total: T = Default::default();
     let mut ans = Vec::with_capacity(input.len());
@@ -44,4 +43,21 @@ pub fn de_prefixsum<T: AddAssign + Default + Copy>(input: &[T]) -> Vec<T> {
         ans.push(total);
     }
     ans
+}
+
+pub fn minmax<'a, T, I : Iterator<Item = &'a T>>(mut input: I) -> Option<(&'a T,&'a T)> 
+  where T : PartialOrd
+{
+    match input.next() {
+        None => None,
+        Some(x) => {
+            let mut min : &T = x;
+            let mut max : &T = x;
+            for i in input {
+                if i < min { min = i;}
+                if i > max { max = i;}
+            }
+            Some((min,max))
+        }
+    }
 }

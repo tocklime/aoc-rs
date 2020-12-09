@@ -1,42 +1,32 @@
-use std::collections::VecDeque;
-use itertools::Itertools;
-use crate::utils::collections::de_prefixsum;
+use crate::utils::collections::{de_prefixsum, minmax};
+
+#[aoc_generator(day9)]
+pub fn gen(input: &str) -> Vec<usize> {
+    input.lines().map(|x|x.parse().unwrap()).collect()
+}
 
 #[aoc(day9,part1)]
-pub fn p1(input: &str) -> usize {
-    let is = input.lines().map(|x| x.parse().unwrap()).collect::<Vec<usize>>();
-    let mut window = is.iter().copied().take(25).collect::<VecDeque<_>>();
-    for x in is.iter().skip(25) {
-        let mut found = false;
-        for v in window.iter().combinations(2) {
-            if v[0] + v[1] == *x {
-                found = true;
-                break; //found it OK!
-            }
+pub fn p1(is: &[usize]) -> usize {
+    is.windows(25).enumerate().find_map(|(ix,w)| {
+        let target = is[25+ix];
+        if w.iter().all(|x| !w.contains(&(target-x))) {
+            Some(is[ix+25])
+        }else {
+            None
         }
-        if !found {
-            return *x;
-        }
-        window.push_back(*x);
-        window.pop_front();
-    }
-    0
+    }).unwrap()
 }
 
 #[aoc(day9,part2)]
-pub fn p2(input: &str) -> usize {
-    let is = input.lines().map(|x| x.parse().unwrap()).collect::<Vec<usize>>();
-    let target = p1(input);
-    let ps = de_prefixsum(&is);
-    for v in (0..is.len()).combinations(2) {
-        let ix_1 = *v.iter().min().unwrap();
-        let ix_2 = *v.iter().max().unwrap();
-        if ps[ix_2] - ps[ix_1] == target {
-            let cands = is[ix_1+1..=ix_2].iter().collect_vec();
-            let a = cands.iter().min().unwrap();
-            let b = cands.iter().max().unwrap();
-            println!("{}-{}, minmax: {} {}",ix_1,ix_2,a,b);
-                return *a+*b;
+pub fn p2(is: &[usize]) -> usize {
+    let target = p1(is);
+    let ps = de_prefixsum(is);
+    for ix_1 in 0..is.len() {
+        if let Some(ix_2) = (ix_1..is.len())
+                .take_while(|&ix| ps[ix] - ps[ix_1] <= target)
+                .find(|&ix| ps[ix] - ps[ix_1] == target) {
+            let (&a,&b) = minmax(is[ix_1+1..=ix_2].iter()).unwrap();
+            return a+b;
         }
     }
     0
