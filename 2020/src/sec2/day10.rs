@@ -46,7 +46,7 @@ pub fn count_routes(
     }
 }
 
-//#[aoc(day10, part2)]
+#[aoc(day10, part2)]
 pub fn p2(input: &[usize]) -> usize {
     let mut xs: HashSet<usize> = input.iter().copied().collect();
     let target = xs.iter().max().unwrap() + 3_usize;
@@ -54,7 +54,7 @@ pub fn p2(input: &[usize]) -> usize {
     count_routes(&mut HashMap::new(), &xs, 0, target)
 }
 
-//#[aoc(day10, part2, dp)]
+#[aoc(day10, part2, dp)]
 pub fn p2_dp(input: &[usize]) -> usize {
     let mut dp = vec![0; input.len()];
     //the value in dp[ix] is the number of ways to get to input[ix].
@@ -72,7 +72,7 @@ pub fn p2_dp(input: &[usize]) -> usize {
     *dp.last().unwrap()
 }
 
-//#[aoc(day10, part2, dp_by_value)]
+#[aoc(day10, part2, dp_by_value)]
 pub fn p2_dp_by_value(input: &[usize]) -> usize {
     let mut dp = vec![0; input.last().unwrap() + 4];
     //the value in dp[ix] is the number of ways to get to ix.
@@ -98,7 +98,7 @@ pub fn p2_dp_fold(input: &[usize]) -> usize {
         .0
 }
 
-//#[aoc(day10, part2, dp_deque)]
+#[aoc(day10, part2, dp_deque)]
 pub fn p2_dp_deque(input: &[usize]) -> usize {
     let mut dp: VecDeque<usize> = [1, 0, 0, 0].iter().copied().collect();
     //the values in dp are the number of ways to get to the next 3 indexes from here.
