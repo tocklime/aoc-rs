@@ -46,7 +46,7 @@ pub fn count_routes(
     }
 }
 
-#[aoc(day10, part2)]
+//#[aoc(day10, part2)]
 pub fn p2(input: &[usize]) -> usize {
     let mut xs: HashSet<usize> = input.iter().copied().collect();
     let target = xs.iter().max().unwrap() + 3_usize;
@@ -54,7 +54,7 @@ pub fn p2(input: &[usize]) -> usize {
     count_routes(&mut HashMap::new(), &xs, 0, target)
 }
 
-#[aoc(day10, part2, dp)]
+//#[aoc(day10, part2, dp)]
 pub fn p2_dp(input: &[usize]) -> usize {
     let mut dp = vec![0; input.len()];
     //the value in dp[ix] is the number of ways to get to input[ix].
@@ -72,30 +72,33 @@ pub fn p2_dp(input: &[usize]) -> usize {
     *dp.last().unwrap()
 }
 
-#[aoc(day10, part2, dp_by_value)]
+//#[aoc(day10, part2, dp_by_value)]
 pub fn p2_dp_by_value(input: &[usize]) -> usize {
     let mut dp = vec![0; input.last().unwrap() + 4];
     //the value in dp[ix] is the number of ways to get to ix.
     dp[0] = 1;
-    input.iter().for_each(|&val| (1..=3).for_each(|x| dp[val + x] += dp[val]));
+    input
+        .iter()
+        .for_each(|&val| (1..=3).for_each(|x| dp[val + x] += dp[val]));
     //answer is at the end of dp.
     *dp.last().unwrap()
 }
 #[aoc(day10, part2, dp_fold)]
 pub fn p2_dp_fold(input: &[usize]) -> usize {
-    input.iter().skip(1).fold((0,1,0,0,0),|(last, a,b,c,d),&x| {
-        match x - last {
-            3 => (x,d+a,0,0,0),
-            1 => (x,b+a,c+a,d+a,0),
-            _ => {
-                dbg!(last,a,b,c,d,x);
-                panic!("nope");
-            }
-        }
-    }).1
+    //here we fold with a 3-tuple accumulator. They are the number of ways to get to this element, the next element, and the one after.
+    //it is effectively a window onto the dp array in p2_dp, because we are only ever interested in these 3 values during the iteration.
+    input
+        .windows(2)
+        .fold((1, 0, 0), |(a, b, c), v| match v[1] - v[0] {
+            3 => (a, 0, 0),
+            1 => (b + a, c + a, a),
+            2 => (c + a, a, 0), //My input doesn't actually have any 2-gaps..
+            _ => (0, 0, 0), //input is unsolvable - there's a gap bigger than 3, or a duplicate element. We will end up with '0' ways to get to the end.
+        })
+        .0
 }
 
-#[aoc(day10, part2, dp_deque)]
+//#[aoc(day10, part2, dp_deque)]
 pub fn p2_dp_deque(input: &[usize]) -> usize {
     let mut dp: VecDeque<usize> = [1, 0, 0, 0].iter().copied().collect();
     //the values in dp are the number of ways to get to the next 3 indexes from here.
