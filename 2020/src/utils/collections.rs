@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, ops::Add};
 use std::hash::Hash;
 use std::ops::AddAssign;
 
@@ -64,4 +64,13 @@ where
     let mut i = input.into_iter();
     i.next()
         .map(|x| i.fold((x, x), |(min, max), c| (min.min(c), max.max(c))))
+}
+
+pub fn minmaxsum<'a, T, I: IntoIterator<Item = &'a T>>(input: I) -> Option<(&'a T, &'a T,T)>
+where
+    T: Ord + Add<Output = T> + Copy, 
+{
+    let mut i = input.into_iter();
+    i.next()
+        .map(|x| i.fold((x, x, *x), |(min, max, sum), c| (min.min(c), max.max(c), sum + *c)))
 }

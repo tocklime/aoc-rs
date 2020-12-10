@@ -1,10 +1,11 @@
-use crate::utils::collections::{minmax, prefix_sum};
+use crate::utils::collections::{prefix_sum};
+use itertools::Itertools;
 
 #[aoc_generator(day9)]
 pub fn gen(input: &str) -> Vec<usize> {
     input.lines().map(|x| x.parse().unwrap()).collect()
 }
-const WIN_SIZE : usize = 25;
+const WIN_SIZE: usize = 25;
 
 #[aoc(day9, part1)]
 pub fn p1(is: &[usize]) -> Option<usize> {
@@ -31,7 +32,7 @@ pub fn p2(is: &[usize]) -> Option<usize> {
             // ..such that the difference on the prefix sum array ==target (that is, is[ix_1..=ix_2].sum() == target)
             .find_map(|ix_2| {
                 if ps[ix_2] - ps[ix_1] == target {
-                    let (&a, &b) = minmax(&is[ix_1 + 1..=ix_2]).unwrap();
+                    let (&a, &b) = is[ix_1 + 1..=ix_2].iter().minmax().into_option()?;
                     Some(a + b)
                 } else {
                     None
@@ -40,7 +41,7 @@ pub fn p2(is: &[usize]) -> Option<usize> {
     })
 }
 
-#[aoc(day9, part2,other)]
+#[aoc(day9, part2, other)]
 pub fn p2_other(is: &[usize]) -> Option<usize> {
     let target = p1(is)?;
     let ps = prefix_sum(is).collect::<Vec<usize>>();
@@ -50,12 +51,43 @@ pub fn p2_other(is: &[usize]) -> Option<usize> {
         (0..is.len() - win_size)
             // ..such that the difference on the prefix sum array ==target (that is, is[ix_1..=ix_2].sum() == target)
             .find_map(|ix_1| {
-                if ps[ix_1+win_size] - ps[ix_1] == target {
-                    let (&a, &b) = minmax(&is[ix_1 + 1..=ix_1 + win_size])?;
+                if ps[ix_1 + win_size] - ps[ix_1] == target {
+                    let (&a, &b) = (is[ix_1 + 1..=ix_1 + win_size].iter()).minmax().into_option()?;
                     Some(a + b)
                 } else {
                     None
                 }
             })
     })
+}
+
+#[aoc(day9, part2, no_ps)]
+pub fn p2_no_ps(is: &[usize]) -> Option<usize> {
+    let target = p1(is)?;
+    //for each possible window size
+    let window = (2..=is.len()).find_map(|win_size|
+        //find a window such that the sum equals the target.
+        is.windows(win_size).find(|w| w.iter().sum::<usize>() == target))?;
+    let (min, max) = window.iter().minmax().into_option()?;
+    Some(min + max)
+}
+
+#[aoc(day9, part2, just_fast)]
+pub fn p2_just_fast(is: &[usize]) -> Option<usize> {
+    let target = p1(is)?;
+    let mut start = 0;
+    let mut end = 0;
+    let mut sum = 0;
+    while sum != target {
+        while sum < target {
+            sum += is[end];
+            end +=1;
+        }
+        while sum > target {
+            sum -= is[start];
+            start +=1;
+        }
+    }
+    let (min, max) = is[start..end].iter().minmax().into_option()?;
+    Some(min + max)
 }
