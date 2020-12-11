@@ -192,7 +192,7 @@ pub fn point_map_bounding_box<N, T, S>(hm: &HashMap<Point<N>, T, S>) -> Aabb<N>
     where N: Copy + Num + TryInto<usize> + Ord,
           RangeInclusive<N>: Iterator<Item=N>,
           S: BuildHasher {
-    (&mut hm.keys().cloned()).collect()
+    hm.keys().collect()
 }
 
 pub fn render_char_map_w<N, S>(

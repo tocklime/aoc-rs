@@ -103,17 +103,17 @@ where
         Self::t_as_usize(T::one() + self.top_right.y - self.bottom_left.y)
     }
 }
-impl<T> FromIterator<Point<T>> for Aabb<T>
+impl<'a, T> FromIterator<&'a Point<T>> for Aabb<T>
 where
-    T: Num + Copy + TryInto<usize> + Ord,
+    T: 'a + Num + Copy + TryInto<usize> + Ord,
     RangeInclusive<T>: std::iter::Iterator<Item = T>,
 {
     fn from_iter<I>(iter: I) -> Self
     where
-        I: IntoIterator<Item = Point<T>>,
+        I: IntoIterator<Item = &'a Point<T>>,
     {
         let mut i = iter.into_iter();
-        let b = Self::new(i.next().expect("Non empty iterator"));
-        i.fold(b, |b, n| b.extend(n))
+        let b = Self::new(*i.next().expect("Non empty iterator"));
+        i.fold(b, |b, n| b.extend(*n))
     }
 }
