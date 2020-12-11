@@ -50,7 +50,7 @@ where
         ans.top_right.y = ans.top_right.y + n;
         ans
     }
-    pub fn contains(&self, p: Point<T>) -> bool {
+    pub fn contains(&self, p: &Point<T>) -> bool {
         self.bottom_left.x <= p.x
             && self.bottom_left.y <= p.y
             && self.top_right.x >= p.x

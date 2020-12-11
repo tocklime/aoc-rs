@@ -45,15 +45,14 @@ pub fn p1(input: &M) -> Option<usize> {
 
 pub fn visible_neighbours(input: &M, p: Point<isize>, bounds: &Aabb<isize>) -> usize {
     //find first visible seat in each direction.
-    //for each direction, find a step count which has a chair. Stop when you leave bounds.
+    //for each direction, keep going in a direction until you get a chair. Stop when you leave bounds.
     //count the occupied chairs found.
     Point::new(0, 0)
         .neighbours_with_diagonals()
         .iter()
         .filter(|&&d| {
-            (1..)
-                .map(|dist| p + d * dist)
-                .take_while(|&p| bounds.contains(p))
+            iterate(p+d,|&p|p+d)
+                .take_while(|p| bounds.contains(p))
                 .find_map(|p| input.get(&p))
                 .copied()
                 .unwrap_or(false)
