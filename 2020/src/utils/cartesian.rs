@@ -1,5 +1,5 @@
 use num::{Num, abs, Signed, Unsigned};
-use std::convert::{TryInto, TryFrom, Into};
+use std::convert::{TryInto, TryFrom};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::{Hash, BuildHasher};
@@ -57,11 +57,11 @@ impl Dir {
             Self::Right => Self::Left,
         }
     }
-    pub fn as_point_step<T: From<i8> + Num>(self) -> Point<T> {
+    pub fn as_point_step<T: Signed + Num>(self) -> Point<T> {
         match self {
             Self::Up => Point::new(T::zero(), T::one()),
-            Self::Down => Point::new(T::zero(), (-1).into()),
-            Self::Left => Point::new((-1).into(), T::zero()),
+            Self::Down => Point::new(T::zero(), T::neg(T::one())),
+            Self::Left => Point::new(T::neg(T::one()), T::zero()),
             Self::Right => Point::new(T::one(), T::zero()),
         }
     }
@@ -194,6 +194,12 @@ impl<T: Mul + Copy + Num> Mul<T> for Point<T> {
     type Output = Self;
     fn mul(self, rhs: T) -> Self {
         Self::new(self.x * rhs, self.y * rhs)
+    }
+}
+impl<T: Mul + Copy + Num + Signed> Mul<T> for Dir {
+    type Output = Point<T>;
+    fn mul(self, rhs: T) -> Point<T> {
+        self.as_point_step() * rhs
     }
 }
 

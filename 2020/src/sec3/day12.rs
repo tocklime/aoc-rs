@@ -1,37 +1,25 @@
 use crate::utils::cartesian::{Dir, Point};
 
-#[aoc_generator(day12)]
-pub fn gen(input: &str) -> Vec<(char, isize)> {
+pub fn solve<F>(input: &str,waypoint : Point<isize>, move_fn : F) -> isize 
+    where F : Fn(Point<isize>,Point<isize>,Point<isize>) -> (Point<isize>,Point<isize>)
+{
     input
         .lines()
         .map(|l| (l.chars().next().unwrap(), l[1..].parse().unwrap()))
-        .collect()
+        .fold((Point::new(0, 0), waypoint), |(ship, way), (c, d)| match c {
+            'F' => (ship + way * d, way),
+            'L' => (ship, (0..d / 90).fold(way, |d, _| d.rotate_left_about_origin())),
+            'R' => (ship, (0..d / 90).fold(way, |d, _| d.rotate_right_about_origin())),
+            c => move_fn(ship,way,Dir::from_x("NSWE", c) * d)
+        })
+        .0
+        .manhattan()
 }
 #[aoc(day12, part1)]
-pub fn p1(input: &[(char, isize)]) -> isize {
-    input
-        .iter()
-        .fold((Point::new(0, 0), Dir::Right), |(ship, dir), &l| match l {
-            (c, d) if "NSWE".contains(c) => (ship + Dir::from_x("NSWE", c).as_point_step() * d, dir),
-            ('F', d) => (ship + dir.as_point_step() * d, dir),
-            ('L', d) => (ship, (0..d/90).fold(dir,|d,_|d.turn_left())),
-            ('R', d) => (ship, (0..d/90).fold(dir,|d,_|d.turn_right())),
-            _ => panic!("Unknown instruction {:?}", l),
-        })
-        .0
-        .manhattan()
+pub fn p1(input: &str) -> isize {
+    solve(input,Point::new(1,0), |ship,way,step| (ship+step,way))
 }
 #[aoc(day12, part2)]
-pub fn p2(input: &[(char, isize)]) -> isize {
-    input
-        .iter()
-        .fold((Point::new(0, 0), Point::new(10, 1)), |(ship, way), &l| match l {
-            (c, d) if "NSWE".contains(c) => (ship, way + Dir::from_x("NSWE", c).as_point_step() * d),
-            ('F', d) => (ship + way * d, way),
-            ('L', d) => (ship, (0..d / 90).fold(way, |w, _| w.rotate_left_about_origin())),
-            ('R', d) => (ship, (0..d / 90).fold(way, |w, _| w.rotate_right_about_origin())),
-            _ => panic!("Unknown instruction {:?}", l),
-        })
-        .0
-        .manhattan()
+pub fn p2(input: &str) -> isize {
+    solve(input,Point::new(10,1), |ship,way,step| (ship,way+step))
 }
