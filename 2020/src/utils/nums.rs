@@ -1,4 +1,4 @@
-use num::Num;
+use num::{Num, Signed};
 use std::{convert::TryInto, ops::Shr};
 
 pub fn mod_pow<T>(mut base: T, mut exp: T, modulus: T) -> T
@@ -18,17 +18,17 @@ pub fn mod_pow<T>(mut base: T, mut exp: T, modulus: T) -> T
     }
     result
 }
-pub fn add_isize(u : usize, i: isize) -> usize {
-    let i_as_u : usize = i.abs().try_into().unwrap();
-    if i < 0 {
+pub fn add_i<T : Num + Signed + TryInto<usize>>(u : usize, i: &T) -> usize {
+    let i_as_u : usize = i.abs().try_into().ok().unwrap();
+    if i.is_negative() {
         u - i_as_u
     } else {
         u + i_as_u
     }
 }
-pub fn add_assign_isize(u : &mut usize, i: isize) {
-    let i_as_u : usize = i.abs().try_into().unwrap();
-    if i < 0 {
+pub fn add_assign_i<T : Num + Signed + TryInto<usize>>(u : &mut usize, i: &T) {
+    let i_as_u : usize = i.abs().try_into().ok().unwrap();
+    if i.is_negative() {
         *u -= i_as_u;
     } else {
         *u += i_as_u;

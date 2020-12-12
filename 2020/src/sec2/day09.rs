@@ -11,7 +11,7 @@ const WIN_SIZE: usize = 25;
 pub fn p1(is: &[usize]) -> Option<usize> {
     is.windows(WIN_SIZE).enumerate().find_map(|(ix, w)| {
         let target = is[WIN_SIZE + ix];
-        if w.iter().all(|x| !w.contains(&(target - x))) {
+        if w.iter().all(|&x| !w.contains(&target.wrapping_sub(x))) {
             Some(target)
         } else {
             None

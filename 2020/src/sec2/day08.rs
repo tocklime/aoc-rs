@@ -1,7 +1,8 @@
-use crate::utils::nums::add_isize;
 use parse_display::{Display, FromStr};
 use pathfinding::prelude::bfs;
 use std::collections::HashSet;
+
+use crate::utils::nums::add_i;
 
 #[derive(Display, FromStr, PartialEq, Debug, Clone, Copy)]
 #[display(style = "lowercase")]
@@ -24,13 +25,13 @@ impl Op {
 #[display("{op} {n}")]
 pub struct Inst {
     op: Op,
-    n: isize,
+    n: i64,
 }
 
 #[derive(Debug, Clone, Copy, Eq)]
 pub struct State {
     pc: usize,
-    acc: isize,
+    acc: i64,
 }
 
 impl std::hash::Hash for State {
@@ -53,12 +54,12 @@ impl State {
             Op::Jmp => pc_delta = inst.n,
             Op::Nop => {}
         }
-        new.pc = add_isize(self.pc, pc_delta);
+        new.pc = add_i(self.pc, &pc_delta);
         new
     }
 }
 
-pub fn go(prog: &[Inst], change: Option<usize>) -> (isize, bool) {
+pub fn go(prog: &[Inst], change: Option<usize>) -> (i64, bool) {
     let mut visited = HashSet::new();
     let mut state = State { pc: 0, acc: 0 };
     while state.pc < prog.len() && !visited.contains(&state.pc) {
@@ -77,12 +78,12 @@ pub fn gen(input: &str) -> Vec<Inst> {
     input.trim().lines().map(|x| x.parse().unwrap()).collect()
 }
 #[aoc(day8, part1)]
-pub fn p1(input: &[Inst]) -> isize {
+pub fn p1(input: &[Inst]) -> i64 {
     go(input, None).0
 }
 
 #[aoc(day8, part2)]
-pub fn p2(input: &[Inst]) -> Option<isize> {
+pub fn p2(input: &[Inst]) -> Option<i64> {
     (0..input.len()).find_map(|i| {
         if input[i].op == Op::Acc {
             None
@@ -98,7 +99,7 @@ pub fn p2(input: &[Inst]) -> Option<isize> {
 }
 
 #[aoc(day8, part2, bfs)]
-pub fn p2d(input: &[Inst]) -> Option<isize> {
+pub fn p2d(input: &[Inst]) -> Option<i64> {
     let start = (false, State { pc: 0, acc: 0 });
     let d = bfs(
         &start,
@@ -121,7 +122,7 @@ pub fn p2d(input: &[Inst]) -> Option<isize> {
     d.and_then(|x| x.last().copied()).map(|x| x.1.acc)
 }
 
-pub fn explore(input: &[Inst], mut state: State, visited: &mut HashSet<(bool,usize)>, allow_flip: bool) -> Option<isize>{
+pub fn explore(input: &[Inst], mut state: State, visited: &mut HashSet<(bool,usize)>, allow_flip: bool) -> Option<i64>{
     //in visited, we store the state and whether there had been a flip or not. We may get to the same state via
     //different means, and this nicely prunes those after the first exploration.
     while !visited.contains(&(allow_flip,state.pc)) {
@@ -144,7 +145,7 @@ pub fn explore(input: &[Inst], mut state: State, visited: &mut HashSet<(bool,usi
 }
 
 #[aoc(day8, part2, optimal)]
-pub fn p2_optimal(input: &[Inst]) -> Option<isize> {
+pub fn p2_optimal(input: &[Inst]) -> Option<i64> {
     let state = State { pc: 0, acc: 0 };
     let mut visited = HashSet::new();
     explore(input,state,&mut visited,true)

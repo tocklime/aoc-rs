@@ -1,7 +1,7 @@
 use crate::utils::cartesian::{Dir, Point};
 
-pub fn solve<F>(input: &str,waypoint : Point<isize>, move_fn : F) -> isize 
-    where F : Fn(Point<isize>,Point<isize>,Point<isize>) -> (Point<isize>,Point<isize>)
+pub fn solve<F>(input: &str,waypoint : Point<i64>, move_fn : F) -> i64 
+    where F : Fn(Point<i64>,Point<i64>,Point<i64>) -> (Point<i64>,Point<i64>)
 {
     input
         .lines()
@@ -16,10 +16,10 @@ pub fn solve<F>(input: &str,waypoint : Point<isize>, move_fn : F) -> isize
         .manhattan()
 }
 #[aoc(day12, part1)]
-pub fn p1(input: &str) -> isize {
+pub fn p1(input: &str) -> i64 {
     solve(input,Point::new(1,0), |ship,way,step| (ship+step,way))
 }
 #[aoc(day12, part2)]
-pub fn p2(input: &str) -> isize {
+pub fn p2(input: &str) -> i64 {
     solve(input,Point::new(10,1), |ship,way,step| (ship,way+step))
 }

@@ -6,11 +6,11 @@ use crate::utils::{
     cartesian::{as_point_map, Point},
 };
 
-type M = HashMap<Point<isize>, bool>;
+type M = HashMap<Point<i64>, bool>;
 
 #[aoc_generator(day11)]
 pub fn gen(input: &str) -> M {
-    as_point_map::<isize>(input, false)
+    as_point_map::<i64>(input, false)
         .iter()
         .filter_map(|(&k, v)| match v {
             'L' => Some((k, false)),
@@ -43,7 +43,7 @@ pub fn p1(input: &M) -> Option<usize> {
     Some(first_duplicate.values().filter(|&&x| x).count())
 }
 
-pub fn visible_neighbours(input: &M, p: Point<isize>, bounds: &Aabb<isize>) -> usize {
+pub fn visible_neighbours(input: &M, p: Point<i64>, bounds: &Aabb<i64>) -> usize {
     //find first visible seat in each direction.
     //for each direction, keep going in a direction until you get a chair. Stop when you leave bounds.
     //count the occupied chairs found.
@@ -60,7 +60,7 @@ pub fn visible_neighbours(input: &M, p: Point<isize>, bounds: &Aabb<isize>) -> u
         .count()
 }
 
-pub fn step2(input: &M, bounds: &Aabb<isize>) -> M {
+pub fn step2(input: &M, bounds: &Aabb<i64>) -> M {
     let mut ans: M = HashMap::new();
     for (&p, &c) in input {
         let count = visible_neighbours(input, p, bounds);
