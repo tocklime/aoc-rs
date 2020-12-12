@@ -131,9 +131,18 @@ impl<T: Num> Point<T> {
     }
 }
 
-impl<T: Num + Signed> Point<T> {
+impl<T: Num + Signed + Copy> Point<T> {
     pub fn manhattan(self) -> T {
         abs(self.x) + abs(self.y)
+    }
+    pub fn rotate_left_about_origin(&self) -> Self {
+        Self::new(-self.y,self.x)
+    }
+    pub fn rotate_right_about_origin(&self) -> Self {
+        Self::new(self.y,-self.x)
+    }
+    pub fn rotate_180_about_origin(&self) -> Self {
+        Self::new(-self.x,-self.y)
     }
 }
 
