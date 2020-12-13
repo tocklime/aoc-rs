@@ -1,81 +1,215 @@
 use itertools::{iterate, Itertools};
-use std::collections::HashMap;
+use ndarray::Array2;
 
 use crate::utils::{
-    aabb::Aabb,
-    cartesian::{as_point_map, Point},
+    cartesian::Point,
+    cellular_automata::{mut_grid, step_grid, step_grid_into},
 };
 
-type M = HashMap<Point<i64>, bool>;
-
 #[aoc_generator(day11)]
-pub fn gen(input: &str) -> M {
-    as_point_map::<i64>(input, false)
-        .iter()
-        .filter_map(|(&k, v)| match v {
-            'L' => Some((k, false)),
-            '#' => Some((k, true)),
+pub fn gen_grid(input: &str) -> Array2<Option<bool>> {
+    let cols = input.lines().next().unwrap().len();
+    let v = input
+        .lines()
+        .flat_map(str::chars)
+        .map(|c| match c {
+            'L' => Some(false),
+            '#' => Some(true),
             _ => None,
         })
-        .collect()
+        .collect_vec();
+    Array2::from_shape_vec((v.len() / cols, cols), v).unwrap()
 }
 
-pub fn step(input: &M) -> M {
-    let mut ans: M = HashMap::new();
-    for (&p, &c) in input {
-        let count = p
+#[aoc(day11, part1, ndarray_mut)]
+pub fn p1_ndarray_mut(input: &Array2<Option<bool>>) -> usize {
+    let mut g = input.clone();
+    while mut_grid(&mut g, |g, old, (r, c)| {
+        match old {
+            None => None,
+            Some(occ) => {
+                let count = Point::new(c, r)
+                    .neighbours_with_diagonals()
+                    .iter()
+                    .filter(|p| g.get((p.y, p.x)) == Some(&Some(true)))
+                    .count();
+                //is occupied if no visible occupied, or is already and not too many visible occupied.
+                Some(count == 0 || *occ && count < 4)
+            }
+        }
+    }) > 0
+    {}
+    g.iter().filter(|&&x| x == Some(true)).count()
+}
+
+#[aoc(day11, part2, ndarray_mut)]
+pub fn p2_ndarray_mut(input: &Array2<Option<bool>>) -> usize {
+    let mut g = input.clone();
+    let lookups: Array2<Vec<Point<usize>>> = Array2::from_shape_fn(g.raw_dim(), |(r, c)| -> Vec<Point<usize>> {
+        let p = Point::new(c, r);
+        Point::new(0, 0)
             .neighbours_with_diagonals()
             .iter()
-            .filter(|&x| input.get(x) == Some(&true))
-            .count();
-        //is occupied if no visible occupied, or is already and not too many visible occupied.
-        ans.insert(p, count == 0 || c && (1..4).contains(&count));
+            .filter_map(|&d| {
+                iterate(p + d, |&p| p + d)
+                    .map(|p| (p, g.get((p.y, p.x))))
+                    .take_while(|x| x.1.is_some())
+                    .find_map(|x| if x.1.unwrap().is_some() { Some(x.0) } else { None })
+            })
+            .collect()
+    });
+
+    while mut_grid(&mut g, |g, old, pos| {
+        match old {
+            None => None,
+            Some(occ) => {
+                let ps = &lookups[pos];
+                let count = ps.iter().filter(|p| g[(p.y, p.x)] == Some(true)).count();
+                //is occupied if no visible occupied, or is already and not too many visible occupied.
+                Some(count == 0 || *occ && count < 5)
+            }
+        }
+    }) > 0
+    {}
+    g.iter().filter(|&&x| x == Some(true)).count()
+}
+
+#[aoc(day11, part1, ndarray_clone)]
+pub fn p1_ndarray_clone(input: &Array2<Option<bool>>) -> usize {
+    let mut g = input.clone();
+    loop {
+        let (new_g, x) = step_grid(&g, |g, old, (r, c)| {
+            match old {
+                None => None,
+                &Some(occ) => {
+                    //is occupied if no visible occupied, or is already and not too many visible occupied.
+                    //that is, if occupied, then less than 4 adjacent are occupied
+                    //if not occupied, then only if no visible become occupied.
+                    Some(
+                        Point::new(c, r)
+                            .neighbours_with_diagonals()
+                            .iter()
+                            .filter(|p| g.get((p.y, p.x)) == Some(&Some(true)))
+                            .nth(if occ { 3 } else { 0 })
+                            .is_none(),
+                    )
+                }
+            }
+        });
+        if x == 0 {
+            break;
+        }
+        g = new_g;
     }
-    ans
+    g.iter().filter(|&&x| x == Some(true)).count()
 }
 
-#[aoc(day11, part1)]
-pub fn p1(input: &M) -> Option<usize> {
-    let first_duplicate = iterate(input.clone(), step)
-        .tuple_windows()
-        .find(|(a, b)| a == b)?
-        .0;
-    Some(first_duplicate.values().filter(|&&x| x).count())
-}
+#[aoc(day11, part2, ndarray_clone)]
+pub fn p2_ndarray_clone(input: &Array2<Option<bool>>) -> usize {
+    let mut g = input.clone();
+    let lookups: Array2<Vec<Point<usize>>> = Array2::from_shape_fn(g.raw_dim(), |(r, c)| -> Vec<Point<usize>> {
+        let p = Point::new(c, r);
+        Point::new(0, 0)
+            .neighbours_with_diagonals()
+            .iter()
+            .filter_map(|&d| {
+                iterate(p + d, |&p| p + d)
+                    .map(|p| (p, g.get((p.y, p.x))))
+                    .take_while(|x| x.1.is_some())
+                    .find_map(|x| match x {
+                        (p, Some(Some(_))) => Some(p),
+                        _ => None,
+                    })
+            })
+            .collect()
+    });
 
-pub fn visible_neighbours(input: &M, p: Point<i64>, bounds: &Aabb<i64>) -> usize {
-    //find first visible seat in each direction.
-    //for each direction, keep going in a direction until you get a chair. Stop when you leave bounds.
-    //count the occupied chairs found.
-    Point::new(0, 0)
-        .neighbours_with_diagonals()
-        .iter()
-        .filter(|&&d| {
-            iterate(p+d,|&p|p+d)
-                .take_while(|p| bounds.contains(p))
-                .find_map(|p| input.get(&p))
-                .copied()
-                .unwrap_or(false)
-        })
-        .count()
-}
-
-pub fn step2(input: &M, bounds: &Aabb<i64>) -> M {
-    let mut ans: M = HashMap::new();
-    for (&p, &c) in input {
-        let count = visible_neighbours(input, p, bounds);
-        //is occupied if no visible neighbours, or currently occupied and not too many neighbours.
-        ans.insert(p, count == 0 || c && (1..5).contains(&count));
+    loop {
+        let (new_g, changes) = step_grid(&g, |g, old, pos| {
+            match old {
+                None => None,
+                &Some(occ) => {
+                    let mut it = lookups[pos].iter().filter(|p| g[(p.y, p.x)] == Some(true));
+                    //is occupied if no visible occupied, or is already and not too many visible occupied.
+                    //that is, if occupied, is nth(4) none?. If not occupied, then is nth(0) none
+                    Some(it.nth(if occ { 4 } else { 0 }).is_none())
+                }
+            }
+        });
+        if changes == 0 {
+            break;
+        }
+        g = new_g;
     }
-    ans
+    g.iter().filter(|&&x| x == Some(true)).count()
 }
 
-#[aoc(day11, part2)]
-pub fn p2(input: &M) -> Option<usize> {
-    let bounds = input.keys().collect();
-    let first_duplicate = iterate(input.clone(), |x| step2(x, &bounds))
-        .tuple_windows()
-        .find(|(a, b)| a == b)?
-        .0;
-    Some(first_duplicate.values().filter(|&&x| x).count())
+#[aoc(day11, part1, ndarray_two)]
+pub fn p1_ndarray_two(input: &Array2<Option<bool>>) -> usize {
+    let mut g1 = input.clone();
+    let mut g2 = input.clone();
+    let g1_ref = &mut g1;
+    let g2_ref = &mut g2;
+    while step_grid_into(g1_ref, g2_ref, |g, old, (r, c)| {
+        match old {
+            None => None,
+            &Some(occ) => {
+                //is occupied if no visible occupied, or is already and not too many visible occupied.
+                //that is, if occupied, then less than 4 adjacent are occupied
+                //if not occupied, then only if no visible become occupied.
+                Some(
+                    Point::new(c, r)
+                        .neighbours_with_diagonals()
+                        .iter()
+                        .filter(|p| g.get((p.y, p.x)) == Some(&Some(true)))
+                        .nth(if occ { 3 } else { 0 })
+                        .is_none(),
+                )
+            }
+        }
+    }) > 0
+    {
+        std::mem::swap(g1_ref, g2_ref);
+    }
+    g1.iter().filter(|&&x| x == Some(true)).count()
+}
+
+#[aoc(day11, part2, ndarray_two)]
+pub fn p2_ndarray_two(input: &Array2<Option<bool>>) -> usize {
+    let mut g1 = input.clone();
+    let mut g2 = input.clone();
+    let g1_ref = &mut g1;
+    let g2_ref = &mut g2;
+    let lookups: Array2<Vec<Point<usize>>> = Array2::from_shape_fn(g1_ref.raw_dim(), |(r, c)| -> Vec<Point<usize>> {
+        let p = Point::new(c, r);
+        Point::new(0, 0)
+            .neighbours_with_diagonals()
+            .iter()
+            .filter_map(|&d| {
+                iterate(p + d, |&p| p + d)
+                    .map(|p| (p, g1_ref.get((p.y, p.x))))
+                    .take_while(|x| x.1.is_some())
+                    .find_map(|x| match x {
+                        (p, Some(Some(_))) => Some(p),
+                        _ => None,
+                    })
+            })
+            .collect()
+    });
+
+    while step_grid_into(g1_ref, g2_ref, |g, old, pos| {
+        match old {
+            None => None,
+            &Some(occ) => {
+                let mut it = lookups[pos].iter().filter(|p| g[(p.y, p.x)] == Some(true));
+                //is occupied if no visible occupied, or is already and not too many visible occupied.
+                //that is, if occupied, is nth(4) none?. If not occupied, then is nth(0) none
+                Some(it.nth(if occ { 4 } else { 0 }).is_none())
+            }
+        }
+    }) > 0
+    {
+        std::mem::swap(g1_ref, g2_ref);
+    }
+    g1.iter().filter(|&&x| x == Some(true)).count()
 }
