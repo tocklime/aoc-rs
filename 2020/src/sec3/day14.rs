@@ -62,20 +62,6 @@ pub fn p1(input: &[Line]) -> u64 {
     })
 }
 
-fn get_mem_vals(mask: &Mask, value: u64) -> Vec<u64> {
-    let mask_bits = mask.xs.view_bits::<Lsb0>();
-    let val_mask = mask.lo | value;
-    mask_bits.iter().enumerate().fold(vec![0], |acc, (ix, &mask_bit)| {
-        if mask_bit {
-            (0..=1)
-                .flat_map(|new_bit| acc.iter().map(move |x| (new_bit << ix) | x))
-                .collect()
-        } else {
-            acc.iter().map(|x| ((1 << ix) & val_mask) | x).collect()
-        }
-    })
-}
-
 #[aoc(day14, part2)]
 pub fn p2(input: &[Line]) -> u64 {
     run(input, |mem,mask,target,value| {
