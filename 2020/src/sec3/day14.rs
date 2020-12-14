@@ -1,16 +1,35 @@
-use bitvec::{order::Lsb0, view::BitView};
-use std::collections::HashMap;
-use EitherOrBoth::{Both, Left, Right};
+use bitvec::{order::Lsb0, prelude::{BitField, BitVec}, view::BitView};
+use std::{collections::HashMap, num::ParseIntError, str::FromStr};
 
-use itertools::{EitherOrBoth, Itertools};
-use parse_display::{Display, FromStr};
-
-#[derive(FromStr, Display, Debug)]
+pub struct Mask {
+    lo : u64,
+    mask: u64
+}
+impl Mask {
+    #[allow(clippy::missing_const_for_fn)]
+    pub fn mask_size(&self) -> u64 {
+        u64::pow(2, self.mask.count_ones())
+    }
+}
 pub enum Line {
-    #[display(r"mask = {0}")]
-    SetMask(String),
-    #[display(r"mem[{0}] = {1}")]
-    SetMem(usize, usize),
+    SetMask(Mask),
+    SetMem(u64, u64),
+}
+impl FromStr for Line {
+    type Err = ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Some(m) = s.strip_prefix("mask = ") {
+            let lo =  m.chars().rev().map(|x| x == '1').collect::<BitVec>().load(); //0,X=> 0, 1=>1
+            let mask = m.chars().rev().map(|x| x == 'X').collect::<BitVec>().load(); //0,1=>0,X=> 1
+            Ok(Self::SetMask(Mask{lo,mask}))
+        }else {
+            let sp :Vec<&str> = s.split(|c| "[] =".contains(c)).collect();
+            let addr = sp[1].parse()?;
+            let val = sp[5].parse()?;
+            Ok(Self::SetMem(addr,val))
+        }
+    }
 }
 
 #[aoc_generator(day14)]
@@ -19,59 +38,49 @@ pub fn gen(input: &str) -> Vec<Line> {
 }
 
 #[aoc(day14, part1)]
-pub fn p1(input: &[Line]) -> usize {
-    let mut mem: HashMap<usize, usize> = HashMap::new();
-    let mut mask: Vec<char> = Vec::new();
+pub fn p1(input: &[Line]) -> u64 {
+    let mut mem: HashMap<u64, u64> = HashMap::new();
+    let mut mask  = None;
     for l in input {
         match l {
             Line::SetMask(m) => {
-                mask = m.chars().rev().collect();
+                mask = Some(m);
             }
             &Line::SetMem(target, value) => {
-                let masked_val: usize = value
-                    .view_bits::<Lsb0>()
-                    .iter()
-                    .zip_longest(&mask)
-                    .enumerate()
-                    .fold(0, |acc, (ix, e)| {
-                        let bit = match e {
-                            Both(&x, 'X') | Left(&x) => x,
-                            Both(_, c) | Right(c) => *c == '1',
-                        };
-                        acc | (if bit { 1 } else { 0 } << ix)
-                    });
-                mem.insert(target, masked_val);
+                let v = (value & mask.unwrap().mask) | mask.unwrap().lo;
+                mem.insert(target, v);
             }
         }
     }
     mem.values().sum()
 }
 
-fn get_mem_vals(mask: &[char], value: usize) -> Vec<usize> {
-    mask.iter().enumerate().fold(vec![0], |opts, (ix, c)| {
-        let value_bit = value & (1 << ix);
-        match *c {
-            '0' => opts.iter().map(|x| (value_bit) | x).collect(),
-            '1' => opts.iter().map(|x| (1 << ix) | x).collect(),
-            'X' => (0..=1)
-                .flat_map(|new_bit| opts.iter().map(move |x| (new_bit << ix) | x))
-                .collect(),
-            _ => unreachable!(),
+fn get_mem_vals(mask: &Mask, value: u64) -> Vec<u64> {
+    mask.mask.view_bits::<Lsb0>().iter()
+    .zip(mask.lo.view_bits::<Lsb0>())
+    .zip(value.view_bits::<Lsb0>())
+    .enumerate()
+    .fold(vec![0], |acc,(ix,((mask_x,mask_01),value_bit))|{
+        if *mask_x {
+            (0..=1).flat_map(|new_bit| acc.iter().map(move |x| (new_bit << ix) | x)).collect()
+        } else {
+            let v = *mask_01 || *value_bit;
+            acc.iter().map(|x| ((v as u64) << ix) | x).collect()
         }
     })
 }
 
 #[aoc(day14, part2)]
-pub fn p2(input: &[Line]) -> usize {
-    let mut mem: HashMap<usize, usize> = HashMap::new();
-    let mut mask: Vec<char> = Vec::new();
+pub fn p2(input: &[Line]) -> u64 {
+    let mut mem: HashMap<u64, u64> = HashMap::new();
+    let mut mask = None;
     for l in input {
         match l {
             Line::SetMask(m) => {
-                mask = m.chars().rev().collect();
+                mask = Some(m);
             }
             &Line::SetMem(target, value) => {
-                let ts = get_mem_vals(&mask, target);
+                let ts = get_mem_vals(mask.unwrap(), target);
                 for t in ts {
                     mem.insert(t, value);
                 }
@@ -79,21 +88,4 @@ pub fn p2(input: &[Line]) -> usize {
         }
     }
     mem.values().sum()
-}
-
-//850308481936 too low
-//1359192470831 too low
-//3564822193820 is right.
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    #[test]
-    pub fn expanding() {
-        assert_eq!(vec![0, 1], get_mem_vals(&['X'], 0));
-        assert_eq!(vec![1], get_mem_vals(&['0'], 1));
-        assert_eq!(vec![1], get_mem_vals(&['1'], 0));
-        assert_eq!(vec![58, 59], get_mem_vals(&['X', '1', '0', '0', '1', '0'], 42));
-        assert_eq!(vec![26, 27, 58, 59], get_mem_vals(&['X', '1', '0', '0', '1', 'X'], 42));
-    }
 }
