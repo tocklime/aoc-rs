@@ -3,3 +3,4 @@ pub mod aabb;
 pub mod collections;
 pub mod nums;
 pub mod cellular_automata;
+pub mod inputs;
