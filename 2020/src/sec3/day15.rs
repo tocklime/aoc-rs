@@ -1,26 +1,21 @@
 use crate::utils::inputs::parse_input_from_str_sep_by;
+use std::convert::TryInto;
 
-pub fn solve(input: &str, turns: usize) -> usize {
-    let input = parse_input_from_str_sep_by::<usize>(input, ",");
-    //memory is number to turn of last speaking
-    let mut memory = vec![None; turns];
-    for (y, t) in input[0..input.len() - 1].iter().copied().zip(1..) {
-        memory[y] = Some(t);
-    }
-    let last_spoke = *input.last().unwrap();
-    (input.len()..turns).fold(last_spoke, |last_spoke, t| {
-        let speak = memory.get(last_spoke).copied().flatten().map_or(0, |x| t - x);
-        memory[last_spoke] = Some(t);
-        speak
+type T = u32;
+pub fn solve(input: &str, turns: T) -> T {
+    let input = parse_input_from_str_sep_by::<T>(input, ",");
+    //memory is number to turn of last speaking. Initialise it with input.
+    let mut memory = vec![0 as T; turns as usize];
+    (0..input.len()-1).for_each(|ix| { memory[input[ix] as usize] = (1+ix).try_into().unwrap();});
+    (input.len().try_into().unwrap()..turns).fold(input[input.len() - 1], |last_spoke, t| {
+        //get when last_spoke was spoken before that, and insert last_spoke=t into memory.
+        let x = std::mem::replace(&mut memory[last_spoke as usize], t);
+        if x == 0 { 0 } else { t - x }
     })
 }
 
 #[aoc(day15, part1)]
-pub fn p1(input: &str) -> usize {
-    solve(input, 2020)
-}
+pub fn p1(input: &str) -> T { solve(input, 2020) }
 
 #[aoc(day15, part2)]
-pub fn p2(input: &str) -> usize {
-    solve(input, 30_000_000)
-}
+pub fn p2(input: &str) -> T { solve(input, 30_000_000) }
