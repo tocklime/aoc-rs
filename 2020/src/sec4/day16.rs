@@ -5,12 +5,11 @@ use std::{num::ParseIntError, str::FromStr};
 #[derive(Debug)]
 pub struct Restriction {
     name: String,
-    ranges: Vec<(u32,u32)>,
+    ranges: Vec<(u32, u32)>,
 }
 impl Restriction {
     pub fn in_range(&self, n: u32) -> bool {
-        (self.ranges[0].0 >= n && n <= self.ranges[0].1) ||
-        (self.ranges[1].0 >= n && n <= self.ranges[1].1)
+        (self.ranges[0].0 <= n && n <= self.ranges[0].1) || (self.ranges[1].0 <= n && n <= self.ranges[1].1)
     }
 }
 
@@ -23,7 +22,7 @@ impl FromStr for Restriction {
         let mut ranges = Vec::new();
         for r in x[1].split(" or ") {
             let rs = r.split('-').map(|n| n.trim().parse()).collect::<Result<Vec<u32>, _>>()?;
-            ranges.push((rs[0],rs[1]));
+            ranges.push((rs[0], rs[1]));
         }
         Ok(Self { name, ranges })
     }
@@ -39,16 +38,14 @@ impl FromStr for Prob {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let secs = s.split("\n\n").collect_vec();
-        let restrictions = try_parse_many(secs[0], "\n")?;
-        let my_ticket = try_parse_many(secs[1].lines().nth(1).unwrap(), ",")?;
         let nearby_tickets = secs[2]
             .lines()
             .skip(1)
             .map(|l| try_parse_many(l, ","))
             .collect::<Result<Vec<Vec<u32>>, _>>()?;
         Ok(Self {
-            restrictions,
-            my_ticket,
+            restrictions: try_parse_many(secs[0], "\n")?,
+            my_ticket: try_parse_many(secs[1].lines().nth(1).unwrap(), ",")?,
             nearby_tickets,
         })
     }
