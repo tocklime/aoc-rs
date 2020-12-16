@@ -5,11 +5,12 @@ use std::{num::ParseIntError, str::FromStr};
 #[derive(Debug)]
 pub struct Restriction {
     name: String,
-    ranges: Vec<(u32, u32)>,
+    ranges: Vec<(u32,u32)>,
 }
 impl Restriction {
     pub fn in_range(&self, n: u32) -> bool {
-        self.ranges.iter().any(|&(l, h)| (l..=h).contains(&n))
+        (self.ranges[0].0 >= n && n <= self.ranges[0].1) ||
+        (self.ranges[1].0 >= n && n <= self.ranges[1].1)
     }
 }
 
@@ -22,7 +23,7 @@ impl FromStr for Restriction {
         let mut ranges = Vec::new();
         for r in x[1].split(" or ") {
             let rs = r.split('-').map(|n| n.trim().parse()).collect::<Result<Vec<u32>, _>>()?;
-            ranges.push((rs[0], rs[1]));
+            ranges.push((rs[0],rs[1]));
         }
         Ok(Self { name, ranges })
     }
