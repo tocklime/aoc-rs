@@ -1,12 +1,7 @@
-use std::{
-    collections::{HashMap, HashSet},
-    num::ParseIntError,
-    str::FromStr,
-};
-
-use itertools::Itertools;
-
 use crate::utils::inputs::try_parse_many;
+use itertools::Itertools;
+use nom::FindSubstring;
+use std::{num::ParseIntError, str::FromStr};
 
 #[derive(Debug)]
 pub struct Restriction {
@@ -23,7 +18,7 @@ impl FromStr for Restriction {
     type Err = ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let x = s.trim().split(':').collect_vec();
+        let x = s.split(':').collect_vec();
         let name = x[0].into();
         let mut ranges = Vec::new();
         for r in x[1].split(" or ") {
@@ -60,7 +55,7 @@ impl FromStr for Prob {
 }
 #[aoc_generator(day16)]
 pub fn gen(input: &str) -> Prob {
-    input.trim().parse().expect("Bad input")
+    input.replace("\r", "").trim().parse().expect("Bad input")
 }
 #[aoc(day16, part1)]
 pub fn p1(input: &Prob) -> u32 {
@@ -71,6 +66,9 @@ pub fn p1(input: &Prob) -> u32 {
         .filter(|&&v| input.restrictions.iter().all(|r| !r.in_range(v)))
         .sum()
 }
+pub fn get_set_bit(n: u32) -> Option<u32> {
+    (0..=32).find(|x| n & (1 << x) != 0)
+}
 #[aoc(day16, part2)]
 pub fn p2(input: &Prob) -> u64 {
     let valid_nearbys = input
@@ -79,44 +77,41 @@ pub fn p2(input: &Prob) -> u64 {
         .filter(|t| t.iter().all(|&v| input.restrictions.iter().any(|r| r.in_range(v))))
         .collect_vec();
     let field_count = input.restrictions.len();
-    let mut possible: HashMap<String, HashSet<usize>> = input
+    assert!(field_count <= 32);
+    //theres <32 fields, so lets use a u32 as a bitfield of possibilities..
+    //Phase 1: create possibilities based on all field values being valid.
+    let mut possible: Vec<u32> = input
         .restrictions
         .iter()
-        .map(|r| (r.name.clone(), (0..field_count).collect()))
-        .collect();
-    //Phase 1: eliminate possibilities based on field values.
-    for t in &valid_nearbys {
-        for (ix, &v) in t.iter().enumerate() {
-            for r in &input.restrictions {
-                if !r.in_range(v) {
-                    possible.get_mut(&r.name).unwrap().remove(&ix);
+        .map(|r| {
+            let mut i = 0;
+            for ix in 0..field_count {
+                if valid_nearbys.iter().all(|x| r.in_range(x[ix])) {
+                    i |= 1 << ix;
                 }
             }
-        }
-    }
+            i
+        })
+        .collect();
     //Phase 2: eliminate possibilities where another field must have a given index.
-    while possible.values().any(|hs| hs.len() > 1) {
-        let uniqued: Vec<usize> = possible
-            .values()
-            .filter_map(|hs| if hs.len() == 1 { hs.iter().next() } else { None })
-            .copied()
+    while possible.iter().any(|p| p.count_ones() > 1) {
+        let uniqued: Vec<u32> = possible
+            .iter()
+            .filter_map(|p| if p.count_ones() == 1 { get_set_bit(*p) } else { None })
             .collect();
         for x in uniqued {
-            for hs in possible.values_mut() {
-                if hs.len() > 1 {
-                    hs.remove(&x);
+            for p in &mut possible {
+                if p.count_ones() > 1 {
+                    *p &= !(1 << x);
                 }
             }
         }
     }
-    possible
+    possible[0..6]
         .iter()
-        .filter_map(|(k, v)| {
-            if k.starts_with("departure") {
-                Some(u64::from(input.my_ticket[(*v.iter().next().unwrap())]))
-            } else {
-                None
-            }
+        .map(|v| {
+            let ix = get_set_bit(*v).unwrap() as usize;
+            u64::from(input.my_ticket[ix])
         })
         .product()
 }
