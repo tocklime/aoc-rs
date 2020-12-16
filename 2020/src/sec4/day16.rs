@@ -1,6 +1,5 @@
 use crate::utils::inputs::try_parse_many;
 use itertools::Itertools;
-use nom::FindSubstring;
 use std::{num::ParseIntError, str::FromStr};
 
 #[derive(Debug)]
@@ -94,24 +93,14 @@ pub fn p2(input: &Prob) -> u64 {
         })
         .collect();
     //Phase 2: eliminate possibilities where another field must have a given index.
-    while possible.iter().any(|p| p.count_ones() > 1) {
-        let uniqued: Vec<u32> = possible
-            .iter()
-            .filter_map(|p| if p.count_ones() == 1 { get_set_bit(*p) } else { None })
-            .collect();
-        for x in uniqued {
-            for p in &mut possible {
-                if p.count_ones() > 1 {
-                    *p &= !(1 << x);
-                }
+    let mut ans = vec![0; field_count];
+    while let Some(x) = possible.iter().find(|&p| p.count_ones() == 1).copied() {
+        for (ix, p) in possible.iter_mut().enumerate() {
+            if *p == x {
+                ans[ix] = get_set_bit(x).unwrap();
             }
+            *p &= !x;
         }
     }
-    possible[0..6]
-        .iter()
-        .map(|v| {
-            let ix = get_set_bit(*v).unwrap() as usize;
-            u64::from(input.my_ticket[ix])
-        })
-        .product()
+    ans[0..6].iter().map(|&v| u64::from(input.my_ticket[v as usize])).product()
 }
