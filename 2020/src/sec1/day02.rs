@@ -1,6 +1,8 @@
 #![warn(clippy::all)]
 use parse_display::{Display, FromStr};
 
+use crate::utils::inputs::parse_input_from_str_sep_by;
+
 #[derive(FromStr, Display, Debug)]
 #[display(r"{min}-{max} {letter}: {password}")]
 pub struct Password {
@@ -27,7 +29,7 @@ impl Password {
 
 #[aoc_generator(day2)]
 pub fn gen(input: &str) -> Vec<Password> {
-    input.trim().lines().map(|l| l.parse().unwrap()).collect()
+    parse_input_from_str_sep_by(input, "\n")
 }
 #[aoc(day2,part1)]
 pub fn p1(input: &[Password]) -> usize {

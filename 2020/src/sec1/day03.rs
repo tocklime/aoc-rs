@@ -1,11 +1,10 @@
 #![warn(clippy::all)]
+
+use crate::utils::inputs::input_from_str_sep_by;
+
 #[aoc_generator(day3)]
 pub fn gen(input: &str) -> Vec<Vec<bool>> {
-    input
-        .trim()
-        .lines()
-        .map(|l| l.chars().map(|c| c == '#').collect())
-        .collect()
+    input_from_str_sep_by(input, "\n",|x| x.chars().map(|c| c == '#').collect())
 }
 pub fn solve(tm: &[Vec<bool>], x: usize, y: usize) -> usize {
     let w = tm[0].len();

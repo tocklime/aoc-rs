@@ -3,6 +3,8 @@ use itertools::Itertools;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
+use crate::utils::inputs::input_from_str_sep_by;
+
 lazy_static! {
     static ref HEIGHT_RE: Regex = Regex::new(r"^(\d+)(cm|in)$").unwrap();
     static ref COL_RE: Regex = Regex::new(r"^#[0-9a-f]{6}$").unwrap();
@@ -35,14 +37,11 @@ fn validate(k: &str, v: &str) -> Option<bool> {
 }
 
 pub fn gen(input: &str) -> Vec<HashMap<&str, &str>> {
-    input
-        .split("\n\n")
-        .map(|p| {
-            p.split_whitespace()
-                .flat_map(|p| p.split(':')).tuples()
+    input_from_str_sep_by(input, "\n\n", |p| {
+        p.split_whitespace()
+                .flat_map(move |p| p.split(':')).tuples()
                 .collect()
-        })
-        .collect()
+    })
 }
 
 #[aoc(day4, part1)]

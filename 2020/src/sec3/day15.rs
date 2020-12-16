@@ -9,8 +9,10 @@ pub fn solve(input: &str, turns: T) -> T {
     (0..input.len()-1).for_each(|ix| { memory[input[ix] as usize] = (1+ix).try_into().unwrap();});
     (input.len().try_into().unwrap()..turns).fold(input[input.len() - 1], |last_spoke, t| {
         //get when last_spoke was spoken before that, and insert last_spoke=t into memory.
-        let x = std::mem::replace(&mut memory[last_spoke as usize], t);
-        if x == 0 { 0 } else { t - x }
+        match std::mem::replace(&mut memory[last_spoke as usize], t) {
+            0 => 0,
+            x => t-x
+        }
     })
 }
 

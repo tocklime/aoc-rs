@@ -1,5 +1,5 @@
 use crate::utils::cartesian::Point;
-use num::Num;
+use num::{Num, traits::WrappingSub};
 use std::cmp::{max, min};
 use std::convert::TryInto;
 use std::fmt::Debug;
@@ -14,7 +14,7 @@ pub struct Aabb<T> {
 
 impl<T> Aabb<T>
 where
-    T: Num + Copy + TryInto<usize> + Ord,
+    T: Num + Copy + TryInto<usize> + Ord + WrappingSub,
     RangeInclusive<T>: std::iter::Iterator<Item = T>,
 {
     pub fn new(p: Point<T>) -> Self {
@@ -105,7 +105,7 @@ where
 }
 impl<'a, T> FromIterator<&'a Point<T>> for Aabb<T>
 where
-    T: 'a + Num + Copy + TryInto<usize> + Ord,
+    T: 'a + Num + Copy + TryInto<usize> + Ord + WrappingSub,
     RangeInclusive<T>: std::iter::Iterator<Item = T>,
 {
     fn from_iter<I>(iter: I) -> Self

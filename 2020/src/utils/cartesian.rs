@@ -1,4 +1,4 @@
-use num::{Num, abs, Signed, Unsigned};
+use num::{Num, Signed, Unsigned, abs, traits::WrappingSub};
 use std::convert::{TryInto, TryFrom};
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -57,7 +57,7 @@ impl Dir {
             Self::Right => Self::Left,
         }
     }
-    pub fn as_point_step<T: Signed + Num>(self) -> Point<T> {
+    pub fn as_point_step<T: Signed + Num + WrappingSub>(self) -> Point<T> {
         match self {
             Self::Up => Point::new(T::zero(), T::one()),
             Self::Down => Point::new(T::zero(), T::neg(T::one())),
@@ -76,16 +76,16 @@ impl<T: Default> Default for Point<T> {
     }
 }
 
-impl<T: Num> Point<T> {
+impl<T: Num + WrappingSub> Point<T> {
     pub fn new(x: T, y: T) -> Self { Self { x, y } }
     pub fn up(self) -> Self {
         Self { x: self.x, y: self.y + T::one() }
     }
     pub fn down(self) -> Self {
-        Self { x: self.x, y: self.y - T::one() }
+        Self { x: self.x, y: self.y.wrapping_sub(&T::one()) }
     }
     pub fn left(self) -> Self {
-        Self { x: self.x - T::one(), y: self.y }
+        Self { x: self.x.wrapping_sub(&T::one()), y: self.y }
     }
     pub fn right(self) -> Self {
         Self { x: self.x + T::one(), y: self.y }
@@ -131,7 +131,7 @@ impl<T: Num> Point<T> {
     }
 }
 
-impl<T: Num + Signed + Copy> Point<T> {
+impl<T: Num + Signed + Copy + WrappingSub> Point<T> {
     pub fn manhattan(self) -> T {
         abs(self.x) + abs(self.y)
     }
@@ -153,7 +153,7 @@ impl<T: Num + Unsigned> Point<T> {
 }
 
 pub fn as_point_map<T>(input: &str, increasing_y_is_up: bool) -> HashMap<Point<T>, char>
-    where T: Num + TryFrom<usize> + Hash + Eq
+    where T: Num + TryFrom<usize> + Hash + Eq + WrappingSub
     , <T as TryFrom<usize>>::Error: Debug
 {
     let boxed: Box<dyn Iterator<Item=_>> = if increasing_y_is_up {
@@ -178,25 +178,25 @@ impl<T: AddAssign> AddAssign for Point<T> {
     }
 }
 
-impl<T: Add + Num> Add for Point<T> {
+impl<T: Add + Num + WrappingSub> Add for Point<T> {
     type Output = Self;
     fn add(self, other: Self) -> Self {
         Self::new(self.x + other.x, self.y + other.y)
     }
 }
 
-impl<T: Sub + Num> Sub for Point<T> {
+impl<T: Sub + Num + WrappingSub> Sub for Point<T> {
     type Output = Self;
-    fn sub(self, other: Self) -> Self { Self::new(self.x - other.x, self.y - other.y) }
+    fn sub(self, other: Self) -> Self { Self::new(self.x.wrapping_sub(&other.x), self.y.wrapping_sub(&other.y)) }
 }
 
-impl<T: Mul + Copy + Num> Mul<T> for Point<T> {
+impl<T: Mul + Copy + Num + WrappingSub> Mul<T> for Point<T> {
     type Output = Self;
     fn mul(self, rhs: T) -> Self {
         Self::new(self.x * rhs, self.y * rhs)
     }
 }
-impl<T: Mul + Copy + Num + Signed> Mul<T> for Dir {
+impl<T: Mul + Copy + Num + Signed + WrappingSub> Mul<T> for Dir {
     type Output = Point<T>;
     fn mul(self, rhs: T) -> Point<T> {
         self.as_point_step() * rhs
@@ -204,7 +204,7 @@ impl<T: Mul + Copy + Num + Signed> Mul<T> for Dir {
 }
 
 pub fn point_map_bounding_box<N, T, S>(hm: &HashMap<Point<N>, T, S>) -> Aabb<N>
-    where N: Copy + Num + TryInto<usize> + Ord,
+    where N: Copy + Num + TryInto<usize> + Ord + WrappingSub,
           RangeInclusive<N>: Iterator<Item=N>,
           S: BuildHasher {
     hm.keys().collect()
@@ -217,7 +217,7 @@ pub fn render_char_map_w<N, S>(
     flip: bool
 ) -> String
     where S: BuildHasher,
-          N: Copy + Num + TryInto<usize> + Ord + Eq + Hash,
+          N: Copy + Num + TryInto<usize> + Ord + Eq + Hash + WrappingSub,
           RangeInclusive<N>: Iterator<Item=N>
 {
     let bb = point_map_bounding_box(m);

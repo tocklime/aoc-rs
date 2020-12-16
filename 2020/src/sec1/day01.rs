@@ -2,13 +2,11 @@
 use std::collections::HashSet;
 
 use itertools::Itertools;
+
+use crate::utils::inputs::parse_input_from_str_sep_by;
 #[aoc_generator(day1)]
 pub fn gen(input: &str) -> Vec<i64> {
-    input
-        .trim()
-        .lines()
-        .map(|l| l.parse().expect("Integer"))
-        .collect()
+    parse_input_from_str_sep_by(input, "\n")
 }
 pub fn solve(input: &[i64], size: usize) -> i64 {
     input
@@ -47,4 +45,14 @@ pub fn p2_sets(input: &[i64]) -> i64 {
         .find(|(sum, _)| s.contains(&(2020 - *sum)))
         .unwrap();
     c.1.iter().copied().product::<i64>() * (2020 - c.0)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    pub fn actual_results() {
+        let input = include_str!("../../input/2020/day1.txt");
+        assert_eq!(p1(&gen(input)), 802_011);
+    }
 }
