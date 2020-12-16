@@ -94,7 +94,7 @@ pub fn p2(input: &Prob) -> u64 {
         .collect();
     //Phase 2: eliminate possibilities where another field must have a given index.
     let mut ans = vec![0; field_count];
-    while let Some(x) = possible.iter().find(|&p| p.count_ones() == 1).copied() {
+    while let Some(&x) = possible.iter().find(|&p| p.count_ones() == 1) {
         for (ix, p) in possible.iter_mut().enumerate() {
             if *p == x {
                 ans[ix] = get_set_bit(x).unwrap();
