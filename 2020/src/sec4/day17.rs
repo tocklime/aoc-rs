@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use itertools::{Itertools, repeat_n};
+use itertools::{repeat_n, Itertools};
 
 use crate::utils::cartesian::as_point_map;
 
@@ -18,27 +18,20 @@ pub fn step(world: HashSet<Vec<i64>>, _step: usize) -> HashSet<Vec<i64>> {
     //so we use rule: (active && count is 3 or 4) || (!active && count is 3)
     counts
         .into_iter()
-        .filter_map(|(k, c)| {
-            if c == 3 || c == 4 && world.contains(&k) {
-                Some(k)
-            } else {
-                None
-            }
-        })
+        .filter(|(k, c)| *c == 3 || *c == 4 && world.contains(k))
+        .map(|(k, _)| k)
         .collect()
 }
+
 pub fn solve(input: &str, dimensions: usize) -> usize {
     let input = as_point_map(input, false);
     let world: HashSet<Vec<i64>> = input
         .iter()
-        .filter_map(|(p, c)| {
-            if *c == '#' {
-                let mut p = vec![p.x, p.y];
-                p.extend(repeat_n(0, dimensions-2));
-                Some(p)
-            } else {
-                None
-            }
+        .filter(|(_, c)| **c == '#')
+        .map(|(p, _)| {
+            let mut p = vec![p.x, p.y];
+            p.extend(repeat_n(0, dimensions - 2));
+            p
         })
         .collect();
 

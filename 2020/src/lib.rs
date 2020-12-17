@@ -4,9 +4,11 @@
      clippy::pedantic,
      clippy::nursery,
  )]
-#![allow(clippy::must_use_candidate)]
-#![allow(clippy::cargo_common_metadata)]
-#![allow(clippy::implicit_hasher)]
+
+#![allow(clippy::must_use_candidate)] //doesn't play nice with aoc part functions.
+#![allow(clippy::cargo_common_metadata)] //I don't want to add this metadata.
+#![allow(clippy::implicit_hasher)] //I don't want to deal with this.
+#![allow(clippy::filter_map)] //I disagree with this lint - .filter().map() is often nicer than .filter_map()
 
 #[allow(unused_macros)]
 macro_rules! ix {
