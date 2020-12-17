@@ -68,8 +68,8 @@ pub fn p2(input: &[Line]) -> u64 {
         let mut val = mask.lo | target;
         let this = val.view_bits_mut::<Lsb0>();
         for n in 0..(1<<mask.x_locations.len()) {
-            for x in &mask.x_locations{
-                this.set(*x,(1<<x) & n > 0);
+            for (ix,x) in mask.x_locations.iter().enumerate(){
+                this.set(*x,(1<<ix) & n > 0);
             }
             mem.insert(this.load(), value);
         }

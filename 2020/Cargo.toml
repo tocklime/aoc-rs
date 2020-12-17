@@ -34,3 +34,8 @@ bitvec = "0.19.4"
 
 [profile.release]
 debug = true
+overflow-checks = true
+
+[profile.dev]
+debug = true
+overflow-checks = true

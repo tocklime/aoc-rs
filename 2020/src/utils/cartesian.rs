@@ -1,4 +1,4 @@
-use num::{Num, Signed, Unsigned, abs, traits::WrappingSub};
+use num::{Num, Signed, Unsigned, abs, traits::{WrappingAdd, WrappingSub}};
 use std::convert::{TryInto, TryFrom};
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -57,7 +57,7 @@ impl Dir {
             Self::Right => Self::Left,
         }
     }
-    pub fn as_point_step<T: Signed + Num + WrappingSub>(self) -> Point<T> {
+    pub fn as_point_step<T: Signed + Num>(self) -> Point<T> {
         match self {
             Self::Up => Point::new(T::zero(), T::one()),
             Self::Down => Point::new(T::zero(), T::neg(T::one())),
@@ -76,20 +76,26 @@ impl<T: Default> Default for Point<T> {
     }
 }
 
-impl<T: Num + WrappingSub> Point<T> {
+impl<T: Num> Point<T> {
     pub fn new(x: T, y: T) -> Self { Self { x, y } }
+}
+impl<T: Num + WrappingAdd> Point<T> {
     pub fn up(self) -> Self {
-        Self { x: self.x, y: self.y + T::one() }
+        Self { x: self.x, y: self.y.wrapping_add(&T::one()) }
     }
+    pub fn right(self) -> Self {
+        Self { x: self.x.wrapping_add(&T::one()), y: self.y }
+    }
+}
+impl<T: Num + WrappingSub> Point<T> {
     pub fn down(self) -> Self {
         Self { x: self.x, y: self.y.wrapping_sub(&T::one()) }
     }
     pub fn left(self) -> Self {
         Self { x: self.x.wrapping_sub(&T::one()), y: self.y }
     }
-    pub fn right(self) -> Self {
-        Self { x: self.x + T::one(), y: self.y }
-    }
+}
+impl<T: Num + WrappingAdd + WrappingSub> Point<T> {
     pub fn step(self, d: Dir) -> Self {
         match d {
             Dir::Up => self.up(),
@@ -178,25 +184,30 @@ impl<T: AddAssign> AddAssign for Point<T> {
     }
 }
 
-impl<T: Add + Num + WrappingSub> Add for Point<T> {
+impl<T: Add + Num> Add for Point<T> {
     type Output = Self;
     fn add(self, other: Self) -> Self {
-        Self::new(self.x + other.x, self.y + other.y)
+        Self::new(self.x+other.x, self.y+other.y)
+    }
+}
+impl<T: WrappingAdd + Num> WrappingAdd for Point<T> {
+    fn wrapping_add(&self, v: &Self) -> Self {
+        Self::new(self.x.wrapping_add(&v.x), self.y.wrapping_add(&v.y))
     }
 }
 
-impl<T: Sub + Num + WrappingSub> Sub for Point<T> {
+impl<T: Sub + Num> Sub for Point<T> {
     type Output = Self;
-    fn sub(self, other: Self) -> Self { Self::new(self.x.wrapping_sub(&other.x), self.y.wrapping_sub(&other.y)) }
+    fn sub(self, other: Self) -> Self { Self::new(self.x - other.x, self.y - other.y) }
 }
 
-impl<T: Mul + Copy + Num + WrappingSub> Mul<T> for Point<T> {
+impl<T: Mul + Copy + Num> Mul<T> for Point<T> {
     type Output = Self;
     fn mul(self, rhs: T) -> Self {
         Self::new(self.x * rhs, self.y * rhs)
     }
 }
-impl<T: Mul + Copy + Num + Signed + WrappingSub> Mul<T> for Dir {
+impl<T: Mul + Copy + Num + Signed> Mul<T> for Dir {
     type Output = Point<T>;
     fn mul(self, rhs: T) -> Point<T> {
         self.as_point_step() * rhs

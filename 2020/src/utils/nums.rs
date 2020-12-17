@@ -1,5 +1,5 @@
-use num::{Integer, Num, Signed};
-use std::{convert::TryInto, iter::{Product, Sum}, ops::Shr};
+use num::{Integer, Num, One, Signed, Zero};
+use std::{convert::TryInto, iter::{Product, Sum}, ops::{Add, Shr}};
 use modinverse::modinverse;
 
 pub fn mod_pow<T>(mut base: T, mut exp: T, modulus: T) -> T
@@ -48,9 +48,17 @@ pub trait NumExt {
     fn applications_of<T,F : Fn(T) -> T>(self, initial: T, step: F) -> T;
 }
 
-impl NumExt for usize {
+impl<N : Num> NumExt for N 
+where N : Add<N, Output = N> + PartialOrd + Clone + One + Zero,
+{
     fn applications_of<T,F : Fn(T) -> T>(self, initial: T, step: F) -> T {
-        (0..self).fold(initial,|a,_| step(a))
+        let mut x = initial;
+        let mut s = Self::zero();
+        while s < self {
+            x = step(x);
+            s = s + Self::one();
+        }
+        x
     }
 }
 

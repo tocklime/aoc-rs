@@ -35,8 +35,6 @@ pub fn solve(input: &str, dimensions: usize) -> usize {
             p
         })
         .collect();
-
-
     6.applications_of(world,step).len()
 }
 

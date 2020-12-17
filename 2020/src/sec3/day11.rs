@@ -1,5 +1,6 @@
 use itertools::{iterate, Itertools};
 use ndarray::Array2;
+use num::traits::WrappingAdd;
 
 use crate::utils::{
     cartesian::Point,
@@ -50,8 +51,8 @@ pub fn p2_ndarray_mut(input: &Array2<Option<bool>>) -> usize {
         Point::new(0, 0)
             .neighbours_with_diagonals()
             .iter()
-            .filter_map(|&d| {
-                iterate(p + d, |&p| p + d)
+            .filter_map(|d| {
+                iterate(p.wrapping_add(d), |&p| p.wrapping_add(d))
                     .map(|p| (p, g.get((p.y, p.x))))
                     .take_while(|x| x.1.is_some())
                     .find_map(|x| if x.1.unwrap().is_some() { Some(x.0) } else { None })
@@ -112,8 +113,8 @@ pub fn p2_ndarray_clone(input: &Array2<Option<bool>>) -> usize {
         Point::new(0, 0)
             .neighbours_with_diagonals()
             .iter()
-            .filter_map(|&d| {
-                iterate(p + d, |&p| p + d)
+            .filter_map(|d| {
+                iterate(p.wrapping_add(d), |&p| p.wrapping_add(d))
                     .map(|p| (p, g.get((p.y, p.x))))
                     .take_while(|x| x.1.is_some())
                     .find_map(|x| match x {
@@ -185,8 +186,8 @@ pub fn p2_ndarray_two(input: &Array2<Option<bool>>) -> usize {
         Point::new(0, 0)
             .neighbours_with_diagonals()
             .iter()
-            .filter_map(|&d| {
-                iterate(p + d, |&p| p + d)
+            .filter_map(|d| {
+                iterate(p.wrapping_add(d), |&p| p.wrapping_add(d))
                     .map(|p| (p, g1_ref.get((p.y, p.x))))
                     .take_while(|x| x.1.is_some())
                     .find_map(|x| match x {
