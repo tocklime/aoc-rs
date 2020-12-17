@@ -43,3 +43,14 @@ pub fn chinese_remainder_theorem<T>(list : &[(T,T)]) -> T
     let m_prod: T = list.iter().map(|x| x.1).product();
     list.iter().map(|&(x,m)| x * (m_prod/m) * modinverse(m_prod/m,m).unwrap()).sum::<T>() % m_prod
 }
+
+pub trait NumExt {
+    fn applications_of<T,F : Fn(T) -> T>(self, initial: T, step: F) -> T;
+}
+
+impl NumExt for usize {
+    fn applications_of<T,F : Fn(T) -> T>(self, initial: T, step: F) -> T {
+        (0..self).fold(initial,|a,_| step(a))
+    }
+}
+

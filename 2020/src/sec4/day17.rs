@@ -1,11 +1,12 @@
 use std::collections::{HashMap, HashSet};
 
-use itertools::{repeat_n, Itertools};
+use itertools::{Itertools, repeat_n};
 
 use crate::utils::cartesian::as_point_map;
+use crate::utils::nums::NumExt;
 
 #[allow(clippy::needless_pass_by_value)] //I want a specific type signature here to fit in with the fold where it's used.
-pub fn step(world: HashSet<Vec<i64>>, _step: usize) -> HashSet<Vec<i64>> {
+pub fn step(world: HashSet<Vec<i64>>) -> HashSet<Vec<i64>> {
     let mut counts: HashMap<Vec<i64>, usize> = HashMap::new();
     for p in &world {
         for n in (0..p.len()).map(|_| &[-1, 0, 1]).multi_cartesian_product() {
@@ -19,7 +20,7 @@ pub fn step(world: HashSet<Vec<i64>>, _step: usize) -> HashSet<Vec<i64>> {
     counts
         .into_iter()
         .filter(|(k, c)| *c == 3 || *c == 4 && world.contains(k))
-        .map(|(k, _)| k)
+        .map(|x| x.0)
         .collect()
 }
 
@@ -35,7 +36,8 @@ pub fn solve(input: &str, dimensions: usize) -> usize {
         })
         .collect();
 
-    (0..6).fold(world, step).len()
+
+    6.applications_of(world,step).len()
 }
 
 #[aoc(day17, part1)]
