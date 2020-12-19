@@ -1,6 +1,6 @@
 use std::{collections::HashMap, num::ParseIntError, str::FromStr};
 
-use pathfinding::directed::dfs;
+use pathfinding::directed::dfs::dfs;
 
 #[derive(Debug, Clone)]
 pub enum Match {
@@ -39,14 +39,11 @@ impl FromStr for Rule {
 
 pub fn matches(s: &str, rules: &HashMap<usize, Rule>) -> bool {
     let chars: Vec<char> = s.chars().collect();
-    dfs::dfs::<(Vec<usize>, usize), _, _, _>(
+    dfs::<(Vec<usize>, usize), _, _, _>(
         (vec![0], 0_usize),
         |(pending_rules, str_pos)| {
-            if pending_rules.is_empty() {
-                Vec::new()
-            } else {
-                let (r, rest) = pending_rules.split_at(1);
-                let rule = &rules[&r[0]];
+            if let Some((r,rest)) = pending_rules.split_first() {
+                let rule = &rules[r];
                 rule.matches
                     .iter()
                     .filter_map(|m| -> Option<(Vec<usize>, usize)> {
@@ -60,7 +57,9 @@ pub fn matches(s: &str, rules: &HashMap<usize, Rule>) -> bool {
                             _ => None,
                         }
                     })
-                    .collect()
+                    .collect::<Vec<_>>()
+            } else {
+                Vec::new()
             }
         },
         |(rs, s)| rs.is_empty() && *s == chars.len(),
@@ -78,8 +77,7 @@ pub fn gen(input: &str) -> (Vec<Rule>, Vec<String>) {
 
 #[aoc(day19, part1)]
 pub fn p1(input: &(Vec<Rule>, Vec<String>)) -> usize {
-    let rules = &input.0;
-    let r_map = rules.iter().map(|x| (x.id, x.clone())).collect();
+    let r_map = input.0.iter().map(|x| (x.id, x.clone())).collect();
     input.1.iter().filter(|l| matches(l, &r_map)).count()
 }
 
