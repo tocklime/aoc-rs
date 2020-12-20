@@ -6,6 +6,7 @@ use std::hash::{Hash, BuildHasher};
 use std::ops::{AddAssign, Mul, Add, Sub, RangeInclusive};
 use crate::utils::aabb::Aabb;
 
+use crate::utils::nums::NumExt;
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
 pub struct Point<T> {
     pub x: T,
@@ -32,6 +33,9 @@ impl Dir {
             Self::Left => 'L',
             Self::Right => 'R'
         }
+    }
+    pub fn turn_right_n(self, n: u8) -> Self {
+        n.applications_of(self,Self::turn_right)
     }
     pub const fn turn_right(self) -> Self {
         match self {
