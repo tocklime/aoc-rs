@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::{collections::{BTreeMap, HashMap, HashSet}, convert::TryFrom};
 
 use itertools::Itertools;
 
@@ -8,19 +8,21 @@ struct Line<'a> {
     ingredients: HashSet<&'a str>,
     allergens: Vec<&'a str>,
 }
-impl<'a> Line<'a> {
-    fn from_str(s: &'a str) -> Self {
-        let mut w = s.split_whitespace().peekable();
+impl<'a> TryFrom<&'a str> for Line<'a> {
+    type Error = ();
+
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        let mut w = value.split_whitespace().peekable();
         let mut ingredients = HashSet::new();
         let mut allergens = Vec::new();
         while w.peek() != Some(&"(contains") {
-            ingredients.insert(w.next().unwrap());
+            ingredients.insert(w.next().ok_or(())?);
         }
         assert_eq!(w.next().unwrap(), "(contains");
         for allergen in w {
             allergens.push(allergen.trim_end_matches(|c| "),".contains(c)));
         }
-        Self { ingredients, allergens }
+        Ok(Self { ingredients, allergens })
     }
 }
 fn get_map<'a>(lines: &[Line<'a>]) -> HashMap<&'a str, HashSet<&'a str>> {
@@ -36,7 +38,7 @@ fn get_map<'a>(lines: &[Line<'a>]) -> HashMap<&'a str, HashSet<&'a str>> {
 
 #[aoc(day21, part1)]
 pub fn p1(input: &str) -> usize {
-    let lines = input.lines().map(Line::from_str).collect::<Vec<_>>();
+    let lines = input.lines().map(Line::try_from).collect::<Result<Vec<_>,_>>().unwrap();
     let options = get_map(&lines);
     let could_have_allergen: HashSet<&str> = options.values().flat_map(HashSet::iter).copied().collect();
     lines
@@ -51,7 +53,7 @@ pub fn p1(input: &str) -> usize {
 
 #[aoc(day21, part2)]
 pub fn p2(input: &str) -> String {
-    let lines = input.lines().map(Line::from_str).collect::<Vec<_>>();
+    let lines = input.lines().map(Line::try_from).collect::<Result<Vec<_>,_>>().unwrap();
     let mut options = get_map(&lines);
     let mut known_allergen: BTreeMap<&str, &str> = BTreeMap::new();
     while !options.is_empty() {
