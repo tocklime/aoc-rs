@@ -31,8 +31,8 @@ fn get_map<'a>(lines: &[Line<'a>]) -> HashMap<&'a str, HashSet<&'a str>> {
         .flat_map(|l| l.allergens.iter().map(move |a| (*a, &l.ingredients)))
         .collect_lookup();
     allergen_to_collections
-        .iter()
-        .map(|(&k, v)| (k, v.iter().cloned().intersections()))
+        .into_iter()
+        .map(|(k, v)| (k, v.into_iter().intersections()))
         .collect::<HashMap<_, _>>()
 }
 
