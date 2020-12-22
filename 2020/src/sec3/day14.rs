@@ -22,7 +22,7 @@ impl FromStr for Line {
             let lo = m.chars().rev().map(|x| x == '1').collect::<BitVec>().load();
             let xs_vec = m.chars().rev().map(|x| x == 'X').collect::<BitVec>();
             let xs = xs_vec.load();
-            let x_locations = xs_vec.iter().enumerate().filter_map(|(ix,&x)| if x {Some(ix)}else {None}).collect();
+            let x_locations = xs_vec.iter().enumerate().filter_map(|(ix,x)| if *x {Some(ix)}else {None}).collect();
             Ok(Self::SetMask(Mask { lo, xs, x_locations }))
         } else {
             let sp: Vec<&str> = s.split(|c| "[] =".contains(c)).collect();
