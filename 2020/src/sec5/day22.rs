@@ -1,19 +1,19 @@
 use std::{
-    collections::{hash_map::DefaultHasher, VecDeque},
+    collections::{hash_map::DefaultHasher, VecDeque, hash_map::{Entry::{Vacant,Occupied}}},
     hash::{Hash, Hasher},
     num::ParseIntError,
     str::FromStr,
 };
 
 type Deck = VecDeque<usize>;
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash,PartialEq,Eq)]
 pub struct Game {
     hands: [Deck; 2],
     print_log: bool,
 }
 
 use itertools::Itertools;
-use nohash_hasher::IntSet;
+use nohash_hasher::IntMap;
 
 impl Game {
     #[inline]
@@ -47,7 +47,7 @@ impl Game {
             (true, true) => panic!("Both players have empty decks"),
         }
     }
-    pub fn score_player(&self, player:usize) -> usize {
+    pub fn score_player(&self, player: usize) -> usize {
         self.hands[player].iter().rev().zip(1..).map(|(a, b)| a * b).sum()
     }
     pub fn winning_deck(&self) -> Option<&Deck> {
@@ -63,12 +63,11 @@ impl Game {
     #[inline]
     pub fn get_hash(&self) -> u64 {
         let mut hasher = DefaultHasher::new();
-        self.hash(&mut hasher);
+        self.hands.hash(&mut hasher);
         hasher.finish()
     }
     pub fn recursive_game(&mut self, game_counter: &mut usize) -> usize {
-        let mut memory = IntSet::default();
-
+        let mut memory : IntMap<u64,usize> = IntMap::default();
         *game_counter += 1;
         let my_game_num = *game_counter;
         let print_log = self.print_log;
@@ -84,11 +83,16 @@ impl Game {
                     println!("Player {}'s deck: {}", ix + 1, h.iter().map(ToString::to_string).join(", "));
                 }
             }
-            if !memory.insert(self.get_hash()) {
-                if print_log {
-                    println!("Seen before, p1 win");
+            match memory.entry(self.get_hash()) {
+                Occupied(x) => {
+                    if print_log {
+                        println!("Game {}, Turns {} and {} are the same. P1 win",my_game_num,x.get(),turn_count);
+                    }
+                    return 0;
+                },
+                Vacant(x) => {
+                    x.insert(turn_count);
                 }
-                return 0;
             }
             if print_log {
                 for (c, p) in cs.iter().zip(1..) {
@@ -135,14 +139,14 @@ impl FromStr for Game {
 
 #[aoc(day22, part1)]
 pub fn p1(input: &str) -> usize {
-    let mut g : Game = input.parse().unwrap();
+    let mut g: Game = input.parse().unwrap();
     let a = g.basic_game();
     g.score_player(a)
 }
 
 #[aoc(day22, part2)]
 pub fn p2(input: &str) -> usize {
-    let mut g : Game = input.parse().unwrap();
+    let mut g: Game = input.parse().unwrap();
     let mut game_count = 0;
     g.print_log = false;
     let a = g.recursive_game(&mut game_count);
