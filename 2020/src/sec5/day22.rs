@@ -8,11 +8,16 @@ pub struct Game {
 }
 
 use itertools::Itertools;
+use nohash_hasher::IntSet;
 
 impl Game {
-    pub fn draw_cards(&mut self) -> Vec<usize> {
-        self.hands.iter_mut().map(|x| x.pop_front().unwrap()).collect()
+    #[inline]
+    pub fn draw_cards(&mut self) -> [usize;2] {
+        let c1 = self.hands[0].pop_front().unwrap();
+        let c2 = self.hands[1].pop_front().unwrap();
+        [c1,c2]
     }
+    #[inline]
     pub fn replace_cards(&mut self, winner: usize, cards: &[usize]) {
         match winner {
             0 => {
@@ -31,6 +36,7 @@ impl Game {
         let winner = if cards[0] > cards[1] { 0 } else { 1 };
         self.replace_cards(winner, &cards);
     }
+    #[inline]
     pub fn winner(&self) -> Option<usize> {
         match (self.hands[0].is_empty(), self.hands[1].is_empty()) {
             (false, false) => None,
@@ -39,7 +45,7 @@ impl Game {
             (true, true) => panic!("Both players have empty decks"),
         }
     }
-    pub fn winning_deck(&self) -> Option<&VecDeque<usize>> {
+    pub fn winning_deck(&self) -> Option<&Deck> {
         self.winner().map(|w| &self.hands[w])
     }
     pub fn basic_game(&mut self) {
@@ -47,13 +53,14 @@ impl Game {
             self.basic_turn();
         }
     }
+    #[inline]
     pub fn get_hash(&self) -> u64 {
         let mut hasher = DefaultHasher::new();
         self.hash(&mut hasher);
         hasher.finish()
     }
     pub fn recursive_game(&mut self, game_counter: &mut usize) -> usize {
-        let mut memory = HashSet::new();
+        let mut memory = IntSet::default();
 
         *game_counter += 1;
         let my_game_num = *game_counter;
@@ -76,7 +83,7 @@ impl Game {
                 }
                 return 0;
             }
-            let cs: Vec<usize> = self.draw_cards();
+            let cs = self.draw_cards();
             if print_log {
                 for (c, p) in cs.iter().zip(1..) {
                     println!("Player {} plays: {}", p, c);
@@ -124,24 +131,6 @@ impl FromStr for Game {
     }
 }
 
-pub fn basic_turn(p1: &mut VecDeque<usize>, p2: &mut VecDeque<usize>) {
-    let c1 = p1.pop_front().unwrap();
-    let c2 = p2.pop_front().unwrap();
-    assert_ne!(c1, c2);
-    if c1 > c2 {
-        p1.push_back(c1);
-        p1.push_back(c2);
-    } else {
-        p2.push_back(c2);
-        p2.push_back(c1);
-    }
-}
-
-pub fn basic_game(p1: &mut VecDeque<usize>, p2: &mut VecDeque<usize>) {
-    while !p1.is_empty() && !p2.is_empty() {
-        basic_turn(p1, p2);
-    }
-}
 #[aoc_generator(day22)]
 pub fn gen(input: &str) -> Game {
     input.parse().unwrap()
@@ -158,6 +147,7 @@ pub fn p1(g: &Game) -> usize {
 pub fn p2(g: &Game) -> usize {
     let mut g = g.clone();
     let mut game_count = 0;
+    g.print_log = false;
     let a = g.recursive_game(&mut game_count);
     g.hands[a].iter().rev().zip(1..).map(|(a, b)| a * b).sum()
 }

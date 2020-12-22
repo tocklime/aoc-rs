@@ -31,6 +31,7 @@ modinverse = "0.1.1"
 grid = "0.2.3"
 ndarray = "0.14.0"
 bitvec = "0.19.4"
+nohash-hasher = "0.2.0"
 
 [profile.release]
 debug = true
