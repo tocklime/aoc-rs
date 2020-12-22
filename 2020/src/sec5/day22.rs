@@ -17,10 +17,12 @@ use nohash_hasher::IntSet;
 
 impl Game {
     #[inline]
-    pub fn draw_cards(&mut self) -> [usize; 2] {
-        let c1 = self.hands[0].pop_front().unwrap();
-        let c2 = self.hands[1].pop_front().unwrap();
-        [c1, c2]
+    pub fn draw_cards(&mut self) -> Option<[usize; 2]> {
+        if self.hands[0].is_empty() || self.hands[1].is_empty() {
+            None
+        } else {
+            Some([self.hands[0].pop_front().unwrap(), self.hands[1].pop_front().unwrap()])
+        }
     }
     #[inline]
     pub fn replace_cards(&mut self, winner: usize, cards: &[usize]) {
@@ -36,11 +38,6 @@ impl Game {
             _ => panic!("Unknown player"),
         }
     }
-    pub fn basic_turn(&mut self) {
-        let cards = self.draw_cards();
-        let winner = if cards[0] > cards[1] { 0 } else { 1 };
-        self.replace_cards(winner, &cards);
-    }
     #[inline]
     pub fn winner(&self) -> Option<usize> {
         match (self.hands[0].is_empty(), self.hands[1].is_empty()) {
@@ -50,13 +47,18 @@ impl Game {
             (true, true) => panic!("Both players have empty decks"),
         }
     }
+    pub fn score_player(&self, player:usize) -> usize {
+        self.hands[player].iter().rev().zip(1..).map(|(a, b)| a * b).sum()
+    }
     pub fn winning_deck(&self) -> Option<&Deck> {
         self.winner().map(|w| &self.hands[w])
     }
-    pub fn basic_game(&mut self) {
-        while self.winner().is_none() {
-            self.basic_turn();
+    pub fn basic_game(&mut self) -> usize {
+        while let Some(cards) = self.draw_cards() {
+            let winner = (0..=1).max_by_key(|&p| cards[p]).unwrap();
+            self.replace_cards(winner, &cards);
         }
+        self.winner().unwrap()
     }
     #[inline]
     pub fn get_hash(&self) -> u64 {
@@ -74,7 +76,7 @@ impl Game {
             println!("=== Game {} ===\n", my_game_num);
         }
         let mut turn_count = 0;
-        while let (Some(&c1), Some(&c2)) = (self.hands[0].front(), self.hands[1].front()) {
+        while let Some(cs) = self.draw_cards() {
             turn_count += 1;
             if print_log {
                 println!("-- Round {} (Game {}) --", turn_count, my_game_num);
@@ -88,9 +90,6 @@ impl Game {
                 }
                 return 0;
             }
-            self.hands[0].pop_front();
-            self.hands[1].pop_front();
-            let cs = [c1, c2];
             if print_log {
                 for (c, p) in cs.iter().zip(1..) {
                     println!("Player {} plays: {}", p, c);
@@ -100,17 +99,14 @@ impl Game {
                 if print_log {
                     println!("Playing a sub-game to determine the winner...\n");
                 }
-                let p1_deck = self.hands[0].iter().take(cs[0]).copied().collect();
-                let p2_deck = self.hands[1].iter().take(cs[1]).copied().collect();
+                let mut it = (0..=1).map(|p| self.hands[p].iter().take(cs[p]).copied().collect());
                 let mut sub_game = Self {
-                    hands: [p1_deck, p2_deck],
+                    hands: [it.next().unwrap(), it.next().unwrap()],
                     print_log,
                 };
                 sub_game.recursive_game(game_counter)
-            } else if cs[0] > cs[1] {
-                0
             } else {
-                1
+                (0..=1).max_by_key(|&x| cs[x]).unwrap()
             };
             if print_log {
                 println!("Player {} wins round {} of game {}!\n", winner + 1, turn_count, my_game_num);
@@ -128,33 +124,27 @@ impl FromStr for Game {
     type Err = ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut ps = s.split("\n\n");
-        let p1 = ps.next().unwrap().lines().skip(1).map(str::parse).collect::<Result<_, _>>()?;
-        let p2 = ps.next().unwrap().lines().skip(1).map(str::parse).collect::<Result<_, _>>()?;
+        let ps = s.split("\n\n");
+        let mut players = ps.map(|p| p.lines().skip(1).map(str::parse).collect::<Result<_, _>>());
         Ok(Self {
-            hands: [p1, p2],
+            hands: [players.next().unwrap()?, players.next().unwrap()?],
             print_log: false,
         })
     }
 }
 
-#[aoc_generator(day22)]
-pub fn gen(input: &str) -> Game {
-    input.parse().unwrap()
-}
-
 #[aoc(day22, part1)]
-pub fn p1(g: &Game) -> usize {
-    let mut g = g.clone();
-    g.basic_game();
-    g.winning_deck().unwrap().iter().rev().zip(1..).map(|(a, b)| a * b).sum()
+pub fn p1(input: &str) -> usize {
+    let mut g : Game = input.parse().unwrap();
+    let a = g.basic_game();
+    g.score_player(a)
 }
 
 #[aoc(day22, part2)]
-pub fn p2(g: &Game) -> usize {
-    let mut g = g.clone();
+pub fn p2(input: &str) -> usize {
+    let mut g : Game = input.parse().unwrap();
     let mut game_count = 0;
     g.print_log = false;
     let a = g.recursive_game(&mut game_count);
-    g.hands[a].iter().rev().zip(1..).map(|(a, b)| a * b).sum()
+    g.score_player(a)
 }
