@@ -1,7 +1,12 @@
-use std::{collections::{HashSet, VecDeque, hash_map::DefaultHasher}, hash::{Hash, Hasher}, num::ParseIntError, str::FromStr};
+use std::{
+    collections::{hash_map::DefaultHasher, VecDeque},
+    hash::{Hash, Hasher},
+    num::ParseIntError,
+    str::FromStr,
+};
 
 type Deck = VecDeque<usize>;
-#[derive(Debug, Clone,Hash)]
+#[derive(Debug, Clone, Hash)]
 pub struct Game {
     hands: [Deck; 2],
     print_log: bool,
@@ -12,10 +17,10 @@ use nohash_hasher::IntSet;
 
 impl Game {
     #[inline]
-    pub fn draw_cards(&mut self) -> [usize;2] {
+    pub fn draw_cards(&mut self) -> [usize; 2] {
         let c1 = self.hands[0].pop_front().unwrap();
         let c2 = self.hands[1].pop_front().unwrap();
-        [c1,c2]
+        [c1, c2]
     }
     #[inline]
     pub fn replace_cards(&mut self, winner: usize, cards: &[usize]) {
@@ -69,7 +74,7 @@ impl Game {
             println!("=== Game {} ===\n", my_game_num);
         }
         let mut turn_count = 0;
-        while self.winner().is_none() {
+        while let (Some(&c1), Some(&c2)) = (self.hands[0].front(), self.hands[1].front()) {
             turn_count += 1;
             if print_log {
                 println!("-- Round {} (Game {}) --", turn_count, my_game_num);
@@ -83,7 +88,9 @@ impl Game {
                 }
                 return 0;
             }
-            let cs = self.draw_cards();
+            self.hands[0].pop_front();
+            self.hands[1].pop_front();
+            let cs = [c1, c2];
             if print_log {
                 for (c, p) in cs.iter().zip(1..) {
                     println!("Player {} plays: {}", p, c);
