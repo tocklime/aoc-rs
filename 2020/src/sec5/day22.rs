@@ -1,13 +1,10 @@
+use nohash_hasher::IntSet;
 use std::{
-    collections::{
-        hash_map::DefaultHasher,
-        VecDeque,
-    },
+    collections::{hash_map::DefaultHasher, VecDeque},
     hash::{Hash, Hasher},
     num::ParseIntError,
     str::FromStr,
 };
-use nohash_hasher::IntSet;
 
 type Card = u8;
 type Player = u8;
@@ -17,26 +14,25 @@ pub struct Game {
     hands: [Deck; 2],
 }
 
-
 impl Game {
     #[inline]
-    pub fn draw_cards(&mut self) -> Option<[Card; 2]> {
+    pub fn draw_cards(&mut self) -> Option<(Card, Card)> {
         if self.hands[0].is_empty() || self.hands[1].is_empty() {
             None
         } else {
-            Some([self.hands[0].pop_front().unwrap(), self.hands[1].pop_front().unwrap()])
+            Some((self.hands[0].pop_front().unwrap(), self.hands[1].pop_front().unwrap()))
         }
     }
     #[inline]
-    pub fn replace_cards(&mut self, winner: Player, cards: &[Card]) {
+    pub fn replace_cards(&mut self, winner: Player, cards: (Card, Card)) {
         match winner {
             0 => {
-                self.hands[0].push_back(cards[0]);
-                self.hands[0].push_back(cards[1]);
+                self.hands[0].push_back(cards.0);
+                self.hands[0].push_back(cards.1);
             }
             1 => {
-                self.hands[1].push_back(cards[1]);
-                self.hands[1].push_back(cards[0]);
+                self.hands[1].push_back(cards.1);
+                self.hands[1].push_back(cards.0);
             }
             _ => panic!("Unknown player"),
         }
@@ -63,8 +59,8 @@ impl Game {
     }
     pub fn basic_game(&mut self) -> Player {
         while let Some(cards) = self.draw_cards() {
-            let winner = (0_u8..=1).max_by_key::<u8, _>(|&p| cards[p as usize]).unwrap();
-            self.replace_cards(winner, &cards);
+            let winner = if cards.0 > cards.1 { 0 } else { 1 };
+            self.replace_cards(winner, cards);
         }
         self.winner().unwrap()
     }
@@ -75,27 +71,29 @@ impl Game {
         hasher.finish()
     }
 
-    pub fn recursive_game(&mut self, game_count: &mut i32) -> Player {
+    pub fn recursive_game(&mut self, game_count: &mut i32, check_every: usize) -> Player {
         let mut memory: IntSet<u64> = IntSet::default();
         *game_count += 1;
         let mut turn = 0;
         loop {
-            if turn % 2 == 0 && !memory.insert(self.get_hash()) {
+            if turn % check_every == 0 && !memory.insert(self.get_hash()) {
                 return 0;
             }
-            turn +=1;
+            turn += 1;
             if let Some(cs) = self.draw_cards() {
-                let winner = if (cs[0] as usize) <= self.hands[0].len() && (cs[1] as usize) <= self.hands[1].len() {
+                let winner = if (cs.0 as usize) <= self.hands[0].len() && (cs.1 as usize) <= self.hands[1].len() {
                     let mut sub_game = self.clone();
-                    sub_game.hands[0].truncate(cs[0].into());
-                    sub_game.hands[1].truncate(cs[1].into());
-                    sub_game.recursive_game(game_count)
+                    sub_game.hands[0].truncate(cs.0.into());
+                    sub_game.hands[1].truncate(cs.1.into());
+                    sub_game.recursive_game(game_count, check_every)
+                } else if cs.0 > cs.1 {
+                    0
                 } else {
-                    (0..=1).max_by_key(|&x| cs[x as usize]).unwrap()
+                    1
                 };
-                self.replace_cards(winner, &cs);
-            }else {
-                return self.winner().unwrap()
+                self.replace_cards(winner, cs);
+            } else {
+                return self.winner().unwrap();
             }
         }
     }
@@ -123,7 +121,6 @@ pub fn p1(input: &str) -> u32 {
 pub fn p2(input: &str) -> u32 {
     let mut g: Game = input.parse().unwrap();
     let mut game_count = 0;
-    let a = g.recursive_game(&mut game_count);
-    dbg!(game_count);
+    let a = g.recursive_game(&mut game_count, 4);
     g.score_player(a)
 }
