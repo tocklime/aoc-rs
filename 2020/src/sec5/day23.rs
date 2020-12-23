@@ -1,10 +1,8 @@
-use std::collections::HashMap;
-
-use itertools::Itertools;
-use nohash_hasher::IntMap;
-
+use std::convert::TryInto;
 struct Game {
-    next_map: IntMap<u32, u32>,
+    /// next_map is a lookup table mapping cups to their next neighbour on the right.
+    /// that is, next_map[a] = b where the cup clockwise from a is b.
+    next_map: Vec<u32>,
     current: u32,
     max_num: u32,
 }
@@ -12,24 +10,21 @@ struct GameIter<'a> {
     g: &'a Game,
     cursor: u32,
     start: u32,
+    done: bool,
 }
 impl Game {
+    #[allow(dead_code)]
     pub fn print(&self) {
-        let mut x = self.current;
-        loop {
+        for x in self {
             print!("{} ", x);
-            x = self.next_map[&x];
-            if self.current == x {
-                break;
-            }
         }
         println!();
     }
     pub fn step(&mut self) {
-        let a = self.next_map[&self.current];
-        let b = self.next_map[&a];
-        let c = self.next_map[&b];
-        let new_current = self.next_map[&c];
+        let a = self.next_map[self.current as usize];
+        let b = self.next_map[a as usize];
+        let c = self.next_map[b as usize];
+        let new_current = self.next_map[c as usize];
         let mut destination = self.current - 1;
         if destination == 0 {
             destination = self.max_num
@@ -40,23 +35,30 @@ impl Game {
                 destination = self.max_num
             };
         }
-        let next = self.next_map[&destination];
-        self.next_map.insert(self.current, new_current);
-        self.next_map.insert(destination, a);
-        self.next_map.insert(c, next);
+        let next = self.next_map[destination as usize];
+        self.next_map[self.current as usize] = new_current;
+        self.next_map[destination as usize] = a;
+        self.next_map[c as usize] = next;
         self.current = new_current;
     }
     pub fn make_game(seed: &[u32], max_num: u32) -> Self {
-        let mut i = seed.to_vec();
-        for x in 10..=max_num {
-            i.push(x);
+        let mut next_map: Vec<u32> = vec![0;(max_num as usize)+1];
+        //populate with the seed.
+        for v in seed.windows(2) {
+            next_map[v[0] as usize] = v[1];
         }
-        //current cup is top of list.
-        let mut next_map: IntMap<u32, u32> = i.iter().copied().tuple_windows().collect();
-        next_map.insert(i[i.len() - 1], i[0]);
+        let max_seed : u32 = seed.len().try_into().unwrap();
+        let mut last = seed[seed.len() - 1];
+        //now fill in the rest (if any) with ascending numbers.
+        for x in max_seed..=max_num {
+            next_map[last as usize] = x;
+            last = x;
+        }
+        //now link the final element to the first one.
+        next_map[last as usize] = seed[0];
         Self {
             next_map,
-            current: i[0],
+            current: seed[0],
             max_num,
         }
     }
@@ -65,23 +67,35 @@ impl Game {
             self.step();
         }
     }
-    pub fn iterate_from(&self, from: u32) -> GameIter {
+    pub const fn iterate_from(&self, from: u32) -> GameIter {
         GameIter {
             g: self,
             cursor: from,
-            start: from
+            start: from,
+            done: false
         }
+    }
+}
+impl<'a> IntoIterator for &'a Game {
+    type Item = u32;
+
+    type IntoIter = GameIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iterate_from(self.current)
     }
 }
 impl<'a> Iterator for GameIter<'a> {
     type Item = u32;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.cursor = self.g.next_map[&self.cursor];
-        if self.cursor == self.start {
+        if self.done {
             None
         }else {
-            Some(self.cursor)
+            let a = self.cursor;
+            self.cursor = self.g.next_map[self.cursor as usize];
+            self.done = self.cursor == self.start;
+            Some(a)
         }
     }
 }
@@ -93,12 +107,14 @@ pub fn gen(input: &str) -> Vec<u32> {
 #[aoc(day23, part1)]
 pub fn p1(input: &[u32]) -> String {
     let mut g = Game::make_game(input, 9);
+    g.print();
     g.run(100);
-    g.iterate_from(1).map(|x| x.to_string()).join("")
+    let as_vec = g.iterate_from(1).skip(1).map(|x| x.to_string()).collect::<Vec<_>>();
+    as_vec.join("")
 }
 #[aoc(day23, part2)]
 pub fn p2(input: &[u32]) -> u64 {
     let mut g = Game::make_game(input, 1_000_000);
     g.run(10_000_000);
-    g.iterate_from(1).take(2).map(u64::from).product()
+    g.iterate_from(1).skip(1).take(2).map(u64::from).product()
 }
