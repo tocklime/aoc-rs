@@ -1,3 +1,4 @@
+use arrayvec::ArrayVec;
 use num::{Num, Signed, Unsigned, abs, traits::{WrappingAdd, WrappingSub}};
 use std::convert::{TryInto, TryFrom};
 use std::collections::HashMap;
@@ -139,6 +140,19 @@ impl<T: Num + WrappingAdd + WrappingSub> Point<T> {
             self.left().up()
         ]
     }
+    pub fn hex_neighbours(&self) -> ArrayVec<[Self; 6]>
+        where T: Copy
+    {
+        [
+            self.up(),
+            self.right(),
+            self.down().right(),
+            self.down(),
+            self.left(),
+            self.left().up()
+        ].into()
+    }
+
 }
 
 impl<T: Num + Signed + Copy + WrappingSub> Point<T> {

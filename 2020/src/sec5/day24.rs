@@ -3,10 +3,9 @@ use crate::utils::nums::NumExt;
 use counter::Counter;
 use std::collections::HashSet;
 
-type P = Point<i32>;
 //COORDS base are +x is e , +y is ne.
 
-pub fn parse_line(input: &str) -> Option<P> {
+pub fn parse_line(input: &str) -> Option<Point<i32>> {
     let mut it = input.chars();
     let mut p = Point::new(0, 0);
     while let Some(c) = it.next() {
@@ -29,8 +28,8 @@ pub fn parse_line(input: &str) -> Option<P> {
     Some(p)
 }
 
-pub fn make_floor(input: &str) -> HashSet<P> {
-    let counts = input.lines().map(parse_line).collect::<Option<Counter<P>>>().unwrap();
+pub fn make_floor(input: &str) -> HashSet<Point<i32>> {
+    let counts = input.lines().map(parse_line).collect::<Option<Counter<Point<i32>>>>().unwrap();
     counts.iter().filter(|x| x.1 % 2 == 1).map(|(&x, _)| x).collect()
 }
 
@@ -39,20 +38,8 @@ pub fn p1(input: &str) -> usize {
     make_floor(input).len()
 }
 
-pub fn hex_neighbours(p: P) -> impl IntoIterator<Item = P> {
-    const NEIGHBOURS: [P; 6] = [
-        Point::new(0, 1), //ne
-        Point::new(1, 0), //e
-        Point::new(-1, 1), //nw
-        Point::new(0, -1), //sw
-        Point::new(-1, 0), //w
-        Point::new(1, -1), //se
-    ];
-    NEIGHBOURS.iter().map(move |&x| x + p)
-}
-
-pub fn step(a: &HashSet<P>) -> HashSet<P> {
-    let cs: Counter<P> = a.iter().copied().flat_map(hex_neighbours).collect();
+pub fn step(a: &HashSet<Point<i32>>) -> HashSet<Point<i32>> {
+    let cs: Counter<Point<i32>> = a.iter().flat_map(Point::hex_neighbours).collect();
     cs.iter()
         .filter(|(p, &c)| c == 2 || (a.contains(p) && c == 1))
         .map(|(a, _)| *a)

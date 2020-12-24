@@ -32,6 +32,7 @@ grid = "0.2.3"
 ndarray = "0.14.0"
 bitvec = "0.20.0"
 nohash-hasher = "0.2.0"
+arrayvec = "0.5.2"
 
 [profile.release]
 debug = true
