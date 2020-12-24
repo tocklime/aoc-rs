@@ -1,79 +1,77 @@
-use std::collections::{HashMap, HashSet};
-
 use crate::utils::cartesian::Point;
+use crate::utils::nums::NumExt;
+use counter::Counter;
+use std::collections::HashSet;
 
-
+type P = Point<i32>;
 //COORDS base are +x is e , +y is ne.
 
-pub fn parse_line(input:&str) -> Point<i32> {
-    let mut point = Point::new(0,0);
-    let mut pending = None;
-    for c in input.chars() {
-        match (pending,c) {
-            (None,'e') => point = point.right(),
-            (None,'w') => point = point.left(),
-            (None,'n') => pending = Some('n'),
-            (None,'s') => pending = Some('s'),
-            (Some('n'),'e') => {
-                pending = None;
-                point = point.up();
+pub fn parse_line(input: &str) -> Option<P> {
+    let mut it = input.chars();
+    let mut p = Point::new(0, 0);
+    while let Some(c) = it.next() {
+        p = match c {
+            'e' => p.right(),
+            'w' => p.left(),
+            'n' => match it.next()? {
+                'e' => p.up(),
+                'w' => p.up().left(),
+                _ => None?,
             },
-            (Some('n'),'w') => {
-                pending = None;
-                point = point.up().left();
+            's' => match it.next()? {
+                'e' => p.down().right(),
+                'w' => p.down(),
+                _ => None?,
             },
-            (Some('s'),'e') => {
-                pending = None;
-                point = point.down().right();
-            },
-            (Some('s'),'w') => {
-                pending = None;
-                point = point.down();
-            },
-            _ => panic!("wat")
+            _ => None?,
         }
     }
-    point
-}
-pub fn make_floor(input: &str) -> HashSet<Point<i32>> {
-    let mut set = HashSet::new();
-    for l in input.lines() {
-        let p = parse_line(l);
-        if set.contains(&p) {
-            set.remove(&p);
-        }else {
-            set.insert(p);
-        }
-    }
-    set
-
+    Some(p)
 }
 
-#[aoc(day24,part1)]
+pub fn make_floor(input: &str) -> HashSet<P> {
+    let counts = input.lines().map(parse_line).collect::<Option<Counter<P>>>().unwrap();
+    counts.iter().filter(|x| x.1 % 2 == 1).map(|(&x, _)| x).collect()
+}
+
+#[aoc(day24, part1)]
 pub fn p1(input: &str) -> usize {
     make_floor(input).len()
 }
-pub fn neighbours(p: &Point<i32>) -> [Point<i32>;6] {
-    [p.up(),p.right(),p.down().right(),p.down(),p.left(),p.up().left()]
+
+pub fn hex_neighbours(p: P) -> impl IntoIterator<Item = P> {
+    const NEIGHBOURS: [P; 6] = [
+        Point::new(0, 1), //ne
+        Point::new(1, 0), //e
+        Point::new(-1, 1), //nw
+        Point::new(0, -1), //sw
+        Point::new(-1, 0), //w
+        Point::new(1, -1), //se
+    ];
+    NEIGHBOURS.iter().map(move |&x| x + p)
 }
-    
-pub fn step(a: &HashSet<Point<i32>>) -> HashSet<Point<i32>> {
-    let mut counts : HashMap<Point<i32>,usize> = HashMap::new();
-    for s in a {
-        for n in &neighbours(s) {
-            *counts.entry(*n).or_default() += 1;
-        }
-    }
-    counts.iter().filter(|(p,c)| {
-        let was_alive = a.contains(p);
-        (**c == 2 && !was_alive) || (was_alive && (1..=2).contains(*c))
-    }).map(|(a,b)| a).copied().collect()
+
+pub fn step(a: &HashSet<P>) -> HashSet<P> {
+    let cs: Counter<P> = a.iter().copied().flat_map(hex_neighbours).collect();
+    cs.iter()
+        .filter(|(p, &c)| c == 2 || (a.contains(p) && c == 1))
+        .map(|(a, _)| *a)
+        .collect()
 }
-#[aoc(day24,part2)]
+
+#[aoc(day24, part2)]
 pub fn p2(input: &str) -> usize {
-    let mut s = make_floor(input);
-    for _ in 0..100 {
-        s = step(&s);
+    100.applications_of_ref(make_floor(input), step).len()
+}
+
+#[cfg(test)]
+mod regression {
+    use super::{p1, p2};
+    const ANS: (usize, usize) = (434, 3955);
+    const INP: &str = include_str!("../../input/2020/day24.txt");
+    #[test]
+    pub fn regression() {
+        assert_eq!(p1(INP), ANS.0);
+        assert_eq!(p2(INP), ANS.1);
     }
-    s.len()
 }

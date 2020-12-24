@@ -80,8 +80,8 @@ impl<T: Default> Default for Point<T> {
     }
 }
 
-impl<T: Num> Point<T> {
-    pub fn new(x: T, y: T) -> Self { Self { x, y } }
+impl<T: Sized> Point<T> {
+    pub const fn new(x: T, y: T) -> Self { Self { x, y } }
 }
 impl<T: Num + WrappingAdd> Point<T> {
     pub fn up(self) -> Self {
