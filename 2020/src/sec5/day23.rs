@@ -107,7 +107,6 @@ pub fn gen(input: &str) -> Vec<u32> {
 #[aoc(day23, part1)]
 pub fn p1(input: &[u32]) -> String {
     let mut g = Game::make_game(input, 9);
-    g.print();
     g.run(100);
     let as_vec = g.iterate_from(1).skip(1).map(|x| x.to_string()).collect::<Vec<_>>();
     as_vec.join("")
