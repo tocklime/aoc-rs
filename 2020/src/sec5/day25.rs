@@ -1,19 +1,16 @@
+
 use crate::utils::nums::mod_pow;
 
+const MOD : u64 = 20_201_227;
+
 #[aoc(day25,part1)]
-pub fn p1(input: &str) -> usize {
-    let keys = input.lines().map(str::parse).collect::<Result<Vec<usize>,_>>().unwrap();
-    let mut loop_sizes = Vec::new();
-    for &k in &keys {
-        for loop_size in 0.. {
-            let mut subject_number = 7;
-            subject_number = mod_pow(subject_number, loop_size, 20201227);
-            if subject_number == k {
-                println!("Found loop_size for {}: {}",k,loop_size);
-                loop_sizes.push(loop_size);
-                break;
-            }
-        }
-    }
-    mod_pow(keys[0],loop_sizes[1],20201227)
+pub fn p1(input: &str) -> u64 {
+    let keys = input.lines().map(str::parse).collect::<Result<Vec<u64>,_>>().unwrap();
+    let mut value = 1;
+    #[allow(clippy::maybe_infinite_iter)]
+    let loop_size = (1..).find(|_| {
+        value = (value * 7) % MOD;
+        value == keys[1]
+    }).unwrap();
+    mod_pow(keys[0],loop_size,MOD)
 }
