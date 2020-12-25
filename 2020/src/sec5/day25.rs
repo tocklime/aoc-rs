@@ -14,3 +14,14 @@ pub fn p1(input: &str) -> u64 {
     }).unwrap();
     mod_pow(keys[0],loop_size,MOD)
 }
+
+#[cfg(test)]
+mod regression {
+    use super::p1;
+    const ANS: u64 = 11_328_376;
+    const INP: &str = include_str!("../../input/2020/day25.txt");
+    #[test]
+    pub fn regression() {
+        assert_eq!(p1(INP), ANS);
+    }
+}
