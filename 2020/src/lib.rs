@@ -1,10 +1,4 @@
-#![warn(
-     clippy::all,
-     clippy::cargo,
-     clippy::pedantic,
-     clippy::nursery,
- )]
-
+#![warn(clippy::all, clippy::cargo, clippy::pedantic, clippy::nursery)]
 #![allow(clippy::must_use_candidate)] //doesn't play nice with aoc part functions.
 #![allow(clippy::cargo_common_metadata)] //I don't want to add this metadata.
 #![allow(clippy::implicit_hasher)] //I don't want to deal with this.
@@ -30,6 +24,5 @@ pub mod sec2;
 pub mod sec3;
 pub mod sec4;
 pub mod sec5;
-pub mod utils;
 
 aoc_lib! { year = 2020 }

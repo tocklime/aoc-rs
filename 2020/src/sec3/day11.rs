@@ -2,7 +2,7 @@ use itertools::{iterate, Itertools};
 use ndarray::Array2;
 use num::traits::WrappingAdd;
 
-use crate::utils::{
+use utils::{
     cartesian::Point,
     cellular_automata::{mut_grid, step_grid, step_grid_into},
 };

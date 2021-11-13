@@ -1,4 +1,4 @@
-use crate::utils::collections::{prefix_sum};
+use utils::collections::{prefix_sum};
 use itertools::Itertools;
 
 #[aoc_generator(day9)]

@@ -5,7 +5,7 @@ use std::{
 
 use itertools::Itertools;
 
-use crate::utils::collections::{Intersections, ToLookup};
+use utils::collections::{Intersections, ToLookup};
 #[derive(Debug)]
 struct Line<'a> {
     ingredients: HashSet<&'a str>,

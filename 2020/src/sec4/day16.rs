@@ -1,6 +1,6 @@
-use crate::utils::inputs::try_parse_many;
 use itertools::Itertools;
 use std::{num::ParseIntError, str::FromStr};
+use utils::inputs::try_parse_many;
 
 #[derive(Debug)]
 pub struct Restriction {

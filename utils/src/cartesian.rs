@@ -1,13 +1,17 @@
+use crate::aabb::Aabb;
 use arrayvec::ArrayVec;
-use num::{Num, Signed, Unsigned, abs, traits::{WrappingAdd, WrappingSub}};
-use std::convert::{TryInto, TryFrom};
+use num::{
+    abs,
+    traits::{WrappingAdd, WrappingSub},
+    Num, Signed, Unsigned,
+};
 use std::collections::HashMap;
+use std::convert::{TryFrom, TryInto};
 use std::fmt::Debug;
-use std::hash::{Hash, BuildHasher};
-use std::ops::{AddAssign, Mul, Add, Sub, RangeInclusive};
-use crate::utils::aabb::Aabb;
+use std::hash::{BuildHasher, Hash};
+use std::ops::{Add, AddAssign, Mul, RangeInclusive, Sub};
 
-use crate::utils::nums::NumExt;
+use crate::nums::NumExt;
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
 pub struct Point<T> {
     pub x: T,
@@ -32,11 +36,11 @@ impl Dir {
             Self::Up => 'U',
             Self::Down => 'D',
             Self::Left => 'L',
-            Self::Right => 'R'
+            Self::Right => 'R',
         }
     }
     pub fn turn_right_n(self, n: u8) -> Self {
-        n.applications_of(self,Self::turn_right)
+        n.applications_of(self, Self::turn_right)
     }
     pub const fn turn_right(self) -> Self {
         match self {
@@ -75,29 +79,43 @@ impl Dir {
 impl<T: Default> Default for Point<T> {
     fn default() -> Self {
         Self {
-            x: Default::default(), 
-            y: Default::default()
+            x: Default::default(),
+            y: Default::default(),
         }
     }
 }
 
 impl<T: Sized> Point<T> {
-    pub const fn new(x: T, y: T) -> Self { Self { x, y } }
+    pub const fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
 }
 impl<T: Num + WrappingAdd> Point<T> {
     pub fn up(self) -> Self {
-        Self { x: self.x, y: self.y.wrapping_add(&T::one()) }
+        Self {
+            x: self.x,
+            y: self.y.wrapping_add(&T::one()),
+        }
     }
     pub fn right(self) -> Self {
-        Self { x: self.x.wrapping_add(&T::one()), y: self.y }
+        Self {
+            x: self.x.wrapping_add(&T::one()),
+            y: self.y,
+        }
     }
 }
 impl<T: Num + WrappingSub> Point<T> {
     pub fn down(self) -> Self {
-        Self { x: self.x, y: self.y.wrapping_sub(&T::one()) }
+        Self {
+            x: self.x,
+            y: self.y.wrapping_sub(&T::one()),
+        }
     }
     pub fn left(self) -> Self {
-        Self { x: self.x.wrapping_sub(&T::one()), y: self.y }
+        Self {
+            x: self.x.wrapping_sub(&T::one()),
+            y: self.y,
+        }
     }
 }
 impl<T: Num + WrappingAdd + WrappingSub> Point<T> {
@@ -117,17 +135,14 @@ impl<T: Num + WrappingAdd + WrappingSub> Point<T> {
         self.follow_x("^v<>", arrow)
     }
     pub fn neighbours(&self) -> [Self; 4]
-        where T: Copy
+    where
+        T: Copy,
     {
-        [
-            self.up(),
-            self.down(),
-            self.left(),
-            self.right(),
-        ]
+        [self.up(), self.down(), self.left(), self.right()]
     }
     pub fn neighbours_with_diagonals(&self) -> [Self; 8]
-        where T: Copy
+    where
+        T: Copy,
     {
         [
             self.up(),
@@ -137,11 +152,12 @@ impl<T: Num + WrappingAdd + WrappingSub> Point<T> {
             self.down(),
             self.down().left(),
             self.left(),
-            self.left().up()
+            self.left().up(),
         ]
     }
-    pub fn hex_neighbours(&self) -> ArrayVec<[Self; 6]>
-        where T: Copy
+    pub fn hex_neighbours(&self) -> ArrayVec<Self, 6>
+    where
+        T: Copy,
     {
         [
             self.up(),
@@ -149,10 +165,10 @@ impl<T: Num + WrappingAdd + WrappingSub> Point<T> {
             self.down().right(),
             self.down(),
             self.left(),
-            self.left().up()
-        ].into()
+            self.left().up(),
+        ]
+        .into()
     }
-
 }
 
 impl<T: Num + Signed + Copy + WrappingSub> Point<T> {
@@ -160,13 +176,13 @@ impl<T: Num + Signed + Copy + WrappingSub> Point<T> {
         abs(self.x) + abs(self.y)
     }
     pub fn rotate_left_about_origin(&self) -> Self {
-        Self::new(-self.y,self.x)
+        Self::new(-self.y, self.x)
     }
     pub fn rotate_right_about_origin(&self) -> Self {
-        Self::new(self.y,-self.x)
+        Self::new(self.y, -self.x)
     }
     pub fn rotate_180_about_origin(&self) -> Self {
-        Self::new(-self.x,-self.y)
+        Self::new(-self.x, -self.y)
     }
 }
 
@@ -177,10 +193,11 @@ impl<T: Num + Unsigned> Point<T> {
 }
 
 pub fn as_point_map<T>(input: &str, increasing_y_is_up: bool) -> HashMap<Point<T>, char>
-    where T: Num + TryFrom<usize> + Hash + Eq + WrappingSub
-    , <T as TryFrom<usize>>::Error: Debug
+where
+    T: Num + TryFrom<usize> + Hash + Eq + WrappingSub,
+    <T as TryFrom<usize>>::Error: Debug,
 {
-    let boxed: Box<dyn Iterator<Item=_>> = if increasing_y_is_up {
+    let boxed: Box<dyn Iterator<Item = _>> = if increasing_y_is_up {
         Box::new(input.lines().rev())
     } else {
         Box::new(input.lines())
@@ -205,7 +222,7 @@ impl<T: AddAssign> AddAssign for Point<T> {
 impl<T: Add + Num> Add for Point<T> {
     type Output = Self;
     fn add(self, other: Self) -> Self {
-        Self::new(self.x+other.x, self.y+other.y)
+        Self::new(self.x + other.x, self.y + other.y)
     }
 }
 impl<T: WrappingAdd + Num> WrappingAdd for Point<T> {
@@ -216,7 +233,9 @@ impl<T: WrappingAdd + Num> WrappingAdd for Point<T> {
 
 impl<T: Sub + Num> Sub for Point<T> {
     type Output = Self;
-    fn sub(self, other: Self) -> Self { Self::new(self.x - other.x, self.y - other.y) }
+    fn sub(self, other: Self) -> Self {
+        Self::new(self.x - other.x, self.y - other.y)
+    }
 }
 
 impl<T: Mul + Copy + Num> Mul<T> for Point<T> {
@@ -233,9 +252,11 @@ impl<T: Mul + Copy + Num + Signed> Mul<T> for Dir {
 }
 
 pub fn point_map_bounding_box<N, T, S>(hm: &HashMap<Point<N>, T, S>) -> Aabb<N>
-    where N: Copy + Num + TryInto<usize> + Ord + WrappingSub,
-          RangeInclusive<N>: Iterator<Item=N>,
-          S: BuildHasher {
+where
+    N: Copy + Num + TryInto<usize> + Ord + WrappingSub,
+    RangeInclusive<N>: Iterator<Item = N>,
+    S: BuildHasher,
+{
     hm.keys().collect()
 }
 
@@ -243,22 +264,21 @@ pub fn render_char_map_w<N, S>(
     m: &HashMap<Point<N>, char, S>,
     width: u8,
     default: char,
-    flip: bool
+    flip: bool,
 ) -> String
-    where S: BuildHasher,
-          N: Copy + Num + TryInto<usize> + Ord + Eq + Hash + WrappingSub,
-          RangeInclusive<N>: Iterator<Item=N>
+where
+    S: BuildHasher,
+    N: Copy + Num + TryInto<usize> + Ord + Eq + Hash + WrappingSub,
+    RangeInclusive<N>: Iterator<Item = N>,
 {
     let bb = point_map_bounding_box(m);
     let v = bb.vec_with(|p| *m.get(&p).unwrap_or(&default));
-    let x = v.iter()
-        .map(|l| {
-            "\n".to_string()
-                + &l.iter()
+    let x = v.iter().map(|l| {
+        "\n".to_string()
+            + &l.iter()
                 .flat_map(|&x| (0..width).map(move |_| x))
                 .collect::<String>()
-        })
-        ;
+    });
     if flip {
         x.rev().collect()
     } else {

@@ -1,5 +1,5 @@
-use crate::utils::cartesian::{Dir, Point};
-use crate::utils::nums::NumExt;
+use utils::cartesian::{Dir, Point};
+use utils::nums::NumExt;
 
 pub fn solve<F>(input: &str,waypoint : Point<i64>, move_fn : F) -> i64 
     where F : Fn(Point<i64>,Point<i64>,Point<i64>) -> (Point<i64>,Point<i64>)

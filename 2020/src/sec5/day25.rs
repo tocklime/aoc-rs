@@ -1,5 +1,5 @@
 
-use crate::utils::nums::mod_pow;
+use utils::nums::mod_pow;
 
 const MOD : u64 = 20_201_227;
 

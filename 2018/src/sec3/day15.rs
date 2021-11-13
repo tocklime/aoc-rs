@@ -47,8 +47,12 @@ impl State {
     fn total_health(&self) -> i32 {
         self.units.values().map(|x| max(x.hp.get(), 0)).sum::<i32>()
     }
-    #[cfg(test)]
+    #[allow(dead_code)]
     fn render(&self) -> String {
+        use std::iter::FromIterator;
+
+        use crate::utils::aabb::Aabb;
+
         let mut ans = String::new();
         let bb: Aabb<i32> = Aabb::from_iter(&mut self.walls.iter().cloned());
         for y in bb.bottom_left.y..=bb.top_right.y {

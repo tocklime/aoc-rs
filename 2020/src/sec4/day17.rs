@@ -1,9 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
-use itertools::{Itertools, repeat_n};
+use itertools::{repeat_n, Itertools};
 
-use crate::utils::cartesian::as_point_map;
-use crate::utils::nums::NumExt;
+use utils::cartesian::as_point_map;
+use utils::nums::NumExt;
 
 #[allow(clippy::needless_pass_by_value)] //I want a specific type signature here to fit in with the fold where it's used.
 pub fn step(world: HashSet<Vec<i64>>) -> HashSet<Vec<i64>> {
@@ -35,7 +35,7 @@ pub fn solve(input: &str, dimensions: usize) -> usize {
             p
         })
         .collect();
-    6.applications_of(world,step).len()
+    6.applications_of(world, step).len()
 }
 
 #[aoc(day17, part1)]

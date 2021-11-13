@@ -1,9 +1,9 @@
 #![allow(clippy::redundant_pattern_matching)]
 
-use reformation::Reformation;
-use pathfinding::directed::astar::astar;
-use num::traits::ToPrimitive;
 use bitintr::*;
+use num::traits::ToPrimitive;
+use pathfinding::directed::astar::astar;
+use reformation::Reformation;
 
 #[derive(Reformation, Copy, Clone, Eq, Hash, PartialEq, Debug, PartialOrd, Ord, ToPrimitive)]
 enum Element {
@@ -31,7 +31,6 @@ enum Item {
     Generator(Element),
 }
 
-
 #[derive(Reformation, Debug, Hash, PartialEq, Eq, Clone, Copy)]
 enum GiveTarget {
     #[reformation("output {}")]
@@ -50,8 +49,8 @@ struct World {
 impl World {
     fn add(&mut self, i: Item, f: usize) {
         match i {
-            Item::Microchip(i) => { self.chips[f] |= 1 << i.to_u8().unwrap() }
-            Item::Generator(i) => { self.gens[f] |= 1 << i.to_u8().unwrap() }
+            Item::Microchip(i) => self.chips[f] |= 1 << i.to_u8().unwrap(),
+            Item::Generator(i) => self.gens[f] |= 1 << i.to_u8().unwrap(),
         }
     }
 
@@ -59,16 +58,16 @@ impl World {
         self.heuristic() == 0
     }
     fn is_safe(&self) -> bool {
-        (0..=3).all(|f| {
-            self.gens[f] == 0 || self.gens[f].andn(self.chips[f]) == 0
-        })
+        (0..=3).all(|f| self.gens[f] == 0 || self.gens[f].andn(self.chips[f]) == 0)
     }
     fn heuristic(&self) -> usize {
         //for each item, 3-floor num.
-        (0..=3).map::<usize, _>(|f| {
-            let pc: usize = (self.chips[f].popcnt() + self.gens[f].popcnt()).into();
-            (3 - f) * pc
-        }).sum()
+        (0..=3)
+            .map::<usize, _>(|f| {
+                let pc: usize = (self.chips[f].popcnt() + self.gens[f].popcnt()).into();
+                (3 - f) * pc
+            })
+            .sum()
     }
 
     fn step_world(&self, new_f: usize, with_chips: u8, with_gens: u8) -> Self {
@@ -103,19 +102,19 @@ impl World {
         while x != 0 {
             let opt = x.blsi();
             x = opt.andn(x);
-            opts.push((opt,0));
+            opts.push((opt, 0));
         }
         //any gen
         let mut gen = self.gens[f];
         while gen != 0 {
             let opt = gen.blsi();
             gen = opt.andn(gen);
-            opts.push((0,opt));
+            opts.push((0, opt));
         }
         //an arbitrary pair.
         if this_pairs != 0 {
             let opt = this_pairs.blsi();
-            opts.push((opt,opt));
+            opts.push((opt, opt));
         }
         //any pair of lone chips
         let mut chips = self.chips[f];
@@ -126,7 +125,7 @@ impl World {
             while y != 0 {
                 let opt_2 = y.blsi();
                 y = opt_2.andn(y);
-                opts.push((opt|opt_2, 0));
+                opts.push((opt | opt_2, 0));
             }
         }
         //any pair of lone gens
@@ -138,39 +137,39 @@ impl World {
             while y != 0 {
                 let opt_2 = y.blsi();
                 y = opt_2.andn(y);
-                opts.push((0,opt|opt_2));
+                opts.push((0, opt | opt_2));
             }
         }
         let mut ans = Vec::new();
         if f > 0 {
             for (chs, gs) in &opts {
-                ans.push(self.step_world(f-1,*chs,*gs));
+                ans.push(self.step_world(f - 1, *chs, *gs));
             }
         }
         if f < 3 {
             for (chs, gs) in &opts {
-                ans.push(self.step_world(f+1,*chs,*gs));
+                ans.push(self.step_world(f + 1, *chs, *gs));
             }
         }
-        (ans.into_iter()
-            .filter_map(|w| if w.is_safe() { Some((w, 1)) } else { None }).collect())
+        ans.into_iter()
+            .filter_map(|w| if w.is_safe() { Some((w, 1)) } else { None })
+            .collect()
     }
 }
 
 fn gen(input: &str) -> World {
-    let fs: Vec<Vec<Item>> = input.lines().map(|f|
-        f.split(" a ").filter_map(|x|
-            Item::parse(x).ok()
-        ).collect()
-    ).collect();
+    let fs: Vec<Vec<Item>> = input
+        .lines()
+        .map(|f| f.split(" a ").filter_map(|x| Item::parse(x).ok()).collect())
+        .collect();
     let mut w = World {
         elevator: 0,
         chips: [0, 0, 0, 0],
         gens: [0, 0, 0, 0],
     };
-    fs.iter().enumerate().for_each(|(f, i_vec)|
-        i_vec.iter().for_each(|i| w.add(*i, f))
-    );
+    fs.iter()
+        .enumerate()
+        .for_each(|(f, i_vec)| i_vec.iter().for_each(|i| w.add(*i, f)));
     w
 }
 
@@ -178,8 +177,11 @@ fn gen(input: &str) -> World {
 #[post(ret == 33)]
 fn p1(input: &str) -> usize {
     let w = gen(input);
-    astar(&w, World::neighbours,World::heuristic,World::is_done)
-        .unwrap().0.len() - 1
+    astar(&w, World::neighbours, World::heuristic, World::is_done)
+        .unwrap()
+        .0
+        .len()
+        - 1
 }
 
 #[aoc(day11, part2)]
@@ -191,5 +193,8 @@ fn p2(input: &str) -> usize {
     w.add(Item::Generator(Element::Dilithium), 0);
     w.add(Item::Microchip(Element::Dilithium), 0);
     astar(&w, World::neighbours, World::heuristic, World::is_done)
-        .unwrap().0.len() - 1
+        .unwrap()
+        .0
+        .len()
+        - 1
 }

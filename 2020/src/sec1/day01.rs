@@ -3,7 +3,7 @@ use std::collections::HashSet;
 
 use itertools::Itertools;
 
-use crate::utils::inputs::parse_input_from_str_sep_by;
+use utils::inputs::parse_input_from_str_sep_by;
 #[aoc_generator(day1)]
 pub fn gen(input: &str) -> Vec<i64> {
     parse_input_from_str_sep_by(input, "\n")

@@ -1,4 +1,4 @@
-use crate::utils::inputs::parse_input_from_str_sep_by;
+use utils::inputs::parse_input_from_str_sep_by;
 use std::convert::TryInto;
 
 type T = u32;

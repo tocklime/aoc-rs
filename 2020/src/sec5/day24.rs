@@ -1,7 +1,7 @@
-use crate::utils::cartesian::Point;
-use crate::utils::nums::NumExt;
 use counter::Counter;
 use std::collections::HashSet;
+use utils::cartesian::Point;
+use utils::nums::NumExt;
 
 //COORDS base are +x is e , +y is ne.
 
@@ -29,7 +29,11 @@ pub fn parse_line(input: &str) -> Option<Point<i32>> {
 }
 
 pub fn make_floor(input: &str) -> HashSet<Point<i32>> {
-    let counts = input.lines().map(parse_line).collect::<Option<Counter<Point<i32>>>>().unwrap();
+    let counts = input
+        .lines()
+        .map(parse_line)
+        .collect::<Option<Counter<Point<i32>>>>()
+        .unwrap();
     counts.iter().filter(|x| x.1 % 2 == 1).map(|(&x, _)| x).collect()
 }
 

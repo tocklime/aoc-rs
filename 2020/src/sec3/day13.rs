@@ -1,4 +1,4 @@
-use crate::utils::nums::chinese_remainder_theorem;
+use utils::nums::chinese_remainder_theorem;
 pub struct Bus {
     id: i64,
     index: i64,

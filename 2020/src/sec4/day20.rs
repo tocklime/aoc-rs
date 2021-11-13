@@ -1,5 +1,9 @@
-use crate::utils::collections::ToLookup;
-use std::{collections::{HashMap, HashSet}, fmt::Debug, str::FromStr};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Debug,
+    str::FromStr,
+};
+use utils::collections::ToLookup;
 
 use itertools::Itertools;
 use ndarray::Array2;
@@ -227,11 +231,7 @@ pub fn p1(input: &str) -> usize {
 
     let map = connections
         .values()
-        .flat_map(move |v| {
-            v.iter()
-                .permutations(2)
-                .map(move |x| (x[0].tile.id, ()))
-        })
+        .flat_map(move |v| v.iter().permutations(2).map(move |x| (x[0].tile.id, ())))
         .collect_lookup();
     let corners: Vec<usize> = map.iter().filter(|x| x.1.len() == 4).map(|x| *x.0).collect();
     corners.iter().product()
@@ -248,11 +248,7 @@ pub fn p2(input: &str) -> usize {
 
     let map: HashMap<usize, Vec<(&Placement, &Placement)>> = connections
         .values()
-        .flat_map(move |v| {
-            v.iter()
-                .permutations(2)
-                .map(move |x| (x[0].tile.id, (x[0], x[1])))
-        })
+        .flat_map(move |v| v.iter().permutations(2).map(move |x| (x[0].tile.id, (x[0], x[1]))))
         .collect_lookup();
     let corner_p = map.iter().find(|x| x.1.len() == 4).unwrap().1;
     let c = corner_p[0].0.tile;

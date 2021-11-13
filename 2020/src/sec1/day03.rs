@@ -1,6 +1,6 @@
 #![warn(clippy::all)]
 
-use crate::utils::inputs::input_from_str_sep_by;
+use utils::inputs::input_from_str_sep_by;
 
 #[aoc_generator(day3)]
 pub fn gen(input: &str) -> Vec<Vec<bool>> {

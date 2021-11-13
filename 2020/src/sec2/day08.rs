@@ -2,7 +2,7 @@ use parse_display::{Display, FromStr};
 use pathfinding::prelude::bfs;
 use std::collections::HashSet;
 
-use crate::utils::nums::add_i;
+use utils::nums::add_i;
 
 #[derive(Display, FromStr, PartialEq, Debug, Clone, Copy)]
 #[display(style = "lowercase")]

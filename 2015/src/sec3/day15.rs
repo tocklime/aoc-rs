@@ -31,7 +31,7 @@ fn evaluate(recipe: Counter<&&Line>, calorie_target: Option<i32>) -> i32 {
 }
 
 #[aoc(day15, part1)]
-#[post(ret == 367_777)]
+//#[post(ret == 367_777)]
 fn p1(input: &str) -> i32 {
     let lines = input.lines().map(|l| Line::parse(l).unwrap()).collect_vec();
     lines.iter().combinations_with_replacement(100).map(|candidate| {
@@ -40,7 +40,7 @@ fn p1(input: &str) -> i32 {
 }
 
 #[aoc(day15, part2)]
-#[post(ret == 3_903_937)]
+//#[post(ret == 3_903_937)]
 fn p2(input: &str) -> i32 {
     let lines = input.lines().map(|l| Line::parse(l).unwrap()).collect_vec();
     lines.iter().combinations_with_replacement(100).map(|candidate| {

@@ -3,7 +3,7 @@ use itertools::Itertools;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
-use crate::utils::inputs::input_from_str_sep_by;
+use utils::inputs::input_from_str_sep_by;
 
 lazy_static! {
     static ref HEIGHT_RE: Regex = Regex::new(r"^(\d+)(cm|in)$").unwrap();
