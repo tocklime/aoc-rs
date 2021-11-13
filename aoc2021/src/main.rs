@@ -1,6 +1,6 @@
 mod day1;
 
-use std::{fmt::Display, path::PathBuf};
+use std::path::PathBuf;
 
 use advent_of_code_traits::Solution;
 use aocf::Aoc;
@@ -28,8 +28,7 @@ fn get_input(day: u32) -> String {
         .parse_cli(false)
         .init()
         .unwrap();
-    let input = aoc.get_input(false).expect("Couldn't get input for day.");
-    input
+    aoc.get_input(false).expect("Couldn't get input for day.")
 }
 
 macro_rules! create_do_day {
