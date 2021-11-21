@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "aoc2021"
+		},
+		{
+			"path": "utils"
+		},
+		{
+			"path": "aoc_harness"
+		},
+		{
+			"path": "aoc_harness_macros"
+		}
+	],
+	"settings": {}
+}
