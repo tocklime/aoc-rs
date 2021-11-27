@@ -1,3 +1,4 @@
+use quote::format_ident;
 use quote::quote;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -149,13 +150,20 @@ impl AocMainInput {
     fn add_part(&self, inner: &mut TokenStream, part_n: u8, part: &PartInput) {
         let year = self.day.year;
         let day = self.day.day;
+        let is_single_solution = part.fns.len() == 1;
         let do_ans_check = match part.ans.as_ref() {
             None => false,
             Some(a) => {
                 inner.extend(quote! {
                     let expected = #a;
-                    println!("Year {} Day {} Part {} expected result: {}",#year,#day,#part_n, expected);
                 });
+                if !is_single_solution {
+                    inner.extend(quote! {
+                        if !test_mode {
+                            println!("Year {} Day {} Part {} expected result: {}",#year,#day,#part_n, expected);
+                        }
+                    });
+                }
                 true
             }
         };
@@ -165,17 +173,43 @@ impl AocMainInput {
                 let solver_name = stringify!(#f);
                 let (t, a) = opts.time_fn(|| #f(&generated));
             });
-            if do_ans_check {
+            if !do_ans_check || is_single_solution {
                 inner.extend(quote! {
-                    println!("Year {} Day {} Part {} via `{}` solved in {}",#year, #day, #part_n, solver_name, aoc_harness::render_duration(t));
-                    if a != expected {
-                        println!("!!! Answer does not match expected: {}", a);
+                    if !test_mode {
+                        println!("Year {} Day {} Part {} via `{}` solved in {}: {}",#year, #day, #part_n, solver_name, aoc_harness::render_duration(t), a);
                     }
                 })
             } else {
                 inner.extend(quote! {
-                    println!("Year {} Day {} Part {} via `{}` solved in {}: {}",#year, #day, #part_n, solver_name, aoc_harness::render_duration(t), a);
+                    if !test_mode {
+                        println!("Year {} Day {} Part {} via `{}` solved in {}",#year, #day, #part_n, solver_name, aoc_harness::render_duration(t));
+                    }
                 })
+            }
+            if do_ans_check {
+                if is_single_solution {
+                    inner.extend(quote! {
+                        if test_mode {
+                            assert_eq!(a,expected);
+                        } else {
+                            if a != expected {
+                                println!("!!! Answer does not match expected");
+                            }
+                        }
+                    });
+                } else {
+                    inner.extend(quote! {
+                        if test_mode {
+                            assert_eq!(a,expected);
+                        } else {
+                            if a != expected {
+                                println!("!!! Answer does not match expected: {}", a);
+                            }
+                        }
+                    });
+                }
+            } else {
+                //if !is_multi_solution || !do_ans_check
             }
         }
     }
@@ -183,7 +217,6 @@ impl AocMainInput {
         let day = self.day.day;
         let year = self.day.year;
         let mut inner = quote! {
-            let opts = aoc_harness::Opts::from_args();
             let s : String = opts.get_input(#year, #day);
         };
         match self.gen.as_ref().map(|z| &z.gen_fn) {
@@ -197,10 +230,19 @@ impl AocMainInput {
         }
         self.add_part(&mut inner, 1, &self.p1);
         self.add_part(&mut inner, 2, &self.p2);
+        let tests_name = format_ident!("test_year_{}_day_{}", (year as u32), day);
         quote! {
             use structopt::StructOpt;
-            pub fn main() {
+            #[test]
+            fn #tests_name() {
+                run_with_opts(aoc_harness::Opts::default(), true);
+            }
+            pub fn run_with_opts(opts: aoc_harness::Opts, test_mode : bool) {
                 #inner
+            }
+            pub fn main() {
+                let opts = aoc_harness::Opts::from_args();
+                run_with_opts(opts,false);
             }
         }
     }
@@ -209,7 +251,7 @@ pub fn generator_id_func(input: &str) -> &str {
     input
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(StructOpt, Debug, Default)]
 pub struct Opts {
     /// Do full benchmarks for each part
     #[structopt(short, long)]
