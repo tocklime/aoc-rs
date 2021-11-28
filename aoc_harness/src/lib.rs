@@ -159,9 +159,7 @@ impl AocMainInput {
                 });
                 if !is_single_solution {
                     inner.extend(quote! {
-                        if !test_mode {
-                            println!("Year {} Day {} Part {} expected result: {}",#year,#day,#part_n, expected);
-                        }
+                        opts.log(||format!("Year {} Day {} Part {} expected result: {:?}",#year,#day,#part_n, expected));
                     });
                 }
                 true
@@ -175,41 +173,23 @@ impl AocMainInput {
             });
             if !do_ans_check || is_single_solution {
                 inner.extend(quote! {
-                    if !test_mode {
-                        println!("Year {} Day {} Part {} via `{}` solved in {}: {}",#year, #day, #part_n, solver_name, aoc_harness::render_duration(t), a);
-                    }
+                    opts.log(||format!("Year {} Day {} Part {} via `{}` solved in {}: {:?}",#year, #day, #part_n, solver_name, aoc_harness::render_duration(t), a));
                 })
             } else {
                 inner.extend(quote! {
-                    if !test_mode {
-                        println!("Year {} Day {} Part {} via `{}` solved in {}",#year, #day, #part_n, solver_name, aoc_harness::render_duration(t));
-                    }
+                    opts.log(||format!("Year {} Day {} Part {} via `{}` solved in {}",#year, #day, #part_n, solver_name, aoc_harness::render_duration(t)));
                 })
             }
             if do_ans_check {
                 if is_single_solution {
                     inner.extend(quote! {
-                        if test_mode {
-                            assert_eq!(a,expected);
-                        } else {
-                            if a != expected {
-                                println!("!!! Answer does not match expected");
-                            }
-                        }
+                        opts.assert_eq(a,expected,false);
                     });
                 } else {
                     inner.extend(quote! {
-                        if test_mode {
-                            assert_eq!(a,expected);
-                        } else {
-                            if a != expected {
-                                println!("!!! Answer does not match expected: {}", a);
-                            }
-                        }
+                        opts.assert_eq(a,expected, true);
                     });
                 }
-            } else {
-                //if !is_multi_solution || !do_ans_check
             }
         }
     }
@@ -233,9 +213,12 @@ impl AocMainInput {
         let tests_name = format_ident!("test_year_{}_day_{}", (year as u32), day);
         quote! {
             use structopt::StructOpt;
-            #[test]
-            fn #tests_name() {
-                run_with_opts(aoc_harness::Opts::default(), true);
+            #[cfg(test)]
+            mod test {
+                #[test]
+                fn #tests_name() {
+                    super::run_with_opts(aoc_harness::Opts::default(), true);
+                }
             }
             pub fn run_with_opts(opts: aoc_harness::Opts, test_mode : bool) {
                 #inner
@@ -259,9 +242,38 @@ pub struct Opts {
     /// Override the input with the contents of this file
     #[structopt(short, long)]
     input: Option<PathBuf>,
+    #[structopt(short, long)]
+    quiet: bool,
+    ///panic if results don't match expected.
+    #[structopt(short, long)]
+    test_mode: bool,
 }
 
 impl Opts {
+    pub fn for_test() -> Self {
+        Self {
+            bench: false,
+            input: None,
+            quiet: true,
+            test_mode: true,
+        }
+    }
+    pub fn log<F: FnOnce() -> String>(&self, f: F) {
+        if !self.quiet {
+            println!("{}", f());
+        }
+    }
+    pub fn assert_eq<T: Eq + core::fmt::Debug>(&self, actual: T, expected: T, print_actual: bool) {
+        if self.test_mode {
+            assert_eq!(actual, expected);
+        } else if actual != expected {
+            if print_actual {
+                self.log(|| format!("!!! Answer does not match expected"));
+            } else {
+                self.log(|| format!("!!! Answer does not match expected: {:?}", actual));
+            }
+        }
+    }
     pub fn get_input(&self, year: i32, day: u8) -> String {
         match &self.input {
             None => {
