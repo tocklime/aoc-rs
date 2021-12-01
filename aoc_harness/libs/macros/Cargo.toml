@@ -8,7 +8,7 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-aoc_harness = { path = "../aoc_harness"}
+aoc_harness_macros_impl = { path = "../macros_impl"}
 proc-macro2 = "1.0.32"
 syn = "1.0.81"
 structopt = "0.3"

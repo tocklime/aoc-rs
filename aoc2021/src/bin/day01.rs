@@ -1,10 +1,6 @@
-use itertools::Itertools;
+use aoc_harness::*;
 
-aoc_harness_macros::aoc_main!(2021 day 1, generator parse_input, [solve::<1>] => 1616, [solve::<3>] => 1645);
-
-fn parse_input(input: &str) -> Vec<u32> {
-    input.lines().map(|x| x.parse().unwrap()).collect()
-}
+aoc_main!(2021 day 1, generator lines::<u32>, [solve::<1>] => 1616, [solve::<3>] => 1645);
 
 fn solve<const N: usize>(input: &[u32]) -> usize {
     input

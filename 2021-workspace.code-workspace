@@ -8,9 +8,6 @@
 		},
 		{
 			"path": "aoc_harness"
-		},
-		{
-			"path": "aoc_harness_macros"
 		}
 	],
 	"settings": {}

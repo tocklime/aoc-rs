@@ -1,5 +1,5 @@
 [package]
-name = "aoc_harness"
+name = "aoc_harness_macros_impl"
 version = "0.1.0"
 edition = "2021"
 
@@ -13,4 +13,3 @@ structopt = "0.3"
 time = "0.3.5"
 aocf = "0.1.13"
 itertools = "0.10.1"
-aoc_harness_macros = { path = "libs/macros"}
