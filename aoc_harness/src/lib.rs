@@ -34,14 +34,14 @@ impl Parse for GeneratorPartInput {
     }
 }
 struct PartInput {
-    fns: Vec<Ident>,
+    fns: Vec<Expr>,
     ans: Option<Expr>,
 }
 impl Parse for PartInput {
     fn parse(input: ParseStream) -> Result<Self> {
         let content;
         let _brackets = bracketed!(content in input);
-        let fns: Punctuated<Ident, Token![,]> = content.parse_terminated(Ident::parse)?;
+        let fns: Punctuated<Expr, Token![,]> = content.parse_terminated(Expr::parse)?;
         let ans = match input.parse::<Token![=>]>() {
             Ok(_) => Some(input.parse::<Expr>()?),
             Err(_) => None,
