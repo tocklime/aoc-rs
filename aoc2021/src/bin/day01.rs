@@ -8,8 +8,24 @@ fn parse_input(input: &str) -> Vec<u32> {
 }
 
 fn part1(input: &Vec<u32>) -> usize {
-    input.len()
+    let mut a = 0;
+    for (x, b) in input.iter().tuple_windows() {
+        if b > x {
+            a += 1;
+        }
+    }
+    a
 }
 fn part2(input: &Vec<u32>) -> usize {
-    input.len()
+    let mut ans = 0;
+    let mut v = Vec::new();
+    for (x, y, z) in input.iter().tuple_windows() {
+        v.push(x + y + z);
+    }
+    for (a, b) in v.iter().tuple_windows() {
+        if b > a {
+            ans += 1;
+        }
+    }
+    ans
 }
