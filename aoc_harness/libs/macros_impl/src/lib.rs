@@ -17,6 +17,17 @@ pub mod all;
 mod kw {
     syn::custom_keyword!(generator);
     syn::custom_keyword!(day);
+    syn::custom_keyword!(bench);
+}
+struct BenchPart {
+    _bench_token: kw::bench,
+}
+impl Parse for BenchPart {
+    fn parse(input: ParseStream) -> Result<Self> {
+        Ok(Self {
+            _bench_token: input.parse()?,
+        })
+    }
 }
 struct GeneratorPartInput {
     _gen_token: kw::generator,
@@ -67,12 +78,15 @@ enum Parts {
     Day(DayInput),
     Gen(GeneratorPartInput),
     Part(PartInput),
+    Bench(BenchPart),
 }
 impl Parse for Parts {
     fn parse(input: ParseStream) -> Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::generator) {
             Ok(Parts::Gen(input.parse()?))
+        } else if lookahead.peek(kw::bench) {
+            Ok(Parts::Bench(input.parse()?))
         } else if lookahead.peek(LitInt) {
             Ok(Parts::Day(input.parse()?))
         } else if lookahead.peek(token::Bracket) {
@@ -87,6 +101,7 @@ pub struct AocMainInput {
     gen: Option<GeneratorPartInput>,
     p1: PartInput,
     p2: PartInput,
+    bench: bool,
 }
 impl Parse for AocMainInput {
     fn parse(input: ParseStream) -> Result<Self> {
@@ -94,6 +109,7 @@ impl Parse for AocMainInput {
         let mut day = None;
         let mut gen = None;
         let mut parts = Vec::new();
+        let mut bench = false;
         for p in punct.into_iter() {
             match p {
                 Parts::Day(d) => {
@@ -113,6 +129,7 @@ impl Parse for AocMainInput {
                 Parts::Part(p) => {
                     parts.push(p);
                 }
+                Parts::Bench(_) => bench = true,
             }
         }
         if day.is_none() {
@@ -140,11 +157,13 @@ impl Parse for AocMainInput {
             gen,
             p1: i.next().unwrap(),
             p2: i.next().unwrap(),
+            bench,
         })
     }
 }
 impl AocMainInput {
-    fn add_part(&self, inner: &mut TokenStream, part_n: u8, part: &PartInput) {
+    fn add_part(&self, part_n: u8, part: &PartInput) -> TokenStream {
+        let mut inner = TokenStream::new();
         let year = self.day.year;
         let day = self.day.day;
         let is_single_solution = part.fns.len() == 1;
@@ -166,63 +185,101 @@ impl AocMainInput {
         for f in &part.fns {
             inner.extend(quote! {
                 let solver_name = stringify!(#f);
-                let (t, a) = opts.time_fn(|| #f(&generated));
+                let full_name = format!("Year {} Day {} Part {} via `{}`",#year,#day, #part_n, solver_name);
             });
-            if !do_ans_check || is_single_solution {
+            if self.bench {
                 inner.extend(quote! {
-                    opts.log(||format!("Year {} Day {} Part {} via `{}` solved in {}: {:?}",#year, #day, #part_n, solver_name, aoc_harness::render_duration(t), a));
-                })
+                    criterion.bench_function(&full_name, |b| b.iter(||#f(&generated)));
+                });
             } else {
                 inner.extend(quote! {
-                    opts.log(||format!("Year {} Day {} Part {} via `{}` solved in {}",#year, #day, #part_n, solver_name, aoc_harness::render_duration(t)));
-                })
-            }
-            if do_ans_check {
-                if is_single_solution {
+                    let (t, a) = opts.time_fn(|| #f(&generated));
+                });
+                if !do_ans_check || is_single_solution {
                     inner.extend(quote! {
-                        opts.assert_eq(a,expected,false);
-                    });
+                    opts.log(||format!("{} solved in {}: {:?}",&full_name, aoc_harness::render_duration(t), a));
+                })
                 } else {
                     inner.extend(quote! {
-                        opts.assert_eq(a,expected, true);
+                        opts.log(||format!("{} solved in {}",&full_name, aoc_harness::render_duration(t)));
                     });
+                }
+                if do_ans_check {
+                    if is_single_solution {
+                        inner.extend(quote! {
+                            opts.assert_eq(a,expected,false);
+                        });
+                    } else {
+                        inner.extend(quote! {
+                            opts.assert_eq(a,expected, true);
+                        });
+                    }
                 }
             }
         }
+        inner
     }
     pub fn do_macro(&self) -> TokenStream {
         let day = self.day.day;
         let year = self.day.year;
-        let mut inner = quote! {
+        let mut setup = quote! {
             let s : String = opts.get_input(#year, #day);
         };
         match self.gen.as_ref().map(|z| &z.gen_fn) {
-            Some(g) => inner.extend(quote! {
+            Some(g) => setup.extend(quote! {
                 let (t, generated) = opts.time_fn(||#g(&s));
-                println!("Year {} Day {} generated in {}", #year, #day, aoc_harness::render_duration(t));
+                opts.log(||format!("Year {} Day {} generated in {}", #year, #day, aoc_harness::render_duration(t)));
             }),
-            None => inner.extend(quote! {
+            None => setup.extend(quote! {
                 let generated = s;
             }),
         }
-        self.add_part(&mut inner, 1, &self.p1);
-        self.add_part(&mut inner, 2, &self.p2);
+        let part1 = self.add_part(1, &self.p1);
+        let part2 = self.add_part(2, &self.p2);
         let tests_name = format_ident!("test_year_{}_day_{}", (year as u32), day);
-        quote! {
-            use structopt::StructOpt;
-            #[cfg(test)]
-            mod test {
-                #[test]
-                fn #tests_name() {
-                    super::run_with_opts(aoc_harness::Opts::default(), true);
+        if self.bench {
+            quote! {
+                pub fn part1(criterion : &mut criterion::Criterion) {
+                    let test_mode : bool = true;
+                    let opts = aoc_harness::Opts::for_test();
+                    #setup;
+                    #part1;
+                }
+                pub fn part2(criterion : &mut criterion::Criterion) {
+                    let test_mode : bool = true;
+                    let opts = aoc_harness::Opts::for_test();
+                    #setup;
+                    #part2;
+                }
+                pub fn benches() {
+                    let mut criterion = criterion::Criterion::default();
+                    part1(&mut criterion);
+                    part2(&mut criterion);
+                }
+                fn main() {
+                    benches();
+                    criterion::Criterion::default().final_summary();
                 }
             }
-            pub fn run_with_opts(opts: aoc_harness::Opts, test_mode : bool) {
-                #inner
-            }
-            pub fn main() {
-                let opts = aoc_harness::Opts::from_args();
-                run_with_opts(opts,false);
+        } else {
+            quote! {
+                use structopt::StructOpt;
+                #[cfg(test)]
+                mod test {
+                    #[test]
+                    fn #tests_name() {
+                        super::run_with_opts(aoc_harness::Opts::default(), true);
+                    }
+                }
+                pub fn run_with_opts(opts: aoc_harness::Opts, test_mode : bool) {
+                    #setup
+                    #part1
+                    #part2
+                }
+                pub fn main() {
+                    let opts = aoc_harness::Opts::from_args();
+                    run_with_opts(opts,false);
+                }
             }
         }
     }

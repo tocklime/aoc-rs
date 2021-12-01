@@ -14,3 +14,4 @@ time = "0.3.5"
 aocf = "0.1.13"
 itertools = "0.10.1"
 aoc_harness_macros = { path = "libs/macros"}
+criterion = "0.3.5"

@@ -8,9 +8,6 @@ use structopt::StructOpt;
 
 #[derive(StructOpt, Debug, Default)]
 pub struct Opts {
-    /// Do full benchmarks for each part
-    #[structopt(short, long)]
-    bench: bool,
     /// Override the input with the contents of this file
     #[structopt(short, long)]
     input: Option<PathBuf>,
@@ -24,7 +21,6 @@ pub struct Opts {
 impl Opts {
     pub fn for_test() -> Self {
         Self {
-            bench: false,
             input: None,
             quiet: true,
             test_mode: true,
@@ -65,11 +61,7 @@ impl Opts {
     where
         F: FnOnce() -> O,
     {
-        if self.bench {
-            unimplemented!()
-        } else {
-            time::Duration::time_fn(f)
-        }
+        time::Duration::time_fn(f)
     }
 }
 
