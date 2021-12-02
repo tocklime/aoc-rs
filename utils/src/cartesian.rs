@@ -191,6 +191,11 @@ impl<T: Num + Unsigned> Point<T> {
         self.x + self.y
     }
 }
+impl <T: Mul> Point<T> {
+    pub fn summary_by_product(self) -> <T as Mul>::Output {
+        self.x * self.y
+    }
+}
 
 pub fn as_point_map<T>(input: &str, increasing_y_is_up: bool) -> HashMap<Point<T>, char>
 where

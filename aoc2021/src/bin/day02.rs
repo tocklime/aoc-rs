@@ -4,49 +4,67 @@ use aoc_harness::*;
 use sscanf::scanf;
 use utils::cartesian::{Dir, Point};
 
-aoc_main!(2021 day 2, [p1], []);
+aoc_main!(2021 day 2, generator lines::<Instruction>, [p1] => 1868935, [p2] => 1965970888);
 
-struct X {
+struct Instruction {
     dir: Dir,
+    distance: isize,
 }
-impl FromStr for X {
+impl FromStr for Instruction {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (min, max, letter, password) = scanf!(s, "{}-{} {}: {}", usize, usize, char, String)
-            .ok_or_else(|| format!("Bad input: {}", s))?;
-        todo!()
-    }
-}
-fn p1(input: &str) -> isize {
-    let mut pos: Point<isize> = Point::new(0, 0);
-    let mut aim: isize = 0;
-    for ins in input.lines() {
-        let (dir, x) = scanf!(ins, "{} {}", String, isize).unwrap();
-        match dir.as_ref() {
-            "forward" => {
-                pos += Dir::Right * x + Dir::Up * aim * x;
-            }
-            "up" => {
-                aim -= x;
-            }
-            "down" => {
-                aim += x;
-            }
+        let (dir, distance) = scanf!(s, "{} {}", String, isize).unwrap();
+        let dir = match dir.as_ref() {
+            "forward" => Dir::Right,
+            "up" => Dir::Down,
+            "down" => Dir::Up,
             _ => unreachable!(),
         };
-        dbg!(dir, x, aim, pos);
+        Ok(Self { dir, distance })
     }
-    pos.x * pos.y
 }
 
-#[test]
-fn test_eg1() {
-    let input = r#"forward 5
+fn p1(input: &[Instruction]) -> isize {
+    input
+        .iter()
+        .fold(Point::<isize>::new(0, 0), |pos, ins| {
+            pos + ins.dir * ins.distance
+        })
+        .summary_by_product()
+}
+
+fn p2(input: &[Instruction]) -> isize {
+    input
+        .iter()
+        .fold((Point::default(), 0), |(pos, aim), ins| match ins.dir {
+            Dir::Right => (
+                pos + (Dir::Right * ins.distance) + Dir::Up * aim * ins.distance,
+                aim,
+            ),
+            Dir::Down => (pos, aim - ins.distance),
+            Dir::Up => (pos, aim + ins.distance),
+            _ => unreachable!(),
+        })
+        .0
+        .summary_by_product()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    const EG1: &str = r#"forward 5
 down 5
 forward 8
 up 3
 down 8
 forward 2"#;
-    assert_eq!(p1(input), 900);
+    #[test]
+    fn test_eg1_p1() {
+        assert_eq!(p1(&lines::<Instruction>(EG1)), 150);
+    }
+    #[test]
+    fn test_eg1_p2() {
+        assert_eq!(p2(&lines::<Instruction>(EG1)), 900);
+    }
 }
