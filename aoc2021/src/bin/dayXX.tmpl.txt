@@ -1,0 +1,17 @@
+use std::str::FromStr;
+
+use aoc_harness::*;
+
+aoc_main!(2021 day 2, generator lines::<X>, [p1], []);
+
+struct X {}
+impl FromStr for X {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        todo!()
+    }
+}
+fn p1(input: &[X]) -> usize {
+    input.len()
+}
