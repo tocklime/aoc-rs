@@ -191,8 +191,8 @@ impl<T: Num + Unsigned> Point<T> {
         self.x + self.y
     }
 }
-impl <T: Mul> Point<T> {
-    pub fn summary_by_product(self) -> <T as Mul>::Output {
+impl<T: Mul> Point<T> {
+    pub fn area(self) -> <T as Mul>::Output {
         self.x * self.y
     }
 }
