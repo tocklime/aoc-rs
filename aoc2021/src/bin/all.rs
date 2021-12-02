@@ -1,1 +1,1 @@
-aoc_harness_macros::aoc_all_main!("src/bin", "day");
+aoc_harness::aoc_all_main!("src/bin", "day");

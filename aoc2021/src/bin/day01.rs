@@ -1,6 +1,6 @@
 use aoc_harness::*;
 
-aoc_main!(2021 day 1, generator lines::<usize>, [solve::<1>, solve2::<1>] => 1616, [part2_fastest, solve::<3>, solve2::<3>] => 1645, bench);
+aoc_main!(2021 day 1, generator lines::<usize>, [solve::<1>, solve2::<1>] => 1616, [part2_fastest, solve::<3>, solve2::<3>] => 1645);
 
 fn solve<const N: usize>(input: &[usize]) -> usize {
     input
