@@ -15,32 +15,28 @@ fn gen(input: &str) -> Day3 {
     let width = input.lines().next().unwrap().chars().count();
     Day3 { nums, width }
 }
+fn ones_count_at_pos(nums: &[usize], pos: usize) -> usize {
+    nums.iter().filter(|x| x.get_bit(pos)).count()
+}
 fn p1(input: &Day3) -> usize {
-    let mut ones_counts = vec![0; input.width];
-    for x in &input.nums {
-        for (ix, count) in ones_counts.iter_mut().enumerate() {
-            *count += x.get_bit(ix) as usize;
-        }
-    }
-    let mut epsilon = 0;
-    for (ix, &ones) in ones_counts.iter().enumerate() {
-        epsilon.set_bit(ix, 2 * ones > input.nums.len());
-    }
+    let epsilon = (0..input.width).fold(0, |epsilon, ix| {
+        let ones_count = ones_count_at_pos(&input.nums, ix);
+        //there's more ones than zeroes iff 2 * ones_count is bigger than the list.
+        epsilon.with_set_bit(ix, 2 * ones_count > input.nums.len())
+    });
     let gamma = !epsilon & ((1 << input.width) - 1);
     epsilon * gamma
 }
 fn filter_on(input: &[usize], width: usize, prefer_ones: bool) -> usize {
     let mut list = input.to_vec();
-    for ix in 0..=width {
-        if list.len() <= 1 {
-            return list[0];
-        }
-        let bit_ix = width - 1 - ix;
-        let pos_1s = list.iter().filter(|&&x| x.get_bit(bit_ix)).count();
+    let mut ix = width;
+    while list.len() > 1 {
+        ix -= 1;
+        let pos_1s = ones_count_at_pos(&list, ix);
         let target_bit_value = prefer_ones ^ (2 * pos_1s < list.len());
-        list.retain(|x| x.get_bit(bit_ix) == target_bit_value);
+        list.retain(|x| x.get_bit(ix) == target_bit_value);
     }
-    unreachable!()
+    list[0]
 }
 
 fn p2(input: &Day3) -> usize {
