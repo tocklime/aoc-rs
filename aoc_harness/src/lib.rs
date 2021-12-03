@@ -31,15 +31,16 @@ impl Opts {
             println!("{}", f());
         }
     }
-    pub fn assert_eq<T: Eq + core::fmt::Debug>(&self, actual: T, expected: T, print_actual: bool) {
+    pub fn assert_eq<T: Eq + core::fmt::Debug>(&self, actual: T, expected: T) {
         if self.test_mode {
             assert_eq!(actual, expected);
         } else if actual != expected {
-            if print_actual {
-                self.log(|| format!("!!! Answer does not match expected"));
-            } else {
-                self.log(|| format!("!!! Answer does not match expected: {:?}", actual));
-            }
+            self.log(|| {
+                format!(
+                    "!!! Answer does not match expected: {:?} != {:?}",
+                    actual, expected
+                )
+            });
         }
     }
     pub fn get_input(&self, year: i32, day: u8) -> String {

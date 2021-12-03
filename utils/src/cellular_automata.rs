@@ -38,7 +38,11 @@ where
     T: PartialEq + Clone,
     F: Fn(&Array2<T>, &T, (usize, usize)) -> T,
 {
-    let deltas: Vec<_> = g
+    //I know this looks like a needless collect, but I need to
+    //collect all the necessary changes, and then apply them to the grid, otherwise
+    //the borrow checker gets angry. (and rightly so)
+    #[allow(clippy::needless_collect)]
+    let deltas = g
         .indexed_iter()
         .filter_map(|(p, curr)| {
             let new = f(g, curr, p);
@@ -48,9 +52,6 @@ where
                 Some((p, new))
             }
         })
-        .collect();
-    //I know this looks like a suspicious_map, but I really do want
-    //the length of the whole list, and not some filtered version.
-    #[allow(clippy::suspicious_map)]
+        .collect::<Vec<_>>();
     deltas.into_iter().map(|(p, new)| g[p] = new).count()
 }

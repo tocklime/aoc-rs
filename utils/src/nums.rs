@@ -94,6 +94,7 @@ where
     N: Shl<usize, Output = N>,
     N: Not<Output = N>,
 {
+    #[inline]
     fn with_set_bit(self, bit_ix: usize, bit_value: bool) -> Self {
         if bit_value {
             self | (N::one() << bit_ix)
@@ -102,10 +103,12 @@ where
         }
     }
 
+    #[inline]
     fn get_bit(self, bit_ix: usize) -> bool {
         (self & (N::one() << bit_ix)) != N::zero()
     }
 
+    #[inline]
     fn set_bit(&mut self, bit_ix: usize, bit_value: bool) {
         *self = self.with_set_bit(bit_ix, bit_value);
     }

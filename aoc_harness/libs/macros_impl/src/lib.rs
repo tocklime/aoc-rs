@@ -205,15 +205,9 @@ impl AocMainInput {
                     });
                 }
                 if do_ans_check {
-                    if is_single_solution {
-                        inner.extend(quote! {
-                            opts.assert_eq(a,expected,false);
-                        });
-                    } else {
-                        inner.extend(quote! {
-                            opts.assert_eq(a,expected, true);
-                        });
-                    }
+                    inner.extend(quote! {
+                        opts.assert_eq(a,expected);
+                    });
                 }
             }
         }
