@@ -1,75 +1,53 @@
-use std::collections::{HashMap, HashSet};
-
 use aoc_harness::*;
+use utils::nums::NumBitExt;
 
-aoc_main!(2021 day 3, [p1], [p2] => 587895);
+aoc_main!(2021 day 3, generator gen, [p1] => 4001724, [p2] => 587895);
 
-fn p1(input: &str) -> usize {
-    let mut position_popularity = HashMap::new();
-    let mut len = 0;
-    for l in input.lines() {
-        len = l.len();
-        for (ix, c) in l.chars().enumerate() {
-            let mut x = position_popularity.entry(ix).or_insert((0, 0));
-            match c {
-                '0' => x.0 += 1,
-                '1' => x.1 += 1,
-                _ => unreachable!(),
-            };
+struct Day3 {
+    width: usize,
+    nums: Vec<usize>,
+}
+fn gen(input: &str) -> Day3 {
+    let nums = input
+        .lines()
+        .map(|x| usize::from_str_radix(x, 2).unwrap())
+        .collect();
+    let width = input.lines().next().unwrap().chars().count();
+    Day3 { nums, width }
+}
+fn p1(input: &Day3) -> usize {
+    let mut ones_counts = vec![0; input.width];
+    for x in &input.nums {
+        for (ix, count) in ones_counts.iter_mut().enumerate() {
+            *count += x.get_bit(ix) as usize;
         }
     }
-    let mut eps = 0;
-    let mut gamma = 0;
-    for (k, v) in position_popularity {
-        if v.1 > v.0 {
-            eps |= 1 << (len - k - 1)
-        } else {
-            gamma |= 1 << (len - k - 1)
-        }
+    let mut epsilon = 0;
+    let half = input.nums.len() / 2;
+    for (ix, &ones) in ones_counts.iter().enumerate() {
+        epsilon.set_bit(ix, ones > half);
     }
-
-    eps * gamma
+    let gamma = !epsilon & ((1 << input.width) - 1);
+    epsilon * gamma
+}
+fn filter_on(input: &[usize], width: usize, prefer_ones: bool) -> usize {
+    let mut list = input.to_vec();
+    for ix in 0.. {
+        if list.len() <= 1 {
+            return list[0];
+        }
+        let bit_ix = width - 1 - (ix % width);
+        let pos_1s = list.iter().filter(|&&x| x.get_bit(bit_ix)).count();
+        let target_bit_value = prefer_ones ^ (pos_1s < (list.len() / 2));
+        list.retain(|x| x.get_bit(bit_ix) == target_bit_value);
+    }
+    unreachable!()
 }
 
-fn p2(input: &str) -> usize {
-    let mut all_nums = HashSet::new();
-    let mut len = 0;
-    for l in input.lines() {
-        len = l.len();
-        let mut this_num = 0;
-        for (ix, c) in l.chars().enumerate() {
-            if c == '1' {
-                this_num |= 1 << (len - ix - 1);
-            }
-        }
-        all_nums.insert(this_num);
-    }
-    let mut co2 = all_nums.clone();
-    let mut ix = 0;
-    while co2.len() > 1 {
-        let count = co2.len();
-        let bit = 1 << len - 1 - (ix % len);
-        let pos_1s = co2.iter().filter(|&&x| (x & bit) != 0).count();
-        let pos_0s = count - pos_1s;
-        let target_bit = if pos_1s >= pos_0s { bit } else { 0 };
-        co2 = co2.drain().filter(|x| x & bit == target_bit).collect();
-        ix += 1;
-    }
-    dbg!(&co2);
-    let mut oxy = all_nums.clone();
-    let mut ix = len;
-    while oxy.len() > 1 {
-        let count = oxy.len();
-        let bit = 1 << len - 1 - (ix % len);
-        let pos_1s = oxy.iter().filter(|&&x| x & bit != 0).count();
-        let pos_0s = count - pos_1s;
-        let target_bit = if pos_0s > pos_1s { bit } else { 0 };
-        dbg!(&oxy, bit, pos_1s, pos_0s, target_bit);
-        oxy = oxy.drain().filter(|x| x & bit == target_bit).collect();
-        ix += 1;
-    }
-    dbg!(&oxy);
-    co2.iter().next().unwrap() * oxy.iter().next().unwrap()
+fn p2(input: &Day3) -> usize {
+    let oxy = filter_on(&input.nums, input.width, true);
+    let co2 = filter_on(&input.nums, input.width, false);
+    co2 * oxy
 }
 
 #[cfg(test)]

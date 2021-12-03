@@ -3,7 +3,7 @@ use num::{Integer, Num, One, Signed, Zero};
 use std::{
     convert::TryInto,
     iter::{Product, Sum},
-    ops::{Add, Shr},
+    ops::{Add, BitAnd, BitOr, Not, Shl, Shr},
 };
 
 pub fn mod_pow<T>(mut base: T, mut exp: T, modulus: T) -> T
@@ -79,5 +79,34 @@ where
             s = s + Self::one();
         }
         x
+    }
+}
+pub trait NumBitExt {
+    fn with_set_bit(self, bit_ix: usize, bit_value: bool) -> Self;
+    fn set_bit(&mut self, bit_ix: usize, bit_value: bool);
+    fn get_bit(self, bit_ix: usize) -> bool;
+}
+impl<N: Num + Copy> NumBitExt for N
+where
+    N: Num,
+    N: BitOr<Output = N>,
+    N: BitAnd<Output = N>,
+    N: Shl<usize, Output = N>,
+    N: Not<Output = N>,
+{
+    fn with_set_bit(self, bit_ix: usize, bit_value: bool) -> Self {
+        if bit_value {
+            self | (N::one() << bit_ix)
+        } else {
+            self & !(N::one() << bit_ix)
+        }
+    }
+
+    fn get_bit(self, bit_ix: usize) -> bool {
+        (self & (N::one() << bit_ix)) != N::zero()
+    }
+
+    fn set_bit(&mut self, bit_ix: usize, bit_value: bool) {
+        *self = self.with_set_bit(bit_ix, bit_value);
     }
 }
