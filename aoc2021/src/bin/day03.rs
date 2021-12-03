@@ -42,6 +42,7 @@ fn filter_on(input: &[usize], width: usize, prefer_ones: bool) -> usize {
     }
     unreachable!()
 }
+
 fn p2(input: &Day3) -> usize {
     let oxy = filter_on(&input.nums, input.width, true);
     let co2 = filter_on(&input.nums, input.width, false);
