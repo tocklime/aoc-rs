@@ -23,27 +23,25 @@ fn p1(input: &Day3) -> usize {
         }
     }
     let mut epsilon = 0;
-    let half = input.nums.len() / 2;
     for (ix, &ones) in ones_counts.iter().enumerate() {
-        epsilon.set_bit(ix, ones > half);
+        epsilon.set_bit(ix, 2 * ones > input.nums.len());
     }
     let gamma = !epsilon & ((1 << input.width) - 1);
     epsilon * gamma
 }
 fn filter_on(input: &[usize], width: usize, prefer_ones: bool) -> usize {
     let mut list = input.to_vec();
-    for ix in 0.. {
+    for ix in 0..=width {
         if list.len() <= 1 {
             return list[0];
         }
-        let bit_ix = width - 1 - (ix % width);
+        let bit_ix = width - 1 - ix;
         let pos_1s = list.iter().filter(|&&x| x.get_bit(bit_ix)).count();
-        let target_bit_value = prefer_ones ^ (pos_1s < (list.len() / 2));
+        let target_bit_value = prefer_ones ^ (2 * pos_1s < list.len());
         list.retain(|x| x.get_bit(bit_ix) == target_bit_value);
     }
     unreachable!()
 }
-
 fn p2(input: &Day3) -> usize {
     let oxy = filter_on(&input.nums, input.width, true);
     let co2 = filter_on(&input.nums, input.width, false);
@@ -69,10 +67,10 @@ mod tests {
 
     #[test]
     pub fn tp1() {
-        assert_eq!(p1(EG), 198);
+        assert_eq!(p1(&gen(EG)), 198);
     }
     #[test]
     pub fn tp2() {
-        assert_eq!(p2(EG), 230);
+        assert_eq!(p2(&gen(EG)), 230);
     }
 }
