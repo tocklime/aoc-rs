@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use aoc_harness::*;
 
-aoc_main!(2021 day 2, generator lines::<X>, [p1], []);
+aoc_main!(2021 day 3, generator lines::<X>, [p1], [p2]);
 
 struct X {}
 impl FromStr for X {
@@ -13,5 +13,9 @@ impl FromStr for X {
     }
 }
 fn p1(input: &[X]) -> usize {
+    input.len()
+}
+
+fn p2(input: &[X]) -> usize {
     input.len()
 }
