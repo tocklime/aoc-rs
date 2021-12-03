@@ -1,6 +1,6 @@
 //Convenience re-exports
 
-use std::{path::PathBuf, str::FromStr};
+use std::{path::PathBuf, str::FromStr, time::Instant};
 
 pub use aoc_harness_macros::*;
 pub use itertools::Itertools;
@@ -57,23 +57,40 @@ impl Opts {
             Some(f) => std::fs::read_to_string(f).expect("Couldn't read file"),
         }
     }
-    pub fn time_fn<O, F>(&self, f: F) -> (time::Duration, O)
+    pub fn time_fn<O, F>(&self, f: F) -> (std::time::Duration, O)
     where
-        F: FnOnce() -> O,
+        F: Fn() -> O,
     {
-        time::Duration::time_fn(f)
+        let start = Instant::now();
+        let ans = f();
+        let end = Instant::now();
+        let dur = end - start;
+        let target_dur = std::time::Duration::new(0, 50_000_000);
+        if dur < target_dur {
+            //took less than 20ms. How many could we do in 50ms?
+            let c = (target_dur.as_secs_f64() / dur.as_secs_f64()) as usize;
+            let start = Instant::now();
+            for _ in 0..c {
+                f();
+            }
+            let end = Instant::now();
+            let overall = (end - start).as_secs_f64() / (c as f64);
+            (std::time::Duration::from_secs_f64(overall), ans)
+        } else {
+            (dur, ans)
+        }
     }
 }
 
-pub fn render_duration(d: time::Duration) -> String {
-    let (n, unit) = if d.whole_seconds() > 0 {
-        (d.whole_seconds(), "s")
-    } else if d.subsec_milliseconds() > 0 {
-        (d.subsec_milliseconds().into(), "ms")
-    } else if d.subsec_microseconds() > 0 {
-        (d.subsec_microseconds().into(), "µs")
+pub fn render_duration(d: std::time::Duration) -> String {
+    let (n, unit) = if d.as_secs() > 0 {
+        (d.as_secs().into(), "s")
+    } else if d.as_millis() > 0 {
+        (d.as_millis(), "ms")
+    } else if d.as_micros() > 0 {
+        (d.as_micros(), "µs")
     } else {
-        (d.subsec_nanoseconds().into(), "ns")
+        (d.as_nanos(), "ns")
     };
     format!("{} {}", n, unit)
 }
