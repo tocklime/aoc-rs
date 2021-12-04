@@ -262,17 +262,19 @@ impl AocMainInput {
                 mod test {
                     #[test]
                     fn #tests_name() {
-                        super::run_with_opts(aoc_harness::Opts::default(), true);
+                        super::run_with_opts(&aoc_harness::Opts::default(), true);
                     }
                 }
-                pub fn run_with_opts(opts: aoc_harness::Opts, test_mode : bool) {
+                pub fn run_with_opts(opts: &aoc_harness::Opts, test_mode : bool) {
                     #setup
                     #part1
                     #part2
                 }
                 pub fn main() {
                     let opts = aoc_harness::Opts::from_args();
-                    run_with_opts(opts,false);
+                    for _ in 0..opts.repeats {
+                        run_with_opts(&opts,false);
+                    }
                 }
             }
         }

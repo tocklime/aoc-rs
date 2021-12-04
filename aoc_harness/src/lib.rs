@@ -10,12 +10,14 @@ use structopt::StructOpt;
 pub struct Opts {
     /// Override the input with the contents of this file
     #[structopt(short, long)]
-    input: Option<PathBuf>,
+    pub input: Option<PathBuf>,
     #[structopt(short, long)]
-    quiet: bool,
+    pub quiet: bool,
     ///panic if results don't match expected.
     #[structopt(short, long)]
-    test_mode: bool,
+    pub test_mode: bool,
+    #[structopt(short, long, default_value = "1")]
+    pub repeats: usize,
 }
 
 impl Opts {
@@ -24,6 +26,7 @@ impl Opts {
             input: None,
             quiet: true,
             test_mode: true,
+            repeats: 1,
         }
     }
     pub fn log<F: FnOnce() -> String>(&self, f: F) {
