@@ -1,29 +1,36 @@
 use aoc_harness::*;
 use ndarray::Array2;
-use std::{collections::HashSet, str::FromStr};
+use std::str::FromStr;
 
 aoc_main!(2021 day 4, generator whole_input_is::<Day04>, [p1] => 60368, [p2] => 17435);
 
+const MARKED: u8 = 255;
 #[derive(Clone, Debug)]
 struct Board {
-    grid: Array2<u8>,
+    grid: Array2<u8>, //255 == marked.
+    locs: [Option<(usize, usize)>; 100],
 }
 impl Board {
-    fn is_won(&self, drawn: &HashSet<u8>) -> bool {
+    fn is_won(&self) -> bool {
         self.grid
             .rows()
             .into_iter()
-            .any(|l| l.iter().all(|c| drawn.contains(c)))
+            .any(|l| l.iter().all(|c| *c == MARKED))
             || self
                 .grid
                 .columns()
                 .into_iter()
-                .any(|l| l.iter().all(|c| drawn.contains(c)))
+                .any(|l| l.iter().all(|c| *c == MARKED))
     }
-    fn score(&self, drawn: &HashSet<u8>) -> usize {
+    fn mark_off(&mut self, num: u8) {
+        if let Some(p) = self.locs[num as usize] {
+            *self.grid.get_mut(p).unwrap() = MARKED;
+        }
+    }
+    fn score(&self) -> usize {
         self.grid
             .iter()
-            .filter(|c| !drawn.contains(c))
+            .filter(|c| **c != MARKED)
             .map(|&x| x as usize)
             .sum::<usize>()
     }
@@ -50,39 +57,46 @@ impl FromStr for Board {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let nums = s
+        let nums: Vec<u8> = s
             .split_whitespace()
             .map(|x| x.parse::<u8>().unwrap())
             .collect();
+        let mut locs = [None; 100];
+        for (ix, &n) in nums.iter().enumerate() {
+            locs[n as usize] = Some((ix / 5, ix % 5));
+        }
         let grid = Array2::from_shape_vec((5, 5), nums).unwrap();
-        Ok(Self { grid })
+        Ok(Self { grid, locs })
     }
 }
 fn p1(input: &Day04) -> usize {
-    let mut drawn = HashSet::new();
+    let mut input: Day04 = input.clone();
     for &x in &input.num_seq {
-        drawn.insert(x);
-        let won = input.boards.iter().filter(|x| x.is_won(&drawn)).next();
-        if let Some(b) = won {
-            return (x as usize) * b.score(&drawn);
+        for b in input.boards.iter_mut() {
+            b.mark_off(x);
+            if b.is_won() {
+                return (x as usize) * b.score();
+            }
         }
     }
     0
 }
 
 fn p2(input: &Day04) -> usize {
-    let mut boards: Vec<&Board> = input.boards.iter().collect();
-    let mut drawn = HashSet::new();
+    let mut input: Day04 = input.clone();
     for &x in &input.num_seq {
-        drawn.insert(x);
-        match boards[..] {
+        for b in input.boards.iter_mut() {
+            b.mark_off(x);
+        }
+
+        match &mut input.boards[..] {
             [only_board] => {
-                if only_board.is_won(&drawn) {
-                    return (x as usize) * only_board.score(&drawn);
+                if only_board.is_won() {
+                    return (x as usize) * only_board.score();
                 }
             }
             _ => {
-                boards.retain(|b| !b.is_won(&drawn));
+                input.boards.retain(|b| !b.is_won());
             }
         }
     }
@@ -126,11 +140,12 @@ mod tests {
 ";
     #[test]
     fn t2() {
-        let cw_b = COL_WIN.parse::<Board>().unwrap();
-        let rw_b = ROW_WIN.parse::<Board>().unwrap();
-        let hs_1 = vec![1].into_iter().collect::<HashSet<_>>();
-        assert!(cw_b.is_won(&hs_1));
-        assert!(rw_b.is_won(&hs_1));
+        let mut cw_b = COL_WIN.parse::<Board>().unwrap();
+        cw_b.mark_off(1);
+        assert!(cw_b.is_won());
+        let mut rw_b = ROW_WIN.parse::<Board>().unwrap();
+        rw_b.mark_off(1);
+        assert!(rw_b.is_won());
         assert_eq!(p2(&whole_input_is(EG)), 1924);
     }
 }

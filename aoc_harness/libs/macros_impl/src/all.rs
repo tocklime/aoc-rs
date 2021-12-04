@@ -36,9 +36,10 @@ impl AocAllMainInput {
         for f in fs {
             let short = format_ident!("{}", &f[..f.len() - 3]);
             mods.extend(quote! {
-                mod #short { include!(#f); }
+                mod #short;
             });
             inner.extend(quote! {
+                println!("{}", #f);
                 #short::main();
             })
         }
