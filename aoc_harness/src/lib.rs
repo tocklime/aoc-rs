@@ -68,7 +68,7 @@ impl Opts {
         let dur = end - start;
         let target_dur = std::time::Duration::new(0, 50_000_000);
         if dur < target_dur {
-            //took less than 20ms. How many could we do in 50ms?
+            //took less than 50ms. How many could we do in 50ms?
             let c = (target_dur.as_secs_f64() / dur.as_secs_f64()) as usize;
             let start = Instant::now();
             for _ in 0..c {
