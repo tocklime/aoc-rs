@@ -84,18 +84,24 @@ impl Opts {
 }
 
 pub fn render_duration(d: std::time::Duration) -> String {
-    let (n, unit) = if d.as_secs() > 0 {
-        (d.as_secs().into(), "s")
-    } else if d.as_millis() > 0 {
-        (d.as_millis(), "ms")
-    } else if d.as_micros() > 0 {
-        (d.as_micros(), "µs")
-    } else {
-        (d.as_nanos(), "ns")
-    };
-    format!("{} {}", n, unit)
+    let mut value = d.as_secs_f64();
+    let units = ["s", "ms", "µs", "ns"];
+    for u in units {
+        if value > 1.0 {
+            return format!("{:.3}{}", value, u);
+        }
+        value *= 1000.0;
+    }
+    "<1ns".to_string()
 }
 
+pub fn whole_input_is<O>(i: &str) -> O
+where
+    O: FromStr,
+    <O as FromStr>::Err: std::fmt::Debug,
+{
+    i.parse().unwrap()
+}
 pub fn lines<O>(i: &str) -> Vec<O>
 where
     O: FromStr,

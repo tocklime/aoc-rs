@@ -1,10 +1,9 @@
+use aoc_harness::*;
 use std::{collections::HashSet, str::FromStr};
 
-use aoc_harness::*;
+aoc_main!(2021 day 4, generator whole_input_is::<Day04>, [p1] => 60368, [p2] => 17435);
 
-aoc_main!(2021 day 4, [p1], [p2]);
-
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Board {
     grid: Vec<Vec<u8>>,
 }
@@ -23,18 +22,16 @@ impl Board {
         line_win || col_win
     }
     fn score(&self, drawn: &HashSet<u8>) -> usize {
-        let left = self
-            .grid
+        self.grid
             .iter()
             .flat_map(|c| c.iter())
             .filter(|c| !drawn.contains(c))
             .map(|&x| x as usize)
-            .collect::<Vec<_>>();
-        dbg!(&left);
-        left.into_iter().sum::<usize>()
+            .sum::<usize>()
     }
+    //TODO: Try a 'fn time_to_win(&self, &[u8]) -> (usize, usize)
 }
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Day04 {
     num_seq: Vec<u8>,
     boards: Vec<Board>,
@@ -42,62 +39,36 @@ struct Day04 {
 impl FromStr for Day04 {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut i = s.lines();
-        let num_seq = i
-            .next()
-            .unwrap()
-            .split(',')
-            .map(|x| x.parse::<u8>().unwrap())
+        let (nums, boards) = s.split_once("\n\n").unwrap();
+        let num_seq = nums.split(',').map(|x| x.parse::<u8>().unwrap()).collect();
+        let boards = boards
+            .split("\n\n")
+            .map(|b| b.parse::<Board>().unwrap())
             .collect();
-        i.next().unwrap(); //blank line
-        let boards = parse_boards(i);
         Ok(Self { num_seq, boards })
     }
 }
 
-fn parse_boards(i: std::str::Lines) -> Vec<Board> {
-    i.chunks(6)
-        .into_iter()
-        .map(|b| {
-            let mut iter = b.into_iter();
-            Board {
-                grid: vec![
-                    iter.next()
-                        .unwrap()
-                        .split_whitespace()
-                        .map(|x| x.parse::<u8>().unwrap())
-                        .collect::<Vec<_>>(),
-                    iter.next()
-                        .unwrap()
-                        .split_whitespace()
-                        .map(|x| x.parse::<u8>().unwrap())
-                        .collect::<Vec<_>>(),
-                    iter.next()
-                        .unwrap()
-                        .split_whitespace()
-                        .map(|x| x.parse::<u8>().unwrap())
-                        .collect::<Vec<_>>(),
-                    iter.next()
-                        .unwrap()
-                        .split_whitespace()
-                        .map(|x| x.parse::<u8>().unwrap())
-                        .collect::<Vec<_>>(),
-                    iter.next()
-                        .unwrap()
-                        .split_whitespace()
-                        .map(|x| x.parse::<u8>().unwrap())
-                        .collect::<Vec<_>>(),
-                ],
-            }
-        })
-        .collect::<Vec<_>>()
+impl FromStr for Board {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let grid = s
+            .lines()
+            .map(|l| {
+                l.split_whitespace()
+                    .map(|x| x.parse::<u8>().unwrap())
+                    .collect()
+            })
+            .collect();
+        Ok(Self { grid })
+    }
 }
-fn p1(input: &str) -> usize {
-    let d: Day04 = input.parse().unwrap();
+fn p1(input: &Day04) -> usize {
     let mut drawn = HashSet::new();
-    for x in d.num_seq {
+    for &x in &input.num_seq {
         drawn.insert(x);
-        let won = d.boards.iter().filter(|x| x.is_won(&drawn)).next();
+        let won = input.boards.iter().filter(|x| x.is_won(&drawn)).next();
         if let Some(b) = won {
             return (x as usize) * b.score(&drawn);
         }
@@ -105,24 +76,24 @@ fn p1(input: &str) -> usize {
     0
 }
 
-fn p2(input: &str) -> usize {
-    let mut d: Day04 = input.parse().unwrap();
+fn p2(input: &Day04) -> usize {
+    let mut boards: Vec<&Board> = input.boards.iter().collect();
     let mut drawn = HashSet::new();
-    for x in d.num_seq {
+    for &x in &input.num_seq {
         drawn.insert(x);
-        if d.boards.len() == 1 {
-            let only_board = &d.boards[0];
-            if only_board.is_won(&drawn) {
-                dbg!(x, &drawn, &only_board);
-                return (x as usize) * only_board.score(&drawn);
+        match boards[..] {
+            [only_board] => {
+                if only_board.is_won(&drawn) {
+                    return (x as usize) * only_board.score(&drawn);
+                }
             }
-        } else {
-            d.boards.retain(|b| !b.is_won(&drawn));
+            _ => {
+                boards.retain(|b| !b.is_won(&drawn));
+            }
         }
     }
     0
 }
-//16620 is wrong
 
 #[cfg(test)]
 mod tests {
@@ -147,17 +118,13 @@ mod tests {
 22 11 13  6  5
  2  0 12  3  7";
 
-    const col_win: &str = "1
-
-0 0 0 0 1
+    const COL_WIN: &str = "0 0 0 0 1
 0 0 0 0 1
 0 0 0 0 1
 0 0 0 0 1
 0 0 0 0 1
 ";
-    const row_win: &str = "1
-
-1 1 1 1 1
+    const ROW_WIN: &str = "1 1 1 1 1
 0 0 0 0 0
 0 0 0 0 0
 0 0 0 0 0
@@ -165,11 +132,11 @@ mod tests {
 ";
     #[test]
     fn t2() {
-        let cw_b = col_win.parse::<Day04>().unwrap();
-        let rw_b = row_win.parse::<Day04>().unwrap();
+        let cw_b = COL_WIN.parse::<Board>().unwrap();
+        let rw_b = ROW_WIN.parse::<Board>().unwrap();
         let hs_1 = vec![1].into_iter().collect::<HashSet<_>>();
-        assert!(cw_b.boards[0].is_won(&hs_1));
-        assert!(rw_b.boards[0].is_won(&hs_1));
-        assert_eq!(p2(EG), 1924);
+        assert!(cw_b.is_won(&hs_1));
+        assert!(rw_b.is_won(&hs_1));
+        assert_eq!(p2(&whole_input_is(EG)), 1924);
     }
 }
