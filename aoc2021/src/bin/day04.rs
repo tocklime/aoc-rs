@@ -67,8 +67,7 @@ fn p1(input: &Day04) -> usize {
     let mut drawn = NumSet::new();
     for &x in &input.num_seq {
         drawn.insert(x.into());
-        let won = input.boards.iter().filter(|x| x.is_won(&drawn)).next();
-        if let Some(b) = won {
+        if let Some(b) = input.boards.iter().find(|x| x.is_won(&drawn)) {
             return (x as usize) * b.score(&drawn);
         }
     }
@@ -78,20 +77,19 @@ fn p1(input: &Day04) -> usize {
 fn p2(input: &Day04) -> usize {
     let mut boards: Vec<&Board> = input.boards.iter().collect();
     let mut drawn = NumSet::new();
-    for &x in &input.num_seq {
+    let mut iter = input.num_seq.iter();
+    let mut x = 0;
+    while boards.len() > 1 {
+        x = *iter.next().unwrap();
         drawn.insert(x.into());
-        match boards[..] {
-            [only_board] => {
-                if only_board.is_won(&drawn) {
-                    return (x as usize) * only_board.score(&drawn);
-                }
-            }
-            _ => {
-                boards.retain(|b| !b.is_won(&drawn));
-            }
-        }
+        boards.retain(|b| !b.is_won(&drawn));
     }
-    0
+    let b = boards.pop().unwrap();
+    while !b.is_won(&drawn) {
+        x = *iter.next().unwrap();
+        drawn.insert(x.into());
+    }
+    b.score(&drawn) * (x as usize)
 }
 
 #[cfg(test)]

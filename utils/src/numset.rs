@@ -22,15 +22,26 @@ where
         Self { n }
     }
     pub fn insert(&mut self, n: usize) {
-        self.n.set_bit(n.into(), true)
+        self.n.set_bit(n, true)
     }
     pub fn is_subset(&self, other: &NumSet<T>) -> bool {
         (self.n & other.n) == self.n
     }
     pub fn contains(&self, n: usize) -> bool {
-        self.n.get_bit(n.into())
+        self.n.get_bit(n)
     }
 }
+impl<T: Num + Copy> Default for NumSet<T>
+where
+    T: BitOr<Output = T>,
+    T: BitAnd<Output = T>,
+    T: Shl<usize, Output = T>,
+    T: Not<Output = T>, {
+        fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FromIterator<u8> for NumSet<u128> {
     fn from_iter<T: IntoIterator<Item = u8>>(iter: T) -> Self {
         let mut s = Self::new();
