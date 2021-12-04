@@ -1,30 +1,28 @@
 use aoc_harness::*;
+use ndarray::Array2;
 use std::{collections::HashSet, str::FromStr};
 
 aoc_main!(2021 day 4, generator whole_input_is::<Day04>, [p1] => 60368, [p2] => 17435);
 
 #[derive(Clone, Debug)]
 struct Board {
-    grid: Vec<Vec<u8>>,
+    grid: Array2<u8>,
 }
 impl Board {
     fn is_won(&self, drawn: &HashSet<u8>) -> bool {
-        let line_win = self
-            .grid
-            .iter()
-            .any(|l| l.iter().all(|c| drawn.contains(c)));
-        let col_win = (0..=4).any(|c_ix| {
-            self.grid
-                .iter()
-                .map(|l| l[c_ix])
-                .all(|c| drawn.contains(&c))
-        });
-        line_win || col_win
+        self.grid
+            .rows()
+            .into_iter()
+            .any(|l| l.iter().all(|c| drawn.contains(c)))
+            || self
+                .grid
+                .columns()
+                .into_iter()
+                .any(|l| l.iter().all(|c| drawn.contains(c)))
     }
     fn score(&self, drawn: &HashSet<u8>) -> usize {
         self.grid
             .iter()
-            .flat_map(|c| c.iter())
             .filter(|c| !drawn.contains(c))
             .map(|&x| x as usize)
             .sum::<usize>()
@@ -53,14 +51,11 @@ impl FromStr for Board {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let grid = s
-            .lines()
-            .map(|l| {
-                l.split_whitespace()
-                    .map(|x| x.parse::<u8>().unwrap())
-                    .collect()
-            })
+        let nums = s
+            .split_whitespace()
+            .map(|x| x.parse::<u8>().unwrap())
             .collect();
+        let grid = Array2::from_shape_vec((5, 5), nums).unwrap();
         Ok(Self { grid })
     }
 }
