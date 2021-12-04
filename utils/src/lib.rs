@@ -4,3 +4,4 @@ pub mod cellular_automata;
 pub mod collections;
 pub mod inputs;
 pub mod nums;
+pub mod numset;

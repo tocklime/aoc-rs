@@ -1,37 +1,46 @@
 use aoc_harness::*;
 use ndarray::Array2;
 use std::str::FromStr;
+use utils::numset::NumSet;
 
 aoc_main!(2021 day 4, generator whole_input_is::<Day04>, [p1] => 60368, [p2] => 17435);
 
-const MARKED: u8 = 255;
 #[derive(Clone, Debug)]
 struct Board {
-    grid: Array2<u8>, //255 == marked.
+    grid: Array2<u8>,
     locs: [Option<(usize, usize)>; 100],
 }
+
 impl Board {
-    fn is_won(&self) -> bool {
-        self.grid
-            .rows()
-            .into_iter()
-            .any(|l| l.iter().all(|c| *c == MARKED))
-            || self
-                .grid
-                .columns()
-                .into_iter()
-                .any(|l| l.iter().all(|c| *c == MARKED))
+    fn is_won(&self, marks: &NumSet<u32>) -> bool {
+        const WINNING_MARKS: &[u32; 10] = &[
+            0b1111100000000000000000000,
+            0b0000011111000000000000000,
+            0b0000000000111110000000000,
+            0b0000000000000001111100000,
+            0b0000000000000000000011111,
+            0b1000010000100001000010000,
+            0b0100001000010000100001000,
+            0b0010000100001000010000100,
+            0b0001000010000100001000010,
+            0b0000100001000010000100001,
+        ];
+        WINNING_MARKS
+            .iter()
+            .any(|&m| NumSet::from(m).is_subset(marks))
     }
-    fn mark_off(&mut self, num: u8) {
-        if let Some(p) = self.locs[num as usize] {
-            *self.grid.get_mut(p).unwrap() = MARKED;
+    fn mark_off(&self, num: u8, marks: &mut NumSet<u32>) {
+        if let Some(p) = self.find(num) {
+            marks.insert(p.0 * 5 + p.1)
         }
     }
-    fn score(&self) -> usize {
-        self.grid
-            .iter()
-            .filter(|c| **c != MARKED)
-            .map(|&x| x as usize)
+    fn find(&self, num: u8) -> Option<(usize, usize)> {
+        self.locs[num as usize]
+    }
+    fn score(&self, marks: &NumSet<u32>) -> usize {
+        (0..25)
+            .filter(|&ix| !marks.contains(ix))
+            .map(|ix| self.grid[(ix / 5, ix % 5)] as usize)
             .sum::<usize>()
     }
 }
@@ -70,12 +79,13 @@ impl FromStr for Board {
     }
 }
 fn p1(input: &Day04) -> usize {
-    let mut input: Day04 = input.clone();
+    let mut marks: Vec<(&Board, NumSet<u32>)> =
+        input.boards.iter().map(|x| (x, NumSet::new())).collect();
     for &x in &input.num_seq {
-        for b in input.boards.iter_mut() {
-            b.mark_off(x);
-            if b.is_won() {
-                return (x as usize) * b.score();
+        for (b, m) in marks.iter_mut() {
+            b.mark_off(x, m);
+            if b.is_won(&m) {
+                return (x as usize) * b.score(m);
             }
         }
     }
@@ -83,20 +93,21 @@ fn p1(input: &Day04) -> usize {
 }
 
 fn p2(input: &Day04) -> usize {
-    let mut input: Day04 = input.clone();
+    let mut marks: Vec<(&Board, NumSet<u32>)> =
+        input.boards.iter().map(|x| (x, NumSet::new())).collect();
     for &x in &input.num_seq {
-        for b in input.boards.iter_mut() {
-            b.mark_off(x);
+        for (b, m) in marks.iter_mut() {
+            b.mark_off(x, m);
         }
 
-        match &mut input.boards[..] {
-            [only_board] => {
-                if only_board.is_won() {
-                    return (x as usize) * only_board.score();
+        match &mut marks[..] {
+            [(only_board, m)] => {
+                if only_board.is_won(m) {
+                    return (x as usize) * only_board.score(m);
                 }
             }
             _ => {
-                input.boards.retain(|b| !b.is_won());
+                marks.retain(|(b, m)| !b.is_won(m));
             }
         }
     }
@@ -140,12 +151,14 @@ mod tests {
 ";
     #[test]
     fn t2() {
-        let mut cw_b = COL_WIN.parse::<Board>().unwrap();
-        cw_b.mark_off(1);
-        assert!(cw_b.is_won());
-        let mut rw_b = ROW_WIN.parse::<Board>().unwrap();
-        rw_b.mark_off(1);
-        assert!(rw_b.is_won());
+        let cw_b = COL_WIN.parse::<Board>().unwrap();
+        let mut marks = NumSet::new();
+        cw_b.mark_off(1, &mut marks);
+        assert!(cw_b.is_won(&marks));
+        let rw_b = ROW_WIN.parse::<Board>().unwrap();
+        let mut marks = NumSet::new();
+        rw_b.mark_off(1, &mut marks);
+        assert!(rw_b.is_won(&marks));
         assert_eq!(p2(&whole_input_is(EG)), 1924);
     }
 }

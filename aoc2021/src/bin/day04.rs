@@ -1,50 +1,23 @@
 use aoc_harness::*;
 use ndarray::Array2;
 use std::str::FromStr;
-use utils::nums::NumBitExt;
+use utils::numset::NumSet;
 
 aoc_main!(2021 day 4, generator whole_input_is::<Day04>, [p1] => 60368, [p2] => 17435);
 
-#[derive(Debug, Clone, Copy)]
-struct NumSet {
-    n: u128,
-}
-impl NumSet {
-    pub fn new() -> Self {
-        Self { n: 0 }
-    }
-    pub fn insert(&mut self, n: u8) {
-        self.n.set_bit(n.into(), true)
-    }
-    pub fn is_subset(&self, other: &NumSet) -> bool {
-        (self.n & other.n) == self.n
-    }
-    pub fn contains(&self, n: u8) -> bool {
-        self.n.get_bit(n.into())
-    }
-}
-impl FromIterator<u8> for NumSet {
-    fn from_iter<T: IntoIterator<Item = u8>>(iter: T) -> Self {
-        let mut s = Self::new();
-        for x in iter {
-            s.insert(x);
-        }
-        s
-    }
-}
 #[derive(Clone, Debug)]
 struct Board {
     grid: Array2<u8>,
-    win_sets: Vec<NumSet>,
+    win_sets: Vec<NumSet<u128>>,
 }
 impl Board {
-    fn is_won(&self, drawn: &NumSet) -> bool {
+    fn is_won(&self, drawn: &NumSet<u128>) -> bool {
         self.win_sets.iter().any(|x| x.is_subset(drawn))
     }
-    fn score(&self, drawn: &NumSet) -> usize {
+    fn score(&self, drawn: &NumSet<u128>) -> usize {
         self.grid
             .iter()
-            .filter(|c| !drawn.contains(**c))
+            .filter(|&&c| !drawn.contains(c.into()))
             .map(|&x| x as usize)
             .sum::<usize>()
     }
@@ -76,7 +49,7 @@ impl FromStr for Board {
             .map(|x| x.parse::<u8>().unwrap())
             .collect();
         let grid = Array2::from_shape_vec((5, 5), nums).unwrap();
-        let mut win_sets: Vec<NumSet> = grid
+        let mut win_sets: Vec<NumSet<u128>> = grid
             .rows()
             .into_iter()
             .map(|x| x.iter().cloned().collect())
@@ -84,7 +57,7 @@ impl FromStr for Board {
         win_sets.extend(
             grid.columns()
                 .into_iter()
-                .map(|x| x.iter().cloned().collect::<NumSet>()),
+                .map(|x| x.iter().cloned().collect::<NumSet<u128>>()),
         );
 
         Ok(Self { grid, win_sets })
@@ -93,7 +66,7 @@ impl FromStr for Board {
 fn p1(input: &Day04) -> usize {
     let mut drawn = NumSet::new();
     for &x in &input.num_seq {
-        drawn.insert(x);
+        drawn.insert(x.into());
         let won = input.boards.iter().filter(|x| x.is_won(&drawn)).next();
         if let Some(b) = won {
             return (x as usize) * b.score(&drawn);
@@ -106,7 +79,7 @@ fn p2(input: &Day04) -> usize {
     let mut boards: Vec<&Board> = input.boards.iter().collect();
     let mut drawn = NumSet::new();
     for &x in &input.num_seq {
-        drawn.insert(x);
+        drawn.insert(x.into());
         match boards[..] {
             [only_board] => {
                 if only_board.is_won(&drawn) {
@@ -160,7 +133,7 @@ mod tests {
     fn t2() {
         let cw_b = COL_WIN.parse::<Board>().unwrap();
         let rw_b = ROW_WIN.parse::<Board>().unwrap();
-        let hs_1 = vec![1].into_iter().collect::<NumSet>();
+        let hs_1 = vec![1].into_iter().collect::<NumSet<u128>>();
         assert!(cw_b.is_won(&hs_1));
         assert!(rw_b.is_won(&hs_1));
         assert_eq!(p2(&whole_input_is(EG)), 1924);
