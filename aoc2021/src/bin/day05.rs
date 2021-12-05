@@ -1,50 +1,53 @@
-use std::{collections::HashMap, str::FromStr};
+use ndarray::Array2;
+use std::str::FromStr;
 
 use aoc_harness::*;
-use utils::{cartesian::Point, aabb::Aabb};
+use utils::{aabb::Aabb, cartesian::Point};
 
 aoc_main!(2021 day 5, generator lines::<X>, [solve::<false>] => 5147, [solve::<true>] => 16925);
 
 #[derive(Debug)]
 struct X {
-    from: Point<isize>,
-    to: Point<isize>,
+    from: Point<usize>,
+    to: Point<usize>,
+}
+impl X {
+    fn is_orthogonal(&self) -> bool {
+        self.from.x == self.to.x || self.from.y == self.to.y
+    }
 }
 impl FromStr for X {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let s1 = s.split(" -> ").collect_vec();
-        let from_t = s1[0]
-            .split(',')
-            .map(|x| x.parse::<isize>().unwrap())
-            .collect_vec();
-        let to_t = s1[1]
-            .split(',')
-            .map(|x| x.parse::<isize>().unwrap())
-            .collect_vec();
-        let from = Point::new(from_t[0], from_t[1]);
-        let to = Point::new(to_t[0], to_t[1]);
-        Ok(Self { from, to })
+        let mut s1 = s.split(" -> ").map(|x| x.parse::<Point<usize>>());
+        Ok(Self {
+            from: s1.next().unwrap()?,
+            to: s1.next().unwrap()?,
+        })
     }
 }
 
 fn solve<const EVEN_DIAGONALS: bool>(input: &[X]) -> usize {
-    let mut grid: HashMap<Point<isize>, usize> = HashMap::new();
-    // let bb : Aabb<isize> = input.iter().flat_map(|x| [&x.from, &x.to]).collect();
-    // dbg!(bb);
-    input.iter().fold(0, |mut ans, i| {
-        if EVEN_DIAGONALS || i.from.x == i.to.x || i.from.y == i.to.y {
-            for p in i.from.steps_to(i.to, true) {
-                let e = grid.entry(p).or_default();
-                if *e == 1 {
-                    ans += 1;
-                }
-                *e += 1;
+    let bb: Aabb<usize> = input.iter().flat_map(|x| [&x.from, &x.to]).collect();
+    let mut grid = Array2::from_elem((bb.top_right.x + 1, bb.top_right.y + 1), 0u8);
+    let ps = input
+        .iter()
+        .filter(|x| EVEN_DIAGONALS || x.is_orthogonal())
+        .flat_map(|x| x.from.steps_to(x.to, true));
+    let mut ans = 0;
+    for p in ps {
+        let c = &mut grid[(p.x, p.y)];
+        match *c {
+            0 => *c = 1,
+            1 => {
+                ans += 1;
+                *c = 2
             }
+            _ => {}
         }
-        ans
-    })
+    }
+    ans
 }
 
 #[cfg(test)]

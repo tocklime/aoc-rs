@@ -2,20 +2,35 @@ use crate::aabb::Aabb;
 use arrayvec::ArrayVec;
 use num::{
     abs,
+    integer::gcd,
     traits::{WrappingAdd, WrappingSub},
-    Num, Signed, Unsigned, integer::gcd, Integer,
+    Integer, Num, Signed, Unsigned,
 };
-use std::{collections::HashMap, fmt::Display};
-use std::convert::{TryFrom, TryInto};
+use std::{convert::{TryFrom, TryInto}, str::FromStr};
 use std::fmt::Debug;
 use std::hash::{BuildHasher, Hash};
 use std::ops::{Add, AddAssign, Mul, RangeInclusive, Sub};
+use std::{collections::HashMap, fmt::Display};
 
 use crate::nums::NumExt;
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
 pub struct Point<T> {
     pub x: T,
     pub y: T,
+}
+
+impl<T : FromStr> FromStr for Point<T> {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut s = s.split(',').map(|x|x.trim().parse::<T>());
+        let x = s.next().ok_or("No items")?.map_err(|_|"Bad parse")?;
+        let y = s.next().ok_or("Only 1 item")?.map_err(|_|"Bad parse")?;
+        if s.next().is_some() {
+            return Err(">2 items");
+        }
+        Ok(Self {x,y})
+    }
 }
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
@@ -185,27 +200,56 @@ impl<T: Num + Signed + Copy + WrappingSub> Point<T> {
         Self::new(-self.x, -self.y)
     }
 }
+struct PointStepper<T> {
+    curr: Point<T>,
+    target: Point<T>,
+    pos_x :bool,
+    step_x : T,
+    pos_y :bool,
+    step_y : T,
+}
+impl<T: Integer + Copy> Iterator for PointStepper<T> {
+    type Item = Point<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.curr == self.target {
+            None
+        } else {
+            let ans = self.curr;
+            self.curr = ans.safe_step(self.pos_x, self.step_x, self.pos_y, self.step_y);
+            Some(ans)
+        }
+    }
+}
 impl<T: Integer + Copy> Point<T> {
+    pub fn safe_step(self, pos_x: bool, step_x: T, pos_y: bool, step_y: T)  -> Self {
+        Point::new(
+            if pos_x { self.x + step_x} else { self.x - step_x },
+            if pos_y { self.y + step_y} else { self.y - step_y }
+        )
+    }
     pub fn steps_to(self, end: Self, inclusive_end: bool) -> impl Iterator<Item = Self> {
-        let step = end - self;
-        let g = gcd(step.x, step.y);
-        let step = Point::new(step.x / g, step.y / g);
-        let mut curr = self;
-        let mut done_end = false;
-        std::iter::from_fn(move||{
-            if curr == end {
-                if !done_end && inclusive_end {
-                    done_end = true;
-                    Some(curr)
-                } else {
-                    None
-                }
-            } else {
-                let ans = curr;
-                curr = curr + step;
-                Some(ans)
-            }
-        })
+        let pos_x = end.x > self.x;
+        let delta_x = if pos_x {
+            end.x - self.x
+        } else {
+            self.x - end.x
+        };
+        let pos_y = end.y > self.y;
+        let delta_y = if pos_y {
+            end.y - self.y
+        } else {
+            self.y - end.y
+        };
+        let g = gcd(delta_x, delta_y);
+        let step_x = delta_x / g;
+        let step_y = delta_y / g;
+        let target = if inclusive_end { end.safe_step(pos_x, step_x, pos_y, step_y) } else { end };
+        PointStepper {
+            target,
+            step_x, step_y, pos_x,pos_y,
+            curr: self,
+        }
     }
 }
 
@@ -288,7 +332,7 @@ where
     hm.keys().collect()
 }
 
-pub fn render_char_map_w<N, S, V : Display + Clone + Copy>(
+pub fn render_char_map_w<N, S, V: Display + Clone + Copy>(
     m: &HashMap<Point<N>, V, S>,
     width: u8,
     default: &str,
@@ -306,8 +350,8 @@ where
             + &l.iter()
                 .flat_map(|&x| (0..width).map(move |_| x))
                 .map(|x| match x {
-                    Some(v) => format!("{}",v),
-                    None => default.to_owned()
+                    Some(v) => format!("{}", v),
+                    None => default.to_owned(),
                 })
                 .collect::<String>()
     });
