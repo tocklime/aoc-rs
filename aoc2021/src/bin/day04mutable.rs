@@ -84,7 +84,7 @@ fn p1(input: &Day04) -> usize {
     for &x in &input.num_seq {
         for (b, m) in marks.iter_mut() {
             b.mark_off(x, m);
-            if b.is_won(&m) {
+            if b.is_won(m) {
                 return (x as usize) * b.score(m);
             }
         }
