@@ -3,9 +3,9 @@ use arrayvec::ArrayVec;
 use num::{
     abs,
     traits::{WrappingAdd, WrappingSub},
-    Num, Signed, Unsigned,
+    Num, Signed, Unsigned, integer::gcd, Integer,
 };
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 use std::convert::{TryFrom, TryInto};
 use std::fmt::Debug;
 use std::hash::{BuildHasher, Hash};
@@ -185,6 +185,29 @@ impl<T: Num + Signed + Copy + WrappingSub> Point<T> {
         Self::new(-self.x, -self.y)
     }
 }
+impl<T: Integer + Copy> Point<T> {
+    pub fn steps_to(self, end: Self, inclusive_end: bool) -> impl Iterator<Item = Self> {
+        let step = end - self;
+        let g = gcd(step.x, step.y);
+        let step = Point::new(step.x / g, step.y / g);
+        let mut curr = self;
+        let mut done_end = false;
+        std::iter::from_fn(move||{
+            if curr == end {
+                if !done_end && inclusive_end {
+                    done_end = true;
+                    Some(curr)
+                } else {
+                    None
+                }
+            } else {
+                let ans = curr;
+                curr = curr + step;
+                Some(ans)
+            }
+        })
+    }
+}
 
 impl<T: Num + Unsigned> Point<T> {
     pub fn manhattan_unsigned(self) -> T {
@@ -265,10 +288,10 @@ where
     hm.keys().collect()
 }
 
-pub fn render_char_map_w<N, S>(
-    m: &HashMap<Point<N>, char, S>,
+pub fn render_char_map_w<N, S, V : Display + Clone + Copy>(
+    m: &HashMap<Point<N>, V, S>,
     width: u8,
-    default: char,
+    default: &str,
     flip: bool,
 ) -> String
 where
@@ -277,11 +300,15 @@ where
     RangeInclusive<N>: Iterator<Item = N>,
 {
     let bb = point_map_bounding_box(m);
-    let v = bb.vec_with(|p| *m.get(&p).unwrap_or(&default));
+    let v = bb.vec_with(|p| m.get(&p));
     let x = v.iter().map(|l| {
         "\n".to_string()
             + &l.iter()
                 .flat_map(|&x| (0..width).map(move |_| x))
+                .map(|x| match x {
+                    Some(v) => format!("{}",v),
+                    None => default.to_owned()
+                })
                 .collect::<String>()
     });
     if flip {

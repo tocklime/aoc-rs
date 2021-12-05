@@ -79,7 +79,7 @@ where
             (self.bottom_left.x..=self.top_right.x).map(move |x| Point::new(x, y))
         })
     }
-    pub fn vec_with<TO: Default + Clone>(&self, ft: impl Fn(Point<T>) -> TO) -> Vec<Vec<TO>> {
+    pub fn vec_with<TO: Clone + Default>(&self, ft: impl Fn(Point<T>) -> TO) -> Vec<Vec<TO>> {
         let offset = self.bottom_left;
         let mut v = vec![vec![Default::default(); self.width()]; self.height()];
         for p in self.all_points() {
