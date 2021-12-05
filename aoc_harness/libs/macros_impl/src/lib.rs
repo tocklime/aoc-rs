@@ -18,6 +18,27 @@ mod kw {
     syn::custom_keyword!(generator);
     syn::custom_keyword!(day);
     syn::custom_keyword!(bench);
+    syn::custom_keyword!(example);
+    syn::custom_keyword!(part);
+}
+
+struct ExamplePart {
+    part_num: u8,
+    str_input: Expr,
+    expected_ans: Expr
+}
+impl Parse for ExamplePart {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let _ex_token : kw::example = input.parse()?;
+        let _part_token : kw::part = input.parse()?;
+        let part_num : u8 = input.parse::<LitInt>()?.base10_parse()?;
+        let str_input : Expr = input.parse()?;
+        let _goes_to = input.parse::<Token![=>]>()?;
+        let expected_ans : Expr = input.parse()?;
+        Ok(Self {
+            part_num, str_input, expected_ans
+        })
+    }
 }
 struct BenchPart {
     _bench_token: kw::bench,
@@ -79,6 +100,7 @@ enum Parts {
     Gen(GeneratorPartInput),
     Part(PartInput),
     Bench(BenchPart),
+    Example(ExamplePart),
 }
 impl Parse for Parts {
     fn parse(input: ParseStream) -> Result<Self> {
@@ -91,6 +113,8 @@ impl Parse for Parts {
             Ok(Parts::Day(input.parse()?))
         } else if lookahead.peek(token::Bracket) {
             Ok(Parts::Part(input.parse()?))
+        } else if lookahead.peek(kw::example) {
+            Ok(Parts::Example(input.parse()?))
         } else {
             Err(lookahead.error())
         }
@@ -102,6 +126,7 @@ pub struct AocMainInput {
     p1: PartInput,
     p2: PartInput,
     bench: bool,
+    examples: Vec<ExamplePart>
 }
 impl Parse for AocMainInput {
     fn parse(input: ParseStream) -> Result<Self> {
@@ -110,6 +135,7 @@ impl Parse for AocMainInput {
         let mut gen = None;
         let mut parts = Vec::new();
         let mut bench = false;
+        let mut examples = Vec::new();
         for p in punct.into_iter() {
             match p {
                 Parts::Day(d) => {
@@ -130,6 +156,7 @@ impl Parse for AocMainInput {
                     parts.push(p);
                 }
                 Parts::Bench(_) => bench = true,
+                Parts::Example(e) => examples.push(e)
             }
         }
         if day.is_none() {
@@ -158,6 +185,7 @@ impl Parse for AocMainInput {
             p1: i.next().unwrap(),
             p2: i.next().unwrap(),
             bench,
+            examples
         })
     }
 }
@@ -213,6 +241,31 @@ impl AocMainInput {
         }
         inner
     }
+    pub fn examples(&self) -> TokenStream {
+        let mut out = TokenStream::new();
+        for (e,eg_num) in self.examples.iter().zip(1..) {
+            let part_num =e.part_num;
+            let parts = match e.part_num {
+                1 => &self.p1.fns,
+                2 => &self.p2.fns,
+                _ => panic!("Unknown part")
+            };
+            for f in parts {
+                let expected = &e.expected_ans;
+                let input = &e.str_input;
+                match self.gen.as_ref().map(|x| &x.gen_fn) {
+                    Some(g) => 
+                        out.extend(quote! {
+                            assert_eq!(#f(&#g(#input)), #expected, "Example failure: Part {} example {} with fn {}",#part_num, #eg_num, stringify!(#f));
+                        }),
+                    None => out.extend(quote! {
+                        assert_eq!(#f(#input), #expected, "Example failure: Part {} example {} with fn {}",#part_num, #eg_num, stringify!(#f));
+                    }),
+                };
+            }
+        }
+        out
+    }
     pub fn do_macro(&self) -> TokenStream {
         let day = self.day.day;
         let year = self.day.year;
@@ -231,6 +284,20 @@ impl AocMainInput {
         let part1 = self.add_part(1, &self.p1);
         let part2 = self.add_part(2, &self.p2);
         let tests_name = format_ident!("test_year_{}_day_{}", (year as u32), day);
+        let examples = if self.examples.is_empty() {
+            quote! {fn check_examples() {}} 
+        } else {
+            let inner = self.examples();
+            quote! {
+                #[test]
+                pub fn test_examples() {
+                    check_examples();
+                }
+                pub fn check_examples() {
+                    #inner
+                }
+            }
+        };
         if self.bench {
             quote! {
                 pub fn part1(criterion : &mut criterion::Criterion) {
@@ -270,8 +337,10 @@ impl AocMainInput {
                     #part1
                     #part2
                 }
+                #examples
                 pub fn main() {
                     let opts = aoc_harness::Opts::from_args();
+                    check_examples();
                     for _ in 0..opts.repeats {
                         run_with_opts(&opts,false);
                     }

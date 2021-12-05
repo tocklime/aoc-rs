@@ -4,7 +4,9 @@ use std::str::FromStr;
 use aoc_harness::*;
 use utils::{aabb::Aabb, cartesian::Point};
 
-aoc_main!(2021 day 5, generator lines::<X>, [solve::<false>] => 5147, [solve::<true>] => 16925);
+aoc_main!(2021 day 5, generator lines::<X>,
+          [solve::<false>] => 5147, [solve::<true>] => 16925,
+          example part 1 EG => 5, example part 2 EG => 12);
 
 #[derive(Debug)]
 struct X {
@@ -50,10 +52,7 @@ fn solve<const EVEN_DIAGONALS: bool>(input: &[X]) -> usize {
     ans
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    const EG: &str = "0,9 -> 5,9
+const EG: &str = "0,9 -> 5,9
 8,0 -> 0,8
 9,4 -> 3,4
 2,2 -> 2,1
@@ -63,12 +62,15 @@ mod tests {
 3,4 -> 1,4
 0,0 -> 8,8
 5,5 -> 8,2";
+#[cfg(test)]
+mod tests {
+    use super::*;
     #[test]
     fn t1() {
-        assert_eq!(solve::<false>(&dbg!(lines::<X>(EG))), 5)
+        assert_eq!(solve::<false>(&lines::<X>(EG)), 5)
     }
     #[test]
     fn t2() {
-        assert_eq!(solve::<true>(&dbg!(lines::<X>(EG))), 12)
+        assert_eq!(solve::<true>(&lines::<X>(EG)), 12)
     }
 }

@@ -6,11 +6,14 @@ use num::{
     traits::{WrappingAdd, WrappingSub},
     Integer, Num, Signed, Unsigned,
 };
-use std::{convert::{TryFrom, TryInto}, str::FromStr};
 use std::fmt::Debug;
 use std::hash::{BuildHasher, Hash};
 use std::ops::{Add, AddAssign, Mul, RangeInclusive, Sub};
 use std::{collections::HashMap, fmt::Display};
+use std::{
+    convert::{TryFrom, TryInto},
+    str::FromStr,
+};
 
 use crate::nums::NumExt;
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
@@ -19,17 +22,17 @@ pub struct Point<T> {
     pub y: T,
 }
 
-impl<T : FromStr> FromStr for Point<T> {
+impl<T: FromStr> FromStr for Point<T> {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut s = s.split(',').map(|x|x.trim().parse::<T>());
-        let x = s.next().ok_or("No items")?.map_err(|_|"Bad parse")?;
-        let y = s.next().ok_or("Only 1 item")?.map_err(|_|"Bad parse")?;
+        let mut s = s.split(',').map(|x| x.trim().parse::<T>());
+        let x = s.next().ok_or("No items")?.map_err(|_| "Bad parse")?;
+        let y = s.next().ok_or("Only 1 item")?.map_err(|_| "Bad parse")?;
         if s.next().is_some() {
             return Err(">2 items");
         }
-        Ok(Self {x,y})
+        Ok(Self { x, y })
     }
 }
 
@@ -203,17 +206,23 @@ impl<T: Num + Signed + Copy + WrappingSub> Point<T> {
 struct PointStepper<T> {
     curr: Point<T>,
     target: Point<T>,
-    pos_x :bool,
-    step_x : T,
-    pos_y :bool,
-    step_y : T,
+    pos_x: bool,
+    step_x: T,
+    pos_y: bool,
+    step_y: T,
+    inclusive_end: bool,
 }
 impl<T: Integer + Copy> Iterator for PointStepper<T> {
     type Item = Point<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.curr == self.target {
-            None
+            if self.inclusive_end {
+                self.inclusive_end = false;
+                Some(self.curr)
+            } else {
+                None
+            }
         } else {
             let ans = self.curr;
             self.curr = ans.safe_step(self.pos_x, self.step_x, self.pos_y, self.step_y);
@@ -222,10 +231,18 @@ impl<T: Integer + Copy> Iterator for PointStepper<T> {
     }
 }
 impl<T: Integer + Copy> Point<T> {
-    pub fn safe_step(self, pos_x: bool, step_x: T, pos_y: bool, step_y: T)  -> Self {
+    pub fn safe_step(self, pos_x: bool, step_x: T, pos_y: bool, step_y: T) -> Self {
         Point::new(
-            if pos_x { self.x + step_x} else { self.x - step_x },
-            if pos_y { self.y + step_y} else { self.y - step_y }
+            if pos_x {
+                self.x + step_x
+            } else {
+                self.x - step_x
+            },
+            if pos_y {
+                self.y + step_y
+            } else {
+                self.y - step_y
+            },
         )
     }
     pub fn steps_to(self, end: Self, inclusive_end: bool) -> impl Iterator<Item = Self> {
@@ -244,11 +261,14 @@ impl<T: Integer + Copy> Point<T> {
         let g = gcd(delta_x, delta_y);
         let step_x = delta_x / g;
         let step_y = delta_y / g;
-        let target = if inclusive_end { end.safe_step(pos_x, step_x, pos_y, step_y) } else { end };
         PointStepper {
-            target,
-            step_x, step_y, pos_x,pos_y,
+            target: end,
+            step_x,
+            step_y,
+            pos_x,
+            pos_y,
             curr: self,
+            inclusive_end,
         }
     }
 }
