@@ -4,7 +4,9 @@ use aoc_harness::*;
 
 aoc_main!(2021 day 3, generator lines::<X>, [p1], [p2]);
 
+#[derive(Debug)]
 struct X {}
+
 impl FromStr for X {
     type Err = String;
 
@@ -13,6 +15,7 @@ impl FromStr for X {
     }
 }
 fn p1(input: &[X]) -> usize {
+    dbg!(input);
     input.len()
 }
 
