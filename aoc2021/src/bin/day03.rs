@@ -1,7 +1,7 @@
 use aoc_harness::*;
 use utils::nums::NumBitExt;
 
-aoc_main!(2021 day 3, generator gen, [p1] => 4001724, [p2] => 587895,
+aoc_main!(2021 day 3, generator gen, part1 [p1] => 4001724, part2 [p2] => 587895,
           example both EG => (198, 230));
 
 struct Day3 {

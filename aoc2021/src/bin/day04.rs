@@ -3,7 +3,7 @@ use ndarray::Array2;
 use std::str::FromStr;
 use utils::numset::NumSet;
 
-aoc_main!(2021 day 4, generator whole_input_is::<Day04>, [p1] => 60368, [p2] => 17435,
+aoc_main!(2021 day 4, generator whole_input_is::<Day04>, part1 [p1] => 60368, part2 [p2] => 17435,
           example both EG => (4512, 1924));
 
 #[derive(Clone, Debug)]

@@ -26,33 +26,33 @@ mod kw {
     syn::custom_keyword!(both);
 }
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
-enum Part {
+enum PartNum {
     Part1,
     Part2,
     Both,
 }
-impl Display for Part {
+impl Display for PartNum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Part::Part1 => f.write_str("Part 1"),
-            Part::Part2 => f.write_str("Part 2"),
-            Part::Both => f.write_str("Both parts"),
+            PartNum::Part1 => f.write_str("Part 1"),
+            PartNum::Part2 => f.write_str("Part 2"),
+            PartNum::Both => f.write_str("Both parts"),
         }
     }
 }
 
-impl Parse for Part {
+impl Parse for PartNum {
     fn parse(input: ParseStream) -> Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::part1) {
             let _: kw::part1 = input.parse()?;
-            Ok(Part::Part1)
+            Ok(PartNum::Part1)
         } else if lookahead.peek(kw::part2) {
             let _: kw::part2 = input.parse()?;
-            Ok(Part::Part2)
+            Ok(PartNum::Part2)
         } else if lookahead.peek(kw::both) {
             let _: kw::both = input.parse()?;
-            Ok(Part::Both)
+            Ok(PartNum::Both)
         } else {
             Err(lookahead.error())
         }
@@ -60,14 +60,14 @@ impl Parse for Part {
 }
 
 struct ExamplePart {
-    part_num: Part,
+    part_num: PartNum,
     str_input: Expr,
     expected_ans: Expr,
 }
 impl Parse for ExamplePart {
     fn parse(input: ParseStream) -> Result<Self> {
         let _ex_token: kw::example = input.parse()?;
-        let part_num: Part = input.parse()?;
+        let part_num: PartNum = input.parse()?;
         let str_input: Expr = input.parse()?;
         let _goes_to = input.parse::<Token![=>]>()?;
         let expected_ans: Expr = input.parse()?;
@@ -88,11 +88,11 @@ impl Parse for BenchPart {
         })
     }
 }
-struct GeneratorPartInput {
+struct GeneratorPart {
     _gen_token: kw::generator,
     gen_fn: Expr,
 }
-impl Parse for GeneratorPartInput {
+impl Parse for GeneratorPart {
     fn parse(input: ParseStream) -> Result<Self> {
         Ok(Self {
             _gen_token: input.parse()?,
@@ -100,13 +100,15 @@ impl Parse for GeneratorPartInput {
         })
     }
 }
-struct PartInput {
+struct SolutionPart {
+    part_num: PartNum,
     fns: Vec<Expr>,
     ans: Option<Expr>,
 }
-impl Parse for PartInput {
+impl Parse for SolutionPart {
     fn parse(input: ParseStream) -> Result<Self> {
         let content;
+        let part_num = input.parse()?;
         let _brackets = bracketed!(content in input);
         let fns: Punctuated<Expr, Token![,]> = content.parse_terminated(Expr::parse)?;
         let ans = match input.parse::<Token![=>]>() {
@@ -114,6 +116,7 @@ impl Parse for PartInput {
             Err(_) => None,
         };
         Ok(Self {
+            part_num,
             fns: fns.into_iter().collect(),
             ans,
         })
@@ -135,8 +138,8 @@ impl Parse for DayInput {
 }
 enum Parts {
     Day(DayInput),
-    Gen(GeneratorPartInput),
-    Part(PartInput),
+    Gen(GeneratorPart),
+    Part(SolutionPart),
     Bench(BenchPart),
     Example(ExamplePart),
 }
@@ -149,7 +152,7 @@ impl Parse for Parts {
             Ok(Parts::Bench(input.parse()?))
         } else if lookahead.peek(LitInt) {
             Ok(Parts::Day(input.parse()?))
-        } else if lookahead.peek(token::Bracket) {
+        } else if lookahead.peek(kw::part1) || lookahead.peek(kw::part2)  || lookahead.peek(kw::both) {
             Ok(Parts::Part(input.parse()?))
         } else if lookahead.peek(kw::example) {
             Ok(Parts::Example(input.parse()?))
@@ -160,9 +163,8 @@ impl Parse for Parts {
 }
 pub struct AocMainInput {
     day: DayInput,
-    gen: Option<GeneratorPartInput>,
-    p1: PartInput,
-    p2: PartInput,
+    gen: Option<GeneratorPart>,
+    solutions: Vec<SolutionPart>,
     bench: bool,
     examples: Vec<ExamplePart>,
 }
@@ -171,7 +173,7 @@ impl Parse for AocMainInput {
         let punct: Punctuated<Parts, Token![,]> = input.parse_terminated(Parts::parse)?;
         let mut day = None;
         let mut gen = None;
-        let mut parts = Vec::new();
+        let mut solutions = Vec::new();
         let mut bench = false;
         let mut examples = Vec::new();
         for p in punct.into_iter() {
@@ -191,7 +193,7 @@ impl Parse for AocMainInput {
                     }
                 }
                 Parts::Part(p) => {
-                    parts.push(p);
+                    solutions.push(p);
                 }
                 Parts::Bench(_) => bench = true,
                 Parts::Example(e) => examples.push(e),
@@ -200,36 +202,19 @@ impl Parse for AocMainInput {
         if day.is_none() {
             return Err(input.error("No day given"));
         }
-        match parts.len() {
-            0 => {
-                return Err(input.error("No parts given"));
-            }
-            1 => {
-                parts.push(PartInput {
-                    fns: Vec::new(),
-                    ans: None,
-                });
-            }
-            2 => {}
-            _ => {
-                return Err(input.error("More than 2 parts given"));
-            }
-        }
-        assert_eq!(parts.len(), 2);
-        let mut i = parts.into_iter();
         Ok(Self {
             day: day.unwrap(),
             gen,
-            p1: i.next().unwrap(),
-            p2: i.next().unwrap(),
+            solutions,
             bench,
             examples,
         })
     }
 }
 impl AocMainInput {
-    fn add_part(&self, part_n: u8, part: &PartInput) -> TokenStream {
+    fn add_solution(&self, part: &SolutionPart) -> TokenStream {
         let mut inner = TokenStream::new();
+        let part_num = format!("{}", part.part_num);
         let year = self.day.year;
         let day = self.day.day;
         let is_single_solution = part.fns.len() == 1;
@@ -241,7 +226,7 @@ impl AocMainInput {
                 });
                 if !is_single_solution {
                     inner.extend(quote! {
-                        opts.log(||format!("Year {} Day {} Part {} expected result: {:?}",#year,#day,#part_n, expected));
+                        opts.log(||format!("Year {} Day {} {} expected result: {:?}",#year,#day,#part_num, expected));
                     });
                 }
                 true
@@ -251,7 +236,7 @@ impl AocMainInput {
         for f in &part.fns {
             inner.extend(quote! {
                 let solver_name = stringify!(#f);
-                let full_name = format!("Year {} Day {} Part {} via `{}`",#year,#day, #part_n, solver_name);
+                let full_name = format!("Year {} Day {} {} via `{}`",#year,#day, #part_num, solver_name);
             });
             if self.bench {
                 inner.extend(quote! {
@@ -301,36 +286,43 @@ impl AocMainInput {
         for (e, eg_num) in self.examples.iter().zip(1..) {
             let part_num = format!("{}", e.part_num);
             let ans = &e.expected_ans;
-            match e.part_num {
-                Part::Part1 => out.extend(
-                    self.p1
-                        .fns
-                        .iter()
-                        .map(|f| self.example(&part_num, eg_num, ans, &e.str_input, f)),
-                ),
-                Part::Part2 => out.extend(
-                    self.p2
-                        .fns
-                        .iter()
-                        .map(|f| self.example(&part_num, eg_num, ans, &e.str_input, f)),
-                ),
-                Part::Both => {
-                    let p1_ans = parse_quote! { #ans.0 };
-                    let p2_ans = parse_quote! { #ans.1 };
-                    out.extend(
-                        self.p1
-                            .fns
-                            .iter()
-                            .map(|f| self.example(&part_num, eg_num, &p1_ans, &e.str_input, f)),
-                    );
-                    out.extend(
-                        self.p2
-                            .fns
-                            .iter()
-                            .map(|f| self.example(&part_num, eg_num, &p2_ans, &e.str_input, f)),
-                    );
+            if e.part_num == PartNum::Both {
+                let p1_ans = parse_quote! { #ans.0 };
+                let p2_ans = parse_quote! { #ans.1 };
+                for s in &self.solutions {
+                    for f in &s.fns {
+                        match s.part_num {
+                            PartNum::Part1 => out.extend(self.example(
+                                &part_num,
+                                eg_num,
+                                &p1_ans,
+                                &e.str_input,
+                                f,
+                            )),
+                            PartNum::Part2 => out.extend(self.example(
+                                &part_num,
+                                eg_num,
+                                &p2_ans,
+                                &e.str_input,
+                                f,
+                            )),
+                            PartNum::Both => {
+                                out.extend(self.example(&part_num, eg_num, ans, &e.str_input, f))
+                            }
+                        }
+                    }
                 }
-            };
+            } else {
+                for s in &self.solutions {
+                    if s.part_num == PartNum::Both {
+                        unimplemented!("Please give both-style examples for both-style solutions");
+                    } else if s.part_num == e.part_num {
+                        for f in &s.fns {
+                            out.extend(self.example(&part_num, eg_num, &ans, &e.str_input, f));
+                        }
+                    }
+                }
+            }
         }
         out
     }
@@ -349,8 +341,11 @@ impl AocMainInput {
                 let generated = s;
             }),
         }
-        let part1 = self.add_part(1, &self.p1);
-        let part2 = self.add_part(2, &self.p2);
+        let solutions: TokenStream = self
+            .solutions
+            .iter()
+            .map(|x| self.add_solution(x))
+            .collect();
         let examples = if self.examples.is_empty() {
             quote! {fn check_examples() {}}
         } else {
@@ -362,29 +357,7 @@ impl AocMainInput {
             }
         };
         if self.bench {
-            quote! {
-                pub fn part1(criterion : &mut criterion::Criterion) {
-                    let test_mode : bool = true;
-                    let opts = aoc_harness::Opts::for_test();
-                    #setup;
-                    #part1;
-                }
-                pub fn part2(criterion : &mut criterion::Criterion) {
-                    let test_mode : bool = true;
-                    let opts = aoc_harness::Opts::for_test();
-                    #setup;
-                    #part2;
-                }
-                pub fn benches() {
-                    let mut criterion = criterion::Criterion::default();
-                    part1(&mut criterion);
-                    part2(&mut criterion);
-                }
-                fn main() {
-                    benches();
-                    criterion::Criterion::default().final_summary();
-                }
-            }
+            unimplemented!();
         } else {
             quote! {
                 use structopt::StructOpt;
@@ -401,8 +374,7 @@ impl AocMainInput {
                 }
                 pub fn run_with_opts(opts: &aoc_harness::Opts, test_mode : bool) {
                     #setup
-                    #part1
-                    #part2
+                    #solutions
                 }
                 #examples
                 pub fn main() {

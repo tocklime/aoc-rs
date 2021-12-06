@@ -5,7 +5,7 @@ use aoc_harness::*;
 use utils::{aabb::Aabb, cartesian::Point};
 
 aoc_main!(2021 day 5, generator lines::<X>,
-          [solve::<false>] => 5147, [solve::<true>] => 16925,
+          part1 [solve::<false>] => 5147, part2 [solve::<true>] => 16925,
           example both EG => (5,12));
 
 #[derive(Debug)]
