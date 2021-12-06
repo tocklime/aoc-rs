@@ -110,12 +110,12 @@ where
     O: FromStr,
     <O as FromStr>::Err: std::fmt::Debug,
 {
-    i.lines().map(|x| x.parse().unwrap()).collect()
+    i.trim().lines().map(|x| x.parse().unwrap()).collect()
 }
 pub fn input<O: FromStr, const S: char>(i: &str) -> Vec<O>
 where
     O: FromStr,
     <O as FromStr>::Err: std::fmt::Debug,
 {
-    i.split(S).map(|x| x.parse().unwrap()).collect()
+    i.trim().split(S).map(|x| x.parse().unwrap()).collect()
 }
