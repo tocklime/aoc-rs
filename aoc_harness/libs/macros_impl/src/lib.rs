@@ -1,9 +1,12 @@
+use std::fmt::Display;
+
 use quote::quote;
 
 use proc_macro2::TokenStream;
 use syn::bracketed;
 use syn::parse::Parse;
 use syn::parse::ParseStream;
+use syn::parse_quote;
 use syn::punctuated::Punctuated;
 use syn::token;
 use syn::Expr;
@@ -18,24 +21,60 @@ mod kw {
     syn::custom_keyword!(day);
     syn::custom_keyword!(bench);
     syn::custom_keyword!(example);
-    syn::custom_keyword!(part);
+    syn::custom_keyword!(part1);
+    syn::custom_keyword!(part2);
+    syn::custom_keyword!(both);
+}
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+enum Part {
+    Part1,
+    Part2,
+    Both,
+}
+impl Display for Part {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Part::Part1 => f.write_str("Part 1"),
+            Part::Part2 => f.write_str("Part 2"),
+            Part::Both => f.write_str("Both parts"),
+        }
+    }
+}
+
+impl Parse for Part {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::part1) {
+            let _: kw::part1 = input.parse()?;
+            Ok(Part::Part1)
+        } else if lookahead.peek(kw::part2) {
+            let _: kw::part2 = input.parse()?;
+            Ok(Part::Part2)
+        } else if lookahead.peek(kw::both) {
+            let _: kw::both = input.parse()?;
+            Ok(Part::Both)
+        } else {
+            Err(lookahead.error())
+        }
+    }
 }
 
 struct ExamplePart {
-    part_num: u8,
+    part_num: Part,
     str_input: Expr,
-    expected_ans: Expr
+    expected_ans: Expr,
 }
 impl Parse for ExamplePart {
     fn parse(input: ParseStream) -> Result<Self> {
-        let _ex_token : kw::example = input.parse()?;
-        let _part_token : kw::part = input.parse()?;
-        let part_num : u8 = input.parse::<LitInt>()?.base10_parse()?;
-        let str_input : Expr = input.parse()?;
+        let _ex_token: kw::example = input.parse()?;
+        let part_num: Part = input.parse()?;
+        let str_input: Expr = input.parse()?;
         let _goes_to = input.parse::<Token![=>]>()?;
-        let expected_ans : Expr = input.parse()?;
+        let expected_ans: Expr = input.parse()?;
         Ok(Self {
-            part_num, str_input, expected_ans
+            part_num,
+            str_input,
+            expected_ans,
         })
     }
 }
@@ -125,7 +164,7 @@ pub struct AocMainInput {
     p1: PartInput,
     p2: PartInput,
     bench: bool,
-    examples: Vec<ExamplePart>
+    examples: Vec<ExamplePart>,
 }
 impl Parse for AocMainInput {
     fn parse(input: ParseStream) -> Result<Self> {
@@ -155,7 +194,7 @@ impl Parse for AocMainInput {
                     parts.push(p);
                 }
                 Parts::Bench(_) => bench = true,
-                Parts::Example(e) => examples.push(e)
+                Parts::Example(e) => examples.push(e),
             }
         }
         if day.is_none() {
@@ -184,7 +223,7 @@ impl Parse for AocMainInput {
             p1: i.next().unwrap(),
             p2: i.next().unwrap(),
             bench,
-            examples
+            examples,
         })
     }
 }
@@ -240,28 +279,58 @@ impl AocMainInput {
         }
         inner
     }
+    pub fn example(
+        &self,
+        part_num: &str,
+        eg_num: usize,
+        expected: &Expr,
+        input: &Expr,
+        func: &Expr,
+    ) -> TokenStream {
+        match self.gen.as_ref().map(|x| &x.gen_fn) {
+            Some(g) => quote! {
+                assert_eq!(#func(&#g(#input)), #expected, "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func));
+            },
+            None => quote! {
+                assert_eq!(#func(#input), #expected, "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func));
+            },
+        }
+    }
     pub fn examples(&self) -> TokenStream {
         let mut out = TokenStream::new();
-        for (e,eg_num) in self.examples.iter().zip(1..) {
-            let part_num =e.part_num;
-            let parts = match e.part_num {
-                1 => &self.p1.fns,
-                2 => &self.p2.fns,
-                _ => panic!("Unknown part")
+        for (e, eg_num) in self.examples.iter().zip(1..) {
+            let part_num = format!("{}", e.part_num);
+            let ans = &e.expected_ans;
+            match e.part_num {
+                Part::Part1 => out.extend(
+                    self.p1
+                        .fns
+                        .iter()
+                        .map(|f| self.example(&part_num, eg_num, ans, &e.str_input, f)),
+                ),
+                Part::Part2 => out.extend(
+                    self.p2
+                        .fns
+                        .iter()
+                        .map(|f| self.example(&part_num, eg_num, ans, &e.str_input, f)),
+                ),
+                Part::Both => {
+                    let p1_ans = parse_quote! { #ans.0 };
+                    let p2_ans = parse_quote! { #ans.1 };
+                    out.extend(
+                        self.p1
+                            .fns
+                            .iter()
+                            .map(|f| self.example(&part_num, eg_num, &p1_ans, &e.str_input, f)),
+                    );
+                    out.extend(
+                        self.p2
+                            .fns
+                            .iter()
+                            .map(|f| self.example(&part_num, eg_num, &p2_ans, &e.str_input, f)),
+                    );
+                }
             };
-            for f in parts {
-                let expected = &e.expected_ans;
-                let input = &e.str_input;
-                match self.gen.as_ref().map(|x| &x.gen_fn) {
-                    Some(g) => 
-                        out.extend(quote! {
-                            assert_eq!(#f(&#g(#input)), #expected, "Example failure: Part {} example {} with fn {}",#part_num, #eg_num, stringify!(#f));
-                        }),
-                    None => out.extend(quote! {
-                        assert_eq!(#f(#input), #expected, "Example failure: Part {} example {} with fn {}",#part_num, #eg_num, stringify!(#f));
-                    }),
-                };
-            }
         }
         out
     }
@@ -283,7 +352,7 @@ impl AocMainInput {
         let part1 = self.add_part(1, &self.p1);
         let part2 = self.add_part(2, &self.p2);
         let examples = if self.examples.is_empty() {
-            quote! {fn check_examples() {}} 
+            quote! {fn check_examples() {}}
         } else {
             let inner = self.examples();
             quote! {

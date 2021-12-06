@@ -4,7 +4,7 @@ use std::str::FromStr;
 use utils::numset::NumSet;
 
 aoc_main!(2021 day 4, generator whole_input_is::<Day04>, [p1] => 60368, [p2] => 17435,
-          example part 1 EG => 4512, example part 2 EG => 1924);
+          example both EG => (4512, 1924));
 
 #[derive(Clone, Debug)]
 struct Board {

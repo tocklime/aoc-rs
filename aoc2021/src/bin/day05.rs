@@ -6,7 +6,7 @@ use utils::{aabb::Aabb, cartesian::Point};
 
 aoc_main!(2021 day 5, generator lines::<X>,
           [solve::<false>] => 5147, [solve::<true>] => 16925,
-          example part 1 EG => 5, example part 2 EG => 12);
+          example both EG => (5,12));
 
 #[derive(Debug)]
 struct X {

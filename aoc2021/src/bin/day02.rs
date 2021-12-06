@@ -5,7 +5,7 @@ use scan_fmt::scan_fmt;
 use utils::cartesian::{Dir, Point};
 
 aoc_main!(2021 day 2, generator lines::<Instruction>, [p1] => 1868935, [p2] => 1965970888,
-          example part 1 EG => 150, example part 2 EG => 900);
+          example both EG => (150, 900));
 
 struct Instruction {
     dir: Dir,

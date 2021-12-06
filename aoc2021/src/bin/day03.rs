@@ -2,7 +2,7 @@ use aoc_harness::*;
 use utils::nums::NumBitExt;
 
 aoc_main!(2021 day 3, generator gen, [p1] => 4001724, [p2] => 587895,
-          example part 1 EG => 198, example part 2 EG => 230);
+          example both EG => (198, 230));
 
 struct Day3 {
     width: usize,
