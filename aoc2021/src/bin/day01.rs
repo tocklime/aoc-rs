@@ -1,6 +1,7 @@
 use aoc_harness::*;
 
-aoc_main!(2021 day 1, generator lines::<usize>, [solve::<1>, solve2::<1>] => 1616, [part2_fastest, solve::<3>, solve2::<3>] => 1645);
+aoc_main!(2021 day 1, generator lines::<usize>, [solve::<1>, solve2::<1>] => 1616, [part2_fastest, solve::<3>, solve2::<3>] => 1645,
+          example part 1 EG => 7, example part 2 EG => 5);
 
 fn solve<const N: usize>(input: &[usize]) -> usize {
     input
@@ -26,3 +27,14 @@ pub fn part2_fastest(inputs: &[usize]) -> usize {
 
     count
 }
+
+const EG: &str = "199
+200
+208
+210
+200
+207
+240
+269
+260
+263";

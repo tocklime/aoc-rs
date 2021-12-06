@@ -1,7 +1,8 @@
 use aoc_harness::*;
 use utils::nums::NumBitExt;
 
-aoc_main!(2021 day 3, generator gen, [p1] => 4001724, [p2] => 587895);
+aoc_main!(2021 day 3, generator gen, [p1] => 4001724, [p2] => 587895,
+          example part 1 EG => 198, example part 2 EG => 230);
 
 struct Day3 {
     width: usize,
@@ -44,12 +45,7 @@ fn p2(input: &Day3) -> usize {
     let co2 = filter_on(&input.nums, input.width, false);
     co2 * oxy
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    const EG: &str = "00100
+const EG: &str = "00100
 11110
 10110
 10111
@@ -61,13 +57,3 @@ mod tests {
 11001
 00010
 01010";
-
-    #[test]
-    pub fn tp1() {
-        assert_eq!(p1(&gen(EG)), 198);
-    }
-    #[test]
-    pub fn tp2() {
-        assert_eq!(p2(&gen(EG)), 230);
-    }
-}

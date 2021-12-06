@@ -3,7 +3,8 @@ use ndarray::Array2;
 use std::str::FromStr;
 use utils::numset::NumSet;
 
-aoc_main!(2021 day 4, generator whole_input_is::<Day04>, [p1] => 60368, [p2] => 17435);
+aoc_main!(2021 day 4, generator whole_input_is::<Day04>, [p1] => 60368, [p2] => 17435,
+          example part 1 EG => 4512, example part 2 EG => 1924);
 
 #[derive(Clone, Debug)]
 struct Board {
@@ -113,11 +114,7 @@ fn p2(input: &Day04) -> usize {
     }
     0
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    const EG: &str = "7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
+const EG: &str = "7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
 22 13 17 11  0
  8  2 23  4 24
@@ -136,29 +133,3 @@ mod tests {
 18  8 23 26 20
 22 11 13  6  5
  2  0 12  3  7";
-
-    const COL_WIN: &str = "0 0 0 0 1
-0 0 0 0 1
-0 0 0 0 1
-0 0 0 0 1
-0 0 0 0 1
-";
-    const ROW_WIN: &str = "1 1 1 1 1
-0 0 0 0 0
-0 0 0 0 0
-0 0 0 0 0
-0 0 0 0 0
-";
-    #[test]
-    fn t2() {
-        let cw_b = COL_WIN.parse::<Board>().unwrap();
-        let mut marks = NumSet::new();
-        cw_b.mark_off(1, &mut marks);
-        assert!(cw_b.is_won(&marks));
-        let rw_b = ROW_WIN.parse::<Board>().unwrap();
-        let mut marks = NumSet::new();
-        rw_b.mark_off(1, &mut marks);
-        assert!(rw_b.is_won(&marks));
-        assert_eq!(p2(&whole_input_is(EG)), 1924);
-    }
-}

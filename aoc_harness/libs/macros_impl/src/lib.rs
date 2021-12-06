@@ -1,4 +1,3 @@
-use quote::format_ident;
 use quote::quote;
 
 use proc_macro2::TokenStream;
@@ -283,16 +282,11 @@ impl AocMainInput {
         }
         let part1 = self.add_part(1, &self.p1);
         let part2 = self.add_part(2, &self.p2);
-        let tests_name = format_ident!("test_year_{}_day_{}", (year as u32), day);
         let examples = if self.examples.is_empty() {
             quote! {fn check_examples() {}} 
         } else {
             let inner = self.examples();
             quote! {
-                #[test]
-                pub fn test_examples() {
-                    check_examples();
-                }
                 pub fn check_examples() {
                     #inner
                 }
@@ -328,8 +322,12 @@ impl AocMainInput {
                 #[cfg(test)]
                 mod test {
                     #[test]
-                    fn #tests_name() {
+                    fn full_solution() {
                         super::run_with_opts(&aoc_harness::Opts::default(), true);
+                    }
+                    #[test]
+                    pub fn examples() {
+                        super::check_examples();
                     }
                 }
                 pub fn run_with_opts(opts: &aoc_harness::Opts, test_mode : bool) {

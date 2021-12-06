@@ -62,15 +62,3 @@ const EG: &str = "0,9 -> 5,9
 3,4 -> 1,4
 0,0 -> 8,8
 5,5 -> 8,2";
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn t1() {
-        assert_eq!(solve::<false>(&lines::<X>(EG)), 5)
-    }
-    #[test]
-    fn t2() {
-        assert_eq!(solve::<true>(&lines::<X>(EG)), 12)
-    }
-}

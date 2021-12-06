@@ -4,7 +4,8 @@ use aoc_harness::*;
 use scan_fmt::scan_fmt;
 use utils::cartesian::{Dir, Point};
 
-aoc_main!(2021 day 2, generator lines::<Instruction>, [p1] => 1868935, [p2] => 1965970888);
+aoc_main!(2021 day 2, generator lines::<Instruction>, [p1] => 1868935, [p2] => 1965970888,
+          example part 1 EG => 150, example part 2 EG => 900);
 
 struct Instruction {
     dir: Dir,
@@ -50,21 +51,9 @@ fn p2(input: &[Instruction]) -> isize {
         .area()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    const EXAMPLE: &str = r#"forward 5
+const EG: &str = r#"forward 5
 down 5
 forward 8
 up 3
 down 8
 forward 2"#;
-    #[test]
-    fn test_eg1_p1() {
-        assert_eq!(p1(&lines::<Instruction>(EXAMPLE)), 150);
-    }
-    #[test]
-    fn test_eg1_p2() {
-        assert_eq!(p2(&lines::<Instruction>(EXAMPLE)), 900);
-    }
-}
