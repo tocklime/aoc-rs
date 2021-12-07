@@ -25,7 +25,7 @@ impl FromStr for X {
         let mut s1 = s.split(" -> ").map(|x| x.parse::<Point<usize>>());
         Ok(Self {
             from: s1.next().unwrap()?,
-            to: s1.next().unwrap()?,
+            to: s1.exactly_one().unwrap()?,
         })
     }
 }

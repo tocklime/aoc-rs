@@ -5,9 +5,7 @@ aoc_main!(2021 day 6, generator input::<usize, ','>, both [solve],
 
 fn solve(input: &[usize]) -> (usize, usize) {
     let mut counts = [0; 9];
-    for &f in input {
-        counts[f] += 1;
-    }
+    input.iter().for_each(|&x|counts[x] +=1);
     for d in 0..80 {
         counts[(d + 7) % 9] += counts[(d % 9)];
     }

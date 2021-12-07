@@ -19,7 +19,8 @@ impl Board {
         self.grid
             .iter()
             .filter(|&&c| !drawn.contains(c.into()))
-            .map(|&x| x as usize)
+            .cloned()
+            .map_into::<usize>()
             .sum::<usize>()
     }
 }
