@@ -8,7 +8,6 @@ use syn::parse::Parse;
 use syn::parse::ParseStream;
 use syn::parse_quote;
 use syn::punctuated::Punctuated;
-use syn::token;
 use syn::Expr;
 use syn::LitInt;
 use syn::Result;
