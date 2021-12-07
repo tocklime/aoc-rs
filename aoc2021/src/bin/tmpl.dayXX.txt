@@ -2,8 +2,8 @@ use std::str::FromStr;
 
 use aoc_harness::*;
 
-aoc_main!(2021 day 3, generator lines::<X>, [p1], [p2],
-          example part 1 EG => 1, example part 2 EG => 1);
+aoc_main!(2021 day 0, generator lines::<X>, part1 [p1], part2 [p2],
+          example part1 EG => 1, example part2 EG => 1);
 
 #[derive(Debug)]
 struct X {}
