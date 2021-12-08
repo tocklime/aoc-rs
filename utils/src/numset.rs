@@ -1,10 +1,10 @@
-use std::ops::{BitAnd, BitOr, Not, Shl};
+use std::ops::{BitAnd, BitOr, Not, Shl, Shr, Sub};
 
-use num::Num;
+use num::{Num, PrimInt};
 
 use crate::nums::NumBitExt;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct NumSet<T> {
     n: T,
 }
@@ -30,24 +30,91 @@ where
     pub fn contains(&self, n: usize) -> bool {
         self.n.get_bit(n)
     }
+    pub fn iter(self) -> NumSetIter<T> {
+        NumSetIter { n: self, pow: 0 }
+    }
+}
+impl<T: BitOr<Output = T>> BitOr for NumSet<T> {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        NumSet { n: self.n | rhs.n }
+    }
+}
+impl<T> Sub for NumSet<T>
+where
+    T: BitAnd<Output = T>,
+    T: Not<Output = T>,
+{
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        NumSet { n: self.n & !rhs.n }
+    }
+}
+impl<T: PrimInt> NumSet<T> {
+    pub fn len(&self) -> u32 {
+        self.n.count_ones()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.n == T::zero()
+    }
 }
 impl<T: Num + Copy> Default for NumSet<T>
 where
     T: BitOr<Output = T>,
     T: BitAnd<Output = T>,
     T: Shl<usize, Output = T>,
-    T: Not<Output = T>, {
-        fn default() -> Self {
+    T: Not<Output = T>,
+{
+    fn default() -> Self {
         Self::new()
     }
 }
 
-impl FromIterator<u8> for NumSet<u128> {
-    fn from_iter<T: IntoIterator<Item = u8>>(iter: T) -> Self {
+impl<T> FromIterator<u8> for NumSet<T>
+where
+    T: BitOr<Output = T>,
+    T: BitAnd<Output = T>,
+    T: Shl<usize, Output = T>,
+    T: Not<Output = T>,
+    T: Copy + Num,
+{
+    fn from_iter<TIter: IntoIterator<Item = u8>>(iter: TIter) -> Self {
         let mut s = Self::new();
         for x in iter {
             s.insert(x.into());
         }
         s
+    }
+}
+
+#[derive(Debug)]
+pub struct NumSetIter<T> {
+    n: NumSet<T>,
+    pow: usize,
+}
+impl<T> Iterator for NumSetIter<T>
+where
+    T: PrimInt + std::fmt::Debug,
+    T: BitAnd<Output = T>,
+    T: Shr<usize, Output = T>,
+    T: Shl<usize, Output = T>,
+{
+    type Item = usize;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        while self.n.n & T::one() != T::one() {
+            if self.n.n == T::zero() {
+                return None;
+            }
+            self.n.n = self.n.n >> 1;
+            self.pow += 1;
+        }
+        let ans = self.pow;
+        self.n.n = self.n.n >> 1;
+        self.pow += 1;
+        // dbg!(&self, &ans);
+        Some(ans)
     }
 }
