@@ -58,36 +58,31 @@ impl FromStr for Line {
 }
 impl Line {
     pub fn deduce_map(&self) -> [usize; 1 << 7] {
-        let mut remaining = self.wires.clone();
-        let mut ns = [NSet::from(0); 10];
-        remaining.retain(|&x| match x.len() {
-            2 => {
-                ns[1] = x;
-                false
+        let mut ans = [0; 1 << 7];
+        let mut one = NumSet::new();
+        let mut four = NumSet::new();
+        for &x in &self.wires {
+            match x.len() {
+                2 => one = x,
+                4 => four = x,
+                _ => {}
             }
-            4 => {
-                ns[4] = x;
-                false
-            }
-            _ => true,
-        });
-        for x in remaining {
+        }
+        for &x in &self.wires {
             let n = match x.len() {
+                2 => 1,
                 3 => 7,
-                7 => 8,
-                5 if (ns[1].is_subset(&x)) => 3,
-                5 if (ns[4] | x).len() == 7 => 2,
+                4 => 4,
+                5 if (one.is_subset(&x)) => 3,
+                5 if (four | x).len() == 7 => 2,
                 5 => 5,
-                6 if (!ns[1].is_subset(&x)) => 6,
-                6 if (ns[4].is_subset(&x)) => 9,
+                6 if (!one.is_subset(&x)) => 6,
+                6 if (four.is_subset(&x)) => 9,
                 6 => 0,
+                7 => 8,
                 _ => unreachable!(),
             };
-            ns[n] = x;
-        }
-        let mut ans = [0; 1 << 7];
-        for (n, &s) in ns.iter().enumerate() {
-            ans[s.inner() as usize] = n;
+            ans[x.inner() as usize] = n;
         }
         ans
     }
@@ -138,7 +133,7 @@ fn p1(input: &[Line]) -> usize {
         .map(|l| {
             l.lights
                 .iter()
-                .filter(|x| [2, 4, 3, 7].contains(&x.len()))
+                .filter(|x| matches!(x.len(), 2|3|4|7))
                 .count()
         })
         .sum()
