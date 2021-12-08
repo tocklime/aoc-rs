@@ -3,8 +3,7 @@ use std::cmp::min;
 use aoc_harness::*;
 
 aoc_main!(2021 day 7, generator input::<isize,','>, part1 [p1] => 352997, part2 [p2] => 101571302,
-  example part1 EG => 37,
-  example part2 EG => 168,
+  example both EG => (37, 168)
 );
 const EG: &str = "16,1,2,0,4,2,7,1,2,14";
 

@@ -3,8 +3,25 @@ use num::{Integer, Num, One, Signed, Zero};
 use std::{
     convert::TryInto,
     iter::{Product, Sum},
-    ops::{Add, BitAnd, BitOr, Not, Shl, Shr},
+    ops::{Add, BitAnd, BitOr, Mul, Not, Shl, Shr},
 };
+
+pub fn exp_by_squares<N: Mul<Output = N> + Clone + Copy>(base: N, mut exp: usize) -> N {
+    // Exponentiation by squares.
+    let mut ans = base;
+    let mut multiplier = base;
+    let mut buf;
+    while exp != 0 {
+        if exp % 2 == 1 {
+            buf = ans * multiplier;
+            ans = buf;
+        }
+        exp /= 2;
+        buf = multiplier * multiplier;
+        multiplier = buf;
+    }
+    ans
+}
 
 pub fn mod_pow<T>(mut base: T, mut exp: T, modulus: T) -> T
 where
