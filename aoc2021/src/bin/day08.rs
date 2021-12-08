@@ -59,17 +59,10 @@ impl FromStr for Line {
 impl Line {
     pub fn deduce_map(&self) -> [usize; 1 << 7] {
         let mut ans = [0; 1 << 7];
-        let mut one = NumSet::new();
-        let mut four = NumSet::new();
+        let one = *self.wires.iter().find(|x| x.len() == 2).unwrap();
+        let four = *self.wires.iter().find(|x| x.len() == 4).unwrap();
         for &x in &self.wires {
-            match x.len() {
-                2 => one = x,
-                4 => four = x,
-                _ => {}
-            }
-        }
-        for &x in &self.wires {
-            let n = match x.len() {
+            ans[x.inner() as usize] = match x.len() {
                 2 => 1,
                 3 => 7,
                 4 => 4,
@@ -82,7 +75,6 @@ impl Line {
                 7 => 8,
                 _ => unreachable!(),
             };
-            ans[x.inner() as usize] = n;
         }
         ans
     }
@@ -133,7 +125,7 @@ fn p1(input: &[Line]) -> usize {
         .map(|l| {
             l.lights
                 .iter()
-                .filter(|x| matches!(x.len(), 2|3|4|7))
+                .filter(|x| matches!(x.len(), 2 | 3 | 4 | 7))
                 .count()
         })
         .sum()
