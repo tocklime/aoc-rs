@@ -57,83 +57,47 @@ impl FromStr for Line {
     }
 }
 impl Line {
+    pub fn deduce_map(&self) -> [usize; 1 << 7] {
+        let mut remaining = self.wires.clone();
+        let mut ns = [NSet::from(0); 10];
+        remaining.retain(|&x| match x.len() {
+            2 => {
+                ns[1] = x;
+                false
+            }
+            4 => {
+                ns[4] = x;
+                false
+            }
+            _ => true,
+        });
+        for x in remaining {
+            let n = match x.len() {
+                3 => 7,
+                7 => 8,
+                5 if (ns[1].is_subset(&x)) => 3,
+                5 if (ns[4] | x).len() == 7 => 2,
+                5 => 5,
+                6 if (!ns[1].is_subset(&x)) => 6,
+                6 if (ns[4].is_subset(&x)) => 9,
+                6 => 0,
+                _ => unreachable!(),
+            };
+            ns[n] = x;
+        }
+        let mut ans = [0; 1 << 7];
+        for (n, &s) in ns.iter().enumerate() {
+            ans[s.inner() as usize] = n;
+        }
+        ans
+    }
     pub fn decode(&self) -> usize {
-        let lu: HashMap<NSet, usize> = DIGS
-            .iter()
-            .enumerate()
-            .map(|(d, n)| (NumSet::from(*n), d))
-            .collect::<HashMap<_, _>>();
-        //1 is the only one with 2 lit
-        let one = *self.wires.iter().find(|x| x.len() == 2).unwrap();
-        //4 is the only one with 4 lit
-        let four = *self.wires.iter().find(|x| x.len() == 4).unwrap();
-        //7 is the only one with 3 lit
-        let seven = *self.wires.iter().find(|x| x.len() == 3).unwrap();
-        //8 is the only one with 7 lit
-        let eight = *self.wires.iter().find(|x| x.len() == 7).unwrap();
-        //a is the one lit in 7 but not in 1.
-        let map_a = (seven - one).iter().exactly_one().unwrap();
-        //6 is the only one with 6 lit s.t. 6 | 1 has 7 lit
-        let six = *self
-            .wires
-            .iter()
-            .filter(|x| x.len() == 6 && (**x | one).len() == 7)
-            .exactly_one()
-            .unwrap();
-        //c is the one lit in 8 but not in 6.
-        let map_c = (eight - six).iter().exactly_one().unwrap();
-        //5 is the only one with 5 lit s.t. 6 - 5 has 1 lit (and that lit one is e)
-        let five = *self
-            .wires
-            .iter()
-            .filter(|&&x| x.len() == 5 && (six - x).len() == 1)
-            .exactly_one()
-            .unwrap();
-        let map_e = (six - five).iter().exactly_one().unwrap();
-        //0 is the only one with length 6 with e lit.
-        let zero = *self
-            .wires
-            .iter()
-            .filter(|&&x| x.len() == 6 && x.contains(map_e as usize) && x != six)
-            .exactly_one()
-            .unwrap();
-        //9 is the other len 6.
-        // let nine = *self.wires.iter().filter(|&&x| x.len() == 6 && x != zero && x != six).exactly_one().unwrap();
-        //2 has len 5, and e lit.
-        let two = *self
-            .wires
-            .iter()
-            .filter(|x| x.len() == 5 && x.contains(map_e as usize))
-            .exactly_one()
-            .unwrap();
-        //3 has len 5, and isn't 2 or 5.
-        let three = *self
-            .wires
-            .iter()
-            .filter(|&&x| x.len() == 5 && x != two && x != five)
-            .exactly_one()
-            .unwrap();
-        //d is 8 - 0.
-        let map_d = (eight - zero).iter().exactly_one().unwrap();
-        let map_b = (five - three).iter().exactly_one().unwrap();
-        let map_f = (three - two).iter().exactly_one().unwrap();
-        let map_g = (five - seven - four).iter().exactly_one().unwrap();
-        let mut ans = [0; 7];
-        ans[map_a] = 0_u8;
-        ans[map_b] = 1;
-        ans[map_c] = 2;
-        ans[map_d] = 3;
-        ans[map_e] = 4;
-        ans[map_f] = 5;
-        ans[map_g] = 6;
+        let m = self.deduce_map();
 
-        let out = self
-            .lights
+        self.lights
             .iter()
-            .map(|&x| convert(x, &ans))
-            .map(|x| lu[&x])
-            .collect_vec();
-        out[0] * 1000 + out[1] * 100 + out[2] * 10 + out[3]
+            .map(|&x| m[x.inner() as usize])
+            .fold(0, |acc, x| acc * 10 + x)
     }
     pub fn find(&self) -> usize {
         let lu: HashMap<NSet, usize> = DIGS
@@ -146,21 +110,17 @@ impl Line {
             .permutations(7)
             .map(|x| x.into_iter().map(char_to_num).collect_vec())
             .find(|p| {
-                [&self.wires, &self.lights].iter().all(|i| {
-                    i.iter().all(|w| {
-                        let co = convert(*w, p);
-                        lu.contains_key(&co)
-                    })
+                self.wires.iter().all(|w| {
+                    let co = convert(*w, p);
+                    lu.contains_key(&co)
                 })
             })
             .unwrap();
-        let out = self
-            .lights
+        self.lights
             .iter()
             .map(|&x| convert(x, &ans))
             .map(|x| lu[&x])
-            .collect_vec();
-        out[0] * 1000 + out[1] * 100 + out[2] * 10 + out[3]
+            .fold(0, |acc, x| acc * 10 + x)
     }
 }
 fn convert(input: NSet, mapping: &[u8]) -> NSet {

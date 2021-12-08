@@ -8,6 +8,12 @@ use crate::nums::NumBitExt;
 pub struct NumSet<T> {
     n: T,
 }
+impl<T: Into<usize>> Into<usize> for NumSet<T> {
+    fn into(self) -> usize {
+        self.n.into()
+    }
+}
+
 impl<T: Num + Copy> NumSet<T>
 where
     T: BitOr<Output = T>,
@@ -15,6 +21,9 @@ where
     T: Shl<usize, Output = T>,
     T: Not<Output = T>,
 {
+    pub fn inner(self) -> T {
+        self.n
+    }
     pub fn new() -> Self {
         Self { n: T::zero() }
     }
