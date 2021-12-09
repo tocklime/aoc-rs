@@ -1,5 +1,6 @@
 use crate::aabb::Aabb;
 use arrayvec::ArrayVec;
+use ndarray::IntoDimension;
 use num::{
     abs,
     integer::gcd,
@@ -20,6 +21,16 @@ use crate::nums::NumExt;
 pub struct Point<T> {
     pub x: T,
     pub y: T,
+}
+impl<T> IntoDimension for Point<T>
+where
+    (T, T): IntoDimension,
+{
+    type Dim = <(T, T) as IntoDimension>::Dim;
+
+    fn into_dimension(self) -> Self::Dim {
+        (self.y, self.x).into_dimension()
+    }
 }
 
 impl<T: FromStr> FromStr for Point<T> {
@@ -106,6 +117,20 @@ impl<T: Default> Default for Point<T> {
 impl<T: Sized> Point<T> {
     pub const fn new(x: T, y: T) -> Self {
         Self { x, y }
+    }
+    pub fn from_dim(p: (T, T)) -> Self {
+        Self { x: p.1, y: p.0 }
+    }
+    pub fn as_tuple_y_first(self) -> (T, T) {
+        (self.y, self.x)
+    }
+}
+impl<T: Num> Point<T> {
+    pub fn origin() -> Self {
+        Self {
+            x: T::zero(),
+            y: T::zero(),
+        }
     }
 }
 impl<T: Num + WrappingAdd> Point<T> {

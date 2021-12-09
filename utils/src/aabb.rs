@@ -23,6 +23,12 @@ where
             top_right: p,
         }
     }
+    pub fn origin_and(p: Point<T>) -> Self {
+        Self {
+            bottom_left: Point::origin(),
+            top_right: p,
+        }
+    }
     pub fn area(&self) -> usize {
         self.width() * self.height()
     }

@@ -1,98 +1,73 @@
-use std::collections::HashSet;
+use std::collections::BinaryHeap;
 
 use aoc_harness::*;
-use ndarray::Array2;
+use ndarray::{Array2, IntoDimension};
+use utils::{aabb::Aabb, cartesian::Point};
 
-aoc_main!(2021 day 9, part1 [p1], part2 [p2],
+aoc_main!(2021 day 9, generator gen, part1 [p1] => 633, part2 [p2] => 1050192,
           example part1 EG => 15, example part2 EG => 1134);
 const EG: &str = "2199943210
 3987894921
 9856789892
 8767896789
 9899965678";
-fn p1(input: &str) -> usize {
+fn gen(input: &str) -> Array2<u8> {
+    let input = input.trim();
     let wid = input.lines().next().unwrap().len();
     let hei = input.lines().count();
-    let mut grid = Array2::from_elem((hei, wid), 0_usize);
-    for (y, l) in input.lines().enumerate() {
-        for (x, c) in l.chars().enumerate() {
-            grid[(y, x)] = (c as u32 - '0' as u32) as usize;
-        }
-    }
-    println!("{}", &grid);
-    (0..hei)
-        .cartesian_product(0..wid)
-        .filter(|&(y, x)| {
-            let here = grid[(y, x)];
-            let up = y == 0 || grid[(y - 1, x)] > here;
-            let down = y + 1 == hei || grid[(y + 1, x)] > here;
-            let left = x == 0 || grid[(y, x - 1)] > here;
-            let right = x + 1 == wid || grid[(y, x + 1)] > here;
-            if up && down && left && right {
-                println!("{} {} {}", x, y, here);
-                true
-            } else {
-                false
-            }
-        })
-        .map(|x| grid[x] + 1)
-        .sum::<usize>()
+    let mut i = input.chars().filter(char::is_ascii_digit);
+    Array2::from_shape_simple_fn((hei, wid), || (i.next().unwrap() as u32 - '0' as u32) as u8)
 }
-
-fn p2(input: &str) -> usize {
-    let wid = input.lines().next().unwrap().len();
-    let hei = input.lines().count();
-    let mut grid = Array2::from_elem((hei, wid), 0_usize);
-    for (y, l) in input.lines().enumerate() {
-        for (x, c) in l.chars().enumerate() {
-            grid[(y, x)] = (c as u32 - '0' as u32) as usize;
-        }
-    }
-    println!("{}", &grid);
-    let low_points = (0..hei)
-        .cartesian_product(0..wid)
-        .filter(|&(y, x)| {
-            let here = grid[(y, x)];
-            let up = y == 0 || grid[(y - 1, x)] > here;
-            let down = y + 1 == hei || grid[(y + 1, x)] > here;
-            let left = x == 0 || grid[(y, x - 1)] > here;
-            let right = x + 1 == wid || grid[(y, x + 1)] > here;
-            if up && down && left && right {
-                println!("{} {} {}", x, y, here);
-                true
-            } else {
-                false
-            }
+fn get_low_points(grid: &Array2<u8>) -> Vec<(usize, usize)> {
+    let (hei, wid) = grid.dim();
+    let bb = Aabb::new(Point::new(wid - 1, hei - 1)).extend(Point::new(0, 0));
+    grid.indexed_iter()
+        .filter(|&(p, &here)| {
+            Point::from_dim(p)
+                .neighbours()
+                .iter()
+                .all(|x| !bb.contains(x) || grid[x.into_dimension()] > here)
         })
-        .collect_vec();
-    let mut sizes = Vec::new();
-    for b in low_points {
-        let mut fringe = vec![b];
-        let mut done = HashSet::new();
-        while !fringe.is_empty() {
-            let (y, x) = fringe.pop().unwrap();
-            if !done.contains(&(y, x)) {
-                let up = if y == 0 { 9 } else { grid[(y - 1, x)] };
-                let down = if y + 1 == hei { 9 } else { grid[(y + 1, x)] };
-                let left = if x == 0 { 9 } else { grid[(y, x - 1)] };
-                let right = if x + 1 == wid { 9 } else { grid[(y, x + 1)] };
-                if up < 9 {
-                    fringe.push((y - 1, x));
+        .map(|x| x.0)
+        .collect()
+}
+fn neighbours(p: (usize, usize)) -> [(usize, usize); 4] {
+    [
+        (p.0.wrapping_sub(1), p.1),
+        (p.0, p.1.wrapping_sub(1)),
+        (p.0 + 1, p.1),
+        (p.0, p.1 + 1),
+    ]
+}
+fn p1(grid: &Array2<u8>) -> usize {
+    get_low_points(grid)
+        .into_iter()
+        .map(|x| grid[x] as usize + 1)
+        .sum()
+}
+fn p2(grid: &Array2<u8>) -> usize {
+    let mut sizes = BinaryHeap::new();
+    let mut done_map = Array2::from_elem(grid.dim(), false);
+    for (p, &v) in grid.indexed_iter() {
+        if done_map[p] || v == 9 {
+            continue;
+        }
+        //flood from here.
+        let mut fringe = vec![p];
+        let mut count = 0;
+        while let Some(p) = fringe.pop() {
+            if done_map[p] {
+                continue;
+            }
+            done_map[p] = true;
+            count += 1;
+            for n in neighbours(p) {
+                if grid.get(n).unwrap_or(&9) < &9 {
+                    fringe.push(n);
                 }
-                if down < 9 {
-                    fringe.push((y + 1, x))
-                };
-                if left < 9 {
-                    fringe.push((y, x - 1))
-                };
-                if right < 9 {
-                    fringe.push((y, x + 1))
-                };
-                done.insert((y, x));
             }
         }
-        sizes.push(done.len())
+        sizes.push(count)
     }
-    sizes.sort_by(|a, b| b.cmp(a));
     sizes.iter().take(3).product()
 }

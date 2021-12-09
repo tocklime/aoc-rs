@@ -18,6 +18,9 @@ pub struct Opts {
     pub test_mode: bool,
     #[structopt(short, long, default_value = "1")]
     pub repeats: usize,
+    /// Bypass lightweight benchmarking
+    #[structopt(short, long)]
+    pub bypass: bool,
 }
 
 impl Opts {
@@ -27,6 +30,7 @@ impl Opts {
             quiet: true,
             test_mode: true,
             repeats: 1,
+            bypass: true,
         }
     }
     pub fn log<F: FnOnce() -> String>(&self, f: F) {
@@ -70,7 +74,7 @@ impl Opts {
         let end = Instant::now();
         let dur = end - start;
         let target_dur = std::time::Duration::new(0, 50_000_000);
-        if dur < target_dur {
+        if !self.bypass && dur < target_dur {
             //took less than 50ms. How many could we do in 50ms?
             let c = (target_dur.as_secs_f64() / dur.as_secs_f64()) as usize;
             let start = Instant::now();
