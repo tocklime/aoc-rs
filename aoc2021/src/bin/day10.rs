@@ -26,8 +26,7 @@ impl FromStr for StackEval {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut stack = Vec::new();
         for c in s.bytes() {
-            let expected = stack.last();
-            match (c, expected) {
+            match (c, stack.last()) {
                 (b'(', _) => stack.push(b')'),
                 (b'{', _) => stack.push(b'}'),
                 (b'[', _) => stack.push(b']'),
@@ -57,8 +56,8 @@ impl StackEval {
             StackEval::Valid(stack) => Some(stack.iter().rev().fold(0, |s, c| {
                 let a = match c {
                     b')' => 1,
-                    b'}' => 3,
                     b']' => 2,
+                    b'}' => 3,
                     b'>' => 4,
                     _ => unreachable!(),
                 };
@@ -72,10 +71,9 @@ fn p1(input: &[StackEval]) -> usize {
     input.iter().filter_map(|l| l.score_corrupt()).sum()
 }
 fn p2(input: &[StackEval]) -> usize {
-    let mut s = input
+    let s = input
         .iter()
         .filter_map(|l| l.score_incomplete())
         .collect_vec();
-    s.sort();
-    s[s.len() / 2]
+    *s.iter().k_smallest(s.len() / 2 + 1).last().unwrap()
 }
