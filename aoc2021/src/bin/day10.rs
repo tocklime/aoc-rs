@@ -17,21 +17,21 @@ const EG: &str = "[({(<(())[]>[[{[]{<()<>>
 <{([{{}}[<[[[<>{}]]]>[]]";
 
 enum StackEval {
-    Corrupt(char),
-    Valid(Vec<char>),
+    Corrupt(u8),
+    Valid(Vec<u8>),
 }
 impl FromStr for StackEval {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut stack = Vec::new();
-        for c in s.chars() {
+        for c in s.bytes() {
             let expected = stack.last();
             match (c, expected) {
-                ('(', _) => stack.push(')'),
-                ('{', _) => stack.push('}'),
-                ('[', _) => stack.push(']'),
-                ('<', _) => stack.push('>'),
+                (b'(', _) => stack.push(b')'),
+                (b'{', _) => stack.push(b'}'),
+                (b'[', _) => stack.push(b']'),
+                (b'<', _) => stack.push(b'>'),
                 (a, Some(&b)) if a == b => {
                     stack.pop().unwrap();
                 }
@@ -44,10 +44,10 @@ impl FromStr for StackEval {
 impl StackEval {
     fn score_corrupt(&self) -> Option<usize> {
         match self {
-            StackEval::Corrupt(')') => Some(3),
-            StackEval::Corrupt(']') => Some(57),
-            StackEval::Corrupt('}') => Some(1197),
-            StackEval::Corrupt('>') => Some(25137),
+            StackEval::Corrupt(b')') => Some(3),
+            StackEval::Corrupt(b']') => Some(57),
+            StackEval::Corrupt(b'}') => Some(1197),
+            StackEval::Corrupt(b'>') => Some(25137),
             _ => None,
         }
     }
@@ -56,10 +56,10 @@ impl StackEval {
             StackEval::Corrupt(_) => None,
             StackEval::Valid(stack) => Some(stack.iter().rev().fold(0, |s, c| {
                 let a = match c {
-                    ')' => 1,
-                    '}' => 3,
-                    ']' => 2,
-                    '>' => 4,
+                    b')' => 1,
+                    b'}' => 3,
+                    b']' => 2,
+                    b'>' => 4,
                     _ => unreachable!(),
                 };
                 s * 5 + a
