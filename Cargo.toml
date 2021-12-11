@@ -11,4 +11,10 @@ overflow-checks = true
 
 [profile.dev]
 debug = true
-overflow-checks = true   
+overflow-checks = true
+
+[profile.release-lto]
+inherits = "release"
+debug = false
+overflow-checks = false
+lto = true

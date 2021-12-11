@@ -9,7 +9,7 @@ pub struct Grid2d<T> {
     size: Coord,
 }
 
-type Coord = (usize, usize);
+pub type Coord = (usize, usize);
 impl<T: Copy> Grid2d<T> {
     pub fn from_elem(size: Coord, elem: T) -> Self {
         Self {
