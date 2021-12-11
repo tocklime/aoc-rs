@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr};
+use std::str::FromStr;
 
 use aoc_harness::*;
 use utils::numset::NumSet;

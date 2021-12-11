@@ -53,14 +53,23 @@ impl Opts {
     pub fn get_input(&self, year: i32, day: u8) -> String {
         match &self.input {
             None => {
-                let mut aoc = aocf::Aoc::new()
-                    .year(Some(year))
-                    .day(Some(day.into()))
-                    .parse_cli(false)
-                    .init()
-                    .unwrap();
-                aoc.get_input(false)
-                    .expect("Couldn't get input for day from adventofcode.com.")
+                //try in cache dir first.
+                let p = PathBuf::from(format!("input/{}day{:02}.txt", year, day));
+                if !p.exists() {
+                    let mut aoc = aocf::Aoc::new()
+                        .year(Some(year))
+                        .day(Some(day.into()))
+                        .parse_cli(false)
+                        .init()
+                        .unwrap();
+                    let i = aoc
+                        .get_input(false)
+                        .expect("Couldn't get input for day from adventofcode.com.");
+                    std::fs::write(p, &i).expect("failed to write cached input file");
+                    i
+                } else {
+                    std::fs::read_to_string(p).expect("couldn't read cached input file")
+                }
             }
             Some(f) => std::fs::read_to_string(f).expect("Couldn't read file"),
         }
