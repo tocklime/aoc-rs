@@ -18,3 +18,8 @@ inherits = "release"
 debug = false
 overflow-checks = false
 lto = true
+
+[profile.release-nocheck]
+inherits = "release"
+debug = false
+overflow-checks = false
