@@ -1,5 +1,6 @@
 use std::ops::{Index, IndexMut};
 
+use itertools::Itertools;
 use num::Integer;
 
 #[derive(Debug, Clone)]
@@ -43,11 +44,29 @@ impl<T> Grid2d<T> {
     pub fn dim(&self) -> Coord {
         self.size
     }
+    pub fn indexes<'a>(&'a self) -> impl Iterator<Item = Coord> + '_ {
+        let max = self.size;
+        (0..max.0).cartesian_product(0..max.1)
+    }
     pub fn indexed_iter(&self) -> impl Iterator<Item = (Coord, &T)> {
         self.data
             .iter()
             .enumerate()
             .map(|(x, v)| (x.div_mod_floor(&self.size.1), v))
+    }
+    pub fn neighbours_with_diagonals(&self, p: Coord) -> impl Iterator<Item = Coord> + '_ {
+        [
+            (p.0.wrapping_sub(1), p.1),
+            (p.0, p.1.wrapping_sub(1)),
+            (p.0 + 1, p.1),
+            (p.0, p.1 + 1),
+            (p.0.wrapping_sub(1), p.1.wrapping_sub(1)),
+            (p.0 + 1, p.1.wrapping_sub(1)),
+            (p.0 + 1, p.1 + 1),
+            (p.0.wrapping_sub(1), p.1 + 1),
+        ]
+        .into_iter()
+        .filter(|x| self.get(*x).is_some())
     }
     pub fn neighbours(&self, p: Coord) -> impl Iterator<Item = (Coord, &T)> {
         [
