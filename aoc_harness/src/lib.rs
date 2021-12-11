@@ -6,7 +6,7 @@ pub use aoc_harness_macros::*;
 pub use itertools::Itertools;
 use structopt::StructOpt;
 
-#[derive(StructOpt, Debug, Default)]
+#[derive(StructOpt, Debug)]
 pub struct Opts {
     /// Override the input with the contents of this file
     #[structopt(short, long)]

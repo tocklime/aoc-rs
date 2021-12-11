@@ -151,7 +151,8 @@ impl Parse for Parts {
             Ok(Parts::Bench(input.parse()?))
         } else if lookahead.peek(LitInt) {
             Ok(Parts::Day(input.parse()?))
-        } else if lookahead.peek(kw::part1) || lookahead.peek(kw::part2)  || lookahead.peek(kw::both) {
+        } else if lookahead.peek(kw::part1) || lookahead.peek(kw::part2) || lookahead.peek(kw::both)
+        {
             Ok(Parts::Part(input.parse()?))
         } else if lookahead.peek(kw::example) {
             Ok(Parts::Example(input.parse()?))
@@ -364,7 +365,7 @@ impl AocMainInput {
                 mod test {
                     #[test]
                     fn full_solution() {
-                        super::run_with_opts(&aoc_harness::Opts::default(), true);
+                        super::run_with_opts(&aoc_harness::Opts::for_test(), true);
                     }
                     #[test]
                     pub fn examples() {

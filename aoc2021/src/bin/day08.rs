@@ -3,7 +3,7 @@ use std::{collections::HashMap, str::FromStr};
 use aoc_harness::*;
 use utils::numset::NumSet;
 
-aoc_main!(2021 day 8, generator lines::<Line>, part1 [p1] => 473, part2 [brute_force,intelligence] => 1097568,
+aoc_main!(2021 day 8, generator lines::<Line>, part1 [p1] => 473, part2 [p2] => 1097568,
   example part1 EG => 26, example part2 EG0 => 5353, example part2 EG => 61229
 );
 type NSet = NumSet<u8>;
@@ -86,39 +86,7 @@ impl Line {
             .map(|&x| m[x.inner() as usize])
             .fold(0, |acc, x| acc * 10 + x)
     }
-    pub fn find(&self) -> usize {
-        let lu: HashMap<NSet, usize> = DIGS
-            .iter()
-            .enumerate()
-            .map(|(d, n)| (NumSet::from(*n), d))
-            .collect::<HashMap<_, _>>();
-        let ans = "abcdefg"
-            .chars()
-            .permutations(7)
-            .map(|x| x.into_iter().map(char_to_num).collect_vec())
-            .find(|p| {
-                self.wires.iter().all(|w| {
-                    let co = convert(*w, p);
-                    lu.contains_key(&co)
-                })
-            })
-            .unwrap();
-        self.lights
-            .iter()
-            .map(|&x| convert(x, &ans))
-            .map(|x| lu[&x])
-            .fold(0, |acc, x| acc * 10 + x)
-    }
 }
-fn convert(input: NSet, mapping: &[u8]) -> NSet {
-    // dbg!(input, mapping);
-    input.iter().map(|x| mapping[x as usize]).collect()
-}
-
-const DIGS: [u8; 10] = [
-    0b01110111, 0b00100100, 0b01011101, 0b01101101, 0b00101110, 0b01101011, 0b01111011, 0b00100101,
-    0b01111111, 0b01101111,
-];
 fn p1(input: &[Line]) -> usize {
     input
         .iter()
@@ -131,9 +99,6 @@ fn p1(input: &[Line]) -> usize {
         .sum()
 }
 
-fn brute_force(input: &[Line]) -> usize {
-    input.iter().map(|l| l.find()).sum()
-}
-fn intelligence(input: &[Line]) -> usize {
+fn p2(input: &[Line]) -> usize {
     input.iter().map(|l| l.decode()).sum()
 }
