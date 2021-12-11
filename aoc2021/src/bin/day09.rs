@@ -17,7 +17,7 @@ fn gen(input: &str) -> Grid2d<u8> {
 }
 fn p1(grid: &Grid2d<u8>) -> usize {
     grid.indexed_iter()
-        .filter(|&(p, here)| grid.neighbours(p).all(|(_, v)| v > here))
+        .filter(|&(p, &here)| grid.neighbours(p).all(|p| grid[p] > here))
         .map(|x| *(x.1) as usize + 1)
         .sum()
 }
@@ -39,7 +39,7 @@ fn p2(grid: &Grid2d<u8>) -> usize {
             count += 1;
             fringe.extend(
                 grid.neighbours(p)
-                    .filter_map(|(p, x)| if *x < 9 { Some(p) } else { None }),
+                    .filter_map(|p| if grid[p] < 9 { Some(p) } else { None }),
             );
         }
         sizes.push(count)

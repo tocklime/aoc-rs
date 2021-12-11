@@ -23,26 +23,19 @@ fn incr(grid: &mut Grid2d<u8>, pos: (usize, usize)) -> bool {
     grid[pos] == 10
 }
 fn step(grid: &mut Grid2d<u8>) -> usize {
-    let mut flashing_this_turn = Vec::new();
-    let mut flashed_this_turn = Vec::new();
+    let mut flashing = grid.indexes().filter(|&x| incr(grid, x)).collect_vec();
 
-    for p in grid.indexes() {
-        if incr(grid, p) {
-            flashing_this_turn.push(p);
-        }
+    while let Some(p) = flashing.pop() {
+        flashing.extend(grid.neighbours_with_diagonals(p).filter(|&n| incr(grid, n)));
     }
-    while let Some(p) = flashing_this_turn.pop() {
-        flashed_this_turn.push(p);
-        for n in grid.neighbours_with_diagonals(p) {
-            if incr(grid, n) {
-                flashing_this_turn.push(n);
+    grid.iter_mut()
+        .filter_map(|p| {
+            if *p > 9 {
+                *p = 0;
             }
-        }
-    }
-    for &p in &flashed_this_turn {
-        grid[p] = 0;
-    }
-    flashed_this_turn.len()
+            (*p == 0).then(|| ())
+        })
+        .count()
 }
 fn p1(input: &Grid2d<u8>) -> usize {
     let mut g = input.clone();

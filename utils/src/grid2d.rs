@@ -31,6 +31,9 @@ impl<T> IndexMut<Coord> for Grid2d<T> {
     }
 }
 impl<T> Grid2d<T> {
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, T> {
+        self.data.iter_mut()
+    }
     pub fn len(&self) -> usize {
         self.data.len()
     }
@@ -69,7 +72,8 @@ impl<T> Grid2d<T> {
         .into_iter()
         .filter(move |&x| x.0 < s.0 && x.1 < s.1)
     }
-    pub fn neighbours(&self, p: Coord) -> impl Iterator<Item = (Coord, &T)> {
+    pub fn neighbours(&'_ self, p: Coord) -> impl Iterator<Item = Coord> {
+        let s = self.dim();
         [
             (p.0.wrapping_sub(1), p.1),
             (p.0, p.1.wrapping_sub(1)),
@@ -77,7 +81,7 @@ impl<T> Grid2d<T> {
             (p.0, p.1 + 1),
         ]
         .into_iter()
-        .filter_map(|x| self.get(x).map(|v| (x, v)))
+        .filter(move |&x| x.0 < s.0 && x.1 < s.1)
     }
     pub fn from_str<F>(input: &str, conv: F) -> Self
     where
