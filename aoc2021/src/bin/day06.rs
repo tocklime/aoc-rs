@@ -3,8 +3,8 @@ use nalgebra::{SMatrix, SVector};
 use utils::nums::exp_by_squares;
 
 aoc_main!(2021 day 6, generator input::<usize, ','>, 
-          both [solve] => (385_391,17_286_110_553_899), 
-          part1 [matrices::<80>] => 385_391, part2 [matrices::<256>] =>17_286_110_553_899,
+          both [solve] => (385_391,1_728_611_055_389), 
+          part1 [matrices::<80>] => 385_391, part2 [matrices::<256>] =>1_728_611_055_389,
           example both EG => (5934, 26_984_457_539_usize));
 
 fn solve(input: &[usize]) -> (usize, usize) {

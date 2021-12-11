@@ -4,7 +4,7 @@ use aoc_harness::*;
 use scan_fmt::scan_fmt;
 use utils::cartesian::{Dir, Point};
 
-aoc_main!(2021 day 2, generator lines::<Instruction>, part1 [p1] => 1_868_935, part2 [p2] => 196_597_088_888,
+aoc_main!(2021 day 2, generator lines::<Instruction>, part1 [p1] => 1_868_935, part2 [p2] => 1_965_970_888,
           example both EG => (150, 900));
 
 struct Instruction {
