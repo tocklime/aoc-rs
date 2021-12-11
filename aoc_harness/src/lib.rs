@@ -54,7 +54,12 @@ impl Opts {
         match &self.input {
             None => {
                 //try in cache dir first.
-                let p = PathBuf::from(format!("input/{}/day{:02}.txt", year, day));
+                let p = PathBuf::from(format!(
+                    "{}input/{}/day{:02}.txt",
+                    std::env::var("CARGO_WORKSPACE_DIR").unwrap_or_else(|_| String::new()),
+                    year,
+                    day
+                ));
                 if !p.exists() {
                     std::fs::create_dir_all(p.parent().unwrap())
                         .expect("couldn't create year input dir");
