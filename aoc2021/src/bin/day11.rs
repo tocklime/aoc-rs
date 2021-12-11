@@ -1,8 +1,7 @@
 use aoc_harness::*;
 use utils::grid2d::Grid2d;
 
-aoc_main!(2021 day 11, generator gen, part1 [p1], part2 [p2],
-          example part1 EG => 1656, example part2 EG => 195);
+aoc_main!(2021 day 11,  both [both] => (1675,515), example both EG => (1656,195));
 
 const EG: &str = "5483143223
 2745854711
@@ -15,29 +14,25 @@ const EG: &str = "5483143223
 4846848554
 5283751526";
 
-fn gen(input: &str) -> Grid2d<u8> {
-    Grid2d::from_str(input, |c| ((c as u32) as u8) - b'0')
-}
-fn incr(grid: &mut Grid2d<u8>, pos: (usize, usize)) -> bool {
-    grid[pos] += 1;
-    grid[pos] == 10
+fn incr(n: &mut u8) -> bool {
+    *n = (*n + 1) % 10;
+    *n == 0
 }
 fn step(grid: &mut Grid2d<u8>) -> usize {
-    let mut flashing = grid.indexes().filter(|&x| incr(grid, x)).collect_vec();
-    let mut next_flasher = 0;
-    while let Some(&p) = flashing.get(next_flasher) {
-        next_flasher += 1;
-        flashing.extend(grid.neighbours_with_diagonals(p).filter(|&n| incr(grid, n)));
+    let mut flashing = grid.indexes().filter(|&x| incr(&mut grid[x])).collect_vec();
+    let mut flash_count = 0;
+    while let Some(&p) = flashing.get(flash_count) {
+        flash_count += 1;
+        flashing.extend(
+            grid.neighbours_with_diagonals(p)
+                .filter(|&n| grid[n] > 0 && incr(&mut grid[n])),
+        );
     }
-
-    flashing.into_iter().map(|p| grid[p] = 0).count()
+    flash_count
 }
-fn p1(input: &Grid2d<u8>) -> usize {
-    let mut g = input.clone();
-    (0..100).fold(0, |c, _| c + step(&mut g))
-}
-
-fn p2(input: &Grid2d<u8>) -> usize {
-    let mut g = input.clone();
-    (1..).find(|_| step(&mut g) == g.len()).unwrap()
+fn both(input: &str) -> (usize, usize) {
+    let mut g = Grid2d::from_str(input, |c| ((c as u32) as u8) - b'0');
+    let p1 = (0..100).fold(0, |c, _| c + step(&mut g));
+    let p2 = (101..).find(|_| step(&mut g) == g.len()).unwrap();
+    (p1, p2)
 }
