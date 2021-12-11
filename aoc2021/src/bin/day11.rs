@@ -1,7 +1,6 @@
-use std::{collections::HashSet, str::FromStr};
+use std::collections::HashSet;
 
 use aoc_harness::*;
-use pathfinding::prelude::Grid;
 use utils::grid2d::Grid2d;
 
 aoc_main!(2021 day 11, generator gen, part1 [p1], part2 [p2],
@@ -27,7 +26,7 @@ fn incr(grid: &mut Grid2d<u8>, pos: (usize, usize)) -> bool {
 }
 fn step(grid: &mut Grid2d<u8>) -> usize {
     let mut flashing_this_turn = Vec::new();
-    let mut flashed_this_turn = HashSet::new();
+    let mut flashed_this_turn = Grid2d::from_elem(grid.dim(), false);
 
     for p in grid.indexes().collect_vec() {
         if incr(grid, p) {
@@ -35,8 +34,8 @@ fn step(grid: &mut Grid2d<u8>) -> usize {
         }
     }
     while let Some(p) = flashing_this_turn.pop() {
-        if !flashed_this_turn.contains(&p) {
-            flashed_this_turn.insert(p);
+        if !flashed_this_turn[p] {
+            flashed_this_turn[p] = true;
             for n in grid.neighbours_with_diagonals(p).collect_vec() {
                 if incr(grid, n) {
                     flashing_this_turn.push(n);
@@ -44,28 +43,22 @@ fn step(grid: &mut Grid2d<u8>) -> usize {
             }
         }
     }
-    let ans = flashed_this_turn.len();
-    for x in flashed_this_turn {
-        grid[x] = 0;
-    }
-    ans
+    flashed_this_turn
+        .indexed_iter()
+        .filter(|&(p, &v)| {
+            if v {
+                grid[p] = 0;
+            }
+            v
+        })
+        .count()
 }
 fn p1(input: &Grid2d<u8>) -> usize {
-    let mut t = input.clone();
-    let a = step(&mut t);
-    let b = step(&mut t);
-    dbg!(a, b, t);
     let mut g = input.clone();
     (0..100).fold(0, |c, _| c + step(&mut g))
 }
 
 fn p2(input: &Grid2d<u8>) -> usize {
     let mut t = input.clone();
-    for s in 0.. {
-        let f = step(&mut t);
-        if f == t.len() {
-            return s + 1;
-        }
-    }
-    0
+    (1..).find(|_| step(&mut t) == t.len()).unwrap()
 }
