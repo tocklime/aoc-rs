@@ -17,14 +17,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: Swatinem/rust-cache@v1
-      with: 
-        working-directory: aoc2021
     - name: Build
       run: cargo build
     - name: Run tests
-      run: cargo test --bin all --lib --release
-    - name: Run for score
-      run: cargo run --bin all --release
+      run: cargo test --bin all --lib -p aoc2021
     - name: Check clippy
-      run: cargo clippy --release
+      run: cargo clippy
+    - name: Run for score
+      run: cargo run --bin all --release -p aoc2021
 

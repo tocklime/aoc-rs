@@ -54,8 +54,10 @@ impl Opts {
         match &self.input {
             None => {
                 //try in cache dir first.
-                let p = PathBuf::from(format!("input/{}day{:02}.txt", year, day));
+                let p = PathBuf::from(format!("input/{}/day{:02}.txt", year, day));
                 if !p.exists() {
+                    std::fs::create_dir_all(p.parent().unwrap())
+                        .expect("couldn't create year input dir");
                     let mut aoc = aocf::Aoc::new()
                         .year(Some(year))
                         .day(Some(day.into()))
