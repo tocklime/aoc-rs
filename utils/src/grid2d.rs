@@ -1,4 +1,4 @@
-use std::ops::{Index, IndexMut};
+use std::{ops::{Index, IndexMut}, fmt::{Display, Write}};
 
 use itertools::Itertools;
 use num::Integer;
@@ -28,6 +28,17 @@ impl<T> Index<Coord> for Grid2d<T> {
 impl<T> IndexMut<Coord> for Grid2d<T> {
     fn index_mut(&mut self, index: Coord) -> &mut Self::Output {
         &mut self.data[index.0 * self.size.1 + index.1]
+    }
+}
+impl<T : Display>  Display for Grid2d<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for ((_,x),t) in self.indexed_iter() {
+            f.write_fmt(format_args!("{}",t))?;
+            if x == self.size.1 - 1 {
+                f.write_char('\n')?;
+            }
+        }
+        Ok(())
     }
 }
 impl<T> Grid2d<T> {
@@ -89,6 +100,17 @@ impl<T> Grid2d<T> {
         ]
         .into_iter()
         .filter(move |&x| x.0 < s.0 && x.1 < s.1)
+    }
+    pub fn to_string_with<F>(&self, disp: F) -> String
+    where F : Fn(&T) -> String {
+        let mut ans = String::with_capacity(self.data.len());
+        for ((_,x),t) in self.indexed_iter() {
+            ans.push_str(&disp(t));
+            if x == self.size.1 - 1 {
+                ans.push('\n');
+            }
+        }
+        ans
     }
     pub fn from_str<F>(input: &str, conv: F) -> Self
     where
