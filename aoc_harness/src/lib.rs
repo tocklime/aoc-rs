@@ -1,6 +1,6 @@
 //Convenience re-exports
 
-use std::{path::PathBuf, str::FromStr, time::Instant};
+use std::{env, path::PathBuf, str::FromStr, time::Instant};
 
 pub use aoc_harness_macros::*;
 pub use itertools::Itertools;
@@ -58,16 +58,21 @@ impl Opts {
                 if !p.exists() {
                     std::fs::create_dir_all(p.parent().unwrap())
                         .expect("couldn't create year input dir");
-                    let mut aoc = aocf::Aoc::new()
-                        .year(Some(year))
-                        .day(Some(day.into()))
-                        .parse_cli(false)
-                        .init()
-                        .unwrap();
-                    let i = aoc
-                        .get_input(false)
-                        .expect("Couldn't get input for day from adventofcode.com.");
-                    dbg!(&p);
+                    let i = ureq::get(&format!(
+                        "https://adventofcode.com/{}/day/{}/input",
+                        year, day
+                    ))
+                    .set(
+                        "cookie",
+                        &format!(
+                            "session={}",
+                            env::var("AOC_SESSION").expect("AOC_SESSION env var not set")
+                        ),
+                    )
+                    .call()
+                    .unwrap()
+                    .into_string()
+                    .unwrap();
                     std::fs::write(p, &i).expect("failed to write cached input file");
                     i
                 } else {

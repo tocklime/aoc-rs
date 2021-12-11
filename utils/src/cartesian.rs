@@ -1,5 +1,4 @@
 use crate::aabb::Aabb;
-use arrayvec::ArrayVec;
 use ndarray::IntoDimension;
 use num::{
     abs,
@@ -198,7 +197,7 @@ impl<T: Num + WrappingAdd + WrappingSub> Point<T> {
             self.left().up(),
         ]
     }
-    pub fn hex_neighbours(&self) -> ArrayVec<Self, 6>
+    pub fn hex_neighbours(&self) -> [Self; 6]
     where
         T: Copy,
     {
@@ -210,7 +209,6 @@ impl<T: Num + WrappingAdd + WrappingSub> Point<T> {
             self.left(),
             self.left().up(),
         ]
-        .into()
     }
 }
 

@@ -45,8 +45,10 @@ impl AocAllMainInput {
         }
 
         quote! {
+            use dotenv;
             #mods
             pub fn main() {
+                dotenv::dotenv().ok();
                 #inner
             }
         }

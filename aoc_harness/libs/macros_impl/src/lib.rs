@@ -361,6 +361,7 @@ impl AocMainInput {
         } else {
             quote! {
                 use structopt::StructOpt;
+                use dotenv;
                 #[cfg(test)]
                 mod test {
                     #[test]
@@ -378,6 +379,7 @@ impl AocMainInput {
                 }
                 #examples
                 pub fn main() {
+                    dotenv::dotenv().ok();
                     let opts = aoc_harness::Opts::from_args();
                     check_examples();
                     for _ in 0..opts.repeats {
