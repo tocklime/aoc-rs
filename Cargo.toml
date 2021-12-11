@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "utils",
+    "aoc_harness",
+    # "aoc2019", # not ready yet.
+    "aoc2021",
+]
+[profile.release]
+debug = true
+overflow-checks = true
+
+[profile.dev]
+debug = true
+overflow-checks = true   

@@ -65,6 +65,7 @@ impl Opts {
                     let i = aoc
                         .get_input(false)
                         .expect("Couldn't get input for day from adventofcode.com.");
+                    dbg!(&p);
                     std::fs::write(p, &i).expect("failed to write cached input file");
                     i
                 } else {

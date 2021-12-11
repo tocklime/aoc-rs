@@ -19,21 +19,12 @@ jobs:
     - uses: Swatinem/rust-cache@v1
       with: 
         working-directory: aoc2021
-    # - uses: actions/cache@v2
-    #   with:
-    #     path: |
-    #       ~/.cargo/bin/
-    #       ~/.cargo/registry/index/
-    #       ~/.cargo/registry/cache/
-    #       ~/.cargo/git/db/
-    #       aoc2021/target/
-    #     key: ${{ runner.os }}-cargo-${{ hashFiles('aoc2021/Cargo.lock')}}
     - name: Build
-      working-directory: aoc2021
-      run: cargo build --verbose --release
+      run: cargo build
     - name: Run tests
-      working-directory: aoc2021
-      run: cargo test --verbose --bin all --lib --release
+      run: cargo test --bin all --lib --release
     - name: Run for score
-      working-directory: aoc2021      
       run: cargo run --bin all --release
+    - name: Check clippy
+      run: cargo clippy --release
+
