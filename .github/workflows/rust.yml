@@ -21,7 +21,7 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       working-directory: aoc2021
-      run: cargo test --verbose
+      run: cargo test --verbose --bin all --lib
     - name: Run for score
       working-directory: aoc2021      
       run: cargo run --bin all
