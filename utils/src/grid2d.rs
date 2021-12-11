@@ -44,7 +44,7 @@ impl<T> Grid2d<T> {
     pub fn dim(&self) -> Coord {
         self.size
     }
-    pub fn indexes<'a>(&'a self) -> impl Iterator<Item = Coord> + '_ {
+    pub fn indexes(&'_ self) -> impl Iterator<Item = Coord> {
         let max = self.size;
         (0..max.0).cartesian_product(0..max.1)
     }
@@ -54,7 +54,8 @@ impl<T> Grid2d<T> {
             .enumerate()
             .map(|(x, v)| (x.div_mod_floor(&self.size.1), v))
     }
-    pub fn neighbours_with_diagonals(&self, p: Coord) -> impl Iterator<Item = Coord> + '_ {
+    pub fn neighbours_with_diagonals(&'_ self, p: Coord) -> impl Iterator<Item = Coord> {
+        let s = self.dim();
         [
             (p.0.wrapping_sub(1), p.1),
             (p.0, p.1.wrapping_sub(1)),
@@ -66,7 +67,7 @@ impl<T> Grid2d<T> {
             (p.0.wrapping_sub(1), p.1 + 1),
         ]
         .into_iter()
-        .filter(|x| self.get(*x).is_some())
+        .filter(move |&x| x.0 < s.0 && x.1 < s.1)
     }
     pub fn neighbours(&self, p: Coord) -> impl Iterator<Item = (Coord, &T)> {
         [

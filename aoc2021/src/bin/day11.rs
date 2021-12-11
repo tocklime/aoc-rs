@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use aoc_harness::*;
 use utils::grid2d::Grid2d;
 
@@ -22,36 +20,29 @@ fn gen(input: &str) -> Grid2d<u8> {
 }
 fn incr(grid: &mut Grid2d<u8>, pos: (usize, usize)) -> bool {
     grid[pos] += 1;
-    grid[pos] > 9
+    grid[pos] == 10
 }
 fn step(grid: &mut Grid2d<u8>) -> usize {
     let mut flashing_this_turn = Vec::new();
-    let mut flashed_this_turn = Grid2d::from_elem(grid.dim(), false);
+    let mut flashed_this_turn = Vec::new();
 
-    for p in grid.indexes().collect_vec() {
+    for p in grid.indexes() {
         if incr(grid, p) {
             flashing_this_turn.push(p);
         }
     }
     while let Some(p) = flashing_this_turn.pop() {
-        if !flashed_this_turn[p] {
-            flashed_this_turn[p] = true;
-            for n in grid.neighbours_with_diagonals(p).collect_vec() {
-                if incr(grid, n) {
-                    flashing_this_turn.push(n);
-                }
+        flashed_this_turn.push(p);
+        for n in grid.neighbours_with_diagonals(p) {
+            if incr(grid, n) {
+                flashing_this_turn.push(n);
             }
         }
     }
-    flashed_this_turn
-        .indexed_iter()
-        .filter(|&(p, &v)| {
-            if v {
-                grid[p] = 0;
-            }
-            v
-        })
-        .count()
+    for &p in &flashed_this_turn {
+        grid[p] = 0;
+    }
+    flashed_this_turn.len()
 }
 fn p1(input: &Grid2d<u8>) -> usize {
     let mut g = input.clone();
