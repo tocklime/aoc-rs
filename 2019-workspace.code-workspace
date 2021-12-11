@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "aoc2019"
+		},
+		{
+			"path": "utils"
+		},
+		{
+			"path": "aoc_harness"
+		}
+	],
+	"settings": {}
+}

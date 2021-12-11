@@ -4,5 +4,6 @@ pub mod cellular_automata;
 pub mod collections;
 pub mod grid2d;
 pub mod inputs;
+pub mod intcode;
 pub mod nums;
 pub mod numset;

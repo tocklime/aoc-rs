@@ -6,6 +6,17 @@ use std::{
     ops::{Add, BitAnd, BitOr, Mul, Not, Shl, Shr},
 };
 
+pub fn int_to_digits_big_endian<const SIZE: usize>(mut i: usize) -> [u8; SIZE] {
+    let mut ans = [0u8; SIZE];
+    let mut pos = SIZE;
+    while i > 0 && pos > 0 {
+        pos -= 1;
+        ans[pos] = (i % 10) as u8;
+        i /= 10;
+    }
+    ans
+}
+
 pub fn exp_by_squares<N: Mul<Output = N> + Clone + Copy>(base: N, mut exp: usize) -> N {
     // Exponentiation by squares.
     let mut ans = base;
