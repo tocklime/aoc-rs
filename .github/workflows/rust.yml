@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: Swatinem/rust-cache@v1
+      working-directory: aoc2021
     - name: Build
       working-directory: aoc2021
       run: cargo build --verbose

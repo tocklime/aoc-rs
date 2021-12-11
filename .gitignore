@@ -1,6 +1,5 @@
 .aocf
 target
-Cargo.lock
-aoc2021/flamegraph.svg
-aoc2021/perf.data
-aoc2021/perf.data.old
+flamegraph.svg
+perf.data
+perf.data.old
