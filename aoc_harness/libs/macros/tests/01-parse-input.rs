@@ -13,7 +13,7 @@ fn part2a(_x: &Vec<u32>) -> String {
 mod full {
     use super::*;
     use aoc_harness_macros::aoc_main;
-    aoc_main!(2021 day 1, generator gen_fn, [part1a, part1b] => 42, [part2a]);
+    aoc_main!(2021 day 1, generator gen_fn, part1 [part1a, part1b] => 42, part2 [part2a]);
 }
 mod no_gen {
     use aoc_harness_macros::aoc_main;
@@ -23,7 +23,7 @@ mod no_gen {
     fn p2(_input: &str) -> &str {
         "answer"
     }
-    aoc_main!(2021 day 2, [p1] => 42, [p2] => "answer");
+    aoc_main!(2021 day 2, part1 [p1] => 42, part2 [p2] => "answer");
 }
 fn main() {
     full::main();

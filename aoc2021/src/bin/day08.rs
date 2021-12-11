@@ -3,7 +3,7 @@ use std::str::FromStr;
 use aoc_harness::*;
 use utils::numset::NumSet;
 
-aoc_main!(2021 day 8, generator lines::<Line>, part1 [p1] => 473, part2 [p2] => 1097568,
+aoc_main!(2021 day 8, generator lines::<Line>, part1 [p1] => 473, part2 [p2] => 1_097_568,
   example part1 EG => 26, example part2 EG0 => 5353, example part2 EG => 61229
 );
 type NSet = NumSet<u8>;
@@ -30,13 +30,14 @@ struct Line {
     lights: Vec<NSet>,
 }
 
+#[allow(clippy::cast_possible_truncation)]
 fn char_to_num(c: char) -> u8 {
-    (c as u32 - 'a' as u32) as u8
+    ((c as u32) as u8) - b'a'
 }
 fn str_to_numset(input: &str) -> NSet {
     let mut ans = NumSet::new();
     for c in input.chars() {
-        ans.insert(char_to_num(c).into())
+        ans.insert(char_to_num(c).into());
     }
     ans
 }
@@ -100,5 +101,5 @@ fn p1(input: &[Line]) -> usize {
 }
 
 fn p2(input: &[Line]) -> usize {
-    input.iter().map(|l| l.decode()).sum()
+    input.iter().map(Line::decode).sum()
 }

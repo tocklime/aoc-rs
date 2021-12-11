@@ -22,7 +22,7 @@ impl FromStr for X {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut s1 = s.split(" -> ").map(|x| x.parse::<Point<usize>>());
+        let mut s1 = s.split(" -> ").map(str::parse);
         Ok(Self {
             from: s1.next().unwrap()?,
             to: s1.exactly_one().unwrap()?,
@@ -32,7 +32,7 @@ impl FromStr for X {
 
 fn solve<const EVEN_DIAGONALS: bool>(input: &[X]) -> usize {
     let bb: Aabb<usize> = input.iter().flat_map(|x| [&x.from, &x.to]).collect();
-    let mut grid = Array2::from_elem((bb.top_right.x + 1, bb.top_right.y + 1), 0u8);
+    let mut grid = Array2::from_elem((bb.top_right.x + 1, bb.top_right.y + 1), 0_u8);
     let ps = input
         .iter()
         .filter(|x| EVEN_DIAGONALS || x.is_orthogonal())
@@ -44,7 +44,7 @@ fn solve<const EVEN_DIAGONALS: bool>(input: &[X]) -> usize {
             0 => *c = 1,
             1 => {
                 ans += 1;
-                *c = 2
+                *c = 2;
             }
             _ => {}
         }

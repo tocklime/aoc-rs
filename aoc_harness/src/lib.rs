@@ -24,6 +24,7 @@ pub struct Opts {
 }
 
 impl Opts {
+    #[must_use]
     pub fn for_test() -> Self {
         Self {
             input: None,
@@ -38,7 +39,7 @@ impl Opts {
             println!("{}", f());
         }
     }
-    pub fn assert_eq<T: Eq + core::fmt::Debug>(&self, actual: T, expected: T) {
+    pub fn assert_eq<T: Eq + core::fmt::Debug>(&self, actual: &T, expected: &T) {
         if self.test_mode {
             assert_eq!(actual, expected);
         } else if actual != expected {
@@ -50,6 +51,7 @@ impl Opts {
             });
         }
     }
+    #[must_use]
     pub fn get_input(&self, year: i32, day: u8) -> String {
         match &self.input {
             None => {
@@ -60,7 +62,9 @@ impl Opts {
                     year,
                     day
                 ));
-                if !p.exists() {
+                if p.exists() {
+                    std::fs::read_to_string(p).expect("couldn't read cached input file")
+                } else {
                     std::fs::create_dir_all(p.parent().unwrap())
                         .expect("couldn't create year input dir");
                     let i = ureq::get(&format!(
@@ -80,8 +84,6 @@ impl Opts {
                     .unwrap();
                     std::fs::write(p, &i).expect("failed to write cached input file");
                     i
-                } else {
-                    std::fs::read_to_string(p).expect("couldn't read cached input file")
                 }
             }
             Some(f) => std::fs::read_to_string(f).expect("Couldn't read file"),
@@ -96,6 +98,11 @@ impl Opts {
         let end = Instant::now();
         let dur = end - start;
         let target_dur = std::time::Duration::new(0, 50_000_000);
+        #[allow(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            clippy::cast_precision_loss
+        )] //it's only for reporting the time.
         if !self.bypass && dur < target_dur {
             //took less than 50ms. How many could we do in 50ms?
             let c = (target_dur.as_secs_f64() / dur.as_secs_f64()) as usize;
@@ -112,9 +119,10 @@ impl Opts {
     }
 }
 
+#[must_use]
 pub fn render_duration(d: std::time::Duration) -> String {
     let mut value = d.as_secs_f64();
-    let units = ["s", "ms", "µs", "ns"];
+    let units = ["s", "ms", "\u{3bc}s", "ns"];
     for u in units {
         if value > 1.0 {
             return format!("{:.3}{}", value, u);
@@ -124,6 +132,7 @@ pub fn render_duration(d: std::time::Duration) -> String {
     "<1ns".to_string()
 }
 
+#[must_use]
 pub fn whole_input_is<O>(i: &str) -> O
 where
     O: FromStr,
@@ -131,6 +140,7 @@ where
 {
     i.parse().unwrap()
 }
+#[must_use]
 pub fn lines<O>(i: &str) -> Vec<O>
 where
     O: FromStr,
@@ -138,7 +148,8 @@ where
 {
     i.trim().lines().map(|x| x.parse().unwrap()).collect()
 }
-pub fn input<O: FromStr, const S: char>(i: &str) -> Vec<O>
+#[must_use]
+pub fn input<O, const S: char>(i: &str) -> Vec<O>
 where
     O: FromStr,
     <O as FromStr>::Err: std::fmt::Debug,

@@ -71,7 +71,7 @@ where
             name: String::from("COMP"),
             memory: HashMap::new(),
             instruction_pointer: 0,
-            state: ComputerState::RUNNING,
+            state: ComputerState::Running,
             fixed_input: vec![],
             input_chan: None,
             input_arc: None,
@@ -96,7 +96,7 @@ where
             self.memory
                 .keys()
                 .max()
-                .cloned()
+                .copied()
                 .and_then(|x| x.try_into().ok())
                 .unwrap_or(0_usize),
         );
@@ -136,7 +136,7 @@ where
         self
     }
     pub fn take_output(&mut self) -> Vec<MemType> {
-        std::mem::replace(&mut self.output, Vec::new())
+        std::mem::take(&mut self.output)
     }
     pub fn give_input(&mut self, input: Vec<MemType>) -> &mut Self {
         self.fixed_input = input;
@@ -198,7 +198,7 @@ where
     pub fn reset(&mut self) -> &mut Self {
         self.memory = HashMap::new();
         self.instruction_pointer = 0;
-        self.state = ComputerState::RUNNING;
+        self.state = ComputerState::Running;
         self.relative_base = 0;
         self.fixed_input = vec![];
         self.ips_since_last_mem_edit.clear();
@@ -209,17 +209,16 @@ where
         Op::from_mem_slice(&ms)
     }
     pub fn abs_load(&self, pos: isize) -> MemType {
-        self.memory.get(&pos).cloned().unwrap_or_else(|| {
+        self.memory.get(&pos).copied().unwrap_or_else(|| {
             pos.try_into()
                 .ok()
                 .and_then(|p: usize| self.initial_mem.get(p))
-                .cloned()
-                .unwrap_or_else(Default::default)
+                .copied()
+                .unwrap_or_default()
         })
     }
     pub fn rel_load(&self, offset: isize) -> MemType {
-        let a = self.abs_load(self.relative_base + offset);
-        a
+        self.abs_load(self.relative_base + offset)
     }
     pub fn rel_offset(&self, offset: isize) -> isize {
         self.relative_base + offset
@@ -228,7 +227,7 @@ where
         self.abs_load(self.instruction_pointer + offset)
     }
     pub fn store(&mut self, offset: isize, value: MemType) {
-        self.abs_store(self.instruction_pointer + offset, value)
+        self.abs_store(self.instruction_pointer + offset, value);
     }
     pub fn abs_store(&mut self, offset: isize, value: MemType) {
         if self.memory.get(&offset) == Some(&value) {
@@ -243,10 +242,10 @@ where
     pub fn run(&mut self) -> &Self {
         loop {
             match self.step().state {
-                ComputerState::HALTED => {
+                ComputerState::Halted => {
                     return self;
                 }
-                ComputerState::RUNNING => (),
+                ComputerState::Running => (),
             }
         }
     }
@@ -254,24 +253,25 @@ where
         self.step();
         loop {
             let op = self.current_op_with_args();
-            if self.state == ComputerState::HALTED {
+            if self.state == ComputerState::Halted {
                 return false;
             }
-            if  op.op == OpCode::Input  && self.fixed_input.is_empty() {
+            if op.op == OpCode::Input && self.fixed_input.is_empty() {
                 return true;
             }
             op.execute(self);
         }
     }
     pub fn is_halted(&self) -> bool {
-        self.state() == ComputerState::HALTED
+        self.state() == ComputerState::Halted
     }
     pub fn step(&mut self) -> &mut Self {
         self.current_op_with_args().execute(self);
         self
     }
     pub fn seems_to_be_looping(&self) -> bool {
-        self.ips_since_last_mem_edit.contains(&self.instruction_pointer)
+        self.ips_since_last_mem_edit
+            .contains(&self.instruction_pointer)
     }
     pub fn state(&self) -> ComputerState {
         self.state
@@ -294,15 +294,14 @@ where
         let op1 = ps % 10;
         let op2 = (ps / 10) % 10;
         let op3 = (ps / 100) % 10;
-        let o = Some(Self {
+        Some(Self {
             op: OpCode::try_from(as_int % 100).ok()?,
             args: [
                 Arg::new(m[1], ParameterMode::try_from(op1).ok()?),
                 Arg::new(m[2], ParameterMode::try_from(op2).ok()?),
                 Arg::new(m[3], ParameterMode::try_from(op3).ok()?),
             ],
-        });
-        o
+        })
     }
     pub fn from_mem_slice(m: &[MemType; 4]) -> Self {
         Self::try_from_mem_slice(m).unwrap()
@@ -323,8 +322,7 @@ where
                 } else if let Some(r) = &c.input_chan {
                     match c.default_input {
                         Some(d) => r.try_recv().unwrap_or(d),
-                        None =>
-                            r.recv().expect("No value on receiver")
+                        None => r.recv().expect("No value on receiver"),
                     }
                 } else if let Some(a) = &c.input_arc {
                     *a.lock().unwrap()
@@ -351,7 +349,7 @@ where
                 c.ips_since_last_mem_edit.clear();
             }
             OpCode::Halt => {
-                c.state = ComputerState::HALTED;
+                c.state = ComputerState::Halted;
                 do_ip_inc = false;
             }
         }

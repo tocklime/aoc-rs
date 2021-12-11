@@ -1,7 +1,7 @@
 use aoc_harness::*;
 use utils::nums::NumBitExt;
 
-aoc_main!(2021 day 3, generator gen, part1 [p1] => 4001724, part2 [p2] => 587895,
+aoc_main!(2021 day 3, generator gen, part1 [p1] => 4_001_724, part2 [p2] => 587_895,
           example both EG => (198, 230));
 
 struct Day3 {
@@ -14,7 +14,7 @@ fn gen(input: &str) -> Day3 {
         .map(|x| usize::from_str_radix(x, 2).unwrap())
         .collect();
     let width = input.lines().next().unwrap().chars().count();
-    Day3 { nums, width }
+    Day3 { width, nums }
 }
 fn ones_count_at_pos(nums: &[usize], pos: usize) -> usize {
     nums.iter().filter(|x| x.get_bit(pos)).count()

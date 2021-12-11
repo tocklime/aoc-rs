@@ -20,6 +20,7 @@ impl Parse for AocAllMainInput {
     }
 }
 impl AocAllMainInput {
+    #[must_use]
     pub fn do_macro(&self) -> TokenStream {
         let dir_q = format!("{}", self.dir);
         let prefix_q = format!("{}", self.prefix);
@@ -41,7 +42,7 @@ impl AocAllMainInput {
             inner.extend(quote! {
                 println!("{}", #f);
                 #short::main();
-            })
+            });
         }
 
         quote! {

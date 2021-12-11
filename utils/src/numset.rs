@@ -8,22 +8,25 @@ use crate::nums::NumBitExt;
 pub struct NumSet<T> {
     n: T,
 }
-impl<T: Into<usize>> Into<usize> for NumSet<T> {
-    fn into(self) -> usize {
-        self.n.into()
+impl<T: Into<usize>> From<NumSet<T>> for usize {
+    fn from(n: NumSet<T>) -> Self {
+        n.n.into()
     }
 }
 
-impl<T: Num + Copy> NumSet<T>
+impl<T> NumSet<T>
 where
-    T: BitOr<Output = T>,
-    T: BitAnd<Output = T>,
-    T: Shl<usize, Output = T>,
-    T: Not<Output = T>,
+    T: BitOr<Output = T>
+        + BitAnd<Output = T>
+        + Shl<usize, Output = T>
+        + Not<Output = T>
+        + Num
+        + Copy,
 {
     pub fn inner(self) -> T {
         self.n
     }
+    #[must_use]
     pub fn new() -> Self {
         Self { n: T::zero() }
     }
@@ -31,7 +34,7 @@ where
         Self { n }
     }
     pub fn insert(&mut self, n: usize) {
-        self.n.set_bit(n, true)
+        self.n.set_bit(n, true);
     }
     pub fn is_subset(&self, other: &NumSet<T>) -> bool {
         (self.n & other.n) == self.n
@@ -52,8 +55,7 @@ impl<T: BitOr<Output = T>> BitOr for NumSet<T> {
 }
 impl<T> Sub for NumSet<T>
 where
-    T: BitAnd<Output = T>,
-    T: Not<Output = T>,
+    T: BitAnd<Output = T> + Not<Output = T>,
 {
     type Output = Self;
 
@@ -71,10 +73,7 @@ impl<T: PrimInt> NumSet<T> {
 }
 impl<T: Num + Copy> Default for NumSet<T>
 where
-    T: BitOr<Output = T>,
-    T: BitAnd<Output = T>,
-    T: Shl<usize, Output = T>,
-    T: Not<Output = T>,
+    T: BitOr<Output = T> + BitAnd<Output = T> + Shl<usize, Output = T> + Not<Output = T>,
 {
     fn default() -> Self {
         Self::new()
@@ -83,11 +82,12 @@ where
 
 impl<T> FromIterator<u8> for NumSet<T>
 where
-    T: BitOr<Output = T>,
-    T: BitAnd<Output = T>,
-    T: Shl<usize, Output = T>,
-    T: Not<Output = T>,
-    T: Copy + Num,
+    T: BitOr<Output = T>
+        + BitAnd<Output = T>
+        + Shl<usize, Output = T>
+        + Not<Output = T>
+        + Copy
+        + Num,
 {
     fn from_iter<TIter: IntoIterator<Item = u8>>(iter: TIter) -> Self {
         let mut s = Self::new();
@@ -105,10 +105,11 @@ pub struct NumSetIter<T> {
 }
 impl<T> Iterator for NumSetIter<T>
 where
-    T: PrimInt + std::fmt::Debug,
-    T: BitAnd<Output = T>,
-    T: Shr<usize, Output = T>,
-    T: Shl<usize, Output = T>,
+    T: PrimInt
+        + std::fmt::Debug
+        + BitAnd<Output = T>
+        + Shr<usize, Output = T>
+        + Shl<usize, Output = T>,
 {
     type Item = usize;
 

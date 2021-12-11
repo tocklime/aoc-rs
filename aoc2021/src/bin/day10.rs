@@ -2,8 +2,8 @@ use std::str::FromStr;
 
 use aoc_harness::*;
 
-aoc_main!(2021 day 10, generator lines::<StackEval>, part1 [p1] => 411471, part2 [p2] => 3122628974,
-          example part1 EG => 26397, example part2 EG => 288957);
+aoc_main!(2021 day 10, generator lines::<StackEval>, part1 [p1] => 411_471, part2 [p2] => 3_122_628_974,
+          example part1 EG => 26_397, example part2 EG => 288_957);
 
 const EG: &str = "[({(<(())[]>[[{[]{<()<>>
 [(()[<>])]({[<{<<[]>>(
@@ -68,12 +68,12 @@ impl StackEval {
 }
 
 fn p1(input: &[StackEval]) -> usize {
-    input.iter().filter_map(|l| l.score_corrupt()).sum()
+    input.iter().filter_map(StackEval::score_corrupt).sum()
 }
 fn p2(input: &[StackEval]) -> usize {
     let s = input
         .iter()
-        .filter_map(|l| l.score_incomplete())
+        .filter_map(StackEval::score_incomplete)
         .collect_vec();
     *s.iter().k_smallest(s.len() / 2 + 1).last().unwrap()
 }

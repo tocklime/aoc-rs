@@ -3,7 +3,7 @@ use std::collections::BinaryHeap;
 use aoc_harness::*;
 use utils::grid2d::Grid2d;
 
-aoc_main!(2021 day 9, generator gen, part1 [p1] => 633, part2 [p2] => 1050192,
+aoc_main!(2021 day 9, generator gen, part1 [p1] => 633, part2 [p2] => 1_050_192,
           example part1 EG => 15, example part2 EG => 1134);
 const EG: &str = "
 2199943210
@@ -39,7 +39,7 @@ fn p2(grid: &Grid2d<u8>) -> usize {
             count += 1;
             fringe.extend(grid.neighbours(p).filter(|p| grid[*p] < 9));
         }
-        sizes.push(count)
+        sizes.push(count);
     }
     sizes.iter().take(3).product()
 }

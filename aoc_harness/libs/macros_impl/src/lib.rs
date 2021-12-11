@@ -109,14 +109,14 @@ impl Parse for SolutionPart {
         let content;
         let part_num = input.parse()?;
         let _brackets = bracketed!(content in input);
-        let fns: Punctuated<Expr, Token![,]> = content.parse_terminated(Expr::parse)?;
+        let functions: Punctuated<Expr, Token![,]> = content.parse_terminated(Expr::parse)?;
         let ans = match input.parse::<Token![=>]>() {
             Ok(_) => Some(input.parse::<Expr>()?),
             Err(_) => None,
         };
         Ok(Self {
             part_num,
-            fns: fns.into_iter().collect(),
+            fns: functions.into_iter().collect(),
             ans,
         })
     }
@@ -135,6 +135,7 @@ impl Parse for DayInput {
         })
     }
 }
+#[allow(clippy::large_enum_variant)]
 enum Parts {
     Day(DayInput),
     Gen(GeneratorPart),
@@ -176,7 +177,7 @@ impl Parse for AocMainInput {
         let mut solutions = Vec::new();
         let mut bench = false;
         let mut examples = Vec::new();
-        for p in punct.into_iter() {
+        for p in punct {
             match p {
                 Parts::Day(d) => {
                     if day.is_none() {
@@ -248,8 +249,8 @@ impl AocMainInput {
                 });
                 if !do_ans_check || is_single_solution {
                     inner.extend(quote! {
-                    opts.log(||format!("{} solved in {}: {:?}",&full_name, aoc_harness::render_duration(t), a));
-                })
+                        opts.log(||format!("{} solved in {}: {:?}",&full_name, aoc_harness::render_duration(t), a));
+                    });
                 } else {
                     inner.extend(quote! {
                         opts.log(||format!("{} solved in {}",&full_name, aoc_harness::render_duration(t)));
@@ -257,13 +258,14 @@ impl AocMainInput {
                 }
                 if do_ans_check {
                     inner.extend(quote! {
-                        opts.assert_eq(a,expected);
+                        opts.assert_eq(&a,&expected);
                     });
                 }
             }
         }
         inner
     }
+    #[must_use]
     pub fn example(
         &self,
         part_num: &str,
@@ -272,15 +274,17 @@ impl AocMainInput {
         input: &Expr,
         func: &Expr,
     ) -> TokenStream {
-        match self.gen.as_ref().map(|x| &x.gen_fn) {
-            Some(g) => quote! {
+        if let Some(g) = self.gen.as_ref().map(|x| &x.gen_fn) {
+            quote! {
                 assert_eq!(#func(&#g(#input)), #expected, "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func));
-            },
-            None => quote! {
+            }
+        } else {
+            quote! {
                 assert_eq!(#func(#input), #expected, "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func));
-            },
+            }
         }
     }
+    #[must_use]
     pub fn examples(&self) -> TokenStream {
         let mut out = TokenStream::new();
         for (e, eg_num) in self.examples.iter().zip(1..) {
@@ -307,7 +311,7 @@ impl AocMainInput {
                                 f,
                             )),
                             PartNum::Both => {
-                                out.extend(self.example(&part_num, eg_num, ans, &e.str_input, f))
+                                out.extend(self.example(&part_num, eg_num, ans, &e.str_input, f));
                             }
                         }
                     }
@@ -318,7 +322,7 @@ impl AocMainInput {
                         unimplemented!("Please give both-style examples for both-style solutions");
                     } else if s.part_num == e.part_num {
                         for f in &s.fns {
-                            out.extend(self.example(&part_num, eg_num, &ans, &e.str_input, f));
+                            out.extend(self.example(&part_num, eg_num, ans, &e.str_input, f));
                         }
                     }
                 }
@@ -326,6 +330,7 @@ impl AocMainInput {
         }
         out
     }
+    #[must_use]
     pub fn do_macro(&self) -> TokenStream {
         let day = self.day.day;
         let year = self.day.year;

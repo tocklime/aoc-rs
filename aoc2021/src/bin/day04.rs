@@ -19,7 +19,7 @@ impl Board {
         self.grid
             .iter()
             .filter(|&&c| !drawn.contains(c.into()))
-            .cloned()
+            .copied()
             .map_into::<usize>()
             .sum::<usize>()
     }
@@ -54,12 +54,12 @@ impl FromStr for Board {
         let mut win_sets: Vec<NumSet<u128>> = grid
             .rows()
             .into_iter()
-            .map(|x| x.iter().cloned().collect())
+            .map(|x| x.iter().copied().collect())
             .collect();
         win_sets.extend(
             grid.columns()
                 .into_iter()
-                .map(|x| x.iter().cloned().collect::<NumSet<u128>>()),
+                .map(|x| x.iter().copied().collect::<NumSet<u128>>()),
         );
 
         Ok(Self { grid, win_sets })
@@ -131,10 +131,10 @@ mod tests {
 ";
     #[test]
     fn board_edges() {
-        let cw_b = COL_WIN.parse::<Board>().unwrap();
-        let rw_b = ROW_WIN.parse::<Board>().unwrap();
+        let col_win_b = COL_WIN.parse::<Board>().unwrap();
+        let row_win_b = ROW_WIN.parse::<Board>().unwrap();
         let hs_1 = vec![1].into_iter().collect::<NumSet<u128>>();
-        assert!(cw_b.is_won(&hs_1));
-        assert!(rw_b.is_won(&hs_1));
+        assert!(col_win_b.is_won(&hs_1));
+        assert!(row_win_b.is_won(&hs_1));
     }
 }

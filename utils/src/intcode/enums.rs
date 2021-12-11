@@ -1,14 +1,14 @@
 use num_enum::TryFromPrimitive;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ComputerState {
-    RUNNING,
-    HALTED,
+    Running,
+    Halted,
 }
 
 #[derive(Clone, Copy, TryFromPrimitive, PartialEq, Eq, Debug)]
 #[repr(isize)]
 pub enum ParameterMode {
-    POSITION = 0,
-    IMMEDIATE = 1,
-    RELATIVE = 2,
+    Position = 0,
+    Immediate = 1,
+    Relative = 2,
 }

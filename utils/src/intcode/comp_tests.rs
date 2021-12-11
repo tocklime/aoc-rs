@@ -18,6 +18,7 @@ pub fn t2(input: &str, i_val: isize) -> isize {
     c.with_input(i_val).run().get_last_output()
 }
 #[test]
+#[allow(clippy::similar_names)]
 pub fn cmp_tests() {
     let eq8p = "3,9,8,9,10,9,4,9,99,-1,8";
     assert_eq!(t2(eq8p, 7), 0);

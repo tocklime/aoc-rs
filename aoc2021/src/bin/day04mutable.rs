@@ -13,32 +13,32 @@ struct Board {
 }
 
 impl Board {
-    fn is_won(&self, marks: &NumSet<u32>) -> bool {
+    fn is_won(marks: NumSet<u32>) -> bool {
         const WINNING_MARKS: &[u32; 10] = &[
-            0b1111100000000000000000000,
-            0b0000011111000000000000000,
-            0b0000000000111110000000000,
-            0b0000000000000001111100000,
-            0b0000000000000000000011111,
-            0b1000010000100001000010000,
-            0b0100001000010000100001000,
-            0b0010000100001000010000100,
-            0b0001000010000100001000010,
-            0b0000100001000010000100001,
+            0b1_1111_0000_0000_0000_0000_0000,
+            0b0_0000_1111_1000_0000_0000_0000,
+            0b0_0000_0000_0111_1100_0000_0000,
+            0b0_0000_0000_0000_0011_1110_0000,
+            0b0_0000_0000_0000_0000_0001_1111,
+            0b1_0000_1000_0100_0010_0001_0000,
+            0b0_1000_0100_0010_0001_0000_1000,
+            0b0_0100_0010_0001_0000_1000_0100,
+            0b0_0010_0001_0000_1000_0100_0010,
+            0b0_0001_0000_1000_0100_0010_0001,
         ];
         WINNING_MARKS
             .iter()
-            .any(|&m| NumSet::from(m).is_subset(marks))
+            .any(|&m| NumSet::from(m).is_subset(&marks))
     }
     fn mark_off(&self, num: u8, marks: &mut NumSet<u32>) {
         if let Some(p) = self.find(num) {
-            marks.insert(p.0 * 5 + p.1)
+            marks.insert(p.0 * 5 + p.1);
         }
     }
     fn find(&self, num: u8) -> Option<(usize, usize)> {
         self.locs[num as usize]
     }
-    fn score(&self, marks: &NumSet<u32>) -> usize {
+    fn score(&self, marks: NumSet<u32>) -> usize {
         (0..25)
             .filter(|&ix| !marks.contains(ix))
             .map(|ix| self.grid[(ix / 5, ix % 5)] as usize)
@@ -83,10 +83,10 @@ fn p1(input: &Day04) -> usize {
     let mut marks: Vec<(&Board, NumSet<u32>)> =
         input.boards.iter().map(|x| (x, NumSet::new())).collect();
     for &x in &input.num_seq {
-        for (b, m) in marks.iter_mut() {
+        for (b, m) in &mut marks {
             b.mark_off(x, m);
-            if b.is_won(m) {
-                return (x as usize) * b.score(m);
+            if Board::is_won(*m) {
+                return (x as usize) * b.score(*m);
             }
         }
     }
@@ -97,18 +97,18 @@ fn p2(input: &Day04) -> usize {
     let mut marks: Vec<(&Board, NumSet<u32>)> =
         input.boards.iter().map(|x| (x, NumSet::new())).collect();
     for &x in &input.num_seq {
-        for (b, m) in marks.iter_mut() {
+        for (b, m) in &mut marks {
             b.mark_off(x, m);
         }
 
         match &mut marks[..] {
             [(only_board, m)] => {
-                if only_board.is_won(m) {
-                    return (x as usize) * only_board.score(m);
+                if Board::is_won(*m) {
+                    return (x as usize) * only_board.score(*m);
                 }
             }
             _ => {
-                marks.retain(|(b, m)| !b.is_won(m));
+                marks.retain(|(_, m)| !Board::is_won(*m));
             }
         }
     }

@@ -55,10 +55,12 @@ pub enum Dir {
 }
 
 impl Dir {
+    #[must_use]
     pub fn from_x(udlr: &str, c: char) -> Self {
         let ix = udlr.find(c).expect("Unknown direction");
         [Self::Up, Self::Down, Self::Left, Self::Right][ix]
     }
+    #[must_use]
     pub const fn to_udlr(self) -> char {
         match self {
             Self::Up => 'U',
@@ -70,6 +72,7 @@ impl Dir {
     pub fn turn_right_n(self, n: u8) -> Self {
         n.applications_of(self, Self::turn_right)
     }
+    #[must_use]
     pub const fn turn_right(self) -> Self {
         match self {
             Self::Up => Self::Right,
@@ -78,6 +81,7 @@ impl Dir {
             Self::Right => Self::Down,
         }
     }
+    #[must_use]
     pub const fn turn_left(self) -> Self {
         match self {
             Self::Up => Self::Left,
@@ -86,6 +90,7 @@ impl Dir {
             Self::Right => Self::Up,
         }
     }
+    #[must_use]
     pub const fn turn_about(self) -> Self {
         match self {
             Self::Up => Self::Down,
@@ -94,6 +99,7 @@ impl Dir {
             Self::Right => Self::Left,
         }
     }
+    #[must_use]
     pub fn as_point_step<T: Signed + Num>(self) -> Point<T> {
         match self {
             Self::Up => Point::new(T::zero(), T::one()),
@@ -125,6 +131,7 @@ impl<T: Sized> Point<T> {
     }
 }
 impl<T: Num> Point<T> {
+    #[must_use]
     pub fn origin() -> Self {
         Self {
             x: T::zero(),
@@ -307,6 +314,7 @@ impl<T: Mul> Point<T> {
     }
 }
 
+#[must_use]
 pub fn as_point_map<T>(input: &str, increasing_y_is_up: bool) -> HashMap<Point<T>, char>
 where
     T: Num + TryFrom<usize> + Hash + Eq + WrappingSub,

@@ -6,9 +6,11 @@ use std::{
     ops::{Add, BitAnd, BitOr, Mul, Not, Shl, Shr},
 };
 
+#[must_use]
 pub fn int_to_digits_big_endian<const SIZE: usize>(mut i: usize) -> [u8; SIZE] {
-    let mut ans = [0u8; SIZE];
+    let mut ans = [0_u8; SIZE];
     let mut pos = SIZE;
+    #[allow(clippy::cast_possible_truncation)] //we mod 10 it, it's going to fit in u8.
     while i > 0 && pos > 0 {
         pos -= 1;
         ans[pos] = (i % 10) as u8;
@@ -48,7 +50,7 @@ where
             result = result * base % modulus;
         }
         exp = exp >> T::one();
-        base = base * base % modulus
+        base = base * base % modulus;
     }
     result
 }
@@ -114,13 +116,14 @@ pub trait NumBitExt {
     fn set_bit(&mut self, bit_ix: usize, bit_value: bool);
     fn get_bit(self, bit_ix: usize) -> bool;
 }
-impl<N: Num + Copy> NumBitExt for N
+impl<N> NumBitExt for N
 where
-    N: Num,
-    N: BitOr<Output = N>,
-    N: BitAnd<Output = N>,
-    N: Shl<usize, Output = N>,
-    N: Not<Output = N>,
+    N: Copy
+        + Num
+        + BitOr<Output = N>
+        + BitAnd<Output = N>
+        + Shl<usize, Output = N>
+        + Not<Output = N>,
 {
     #[inline]
     fn with_set_bit(self, bit_ix: usize, bit_value: bool) -> Self {

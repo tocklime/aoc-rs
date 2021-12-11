@@ -57,6 +57,7 @@ name = "aoc_harness_macros"
 version = "0.1.0"
 dependencies = [
  "aoc_harness_macros_impl",
+ "dotenv",
  "proc-macro2",
  "structopt",
  "syn",

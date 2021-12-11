@@ -34,9 +34,15 @@ impl<T> Grid2d<T> {
     pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, T> {
         self.data.iter_mut()
     }
+    #[must_use]
     pub fn len(&self) -> usize {
         self.data.len()
     }
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+    #[must_use]
     pub fn get(&self, p: Coord) -> Option<&T> {
         if p.0 < self.size.0 && p.1 < self.size.1 {
             Some(&self[p])
@@ -44,6 +50,7 @@ impl<T> Grid2d<T> {
             None
         }
     }
+    #[must_use]
     pub fn dim(&self) -> Coord {
         self.size
     }
@@ -98,7 +105,7 @@ impl<T> Grid2d<T> {
                 _ => {}
             }
             for c in l.chars() {
-                data.push(conv(c))
+                data.push(conv(c));
             }
         }
         Self {
