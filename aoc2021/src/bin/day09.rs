@@ -37,10 +37,7 @@ fn p2(grid: &Grid2d<u8>) -> usize {
             }
             done_map[p] = true;
             count += 1;
-            fringe.extend(
-                grid.neighbours(p)
-                    .filter_map(|p| if grid[p] < 9 { Some(p) } else { None }),
-            );
+            fringe.extend(grid.neighbours(p).filter(|p| grid[*p] < 9));
         }
         sizes.push(count)
     }
