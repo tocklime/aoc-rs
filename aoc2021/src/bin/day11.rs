@@ -24,18 +24,13 @@ fn incr(grid: &mut Grid2d<u8>, pos: (usize, usize)) -> bool {
 }
 fn step(grid: &mut Grid2d<u8>) -> usize {
     let mut flashing = grid.indexes().filter(|&x| incr(grid, x)).collect_vec();
-
-    while let Some(p) = flashing.pop() {
+    let mut next_flasher = 0;
+    while let Some(&p) = flashing.get(next_flasher) {
+        next_flasher += 1;
         flashing.extend(grid.neighbours_with_diagonals(p).filter(|&n| incr(grid, n)));
     }
-    grid.iter_mut()
-        .filter_map(|p| {
-            if *p > 9 {
-                *p = 0;
-            }
-            (*p == 0).then(|| ())
-        })
-        .count()
+
+    flashing.into_iter().map(|p| grid[p] = 0).count()
 }
 fn p1(input: &Grid2d<u8>) -> usize {
     let mut g = input.clone();
@@ -43,6 +38,6 @@ fn p1(input: &Grid2d<u8>) -> usize {
 }
 
 fn p2(input: &Grid2d<u8>) -> usize {
-    let mut t = input.clone();
-    (1..).find(|_| step(&mut t) == t.len()).unwrap()
+    let mut g = input.clone();
+    (1..).find(|_| step(&mut g) == g.len()).unwrap()
 }
