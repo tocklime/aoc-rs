@@ -24,7 +24,7 @@ kj-HN
 kj-dc";
 
 struct State {
-    map: HashMap<u8, NumSet<u32>>,
+    map: [NumSet<u32>; 256],
     lower_case_set: NumSet<u32>,
     start: u8,
     end: u8,
@@ -36,18 +36,15 @@ struct Pos {
 }
 
 impl State {
-    fn options(&self, p: &Pos) -> NumSet<u32> {
-        self.map
-            .get(&p.pos)
-            .unwrap()
+    fn options<'a>(&'a self, p: &'a Pos) -> impl Iterator<Item = u8> + '_ {
+        self.map[p.pos as usize]
             .iter()
-            .map(|x| x as u8)
-            .filter(|x| {
-                !self.lower_case_set.contains(*x)
-                    || !p.visited.contains(*x)
-                    || p.remaining_small_visits > 0
+            .filter(|&x| {
+                x != self.start && (
+                !self.lower_case_set.contains(x)
+                    || !p.visited.contains(x)
+                    || p.remaining_small_visits > 0)
             })
-            .collect()
     }
     fn step(&self, from: &Pos, to: u8) -> Pos {
         let mut visited = from.visited;
@@ -59,19 +56,21 @@ impl State {
             pos: to,
         }
     }
-    fn explore(&self, p: &Pos) -> usize {
-        self.options(p)
-            .iter()
-            .map(|o| match o as u8 {
-                x if x == self.end => 1,
-                x if x == self.start => 0,
-                x => self.explore(&self.step(&p, x)),
-            })
-            .sum()
+    fn explore_iter(&self, p: Pos) -> usize {
+        let mut stack = vec![p];
+        let mut solutions = 0;
+        while let Some(p) = stack.pop() {
+            if p.pos == self.end {
+                solutions += 1;
+            } else {
+                stack.extend(self.options(&p).map(|to| self.step(&p,to)))
+            }
+        }
+        solutions
     }
 }
 fn gen(input: &str) -> State {
-    let mut map: HashMap<u8, NumSet<u32>> = HashMap::new();
+    let mut map: [NumSet<u32>;256] = [NumSet::new(); 256];
     let mut str_to_num: HashMap<String, u8> = HashMap::new();
     let mut get_num = |x| {
         let l = str_to_num.len().try_into().unwrap();
@@ -81,8 +80,8 @@ fn gen(input: &str) -> State {
         let mut i = l.split('-');
         let a = get_num(i.next().unwrap().to_string());
         let b = get_num(i.next().unwrap().to_string());
-        map.entry(a).or_default().insert(b);
-        map.entry(b).or_default().insert(a);
+        map[a as usize].insert(b);
+        map[b as usize].insert(a);
     }
     let lower_case_set: NumSet<u32> = str_to_num
         .iter()
@@ -105,5 +104,5 @@ fn solve<const SMALL_VISITS: usize>(state: &State) -> usize {
         remaining_small_visits: SMALL_VISITS,
         pos: state.start,
     };
-    state.explore(&start)
+    state.explore_iter(start)
 }
