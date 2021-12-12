@@ -32,7 +32,7 @@ impl Board {
     }
     fn mark_off(&self, num: u8, marks: &mut NumSet<u32>) {
         if let Some(p) = self.find(num) {
-            marks.insert(p.0 * 5 + p.1);
+            marks.insert((p.0 * 5 + p.1).try_into().unwrap());
         }
     }
     fn find(&self, num: u8) -> Option<(usize, usize)> {
@@ -41,6 +41,7 @@ impl Board {
     fn score(&self, marks: NumSet<u32>) -> usize {
         (0..25)
             .filter(|&ix| !marks.contains(ix))
+            .map_into::<usize>()
             .map(|ix| self.grid[(ix / 5, ix % 5)] as usize)
             .sum::<usize>()
     }

@@ -24,19 +24,19 @@ kj-HN
 kj-dc";
 
 struct State {
-    map: HashMap<u8, NumSet>,
-    lower_case_set: NumSet,
+    map: HashMap<u8, NumSet<u32>>,
+    lower_case_set: NumSet<u32>,
     start: u8,
     end: u8,
 }
 struct Pos {
-    visited: NumSet,
+    visited: NumSet<u32>,
     remaining_small_visits: usize,
     pos: u8,
 }
 
 impl State {
-    fn options(&self, p: &Pos) -> NumSet {
+    fn options(&self, p: &Pos) -> NumSet<u32> {
         self.map
             .get(&p.pos)
             .unwrap()
@@ -71,7 +71,7 @@ impl State {
     }
 }
 fn gen(input: &str) -> State {
-    let mut map: HashMap<u8, NumSet> = HashMap::new();
+    let mut map: HashMap<u8, NumSet<u32>> = HashMap::new();
     let mut str_to_num: HashMap<String, u8> = HashMap::new();
     let mut get_num = |x| {
         let l = str_to_num.len().try_into().unwrap();
@@ -84,7 +84,7 @@ fn gen(input: &str) -> State {
         map.entry(a).or_default().insert(b);
         map.entry(b).or_default().insert(a);
     }
-    let lower_case_set: NumSet = str_to_num
+    let lower_case_set: NumSet<u32> = str_to_num
         .iter()
         .filter(|(a, _)| a.chars().next().unwrap().is_ascii_lowercase())
         .map(|a| *a.1)
