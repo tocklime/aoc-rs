@@ -3,25 +3,15 @@ use std::{collections::HashMap, str::FromStr};
 use aoc_harness::*;
 use utils::numset::NumSet;
 
-aoc_main!(2021 day 12, generator whole_input_is::<State>, part1 [solve::<0>], part2 [solve::<1>], example part1 EG => 10, example part2 EG => 36, example part2 EG2 => 103);
+aoc_main!(2021 day 12, generator whole_input_is::<State>, part1 [solve::<0>] => 3410, part2 [solve::<1>] => 98796, 
+        example part1 EG => 10,
+        example part1 EG2 => 19,
+        example part1 EG3 => 226,
+        example part2 EG => 36,
+        example part2 EG2 => 103,
+        example part2 EG3 => 3509,
+    );
 
-const EG: &str = "start-A
-start-b
-A-c
-A-b
-b-d
-A-end
-b-end";
-const EG2: &str = "dc-end
-HN-start
-start-kj
-dc-start
-dc-HN
-LN-dc
-HN-end
-kj-sa
-kj-HN
-kj-dc";
 
 #[derive(Debug)]
 struct State {
@@ -124,3 +114,40 @@ fn solve<const SMALL_VISITS: usize>(state: &State) -> usize {
         pos: state.start,
     })
 }
+
+const EG: &str = "start-A
+start-b
+A-c
+A-b
+b-d
+A-end
+b-end";
+const EG2: &str = "dc-end
+HN-start
+start-kj
+dc-start
+dc-HN
+LN-dc
+HN-end
+kj-sa
+kj-HN
+kj-dc";
+const EG3: &str = "fs-end
+he-DX
+fs-he
+start-DX
+pj-DX
+end-zg
+zg-sl
+zg-pj
+pj-he
+RW-he
+fs-DX
+pj-RW
+zg-RW
+start-pj
+he-WI
+zg-he
+pj-fs
+start-RW
+";
