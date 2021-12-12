@@ -3,7 +3,7 @@ use std::{collections::HashMap, str::FromStr};
 use aoc_harness::*;
 use utils::numset::NumSet;
 
-aoc_main!(2021 day 12, generator whole_input_is::<State>, part1 [solve::<0>] => 3410, part2 [solve::<1>] => 98796, 
+aoc_main!(2021 day 12, generator whole_input_is::<State>, part1 [solve::<0>] => 3410, part2 [solve::<1>] => 98796,
         example part1 EG => 10,
         example part1 EG2 => 19,
         example part1 EG3 => 226,
