@@ -112,9 +112,9 @@ where
     }
 }
 pub trait NumBitExt {
-    fn with_set_bit(self, bit_ix: usize, bit_value: bool) -> Self;
-    fn set_bit(&mut self, bit_ix: usize, bit_value: bool);
-    fn get_bit(self, bit_ix: usize) -> bool;
+    fn with_set_bit(self, bit_ix: u8, bit_value: bool) -> Self;
+    fn set_bit(&mut self, bit_ix: u8, bit_value: bool);
+    fn get_bit(self, bit_ix: u8) -> bool;
 }
 impl<N> NumBitExt for N
 where
@@ -126,21 +126,21 @@ where
         + Not<Output = N>,
 {
     #[inline]
-    fn with_set_bit(self, bit_ix: usize, bit_value: bool) -> Self {
+    fn with_set_bit(self, bit_ix: u8, bit_value: bool) -> Self {
         if bit_value {
-            self | (N::one() << bit_ix)
+            self | (N::one() << bit_ix.into())
         } else {
-            self & !(N::one() << bit_ix)
+            self & !(N::one() << bit_ix.into())
         }
     }
 
     #[inline]
-    fn get_bit(self, bit_ix: usize) -> bool {
-        (self & (N::one() << bit_ix)) != N::zero()
+    fn get_bit(self, bit_ix: u8) -> bool {
+        (self & (N::one() << bit_ix.into())) != N::zero()
     }
 
     #[inline]
-    fn set_bit(&mut self, bit_ix: usize, bit_value: bool) {
-        *self = self.with_set_bit(bit_ix, bit_value);
+    fn set_bit(&mut self, bit_ix: u8, bit_value: bool) {
+        *self = self.with_set_bit(bit_ix.into(), bit_value);
     }
 }

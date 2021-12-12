@@ -1,6 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use aoc_harness::*;
+use utils::numset::NumSet;
 
 aoc_main!(2021 day 12, generator gen, part1 [solve::<0>], part2 [solve::<1>], example part1 EG => 10, example part2 EG => 36, example part2 EG2 => 103);
 
@@ -22,67 +23,87 @@ kj-sa
 kj-HN
 kj-dc";
 
-struct State<'a> {
-    map: &'a HashMap<String, Vec<String>>,
-    visited: HashSet<&'a str>,
+struct State {
+    map: HashMap<u8, NumSet>,
+    lower_case_set: NumSet,
+    start: u8,
+    end: u8,
+}
+struct Pos {
+    visited: NumSet,
     remaining_small_visits: usize,
-    pos: &'a str,
+    pos: u8,
 }
-fn is_lower(s: &str) -> bool {
-    s.chars().next().unwrap().is_ascii_lowercase()
-}
-impl<'a> State<'a> {
-    fn new(map: &'a HashMap<String, Vec<String>>, remaining_small_visits: usize) -> Self {
-        Self {
-            map,
-            visited: HashSet::new(),
-            remaining_small_visits,
-            pos: "start",
-        }
-    }
-    fn options(&'a self) -> impl Iterator<Item = &'a str> {
-        const EMPTY: &Vec<String> = &Vec::new();
+
+impl State {
+    fn options(&self, p: &Pos) -> NumSet {
         self.map
-            .get(self.pos)
-            .unwrap_or(EMPTY)
+            .get(&p.pos)
+            .unwrap()
             .iter()
-            .map(|x| &x[..])
+            .map(|x| x as u8)
             .filter(|x| {
-                !is_lower(x) || !self.visited.contains(x) || self.remaining_small_visits > 0
+                !self.lower_case_set.contains(*x)
+                    || !p.visited.contains(*x)
+                    || p.remaining_small_visits > 0
             })
+            .collect()
     }
-    fn step(&'a self, to: &'a str) -> Self {
-        let mut visited = self.visited.clone();
-        let small_visit_delta: usize = (is_lower(to) && !visited.insert(to)).into();
-        Self {
-            map: self.map,
+    fn step(&self, from: &Pos, to: u8) -> Pos {
+        let mut visited = from.visited;
+        let small_visit_delta: usize =
+            (self.lower_case_set.contains(to) && !visited.insert(to)).into();
+        Pos {
             visited,
-            remaining_small_visits: self.remaining_small_visits - small_visit_delta,
+            remaining_small_visits: from.remaining_small_visits - small_visit_delta,
             pos: to,
         }
     }
-    fn explore(&'a mut self) -> usize {
-        self.options()
-            .map(|o| match o {
-                "end" => 1,
-                "start" => 0,
-                _ => self.step(o).explore(),
+    fn explore(&self, p: &Pos) -> usize {
+        self.options(p)
+            .iter()
+            .map(|o| match o as u8 {
+                x if x == self.end => 1,
+                x if x == self.start => 0,
+                x => self.explore(&self.step(&p, x)),
             })
             .sum()
     }
 }
-fn gen(input: &str) -> HashMap<String, Vec<String>> {
-    let mut connections: HashMap<String, Vec<String>> = HashMap::new();
+fn gen(input: &str) -> State {
+    let mut map: HashMap<u8, NumSet> = HashMap::new();
+    let mut str_to_num: HashMap<String, u8> = HashMap::new();
+    let mut get_num = |x| {
+        let l = str_to_num.len().try_into().unwrap();
+        *str_to_num.entry(x).or_insert(l)
+    };
     for l in input.lines() {
         let mut i = l.split('-');
-        let a = i.next().unwrap().to_string();
-        let b = i.next().unwrap().to_string();
-        connections.entry(a.clone()).or_default().push(b.clone());
-        connections.entry(b).or_default().push(a);
+        let a = get_num(i.next().unwrap().to_string());
+        let b = get_num(i.next().unwrap().to_string());
+        map.entry(a).or_default().insert(b);
+        map.entry(b).or_default().insert(a);
     }
-    connections
+    let lower_case_set: NumSet = str_to_num
+        .iter()
+        .filter(|(a, _)| a.chars().next().unwrap().is_ascii_lowercase())
+        .map(|a| *a.1)
+        .collect();
+    let start = *str_to_num.get("start").unwrap();
+    let end = *str_to_num.get("end").unwrap();
+    State {
+        map,
+        lower_case_set,
+        start,
+        end,
+    }
 }
 
-fn solve<const SMALL_VISITS: usize>(connections: &HashMap<String, Vec<String>>) -> usize {
-    State::new(connections, SMALL_VISITS).explore()
+fn solve<const SMALL_VISITS: usize>(state: &State) -> usize {
+    let start = Pos {
+        visited: NumSet::new(),
+        remaining_small_visits: SMALL_VISITS,
+        pos: state.start,
+    };
+    state.explore(&start)
 }

@@ -1,94 +1,90 @@
-use std::ops::{BitAnd, BitOr, Not, Shl, Shr, Sub};
-
-use num::{Num, PrimInt};
+#![allow(clippy::inline_always)]
+use std::ops::{BitOr, Sub};
 
 use crate::nums::NumBitExt;
-
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-pub struct NumSet<T> {
-    n: T,
+pub struct NumSet {
+    n: usize,
 }
-impl<T: Into<usize>> From<NumSet<T>> for usize {
-    fn from(n: NumSet<T>) -> Self {
-        n.n.into()
+impl From<NumSet> for usize {
+    #[inline(always)]
+    fn from(n: NumSet) -> Self {
+        n.n
     }
 }
 
-impl<T> NumSet<T>
-where
-    T: BitOr<Output = T>
-        + BitAnd<Output = T>
-        + Shl<usize, Output = T>
-        + Not<Output = T>
-        + Num
-        + Copy,
-{
-    pub fn inner(self) -> T {
+impl NumSet {
+    #[must_use]
+    #[inline(always)]
+    pub fn inner(self) -> usize {
         self.n
     }
+    #[inline(always)]
     #[must_use]
-    pub fn new() -> Self {
-        Self { n: T::zero() }
+    pub const fn new() -> Self {
+        Self { n: 0 }
     }
-    pub fn from(n: T) -> Self {
+    #[must_use]
+    pub fn from(n: usize) -> Self {
         Self { n }
     }
-    pub fn insert(&mut self, n: usize) {
+    #[inline(always)]
+    pub fn insert(&mut self, n: u8) -> bool {
+        let was_in = self.n.get_bit(n);
         self.n.set_bit(n, true);
+        !was_in
     }
-    pub fn is_subset(&self, other: &NumSet<T>) -> bool {
+    #[must_use]
+    #[inline(always)]
+    pub fn is_subset(&self, other: &NumSet) -> bool {
         (self.n & other.n) == self.n
     }
-    pub fn contains(&self, n: usize) -> bool {
+    #[must_use]
+    #[inline(always)]
+    pub fn contains(&self, n: u8) -> bool {
         self.n.get_bit(n)
     }
-    pub fn iter(self) -> NumSetIter<T> {
+    #[must_use]
+    #[inline(always)]
+    pub fn iter(self) -> NumSetIter {
         NumSetIter { n: self, pow: 0 }
     }
+    #[must_use]
+    #[inline(always)]
+    pub fn len(&self) -> u32 {
+        self.n.count_ones()
+    }
+    #[must_use]
+    #[inline(always)]
+    pub fn is_empty(&self) -> bool {
+        self.n == 0
+    }
 }
-impl<T: BitOr<Output = T>> BitOr for NumSet<T> {
+impl BitOr for NumSet {
     type Output = Self;
 
+    #[inline(always)]
     fn bitor(self, rhs: Self) -> Self::Output {
         NumSet { n: self.n | rhs.n }
     }
 }
-impl<T> Sub for NumSet<T>
-where
-    T: BitAnd<Output = T> + Not<Output = T>,
-{
+impl Sub for NumSet {
     type Output = Self;
 
+    #[inline(always)]
     fn sub(self, rhs: Self) -> Self::Output {
         NumSet { n: self.n & !rhs.n }
     }
 }
-impl<T: PrimInt> NumSet<T> {
-    pub fn len(&self) -> u32 {
-        self.n.count_ones()
-    }
-    pub fn is_empty(&self) -> bool {
-        self.n == T::zero()
-    }
-}
-impl<T: Num + Copy> Default for NumSet<T>
-where
-    T: BitOr<Output = T> + BitAnd<Output = T> + Shl<usize, Output = T> + Not<Output = T>,
-{
+impl Default for NumSet {
+    #[inline(always)]
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> FromIterator<u8> for NumSet<T>
-where
-    T: BitOr<Output = T>
-        + BitAnd<Output = T>
-        + Shl<usize, Output = T>
-        + Not<Output = T>
-        + Copy
-        + Num,
-{
+impl FromIterator<u8> for NumSet {
+    #[inline(always)]
     fn from_iter<TIter: IntoIterator<Item = u8>>(iter: TIter) -> Self {
         let mut s = Self::new();
         for x in iter {
@@ -99,32 +95,25 @@ where
 }
 
 #[derive(Debug)]
-pub struct NumSetIter<T> {
-    n: NumSet<T>,
-    pow: usize,
+pub struct NumSetIter {
+    n: NumSet,
+    pow: u8,
 }
-impl<T> Iterator for NumSetIter<T>
-where
-    T: PrimInt
-        + std::fmt::Debug
-        + BitAnd<Output = T>
-        + Shr<usize, Output = T>
-        + Shl<usize, Output = T>,
-{
-    type Item = usize;
+impl Iterator for NumSetIter {
+    type Item = u8;
 
+    #[inline(always)]
     fn next(&mut self) -> Option<Self::Item> {
-        while self.n.n & T::one() != T::one() {
-            if self.n.n == T::zero() {
+        while self.n.n & 1 != 1 {
+            if self.n.n == 0 {
                 return None;
             }
-            self.n.n = self.n.n >> 1;
+            self.n.n >>= 1;
             self.pow += 1;
         }
         let ans = self.pow;
-        self.n.n = self.n.n >> 1;
+        self.n.n >>= 1;
         self.pow += 1;
-        // dbg!(&self, &ans);
         Some(ans)
     }
 }
