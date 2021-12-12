@@ -1,9 +1,9 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use aoc_harness::*;
 use utils::numset::NumSet;
 
-aoc_main!(2021 day 12, generator gen, part1 [solve::<0>], part2 [solve::<1>], example part1 EG => 10, example part2 EG => 36, example part2 EG2 => 103);
+aoc_main!(2021 day 12, generator whole_input_is::<State>, part1 [solve::<0>], part2 [solve::<1>], example part1 EG => 10, example part2 EG => 36, example part2 EG2 => 103);
 
 const EG: &str = "start-A
 start-b
@@ -23,86 +23,105 @@ kj-sa
 kj-HN
 kj-dc";
 
+#[derive(Debug)]
 struct State {
-    map: [NumSet<u32>; 256],
-    lower_case_set: NumSet<u32>,
+    map: Vec<Vec<u8>>,
     start: u8,
     end: u8,
 }
 struct Pos {
     visited: NumSet<u32>,
-    remaining_small_visits: usize,
+    remaining_revisits: usize,
     pos: u8,
 }
 
 impl State {
-    fn options<'a>(&'a self, p: &'a Pos) -> impl Iterator<Item = u8> + '_ {
-        self.map[p.pos as usize]
-            .iter()
-            .filter(|&x| {
-                x != self.start && (
-                !self.lower_case_set.contains(x)
-                    || !p.visited.contains(x)
-                    || p.remaining_small_visits > 0)
+    fn neighbours<'a>(&'a self, p: &'a Pos) -> impl Iterator<Item = Pos> + '_ {
+        self.map[p.pos as usize].iter().copied().filter_map(|x| {
+            let mut visited = p.visited;
+            let small_visit_delta: usize = (!visited.insert(x)).into();
+            Some(Pos {
+                visited,
+                remaining_revisits: p.remaining_revisits.checked_sub(small_visit_delta)?,
+                pos: x,
             })
+        })
     }
-    fn step(&self, from: &Pos, to: u8) -> Pos {
-        let mut visited = from.visited;
-        let small_visit_delta: usize =
-            (self.lower_case_set.contains(to) && !visited.insert(to)).into();
-        Pos {
-            visited,
-            remaining_small_visits: from.remaining_small_visits - small_visit_delta,
-            pos: to,
-        }
-    }
-    fn explore_iter(&self, p: Pos) -> usize {
+    fn explore(&self, p: Pos) -> usize {
         let mut stack = vec![p];
         let mut solutions = 0;
         while let Some(p) = stack.pop() {
             if p.pos == self.end {
                 solutions += 1;
             } else {
-                stack.extend(self.options(&p).map(|to| self.step(&p,to)))
+                stack.extend(self.neighbours(&p))
             }
         }
         solutions
     }
 }
-fn gen(input: &str) -> State {
-    let mut map: [NumSet<u32>;256] = [NumSet::new(); 256];
-    let mut str_to_num: HashMap<String, u8> = HashMap::new();
-    let mut get_num = |x| {
-        let l = str_to_num.len().try_into().unwrap();
-        *str_to_num.entry(x).or_insert(l)
-    };
-    for l in input.lines() {
-        let mut i = l.split('-');
-        let a = get_num(i.next().unwrap().to_string());
-        let b = get_num(i.next().unwrap().to_string());
-        map[a as usize].insert(b);
-        map[b as usize].insert(a);
-    }
-    let lower_case_set: NumSet<u32> = str_to_num
-        .iter()
-        .filter(|(a, _)| a.chars().next().unwrap().is_ascii_lowercase())
-        .map(|a| *a.1)
-        .collect();
-    let start = *str_to_num.get("start").unwrap();
-    let end = *str_to_num.get("end").unwrap();
-    State {
-        map,
-        lower_case_set,
-        start,
-        end,
+
+impl FromStr for State {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut full_map: Vec<Vec<u8>> = Vec::new();
+        let mut str_to_num: HashMap<String, u8> = HashMap::new();
+        let mut room_count = 0;
+        for l in s.lines() {
+            let i = l
+                .split('-')
+                .map(|n| {
+                    {
+                        *str_to_num.entry(n.to_string()).or_insert_with(|| {
+                            let a = room_count;
+                            room_count += 1;
+                            full_map.push(Vec::new());
+                            a
+                        })
+                    }
+                })
+                .collect_vec();
+            full_map[i[0] as usize].push(i[1]);
+            full_map[i[1] as usize].push(i[0]);
+        }
+        let lower_case_set: NumSet<u32> = str_to_num
+            .iter()
+            .filter(|(a, _)| a.chars().next().unwrap().is_ascii_lowercase())
+            .map(|a| *a.1)
+            .collect();
+
+        //for every a->B, for every B->c, map a-c and remove a->B.
+        let mut removed_bigs_map: Vec<Vec<u8>> = vec![Vec::new(); full_map.len()];
+        let start = *str_to_num.get("start").unwrap();
+        let end = *str_to_num.get("end").unwrap();
+        for from in 0..str_to_num.len() {
+            if lower_case_set.contains(from as u8) {
+                let mut targets = Vec::new();
+                for &to in full_map[from].iter() {
+                    if lower_case_set.contains(to) {
+                        targets.push(to);
+                    } else {
+                        targets.extend(&full_map[to as usize]);
+                    }
+                }
+                targets.retain(|&x| x != start);
+                removed_bigs_map[from] = targets
+            }
+        }
+
+        Ok(State {
+            map: removed_bigs_map,
+            start,
+            end,
+        })
     }
 }
 
 fn solve<const SMALL_VISITS: usize>(state: &State) -> usize {
-    let start = Pos {
+    state.explore(Pos {
         visited: NumSet::new(),
-        remaining_small_visits: SMALL_VISITS,
+        remaining_revisits: SMALL_VISITS,
         pos: state.start,
-    };
-    state.explore_iter(start)
+    })
 }
