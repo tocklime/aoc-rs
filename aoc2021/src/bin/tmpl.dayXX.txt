@@ -2,8 +2,9 @@ use std::str::FromStr;
 
 use aoc_harness::*;
 
-aoc_main!(2021 day X, generator lines::<X>, part1 [p1], part2 [p2],
-          example part1 EG => 1, example part2 EG => 1);
+aoc_main!(2021 day X, generator lines::<X>, part1 [p1], example part1 EG => 1);
+
+const EG: &str = "";
 
 #[derive(Debug)]
 struct X {}
@@ -20,9 +21,6 @@ fn p1(input: &[X]) -> usize {
     input.len()
 }
 
-fn p2(input: &[X]) -> usize {
+fn p1a(input: &str) -> usize {
     input.len()
 }
-
-const EG : &str = "
-";
