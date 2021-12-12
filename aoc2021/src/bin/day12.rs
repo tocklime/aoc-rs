@@ -48,16 +48,15 @@ impl State {
         })
     }
     fn explore(&self, p: Pos) -> usize {
-        let mut stack = vec![p];
-        let mut solutions = 0;
-        while let Some(p) = stack.pop() {
-            if p.pos == self.end {
-                solutions += 1;
+        let mut ans = 0;
+        for n in self.neighbours(&p) {
+            if n.pos == self.end {
+                ans += 1;
             } else {
-                stack.extend(self.neighbours(&p))
+                ans += self.explore(n);
             }
         }
-        solutions
+        ans
     }
 }
 
