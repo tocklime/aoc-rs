@@ -18,7 +18,7 @@ impl Board {
     fn score(&self, drawn: &NumSet<u128>) -> usize {
         self.grid
             .iter()
-            .filter(|&&c| !drawn.contains(c.into()))
+            .filter(|&&c| !drawn.contains(c))
             .copied()
             .map_into::<usize>()
             .sum::<usize>()
@@ -68,7 +68,7 @@ impl FromStr for Board {
 fn p1(input: &Day04) -> usize {
     let mut drawn = NumSet::new();
     for &x in &input.num_seq {
-        drawn.insert(x.into());
+        drawn.insert(x);
         if let Some(b) = input.boards.iter().find(|x| x.is_won(&drawn)) {
             return (x as usize) * b.score(&drawn);
         }
@@ -83,13 +83,13 @@ fn p2(input: &Day04) -> usize {
     let mut x = 0;
     while boards.len() > 1 {
         x = *iter.next().unwrap();
-        drawn.insert(x.into());
+        drawn.insert(x);
         boards.retain(|b| !b.is_won(&drawn));
     }
     let b = boards.pop().unwrap();
     while !b.is_won(&drawn) {
         x = *iter.next().unwrap();
-        drawn.insert(x.into());
+        drawn.insert(x);
     }
     b.score(&drawn) * (x as usize)
 }

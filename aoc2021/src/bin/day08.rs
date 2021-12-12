@@ -35,11 +35,7 @@ fn char_to_num(c: char) -> u8 {
     ((c as u32) as u8) - b'a'
 }
 fn str_to_numset(input: &str) -> NSet {
-    let mut ans = NumSet::new();
-    for c in input.chars() {
-        ans.insert(char_to_num(c).into());
-    }
-    ans
+    input.chars().map(char_to_num).collect()
 }
 
 impl FromStr for Line {

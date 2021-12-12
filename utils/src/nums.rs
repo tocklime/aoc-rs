@@ -141,6 +141,6 @@ where
 
     #[inline]
     fn set_bit(&mut self, bit_ix: u8, bit_value: bool) {
-        *self = self.with_set_bit(bit_ix.into(), bit_value);
+        *self = self.with_set_bit(bit_ix, bit_value);
     }
 }
