@@ -93,24 +93,18 @@ impl Fold {
     }
 }
 impl X {
-    fn after_1_fold(&self) -> HashSet<Point<usize>> {
+    fn after_n_folds(&self, n: usize) -> HashSet<Point<usize>> {
         self.grid
             .iter()
-            .map(|&p| self.folds[0].apply_to_point(p))
-            .collect()
-    }
-    fn after_folds(&self) -> HashSet<Point<usize>> {
-        self.grid
-            .iter()
-            .map(|&p| self.folds.iter().fold(p, |p, f| f.apply_to_point(p)))
+            .map(|&p| self.folds[0..n].iter().fold(p, |p, f| f.apply_to_point(p)))
             .collect()
     }
 }
 fn p1(input: &X) -> usize {
-    input.after_1_fold().len()
+    input.after_n_folds(1).len()
 }
 
 fn p2(input: &X) -> OcrString {
-    let s = render_set_w(&input.after_folds(), '#', ' ', false);
+    let s = render_set_w(&input.after_n_folds(input.folds.len()), '#', ' ', false);
     OcrString::new(s, '#')
 }
