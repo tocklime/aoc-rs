@@ -3,7 +3,7 @@ use std::{collections::HashSet, str::FromStr};
 use aoc_harness::*;
 use utils::{
     cartesian::{render_set_w, Point},
-    ocr::OcrString,
+    ocr::{point_cloud_to_str, OcrString},
 };
 
 aoc_main!(2021 day 13, generator whole_input_is::<X>, part1 [p1] => 653, part2 [p2] => "LKREBPRK", example part1 EG => 17);
@@ -104,7 +104,7 @@ fn p1(input: &X) -> usize {
     input.after_n_folds(1).len()
 }
 
-fn p2(input: &X) -> OcrString {
-    let s = render_set_w(&input.after_n_folds(input.folds.len()), '#', ' ', false);
-    OcrString::new(s, '#')
+fn p2(input: &X) -> String {
+    let set = input.after_n_folds(input.folds.len());
+    point_cloud_to_str(&set)
 }

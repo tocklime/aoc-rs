@@ -832,6 +832,7 @@ name = "utils"
 version = "0.1.0"
 dependencies = [
  "itertools",
+ "lazy_static",
  "modinverse",
  "ndarray",
  "num",
