@@ -7,18 +7,18 @@ use crate::nums::NumBitExt;
 pub struct NumSet<T: PrimInt> {
     n: T,
 }
-impl<T : PrimInt + Into<usize>> From<NumSet<T>> for usize {
+impl<T: PrimInt + Into<usize>> From<NumSet<T>> for usize {
     fn from(n: NumSet<T>) -> Self {
         n.n.into()
     }
 }
-impl<T : PrimInt + From<usize>> From<usize> for NumSet<T>{
+impl<T: PrimInt + From<usize>> From<usize> for NumSet<T> {
     fn from(n: usize) -> Self {
-        Self { n : n.into()}
+        Self { n: n.into() }
     }
 }
 
-impl<T : PrimInt> NumSet<T> {
+impl<T: PrimInt> NumSet<T> {
     #[must_use]
     pub fn inner(self) -> T {
         self.n
@@ -28,7 +28,7 @@ impl<T : PrimInt> NumSet<T> {
         Self { n: T::zero() }
     }
     pub fn from(n: T) -> Self {
-        Self {n}
+        Self { n }
     }
     pub fn insert(&mut self, n: u8) -> bool {
         let was_in = self.n.get_bit(n);
@@ -56,27 +56,27 @@ impl<T : PrimInt> NumSet<T> {
         self.n == T::zero()
     }
 }
-impl<T : PrimInt> BitOr for NumSet<T> {
+impl<T: PrimInt> BitOr for NumSet<T> {
     type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
         NumSet { n: self.n | rhs.n }
     }
 }
-impl<T : PrimInt> Sub for NumSet<T> {
+impl<T: PrimInt> Sub for NumSet<T> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
         NumSet { n: self.n & !rhs.n }
     }
 }
-impl<T : PrimInt> Default for NumSet<T> {
+impl<T: PrimInt> Default for NumSet<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T : PrimInt> FromIterator<u8> for NumSet<T> {
+impl<T: PrimInt> FromIterator<u8> for NumSet<T> {
     fn from_iter<TIter: IntoIterator<Item = u8>>(iter: TIter) -> Self {
         let mut s = Self::new();
         for x in iter {
@@ -87,11 +87,11 @@ impl<T : PrimInt> FromIterator<u8> for NumSet<T> {
 }
 
 #[derive(Debug)]
-pub struct NumSetIter<T : PrimInt> {
+pub struct NumSetIter<T: PrimInt> {
     n: NumSet<T>,
     pow: u8,
 }
-impl<T : PrimInt> Iterator for NumSetIter<T> {
+impl<T: PrimInt> Iterator for NumSetIter<T> {
     type Item = u8;
 
     fn next(&mut self) -> Option<Self::Item> {

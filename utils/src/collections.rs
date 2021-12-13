@@ -8,13 +8,16 @@ use std::{
 pub trait Intersections<K>: Iterator {
     fn intersections(&mut self) -> HashSet<K>;
 }
-impl<'a, K , I> Intersections<K> for I
+impl<'a, K, I> Intersections<K> for I
 where
     K: 'a + Eq + Hash + Clone,
     I: Iterator<Item = &'a HashSet<K>>,
 {
     fn intersections(&mut self) -> HashSet<K> {
-        let first = self.next().expect("Can't intersect empty hashset iterator").clone();
+        let first = self
+            .next()
+            .expect("Can't intersect empty hashset iterator")
+            .clone();
         self.fold(first, |i, a| i.intersection(a).cloned().collect())
     }
 }
@@ -78,7 +81,8 @@ where
     T: Ord,
 {
     let mut i = input.into_iter();
-    i.next().map(|x| i.fold((x, x), |(min, max), c| (min.min(c), max.max(c))))
+    i.next()
+        .map(|x| i.fold((x, x), |(min, max), c| (min.min(c), max.max(c))))
 }
 
 pub fn minmaxsum<'a, T, I: IntoIterator<Item = &'a T>>(input: I) -> Option<(&'a T, &'a T, T)>
@@ -86,6 +90,9 @@ where
     T: Ord + Add<Output = T> + Copy,
 {
     let mut i = input.into_iter();
-    i.next()
-        .map(|x| i.fold((x, x, *x), |(min, max, sum), c| (min.min(c), max.max(c), sum + *c)))
+    i.next().map(|x| {
+        i.fold((x, x, *x), |(min, max, sum), c| {
+            (min.min(c), max.max(c), sum + *c)
+        })
+    })
 }

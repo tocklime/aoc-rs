@@ -1,4 +1,7 @@
-use std::{ops::{Index, IndexMut}, fmt::{Display, Write}};
+use std::{
+    fmt::{Display, Write},
+    ops::{Index, IndexMut},
+};
 
 use itertools::Itertools;
 use num::Integer;
@@ -30,10 +33,10 @@ impl<T> IndexMut<Coord> for Grid2d<T> {
         &mut self.data[index.0 * self.size.1 + index.1]
     }
 }
-impl<T : Display>  Display for Grid2d<T> {
+impl<T: Display> Display for Grid2d<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for ((_,x),t) in self.indexed_iter() {
-            f.write_fmt(format_args!("{}",t))?;
+        for ((_, x), t) in self.indexed_iter() {
+            f.write_fmt(format_args!("{}", t))?;
             if x == self.size.1 - 1 {
                 f.write_char('\n')?;
             }
@@ -102,9 +105,11 @@ impl<T> Grid2d<T> {
         .filter(move |&x| x.0 < s.0 && x.1 < s.1)
     }
     pub fn to_string_with<F>(&self, disp: F) -> String
-    where F : Fn(&T) -> String {
+    where
+        F: Fn(&T) -> String,
+    {
         let mut ans = String::with_capacity(self.data.len());
-        for ((_,x),t) in self.indexed_iter() {
+        for ((_, x), t) in self.indexed_iter() {
             ans.push_str(&disp(t));
             if x == self.size.1 - 1 {
                 ans.push('\n');

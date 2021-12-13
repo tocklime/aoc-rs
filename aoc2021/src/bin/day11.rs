@@ -25,14 +25,15 @@ fn incr(n: &mut u8) -> bool {
 impl Day11 {
     fn step(&mut self) -> usize {
         self.flashing.clear();
-        self.flashing.extend(self.grid.indexes().filter(|&x| incr(&mut self.grid[x])));
+        self.flashing
+            .extend(self.grid.indexes().filter(|&x| incr(&mut self.grid[x])));
         let mut flash_count = 0;
         while let Some(&p) = self.flashing.get(flash_count) {
             flash_count += 1;
             self.flashing.extend(
                 self.grid
                     .neighbours_with_diagonals(p)
-                    .filter(|&p| self.grid[p] > 0 && incr(&mut  self.grid[p])),
+                    .filter(|&p| self.grid[p] > 0 && incr(&mut self.grid[p])),
             );
         }
         flash_count

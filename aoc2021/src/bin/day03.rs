@@ -21,7 +21,7 @@ fn ones_count_at_pos(nums: &[usize], pos: u8) -> usize {
 }
 fn p1(input: &Day3) -> usize {
     let epsilon = (0..input.width).fold(0, |epsilon, ix| {
-        let ix_u8 : u8 = ix.try_into().unwrap();
+        let ix_u8: u8 = ix.try_into().unwrap();
         let ones_count = ones_count_at_pos(&input.nums, ix_u8);
         //there's more ones than zeroes iff 2 * ones_count is bigger than the list.
         epsilon.with_set_bit(ix_u8, 2 * ones_count > input.nums.len())

@@ -38,8 +38,7 @@ impl OpCode {
         match self {
             Self::Input | Self::Output | Self::MoveRelativeBase => 1,
             Self::JumpIfTrue | Self::JumpIfFalse => 2,
-            Self::Add | Self::Mult |
-            Self::LessThan | Self::Equals => 3,
+            Self::Add | Self::Mult | Self::LessThan | Self::Equals => 3,
             Self::Halt => 0,
         }
     }
