@@ -2,6 +2,7 @@ pub mod aabb;
 pub mod cartesian;
 pub mod cellular_automata;
 pub mod collections;
+pub mod debug_as_display;
 pub mod grid2d;
 pub mod inputs;
 pub mod intcode;

@@ -1,12 +1,12 @@
-use std::{
-    collections::{HashMap, HashSet},
-    str::FromStr,
-};
+use std::{collections::HashSet, str::FromStr};
 
 use aoc_harness::*;
-use utils::cartesian::{self, Point};
+use utils::{
+    cartesian::{render_set_w, Point},
+    debug_as_display::DebugAsDisplay,
+};
 
-aoc_main!(2021 day 13, generator whole_input_is::<X>, part1 [p1], part2 [p2], example part1 EG => 17);
+aoc_main!(2021 day 13, generator whole_input_is::<X>, part1 [p1] => 653, part2 [p2], example part1 EG => 17);
 
 const EG: &str = "6,10
 0,14
@@ -56,7 +56,6 @@ impl FromStr for X {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        dbg!(s);
         let mut i = s.split("\n\n");
         let grid = i
             .next()
@@ -73,48 +72,38 @@ impl FromStr for X {
         Ok(Self { grid, folds })
     }
 }
-impl X {
-    fn fold(&mut self, f: &Fold) {
-        let new_map = match f {
-            Fold::AlongY(y) => self
-                .grid
-                .iter()
-                .map(|&p| {
-                    if p.y > *y {
-                        Point::new(p.x, 2 * *y - p.y)
-                    } else {
-                        p
-                    }
-                })
-                .collect(),
-            Fold::AlongX(x) => self
-                .grid
-                .iter()
-                .map(|&p| {
-                    if p.x > *x {
-                        Point::new(2 * *x - p.x, p.y)
-                    } else {
-                        p
-                    }
-                })
-                .collect(),
-        };
-        self.grid = new_map;
+fn fold(map: &HashSet<Point<usize>>, f: &Fold) -> HashSet<Point<usize>> {
+    match f {
+        Fold::AlongY(y) => map
+            .iter()
+            .map(|&p| {
+                if p.y > *y {
+                    Point::new(p.x, 2 * *y - p.y)
+                } else {
+                    p
+                }
+            })
+            .collect(),
+        Fold::AlongX(x) => map
+            .iter()
+            .map(|&p| {
+                if p.x > *x {
+                    Point::new(2 * *x - p.x, p.y)
+                } else {
+                    p
+                }
+            })
+            .collect(),
     }
 }
 fn p1(input: &X) -> usize {
-    let mut x = input.clone();
-    x.fold(&input.folds[0]);
-    x.grid.len()
+    fold(&input.grid, &input.folds[0]).len()
 }
 
-fn p2(input: &X) -> String {
-    let mut x = input.clone();
-    for f in &input.folds {
-        x.fold(&f);
-    }
-    let map: HashMap<Point<usize>, char> = x.grid.iter().map(|x| (*x, '#')).collect();
-    let s = cartesian::render_char_map_w(&map, 1, ".", false);
-    println!("{}", s);
-    s
+fn p2(input: &X) -> DebugAsDisplay<String> {
+    let set = input
+        .folds
+        .iter()
+        .fold(input.grid.clone(), |g, f| fold(&g, f));
+    render_set_w(&set, '#', ' ', false).into()
 }

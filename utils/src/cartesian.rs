@@ -1,4 +1,5 @@
 use crate::aabb::Aabb;
+use ::std::hash;
 use ndarray::IntoDimension;
 use num::{
     abs,
@@ -6,10 +7,10 @@ use num::{
     traits::{WrappingAdd, WrappingSub},
     Integer, Num, Signed, Unsigned,
 };
-use std::fmt::Debug;
 use std::hash::{BuildHasher, Hash};
 use std::ops::{Add, AddAssign, Mul, RangeInclusive, Sub};
 use std::{collections::HashMap, fmt::Display};
+use std::{collections::HashSet, fmt::Debug};
 use std::{
     convert::{TryFrom, TryInto},
     str::FromStr,
@@ -381,6 +382,22 @@ where
     S: BuildHasher,
 {
     hm.keys().collect()
+}
+
+#[must_use]
+pub fn render_set_w<N, S>(
+    m: &HashSet<Point<N>, S>,
+    present: char,
+    absent: char,
+    flip: bool,
+) -> String
+where
+    S: BuildHasher,
+    N: Copy + Num + TryInto<usize> + Ord + Eq + Hash + WrappingSub,
+    RangeInclusive<N>: Iterator<Item = N>,
+{
+    let map: HashMap<Point<N>, char> = m.iter().map(|&p| (p, present)).collect();
+    render_char_map_w(&map, 1, &absent.to_string(), flip)
 }
 
 pub fn render_char_map_w<N, S, V: Display + Clone + Copy>(
