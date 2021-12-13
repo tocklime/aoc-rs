@@ -39,7 +39,11 @@ impl Opts {
             println!("{}", f());
         }
     }
-    pub fn assert_eq<T: Eq + core::fmt::Debug>(&self, actual: &T, expected: &T) {
+    pub fn assert_eq<T1, T2>(&self, actual: &T1, expected: &T2)
+    where
+        T1 : std::fmt::Debug + PartialEq<T2>,
+        T2 : std::fmt::Debug,
+    {
         if self.test_mode {
             assert_eq!(actual, expected);
         } else if actual != expected {

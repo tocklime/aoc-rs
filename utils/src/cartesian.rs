@@ -1,5 +1,4 @@
 use crate::aabb::Aabb;
-use ::std::hash;
 use ndarray::IntoDimension;
 use num::{
     abs,

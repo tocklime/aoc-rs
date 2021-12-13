@@ -4,14 +4,13 @@ use aoc_harness::*;
 use utils::numset::NumSet;
 
 aoc_main!(2021 day 12, generator whole_input_is::<State>, part1 [solve::<0>] => 3410, part2 [solve::<1>] => 98796,
-        example part1 EG => 10,
-        example part1 EG2 => 19,
-        example part1 EG3 => 226,
-        example part2 EG => 36,
-        example part2 EG2 => 103,
-        example part2 EG3 => 3509,
-    );
-
+    example part1 EG => 10,
+    example part1 EG2 => 19,
+    example part1 EG3 => 226,
+    example part2 EG => 36,
+    example part2 EG2 => 103,
+    example part2 EG3 => 3509,
+);
 
 #[derive(Debug)]
 struct State {
@@ -19,6 +18,7 @@ struct State {
     start: u8,
     end: u8,
 }
+#[derive(Hash, PartialEq, Eq)]
 struct Pos {
     visited: NumSet<u32>,
     remaining_revisits: usize,
@@ -37,16 +37,19 @@ impl State {
             })
         })
     }
-    fn explore(&self, p: Pos) -> usize {
-        let mut ans = 0;
-        for n in self.neighbours(&p) {
-            if n.pos == self.end {
-                ans += 1;
-            } else {
-                ans += self.explore(n);
+    fn explore(&self, memo: &mut HashMap<Pos, usize>, p: Pos) -> usize {
+        memo.get(&p).copied().unwrap_or_else(|| {
+            let mut ans = 0;
+            for n in self.neighbours(&p) {
+                if n.pos == self.end {
+                    ans += 1;
+                } else {
+                    ans += self.explore(memo, n);
+                }
             }
-        }
-        ans
+            memo.insert(p, ans);
+            ans
+        })
     }
 }
 
@@ -108,11 +111,15 @@ impl FromStr for State {
 }
 
 fn solve<const SMALL_VISITS: usize>(state: &State) -> usize {
-    state.explore(Pos {
-        visited: NumSet::new(),
-        remaining_revisits: SMALL_VISITS,
-        pos: state.start,
-    })
+    let mut memo = HashMap::new();
+    state.explore(
+        &mut memo,
+        Pos {
+            visited: NumSet::new(),
+            remaining_revisits: SMALL_VISITS,
+            pos: state.start,
+        },
+    )
 }
 
 const EG: &str = "start-A

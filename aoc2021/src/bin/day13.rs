@@ -3,10 +3,10 @@ use std::{collections::HashSet, str::FromStr};
 use aoc_harness::*;
 use utils::{
     cartesian::{render_set_w, Point},
-    debug_as_display::DebugAsDisplay,
+    ocr::OcrString,
 };
 
-aoc_main!(2021 day 13, generator whole_input_is::<X>, part1 [p1] => 653, part2 [p2], example part1 EG => 17);
+aoc_main!(2021 day 13, generator whole_input_is::<X>, part1 [p1] => 653, part2 [p2] => "LKRFBPRK", example part1 EG => 17);
 
 const EG: &str = "6,10
 0,14
@@ -38,7 +38,7 @@ impl FromStr for Fold {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut i = s.split("=");
+        let mut i = s.split('=');
         match i.next().unwrap() {
             "fold along y" => Ok(Self::AlongY(i.next().unwrap().parse().unwrap())),
             "fold along x" => Ok(Self::AlongX(i.next().unwrap().parse().unwrap())),
@@ -48,12 +48,12 @@ impl FromStr for Fold {
 }
 #[derive(Debug, Clone)]
 struct X {
-    grid: HashSet<Point<usize>>,
+    grid: Vec<Point<usize>>,
     folds: Vec<Fold>,
 }
 
 impl FromStr for X {
-    type Err = String;
+    type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut i = s.split("\n\n");
@@ -72,38 +72,45 @@ impl FromStr for X {
         Ok(Self { grid, folds })
     }
 }
-fn fold(map: &HashSet<Point<usize>>, f: &Fold) -> HashSet<Point<usize>> {
-    match f {
-        Fold::AlongY(y) => map
-            .iter()
-            .map(|&p| {
+impl Fold {
+    fn apply_to_point(&self, p: Point<usize>) -> Point<usize> {
+        match self {
+            Fold::AlongY(y) => {
                 if p.y > *y {
                     Point::new(p.x, 2 * *y - p.y)
                 } else {
                     p
                 }
-            })
-            .collect(),
-        Fold::AlongX(x) => map
-            .iter()
-            .map(|&p| {
+            }
+            Fold::AlongX(x) => {
                 if p.x > *x {
                     Point::new(2 * *x - p.x, p.y)
                 } else {
                     p
                 }
-            })
-            .collect(),
+            }
+        }
+    }
+}
+impl X {
+    fn after_1_fold(&self) -> HashSet<Point<usize>> {
+        self.grid
+            .iter()
+            .map(|&p| self.folds[0].apply_to_point(p))
+            .collect()
+    }
+    fn after_folds(&self) -> HashSet<Point<usize>> {
+        self.grid
+            .iter()
+            .map(|&p| self.folds.iter().fold(p, |p, f| f.apply_to_point(p)))
+            .collect()
     }
 }
 fn p1(input: &X) -> usize {
-    fold(&input.grid, &input.folds[0]).len()
+    input.after_1_fold().len()
 }
 
-fn p2(input: &X) -> DebugAsDisplay<String> {
-    let set = input
-        .folds
-        .iter()
-        .fold(input.grid.clone(), |g, f| fold(&g, f));
-    render_set_w(&set, '#', ' ', false).into()
+fn p2(input: &X) -> OcrString {
+    let s = render_set_w(&input.after_folds(), '#', ' ', false);
+    OcrString::new(s, '#')
 }

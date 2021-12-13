@@ -8,3 +8,4 @@ pub mod inputs;
 pub mod intcode;
 pub mod nums;
 pub mod numset;
+pub mod ocr;
