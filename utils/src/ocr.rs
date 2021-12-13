@@ -56,7 +56,7 @@ fn map_char(input: &str, c: char) -> NumSet<u32> {
 fn map_char_vec(l: &[Vec<char>], c: char) -> NumSet<u32> {
     (0_u8..30)
         .filter(|&p| {
-            let (x, y) = p.div_mod_floor(&5);
+            let (y, x) = p.div_mod_floor(&5);
             Some(&c) == l[y as usize].get(x as usize)
         })
         .collect()
@@ -82,6 +82,7 @@ pub fn ocr(input: &str, c: char) -> String {
 }
 
 #[derive(PartialEq, Eq)]
+#[allow(clippy::module_name_repetitions)]
 pub struct OcrString {
     inner: String,
     c: char,

@@ -6,7 +6,7 @@ use utils::{
     ocr::OcrString,
 };
 
-aoc_main!(2021 day 13, generator whole_input_is::<X>, part1 [p1] => 653, part2 [p2] => "LKRFBPRK", example part1 EG => 17);
+aoc_main!(2021 day 13, generator whole_input_is::<X>, part1 [p1] => 653, part2 [p2] => "LKREBPRK", example part1 EG => 17);
 
 const EG: &str = "6,10
 0,14
