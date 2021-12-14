@@ -41,7 +41,7 @@ fn matrices<const GENERATIONS: usize>(input: &[usize]) -> usize {
     //   │ 1 0 0 0 0 0 0 0 0 │ //New ninth elem of array is the first.
     //   └                   ┘
 
-    let mat_pow = exp_by_squares(matrix, GENERATIONS - 1);
+    let mat_pow = exp_by_squares(&matrix, GENERATIONS - 1);
     //   For GENERATIONS = 80, mat_pow is now this:
     //   ┌                                     ┐
     //   │ 252  20 210  37 120  84  45 126  11 │ //new first elem of array is 252*first + 20*second + 210*third+...
