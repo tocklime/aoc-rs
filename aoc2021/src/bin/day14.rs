@@ -1,10 +1,10 @@
-use std::{collections::HashMap, fmt::Display, str::FromStr};
+use std::{fmt::Display, str::FromStr};
 
 use aoc_harness::*;
 use itertools::MinMaxResult;
 use num::Integer;
 
-aoc_main!(2021 day 14, part1 [solve::<10>] => 3284, part2 [solve::<40>] => 4_302_675_529_689, 
+aoc_main!(2021 day 14, generator whole_input_is::<Day14>, part1 [solve::<10>] => 3284, part2 [solve::<40>] => 4_302_675_529_689, 
     example both EG => (1588, 2_188_189_693_529_usize));
 
 const EG: &str = "NNCB
@@ -29,7 +29,7 @@ CN -> C";
 const CHARS: usize = 26;
 const CHAR_PAIRS: usize = CHARS * CHARS;
 struct Day14 {
-    rules: Vec<((u8, u8), u8)>,
+    rules: Vec<((usize, usize), usize)>,
     start: Counts,
     edges: [u8; 2],
 }
@@ -49,7 +49,7 @@ impl FromStr for Day14 {
             let mut i = l.split(" -> ");
             let from = i.next().unwrap().bytes().map(|a| a - b'A').collect_vec();
             let to = i.next().unwrap().bytes().collect_vec()[0] - b'A';
-            rules.push(((from[0], from[1]), to));
+            rules.push(((from[0].into(), from[1].into()), to.into()));
         }
         Ok(Self {
             rules,
@@ -71,7 +71,8 @@ impl Display for Counts {
         for (ix, count) in self.inner.iter().enumerate() {
             if ix % CHARS == 0 {
                 f.write_str("\n")?;
-                f.write_fmt(format_args!("{} ", (b'A' + (ix / CHARS) as u8) as char))?;
+                let c: u8 = (ix / CHARS).try_into().unwrap();
+                f.write_fmt(format_args!("{} ", (b'A' + c) as char))?;
             }
             f.write_fmt(format_args!("{} ", count))?;
         }
@@ -101,10 +102,7 @@ impl Counts {
 impl Day14 {
     fn step(&self, i: &Counts) -> Counts {
         let mut ans = Counts::new();
-        for &r in &self.rules {
-            let a = r.0 .0 as usize;
-            let b = r.0 .1 as usize;
-            let c = r.1 as usize;
+        for &((a, b), c) in &self.rules {
             let count: usize = i.inner[a * CHARS + b];
             ans.inner[a * CHARS + c] += count;
             ans.inner[c * CHARS + b] += count;
@@ -113,21 +111,16 @@ impl Day14 {
     }
 }
 
-fn solve<const ITERS: usize>(input: &str) -> usize {
-    let input: Day14 = input.parse().unwrap();
-    let mut curr = input.start.clone();
-    for _ in 0..ITERS {
-        curr = input.step(&curr);
-    }
-    let mut counts: HashMap<usize, usize> =
-        input.edges.iter().copied().map_into::<usize>().counts();
+fn solve<const ITERS: usize>(input: &Day14) -> usize {
+    let curr = (0..ITERS).fold(input.start.clone(), |x, _| input.step(&x));
+    let mut counts = [0; CHARS];
+    input.edges.iter().for_each(|&e| counts[e as usize] = 1);
     for (ix, count) in curr.inner.into_iter().enumerate() {
         let (a, b) = ix.div_mod_floor(&CHARS);
-        *counts.entry(a).or_default() += count;
-        *counts.entry(b).or_default() += count;
+        counts[a] += count;
+        counts[b] += count;
     }
-
-    if let MinMaxResult::MinMax(a, b) = counts.values().filter(|&&x| x > 0).minmax() {
+    if let MinMaxResult::MinMax(a, b) = counts.iter().filter(|&&x| x > 0).minmax() {
         (b - a) / 2
     } else {
         unreachable!()
