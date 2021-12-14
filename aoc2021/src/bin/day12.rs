@@ -88,9 +88,9 @@ impl FromStr for State {
         let start = *str_to_num.get("start").unwrap();
         let end = *str_to_num.get("end").unwrap();
         for from in 0..str_to_num.len() {
-            if lower_case_set.contains(from as u8) {
+            if lower_case_set.contains(from.try_into().unwrap()) {
                 let mut targets = Vec::new();
-                for &to in full_map[from].iter() {
+                for &to in &full_map[from] {
                     if lower_case_set.contains(to) {
                         targets.push(to);
                     } else {
@@ -98,7 +98,7 @@ impl FromStr for State {
                     }
                 }
                 targets.retain(|&x| x != start);
-                removed_bigs_map[from] = targets
+                removed_bigs_map[from] = targets;
             }
         }
 
