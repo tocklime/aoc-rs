@@ -1,11 +1,13 @@
-use std::{fmt::Display, str::FromStr};
+use std::{
+    collections::{hash_map::Entry, HashMap},
+    str::FromStr,
+};
 
 use aoc_harness::*;
 use itertools::MinMaxResult;
-use num::Integer;
 
-aoc_main!(2021 day 14, generator whole_input_is::<Day14>, part1 [solve::<10>] => 3284, part2 [solve::<40>] => 4_302_675_529_689, 
-    example both EG => (1588, 2_188_189_693_529_usize));
+aoc_main!(2021 day 14, generator whole_input_is::<Day14>, part1 [solve::<10>] => 3284, part2 [ solve::<40>] => 4_302_675_529_689,
+        example both EG => (1588, 2_188_189_693_529_usize));
 
 const EG: &str = "NNCB
 
@@ -26,102 +28,63 @@ BC -> B
 CC -> N
 CN -> C";
 
-const CHARS: usize = 26;
-const CHAR_PAIRS: usize = CHARS * CHARS;
+const CHAR_COUNT: usize = 10;
+const PAIR_COUNT: usize = 100;
 struct Day14 {
-    rules: Vec<((usize, usize), usize)>,
-    start: Counts,
-    edges: [u8; 2],
+    rules: [(usize, usize); PAIR_COUNT],
+    start: [usize; PAIR_COUNT],
 }
 impl FromStr for Day14 {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut lookup = HashMap::new();
+        let mut char_count = 0;
+        for c in s.chars().filter(|c| char::is_alphabetic(*c)) {
+            if let Entry::Vacant(e) = lookup.entry(c) {
+                e.insert(char_count);
+                char_count += 1;
+            }
+        }
         let mut x = s.split("\n\n");
         let line1 = x.next().unwrap();
-        let edges = [
-            line1.bytes().next().unwrap() - b'A',
-            line1.bytes().last().unwrap() - b'A',
-        ];
-        let start = line1.parse()?;
-        let mut rules = Vec::new();
+        let mut start = [0; PAIR_COUNT];
+        for (a, b) in line1.chars().map(|x| lookup[&x]).tuple_windows() {
+            start[(a * CHAR_COUNT + b)] += 1;
+        }
+        let mut rules = [(0, 0); PAIR_COUNT];
         for l in x.next().unwrap().lines() {
             let mut i = l.split(" -> ");
-            let from = i.next().unwrap().bytes().map(|a| a - b'A').collect_vec();
-            let to = i.next().unwrap().bytes().collect_vec()[0] - b'A';
-            rules.push(((from[0].into(), from[1].into()), to.into()));
+            let from = i.next().unwrap().chars().map(|a| lookup[&a]).collect_vec();
+            let to: usize = lookup[&i.next().unwrap().chars().collect_vec()[0]];
+            rules[from[0] * CHAR_COUNT + from[1]] =
+                (from[0] * CHAR_COUNT + to, to * CHAR_COUNT + from[1]);
         }
-        Ok(Self {
-            rules,
-            start,
-            edges,
-        })
-    }
-}
-#[derive(Clone)]
-struct Counts {
-    inner: [usize; CHAR_PAIRS],
-}
-impl Display for Counts {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("  ")?;
-        for c in 'A'..='Z' {
-            f.write_fmt(format_args!("{} ", c))?;
-        }
-        for (ix, count) in self.inner.iter().enumerate() {
-            if ix % CHARS == 0 {
-                f.write_str("\n")?;
-                let c: u8 = (ix / CHARS).try_into().unwrap();
-                f.write_fmt(format_args!("{} ", (b'A' + c) as char))?;
-            }
-            f.write_fmt(format_args!("{} ", count))?;
-        }
-        Ok(())
-    }
-}
-impl FromStr for Counts {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let start = s.bytes().map(|x| x - b'A').collect_vec();
-        let mut ans = Self::new();
-        for (a, b) in start.into_iter().tuple_windows() {
-            let ix = a as usize * CHARS + b as usize;
-            ans.inner[ix] += 1;
-        }
-        Ok(ans)
-    }
-}
-impl Counts {
-    fn new() -> Self {
-        Self {
-            inner: [0; CHAR_PAIRS],
-        }
+        Ok(Self { rules, start })
     }
 }
 impl Day14 {
-    fn step(&self, i: &Counts) -> Counts {
-        let mut ans = Counts::new();
-        for &((a, b), c) in &self.rules {
-            let count: usize = i.inner[a * CHARS + b];
-            ans.inner[a * CHARS + c] += count;
-            ans.inner[c * CHARS + b] += count;
+    fn step(&self, i: &[usize]) -> [usize; PAIR_COUNT] {
+        let mut ans = [0; PAIR_COUNT];
+        for (&(n1, n2), &count) in self.rules.iter().zip(i) {
+            ans[n1] += count;
+            ans[n2] += count;
         }
         ans
     }
 }
 
 fn solve<const ITERS: usize>(input: &Day14) -> usize {
-    let curr = (0..ITERS).fold(input.start.clone(), |x, _| input.step(&x));
-    let mut counts = [0; CHARS];
-    input.edges.iter().for_each(|&e| counts[e as usize] = 1);
-    for (ix, count) in curr.inner.into_iter().enumerate() {
-        let (a, b) = ix.div_mod_floor(&CHARS);
-        counts[a] += count;
-        counts[b] += count;
-    }
-    if let MinMaxResult::MinMax(a, b) = counts.iter().filter(|&&x| x > 0).minmax() {
-        (b - a) / 2
+    let curr = (0..ITERS).fold(input.start, |x, _| input.step(&x));
+    let mut counts = [0; CHAR_COUNT];
+    //we initialise the first to 1, because that was the first elem, and we're about to start only counting the 2nd of each pair.
+    counts[0] = 1;
+    let minmax = (0..CHAR_COUNT)
+        .map(|x| (x == 0) as usize + curr.iter().skip(x).step_by(CHAR_COUNT).sum::<usize>())
+        .filter(|&x| x > 0)
+        .minmax();
+    if let MinMaxResult::MinMax(a, b) = minmax {
+        b - a
     } else {
         unreachable!()
     }
