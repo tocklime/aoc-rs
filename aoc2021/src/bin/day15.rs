@@ -29,8 +29,9 @@ impl RepeatingGrid<'_> {
         (a * self.repeats, b * self.repeats)
     }
 
-    fn neighbours(&'_ self, p: Coord) -> impl Iterator<Item = Coord> {
+    fn neighbours(&'_ self, p: usize) -> impl Iterator<Item = Coord> {
         let s = self.dim();
+        let p = p.div_mod_floor(&s.1);
         [
             (p.0.wrapping_sub(1), p.1),
             (p.0, p.1.wrapping_sub(1)),
@@ -58,11 +59,10 @@ fn solve<const REPEATS: usize>(input: &Grid2d<u8>) -> usize {
         repeats: REPEATS,
     };
     let dim = rg.dim();
-    let target = (dim.0 - 1, dim.1 - 1);
+    let target = dim.0 * dim.1 - 1;
     dijkstra(
-        &(0, 0),
-        |&p| rg.neighbours(p).map(|x| (x, rg.risk_at(x))),
-        // |&(a, b)| target.0 - a + target.1 - b,
+        &0,
+        |&p| rg.neighbours(p).map(|x| (x.0 * dim.1 + x.1, rg.risk_at(x))),
         |&p| p == target,
     )
     .unwrap()
