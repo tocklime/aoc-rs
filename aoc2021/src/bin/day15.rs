@@ -1,14 +1,11 @@
-use std::{cmp::{max, min}, cell::{Cell, RefCell}};
-
 use aoc_harness::*;
-use itertools::chain;
 use num::Integer;
-use pathfinding::prelude::{astar, dijkstra};
+use pathfinding::prelude::astar;
 use utils::grid2d::{Coord, Grid2d};
 
 aoc_main!(2021 day 15, generator gen, 
-    part1 [solve_dijkstra::<1>] => 717, example part1 EG => 40, 
-    part2 [solve_dijkstra::<5>] => 2993, example part2 EG => 315);
+    part1 [solve::<1>] => 717, example part1 EG => 40, 
+    part2 [solve::<5>] => 2993, example part2 EG => 315);
 
 const EG: &str = "
 1163751742
@@ -48,24 +45,26 @@ impl RepeatingGrid<'_> {
         let (outer_x, inner_x) = index.0.div_mod_floor(&inner_dim.0);
         let (outer_y, inner_y) = index.1.div_mod_floor(&inner_dim.1);
         let inner_val = self.map[(inner_y, inner_x)] as usize;
-        let risk = 1 + (outer_x + outer_y + inner_val - 1) % 9;
-        risk
+        1 + (outer_x + outer_y + inner_val - 1) % 9
     }
 }
 
 fn gen(input: &str) -> Grid2d<u8> {
     Grid2d::from_str(input.trim(), |c| u8::try_from(c as u32).unwrap() - b'0')
 }
-fn solve_dijkstra<const REPEATS: usize>(input: &Grid2d<u8>) -> usize {
-    let (y,x) = input.dim();
+fn solve<const REPEATS: usize>(input: &Grid2d<u8>) -> usize {
     let rg = RepeatingGrid {
         map: input,
         repeats: REPEATS,
     };
-    let a = dijkstra(
+    let dim = rg.dim();
+    let target = (dim.0 - 1, dim.1 - 1);
+    astar(
         &(0, 0),
         |&p| rg.neighbours(p).map(|x| (x, rg.risk_at(x) as usize)),
-        |(a, b)| (a + 1, b + 1) == rg.dim(),
-    );
-    a.unwrap().1
+        |&(a, b)| target.0 - a + target.1 - b,
+        |&p| p == target,
+    )
+    .unwrap()
+    .1
 }
