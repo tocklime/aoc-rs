@@ -1,6 +1,6 @@
 use aoc_harness::*;
 use num::Integer;
-use pathfinding::prelude::astar;
+use pathfinding::prelude::dijkstra;
 use utils::grid2d::{Coord, Grid2d};
 
 aoc_main!(2021 day 15, generator gen, 
@@ -59,10 +59,10 @@ fn solve<const REPEATS: usize>(input: &Grid2d<u8>) -> usize {
     };
     let dim = rg.dim();
     let target = (dim.0 - 1, dim.1 - 1);
-    astar(
+    dijkstra(
         &(0, 0),
-        |&p| rg.neighbours(p).map(|x| (x, rg.risk_at(x) as usize)),
-        |&(a, b)| target.0 - a + target.1 - b,
+        |&p| rg.neighbours(p).map(|x| (x, rg.risk_at(x))),
+        // |&(a, b)| target.0 - a + target.1 - b,
         |&p| p == target,
     )
     .unwrap()
