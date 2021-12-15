@@ -1,12 +1,17 @@
-use std::str::FromStr;
+use std::{cmp::{max, min}, cell::{Cell, RefCell}};
 
 use aoc_harness::*;
-use pathfinding::prelude::dijkstra;
-use utils::grid2d::Grid2d;
+use itertools::chain;
+use num::Integer;
+use pathfinding::prelude::{astar, dijkstra};
+use utils::grid2d::{Coord, Grid2d};
 
-aoc_main!(2021 day 15, generator whole_input_is::<X>, part1 [p1], example part1 EG => 40, part2 [p2], example part2 EG => 315);
+aoc_main!(2021 day 15, generator gen, 
+    part1 [solve_dijkstra::<1>] => 717, example part1 EG => 40, 
+    part2 [solve_dijkstra::<5>] => 2993, example part2 EG => 315);
 
-const EG: &str = "1163751742
+const EG: &str = "
+1163751742
 1381373672
 2136511328
 3694931569
@@ -17,41 +22,50 @@ const EG: &str = "1163751742
 1293138521
 2311944581";
 
-#[derive(Debug)]
-struct X {
-    map: Grid2d<u8>,
+struct RepeatingGrid<'a> {
+    map: &'a Grid2d<u8>,
+    repeats: usize,
 }
+impl RepeatingGrid<'_> {
+    fn dim(&self) -> Coord {
+        let (a, b) = self.map.dim();
+        (a * self.repeats, b * self.repeats)
+    }
 
-impl FromStr for X {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let map = Grid2d::from_str(s, |c| (c as u32) as u8 - b'0');
-        Ok(Self { map })
+    fn neighbours(&'_ self, p: Coord) -> impl Iterator<Item = Coord> {
+        let s = self.dim();
+        [
+            (p.0.wrapping_sub(1), p.1),
+            (p.0, p.1.wrapping_sub(1)),
+            (p.0 + 1, p.1),
+            (p.0, p.1 + 1),
+        ]
+        .into_iter()
+        .filter(move |&x| x.0 < s.0 && x.1 < s.1)
+    }
+    fn risk_at(&self, index: Coord) -> usize {
+        let inner_dim = self.map.dim();
+        let (outer_x, inner_x) = index.0.div_mod_floor(&inner_dim.0);
+        let (outer_y, inner_y) = index.1.div_mod_floor(&inner_dim.1);
+        let inner_val = self.map[(inner_y, inner_x)] as usize;
+        let risk = 1 + (outer_x + outer_y + inner_val - 1) % 9;
+        risk
     }
 }
-fn p1(input: &X) -> usize {
-    let a = dijkstra(
-        &(0, 0),
-        |&p| input.map.neighbours(p).map(|x| (x, input.map[x] as usize)),
-        |(a, b)| (a + 1, b + 1) == input.map.dim(),
-    );
-    a.unwrap().1
-}
 
-fn p2(input: &X) -> usize {
-    let (a, b) = input.map.dim();
-    let mut big_grid = Grid2d::from_elem((a * 5, b * 5), 0);
-    for (x, y) in (0..a * 5).cartesian_product(0..b * 5) {
-        let (bx, by) = (x / a, y / a);
-        let incr = bx + by;
-        let val = incr + input.map[(x % a, y % b)] as usize;
-        big_grid[(x, y)] = if val > 9 { val - 9 } else { val };
-    }
+fn gen(input: &str) -> Grid2d<u8> {
+    Grid2d::from_str(input.trim(), |c| u8::try_from(c as u32).unwrap() - b'0')
+}
+fn solve_dijkstra<const REPEATS: usize>(input: &Grid2d<u8>) -> usize {
+    let (y,x) = input.dim();
+    let rg = RepeatingGrid {
+        map: input,
+        repeats: REPEATS,
+    };
     let a = dijkstra(
         &(0, 0),
-        |&p| big_grid.neighbours(p).map(|x| (x, big_grid[x] as usize)),
-        |(a, b)| (a + 1, b + 1) == big_grid.dim()
+        |&p| rg.neighbours(p).map(|x| (x, rg.risk_at(x) as usize)),
+        |(a, b)| (a + 1, b + 1) == rg.dim(),
     );
     a.unwrap().1
 }
