@@ -1,4 +1,5 @@
 use aoc_harness::*;
+use utils::take_upto_n::TakeUpToN;
 
 aoc_main!(2021 day 16, generator gen, part1 [p1] => 883, part2 [p2] => 1_675_198_555_015, example part1 EG => 16);
 
@@ -15,6 +16,8 @@ struct Packet {
     type_id: usize,
     message: PacketType,
 }
+type NumIter<'a> = Box<&'a mut dyn Iterator<Item = usize>>;
+
 impl Packet {
     fn version_sum(&self) -> usize {
         self.version
@@ -40,22 +43,15 @@ impl Packet {
     }
 }
 
-fn read_bits_to_n(iter: &mut impl Iterator<Item = usize>, bit_size: usize) -> Option<usize> {
+fn read_bits_to_n(iter: &mut NumIter, bit_size: usize) -> Option<usize> {
     let mut n = 0;
     for _ in 0..bit_size {
         n = n << 1 | iter.next()?;
     }
     Some(n)
 }
-fn read_bits_to_vec(iter: &mut impl Iterator<Item = usize>, bit_size: usize) -> Option<Vec<usize>> {
-    let mut ans = Vec::with_capacity(bit_size);
-    for _ in 0..bit_size {
-        ans.push(iter.next()?);
-    }
-    Some(ans)
-}
 
-fn read_multi_bits(iter: &mut impl Iterator<Item = usize>) -> Option<usize> {
+fn read_multi_bits(iter: &mut NumIter) -> Option<usize> {
     let mut n = 0;
     loop {
         let is_last = iter.next()? == 0;
@@ -67,7 +63,7 @@ fn read_multi_bits(iter: &mut impl Iterator<Item = usize>) -> Option<usize> {
     }
     Some(n)
 }
-fn read_one_packet(iter: &mut impl Iterator<Item = usize>) -> Option<Packet> {
+fn read_one_packet(iter: &mut NumIter) -> Option<Packet> {
     let version = read_bits_to_n(iter, 3)?;
     let type_id = read_bits_to_n(iter, 3)?;
     let message = if type_id == 4 {
@@ -80,9 +76,12 @@ fn read_one_packet(iter: &mut impl Iterator<Item = usize>) -> Option<Packet> {
         if length_type_id == 0 {
             //bits-based packet contents
             let length = read_bits_to_n(iter, 15)?;
-            let content = read_bits_to_vec(iter, length)?;
-            let inner_packets = read_packets(&mut content.into_iter());
-            PacketType::Operator(inner_packets)
+            let mut content = TakeUpToN::new(iter, length);
+            let mut packets = Vec::new();
+            while let Some(p) = read_one_packet(&mut Box::new(&mut content)) {
+                packets.push(p);
+            }
+            PacketType::Operator(packets)
         } else {
             //packet count based packet contents.
             let packet_count = read_bits_to_n(iter, 11)?;
@@ -96,14 +95,14 @@ fn read_one_packet(iter: &mut impl Iterator<Item = usize>) -> Option<Packet> {
         message,
     })
 }
-fn read_packets(iter: &mut impl Iterator<Item = usize>) -> Vec<Packet> {
+fn read_packets(iter: &mut NumIter) -> Vec<Packet> {
     let mut packets = Vec::new();
     while let Some(p) = read_one_packet(iter) {
         packets.push(p);
     }
     packets
 }
-fn read_n_packets(iter: &mut impl Iterator<Item = usize>, n: usize) -> Option<Vec<Packet>> {
+fn read_n_packets(iter: &mut NumIter, n: usize) -> Option<Vec<Packet>> {
     let mut packets = Vec::new();
     for _ in 0..n {
         packets.push(read_one_packet(iter)?);
@@ -111,19 +110,21 @@ fn read_n_packets(iter: &mut impl Iterator<Item = usize>, n: usize) -> Option<Ve
     Some(packets)
 }
 
-fn gen(input: &str) -> Vec<Packet> {
+fn gen(input: &str) -> Packet {
     let mut bits_iter = input.trim().chars().flat_map(|c| {
         let n = usize::from_str_radix(&c.to_string(), 16).unwrap();
         [n >> 3 & 1, n >> 2 & 1, n >> 1 & 1, n & 1]
     });
-    let packet = read_packets(&mut bits_iter);
-    assert!(bits_iter.next().is_none());
+    let packet = read_one_packet(&mut Box::new(&mut bits_iter)).unwrap();
+    for x in bits_iter {
+        assert_eq!(0, x);
+    }
     packet
 }
-fn p1(input: &[Packet]) -> usize {
-    input.iter().map(Packet::version_sum).sum()
+fn p1(input: &Packet) -> usize {
+    input.version_sum()
 }
 
-fn p2(input: &[Packet]) -> usize {
-    input.iter().map(Packet::evaluate).sum()
+fn p2(input: &Packet) -> usize {
+    input.evaluate()
 }

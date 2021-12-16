@@ -9,3 +9,4 @@ pub mod intcode;
 pub mod nums;
 pub mod numset;
 pub mod ocr;
+pub mod take_upto_n;
