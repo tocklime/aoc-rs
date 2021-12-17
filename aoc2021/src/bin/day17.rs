@@ -49,13 +49,13 @@ where
 }
 
 /// for a given target, find all speeds in `range` which ever hit the target. Return an iterator of
-/// the range of step numbers that hit it, and the speed.
+/// the speed and the range of step numbers that hit the target
 fn find_speeds<T>(
     target_min: i64,
     target_max: i64,
     range: impl Iterator<Item = i64>,
     check: T,
-) -> impl Iterator<Item = ((usize, usize), i64)>
+) -> impl Iterator<Item = (i64, (usize, usize))>
 where
     T: Fn(i64, i64) -> bool + Copy,
 {
@@ -75,7 +75,7 @@ where
         if in_range {
             max_step = Some(usize::MAX);
         }
-        min_step.map(|min| ((min, max_step.unwrap_or(usize::MAX)), x))
+        min_step.map(|min| (x, (min, max_step.unwrap_or(usize::MAX))))
     })
 }
 
@@ -85,7 +85,7 @@ fn p1(i: &Day17) -> i64 {
     })
     .next()
     .unwrap();
-    posses(p.1, move |pos, _| pos < i.ymin).max().unwrap()
+    posses(p.0, move |pos, _| pos < i.ymin).max().unwrap()
 }
 
 fn p2(i: &Day17) -> usize {
@@ -99,6 +99,6 @@ fn p2(i: &Day17) -> usize {
     .collect_vec();
     xs.iter()
         .cartesian_product(ys.iter())
-        .filter(|&((x, _), (y, _))| !(x.1 < y.0 || y.1 < x.0))
+        .filter(|&((_, x), (_, y))| !(x.1 < y.0 || y.1 < x.0))
         .count()
 }
