@@ -89,11 +89,9 @@ fn p1(i: &Day17) -> i64 {
 }
 
 fn p2(i: &Day17) -> usize {
-    let ys = {
-        find_speeds(i.ymin, i.ymax, (i.ymin..=-i.ymin).rev(), move |pos, _| {
-            pos < i.ymin
-        })
-    }
+    let ys = find_speeds(i.ymin, i.ymax, (i.ymin..=-i.ymin).rev(), move |pos, _| {
+        pos < i.ymin
+    })
     .collect_vec();
     let xs = find_speeds(i.xmin, i.xmax, 0..=i.xmax, move |pos, vel| {
         vel < 0 || pos > i.xmax
