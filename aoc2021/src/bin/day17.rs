@@ -1,18 +1,21 @@
-use std::{convert::Infallible, str::FromStr};
+use std::{
+    collections::{BTreeMap, HashSet},
+    convert::Infallible,
+    str::FromStr,
+};
 
 use scan_fmt::scan_fmt;
 
 use aoc_harness::*;
+use utils::span::Span;
 
 aoc_main!(2021 day 17, generator whole_input_is::<Day17>, part1 [p1] => 8911, part2 [p2] => 4748, example part1 EG => 45, example part2 EG => 112);
 
 const EG: &str = "target area: x=20..30, y=-10..-5";
 
 struct Day17 {
-    xmin: i64,
-    xmax: i64,
-    ymin: i64,
-    ymax: i64,
+    x: (i64, i64),
+    y: (i64, i64),
 }
 impl FromStr for Day17 {
     type Err = Infallible;
@@ -22,10 +25,8 @@ impl FromStr for Day17 {
         let (xmin, xmax, ymin, ymax) =
             scan_fmt!(s, "target area: x={}..{}, y={}..{}", i64, i64, i64, i64).unwrap();
         Ok(Self {
-            xmin,
-            xmax,
-            ymin,
-            ymax,
+            x: (xmin, xmax + 1),
+            y: (ymin, ymax + 1),
         })
     }
 }
@@ -51,8 +52,7 @@ where
 /// for a given target, find all speeds in `range` which ever hit the target. Return an iterator of
 /// the speed and the range of step numbers that hit the target
 fn find_speeds<T>(
-    target_min: i64,
-    target_max: i64,
+    target: (i64, i64),
     range: impl Iterator<Item = i64>,
     check: T,
 ) -> impl Iterator<Item = (i64, (usize, usize))>
@@ -61,44 +61,46 @@ where
 {
     range.filter_map(move |x| {
         let mut min_step = None;
-        let mut max_step = None;
+        let mut max_step = 0;
         let mut in_range = true;
         for (step, xp) in posses(x, check).enumerate() {
-            in_range = xp >= target_min && xp <= target_max;
+            in_range = xp >= target.0 && xp < target.1;
             if in_range {
                 if min_step.is_none() {
-                    min_step = Some(step + 1);
+                    min_step = Some(step);
                 }
-                max_step = Some(step + 1);
+                max_step = step;
             }
         }
         if in_range {
-            max_step = Some(usize::MAX);
+            max_step = usize::MAX;
+        } else {
+            max_step += 1;
         }
-        min_step.map(|min| (x, (min, max_step.unwrap_or(usize::MAX))))
+        min_step.map(|min| (x, (min, max_step)))
     })
 }
 
 fn p1(i: &Day17) -> i64 {
-    let p = find_speeds(i.ymin, i.ymax, (i.ymin..=-i.ymin).rev(), move |pos, _| {
-        pos < i.ymin
-    })
-    .next()
-    .unwrap();
-    posses(p.0, move |pos, _| pos < i.ymin).max().unwrap()
+    let p = find_speeds(i.y, (i.y.0..-i.y.0).rev(), move |pos, _| pos < i.y.0)
+        .next()
+        .unwrap();
+    p.0 * (p.0 + 1) / 2
 }
 
 fn p2(i: &Day17) -> usize {
-    let ys = find_speeds(i.ymin, i.ymax, (i.ymin..=-i.ymin).rev(), move |pos, _| {
-        pos < i.ymin
+    let ys = find_speeds(i.y, (i.y.0..-i.y.0).rev(), move |pos, _| pos < i.y.0);
+    let xs = find_speeds(i.x, 0..i.x.1, move |pos, vel| vel < 0 || pos > i.x.1).collect_vec();
+    //ys is sorted in desceding y. -> start times decrease, end times decrease.
+    //xs is sorted in ascending x. -> start times decrease, end times decrease.
+    ys.map(|(_, t_y)| {
+        xs.iter()
+            //since xs times descend, we can skip all those at the start where the x start time is greater than the y end...
+            .skip_while(|(_, t_x)| t_y.1 <= t_x.0)
+            //..and we only need to look at those where the end time is at least the start time of y.
+            .take_while(|(_, t_x)| t_x.1 > t_y.0)
+            //everything else must match.
+            .count()
     })
-    .collect_vec();
-    let xs = find_speeds(i.xmin, i.xmax, 0..=i.xmax, move |pos, vel| {
-        vel < 0 || pos > i.xmax
-    })
-    .collect_vec();
-    xs.iter()
-        .cartesian_product(ys.iter())
-        .filter(|&((_, x), (_, y))| !(x.1 < y.0 || y.1 < x.0))
-        .count()
+    .sum::<usize>()
 }

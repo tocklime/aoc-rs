@@ -9,4 +9,6 @@ pub mod intcode;
 pub mod nums;
 pub mod numset;
 pub mod ocr;
+pub mod span;
+// pub mod spantree;
 pub mod take_upto_n;
