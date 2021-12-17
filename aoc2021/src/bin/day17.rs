@@ -7,7 +7,7 @@ use aoc_harness::*;
 aoc_main!(2021 day 17, generator whole_input_is::<Day17>, part1 [p1] => 8911, part2 [p2] => 4748, example part1 EG => 45, example part2 EG => 112);
 
 const EG: &str = "target area: x=20..30, y=-10..-5";
-
+#[derive(Debug)]
 struct Day17 {
     x: (i64, i64),
     y: (i64, i64),
@@ -58,6 +58,13 @@ where
         let mut min_step = None;
         let mut max_step = 0;
         let mut in_range = true;
+        let (x, time_offset) = if x.signum() != target.0.signum() {
+            //we're firing in the wrong direction.
+            //first 2n steps will take us back to point zero with opposite velocity, so lets skip those.
+            (-x, 2 * usize::try_from(x.abs()).unwrap())
+        } else {
+            (x, 0)
+        };
         for (step, xp) in posses(x, check).enumerate() {
             in_range = xp >= target.0 && xp < target.1;
             if in_range {
@@ -72,15 +79,14 @@ where
         } else {
             max_step += 1;
         }
-        min_step.map(|min| (x, (min, max_step)))
+        min_step.map(|min| (x, (min + time_offset, max_step + time_offset)))
     })
 }
 
 fn p1(i: &Day17) -> i64 {
-    let p = find_speeds(i.y, (i.y.0..-i.y.0).rev(), move |pos, _| pos < i.y.0)
-        .next()
-        .unwrap();
-    p.0 * (p.0 + 1) / 2
+    //fastest downward speed that hits is downward so it hits the end of target in 1 step.
+    //hence, highest we can fire it upwards and hit is -1 * that.
+    i.y.0 * (i.y.0 + 1) / 2
 }
 
 fn p2(i: &Day17) -> usize {
