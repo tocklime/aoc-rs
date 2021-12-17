@@ -27,18 +27,17 @@ impl FromStr for Day17 {
 }
 /// for a given speed initial speed, return an iterator of all positions hit.
 /// stops when check returns true on the old position or the current velocity.
-fn posses<F>(mut vel: i64, check: F) -> impl Iterator<Item = i64>
-where
-    F: Fn(i64, i64) -> bool,
-{
+fn posses(mut vel: i64, check: Condition) -> impl Iterator<Item = i64> {
     let mut pos = 0;
     std::iter::from_fn(move || {
-        let old_pos = pos;
-        pos += vel;
-        vel -= 1;
-        if check(old_pos, vel) {
+        if match check {
+            Condition::MinPos(p) => pos < p,
+            Condition::ZeroVelOrMaxPos(p) => vel < 0 || pos > p,
+        } {
             None
         } else {
+            pos += vel;
+            vel -= 1;
             Some(pos)
         }
     })
@@ -46,13 +45,12 @@ where
 
 /// for a given target, find all speeds in `range` which ever hit the target. Return an iterator of
 /// the speed and the range of step numbers that hit the target
-fn find_speeds<T>(
+fn find_speeds(
     target: (i64, i64),
     range: impl Iterator<Item = i64>,
-    check: T,
-) -> impl Iterator<Item =  (usize, usize)>
+    check: Condition,
+) -> impl Iterator<Item = (usize, usize)>
 where
-    T: Fn(i64, i64) -> bool + Copy,
 {
     range.filter_map(move |x| {
         let mut min_step = None;
@@ -92,14 +90,24 @@ fn p1(i: &Day17) -> i64 {
     i.y.0 * (i.y.0 + 1) / 2
 }
 
+#[derive(Clone, Copy)]
+enum Condition {
+    MinPos(i64),
+    ZeroVelOrMaxPos(i64),
+}
 fn p2(i: &Day17) -> usize {
-    let ys = find_speeds(i.y, (i.y.0..-i.y.0).rev(), move |pos, _| pos < i.y.0);
-    let mut xs = find_speeds(i.x, 0..i.x.1, move |pos, vel| vel < 0 || pos > i.x.1).peekable();
+    let ys = find_speeds(i.y, (i.y.0..-i.y.0).rev(), Condition::MinPos(i.y.0));
+    let mut xs = find_speeds(i.x, 0..i.x.1, Condition::ZeroVelOrMaxPos(i.x.1)).peekable();
     let mut matching_xs = VecDeque::new();
-    //roughly, both xs and ys are in descending order of time (slowest shots first).
+    //both xs and ys are in descending order of time-to-target (slowest shots first).
     //we iterate over the ys, and keep a sliding window (the VecDeque) of xs which match
-    ys.map(| (y_min, y_max)| {
-        //first, pull in all the matching xs we can.
+    ys.map(|(y_min, y_max)| {
+        //first, remove xs that no longer fit from matching_xs.
+        while matching_xs.get(0).map_or(false, |&xmin| xmin >= y_max) {
+            //too big for this y, drop it.
+            matching_xs.pop_front();
+        }
+        //then, pull in all the matching xs we can.
         loop {
             match xs.peek() {
                 Some(&(xmin, _)) if xmin >= y_max => {
@@ -109,14 +117,6 @@ fn p2(i: &Day17) -> usize {
                 Some(_) => matching_xs.push_back(xs.next().unwrap().0), //otherwise it matches. We only need to remember the xmin, because that's what we need to check against to remove it later.
                 None => break, //end of the xs. we're done pulling.
             }
-        }
-        //now remove xs that no longer fit from matching_xs.
-        while matching_xs
-            .get(0)
-            .map_or(false, |&xmin| xmin >= y_max)
-        {
-            //too big for this y, drop it.
-            matching_xs.pop_front();
         }
         // now matching_xs contains all xs that match this y.
         matching_xs.len()
