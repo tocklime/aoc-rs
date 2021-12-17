@@ -1,13 +1,8 @@
-use std::{
-    collections::{BTreeMap, HashSet},
-    convert::Infallible,
-    str::FromStr,
-};
+use std::{collections::VecDeque, convert::Infallible, str::FromStr};
 
 use scan_fmt::scan_fmt;
 
 use aoc_harness::*;
-use utils::span::Span;
 
 aoc_main!(2021 day 17, generator whole_input_is::<Day17>, part1 [p1] => 8911, part2 [p2] => 4748, example part1 EG => 45, example part2 EG => 112);
 
@@ -90,17 +85,34 @@ fn p1(i: &Day17) -> i64 {
 
 fn p2(i: &Day17) -> usize {
     let ys = find_speeds(i.y, (i.y.0..-i.y.0).rev(), move |pos, _| pos < i.y.0);
-    let xs = find_speeds(i.x, 0..i.x.1, move |pos, vel| vel < 0 || pos > i.x.1).collect_vec();
-    //ys is sorted in desceding y. -> start times decrease, end times decrease.
-    //xs is sorted in ascending x. -> start times decrease, end times decrease.
-    ys.map(|(_, t_y)| {
-        xs.iter()
-            //since xs times descend, we can skip all those at the start where the x start time is greater than the y end...
-            .skip_while(|(_, t_x)| t_y.1 <= t_x.0)
-            //..and we only need to look at those where the end time is at least the start time of y.
-            .take_while(|(_, t_x)| t_x.1 > t_y.0)
-            //everything else must match.
-            .count()
+    let mut xs = find_speeds(i.x, 0..i.x.1, move |pos, vel| vel < 0 || pos > i.x.1).peekable();
+    let mut matching_xs = VecDeque::new();
+    //roughly, both xs and ys are in descending order of time (slowest shots first).
+    //we iterate over the ys, and keep a sliding window (the VecDeque) of xs which match
+    ys.map(|(_, (y_min, y_max))| {
+        //first, pull in all the matching xs we can.
+        loop {
+            match xs.peek() {
+                Some(&(_, (xmin, _))) if xmin >= y_max => {
+                    xs.next().unwrap(); //too big for this, the biggest y. drop it.
+                }
+                Some(&(_, (_, xmax))) if xmax <= y_min => break, //too small for this y, save it for later, but we're done pulling.
+                Some(_) => matching_xs.push_back(xs.next().unwrap()), //otherwise it matches.
+                None => break, //end of the xs. we're done pulling.
+            }
+        }
+
+        //now remove xs that no longer fit from matching_xs.
+        while matching_xs
+            .get(0)
+            .map_or(false, |&(_, (xmin, _))| xmin >= y_max)
+        {
+            //too big for this y, drop it.
+            matching_xs.pop_front();
+        }
+
+        // now matching_xs contains all xs that match this y.
+        matching_xs.len()
     })
-    .sum::<usize>()
+    .sum()
 }
