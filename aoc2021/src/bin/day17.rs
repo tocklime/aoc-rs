@@ -29,75 +29,78 @@ impl FromStr for Day17 {
         })
     }
 }
-fn x_posses(mut vel: i64) -> impl Iterator<Item = i64> {
+/// for a given speed initial speed, return an iterator of all positions hit.
+/// stops when check returns true on the old position or the current velocity.
+fn posses<F>(mut vel: i64, check: F) -> impl Iterator<Item = i64>
+where
+    F: Fn(i64, i64) -> bool,
+{
     let mut pos = 0;
     std::iter::from_fn(move || {
+        let old_pos = pos;
         pos += vel;
         vel -= 1;
-        if vel == -1 {
+        if check(old_pos, vel) {
             None
         } else {
             Some(pos)
         }
     })
 }
-fn y_posses_to(mut vel: i64, pos_limit: i64) -> impl Iterator<Item = i64> {
-    let mut pos = 0;
-    std::iter::from_fn(move || {
-        pos += vel;
-        vel -= 1;
-        if pos < pos_limit {
-            None
-        } else {
-            Some(pos)
-        }
-    })
-}
-fn find_x_speeds(xmin: i64, xmax: i64) -> impl Iterator<Item = ((usize, usize), i64)> {
-    (0..=xmax).filter_map(move |x| {
+
+/// for a given target, find all speeds in `range` which ever hit the target. Return an iterator of
+/// the range of step numbers that hit it, and the speed.
+fn find_speeds<T>(
+    target_min: i64,
+    target_max: i64,
+    range: impl Iterator<Item = i64>,
+    check: T,
+) -> impl Iterator<Item = ((usize, usize), i64)>
+where
+    T: Fn(i64, i64) -> bool + Copy,
+{
+    range.filter_map(move |x| {
         let mut min_step = None;
         let mut max_step = None;
-        for (step, xp) in x_posses(x).enumerate() {
-            if xp >= xmin && xp <= xmax && min_step.is_none() {
-                min_step = Some(step + 1);
-            }
-            if xp > xmax {
-                max_step = Some(step);
-                break;
-            }
-        }
-        min_step.map(|min| ((min, max_step.unwrap_or(usize::MAX)), x))
-    })
-}
-fn find_y_speeds(ymin: i64, ymax: i64) -> impl Iterator<Item = ((usize, usize), i64)> {
-    (ymin..=-ymin).rev().filter_map(move |y| {
-        let mut min_step = None;
-        let mut max_step = None;
-        for (step, yp) in y_posses_to(y, ymin).enumerate() {
-            if yp >= ymin && yp <= ymax {
+        let mut in_range = true;
+        for (step, xp) in posses(x, check).enumerate() {
+            in_range = xp >= target_min && xp <= target_max;
+            if in_range {
                 if min_step.is_none() {
                     min_step = Some(step + 1);
                 }
                 max_step = Some(step + 1);
             }
         }
-        match (min_step, max_step) {
-            (Some(min), Some(max)) => Some(((min, max), y)),
-            _ => None,
+        if in_range {
+            max_step = Some(usize::MAX);
         }
+        min_step.map(|min| ((min, max_step.unwrap_or(usize::MAX)), x))
     })
 }
-fn p1(input: &Day17) -> i64 {
-    let p = find_y_speeds(input.ymin, input.ymax).collect_vec()[0];
-    y_posses_to(p.1, input.ymin).max().unwrap()
+
+fn p1(i: &Day17) -> i64 {
+    let p = find_speeds(i.ymin, i.ymax, (i.ymin..=-i.ymin).rev(), move |pos, _| {
+        pos < i.ymin
+    })
+    .next()
+    .unwrap();
+    posses(p.1, move |pos, _| pos < i.ymin).max().unwrap()
 }
 
-fn p2(input: &Day17) -> usize {
-    //now want a yvel that hits target in steps steps.
-    let ys = find_y_speeds(input.ymin, input.ymax).collect_vec();
-    let xs = find_x_speeds(input.xmin, input.xmax).collect_vec();
+fn p2(i: &Day17) -> usize {
+    let ys = {
+        find_speeds(i.ymin, i.ymax, (i.ymin..=-i.ymin).rev(), move |pos, _| {
+            pos < i.ymin
+        })
+    }
+    .collect_vec();
+    let xs = find_speeds(i.xmin, i.xmax, 0..=i.xmax, move |pos, vel| {
+        vel < 0 || pos > i.xmax
+    })
+    .collect_vec();
     xs.iter()
         .cartesian_product(ys.iter())
-        .filter(|&(x, y)| !(x.0 .1 < y.0 .0 || y.0 .1 < x.0 .0))
+        .filter(|&((x, _), (y, _))| !(x.1 < y.0 || y.1 < x.0))
         .count()
 }
