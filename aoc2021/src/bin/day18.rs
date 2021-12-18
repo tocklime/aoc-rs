@@ -85,7 +85,7 @@ impl Snail {
             Self::Pair(c) => c.0.try_split() || c.1.try_split(),
         }
     }
-    fn try_explode(&mut self, depth: usize) -> Option<(Option<usize>, Option<usize>)> {
+    fn try_explode(&mut self, depth: usize) -> Option<(usize, usize)> {
         match self {
             Self::Leaf(_) => None,
             Self::Pair(c) => {
@@ -93,34 +93,41 @@ impl Snail {
                     //explode here. we assert that the values in c are leaf nodes.
                     let l = c.0.get_value().unwrap();
                     let r = c.1.get_value().unwrap();
-                    return Some((Some(l), Some(r)));
+                    return Some((l, r));
                 }
-                //try recursing down each path and remember which way worked.
-                let explosion_result =
-                    c.0.try_explode(depth - 1)
-                        .map(|x| (x, Dir::Left))
-                        .or_else(|| c.1.try_explode(depth - 1).map(|x| (x, Dir::Right)));
-                explosion_result.map(|((l, r), d)| {
+                let mut exploded = false;
+                let mut left_bits = 0;
+                let mut right_bits = 0;
+                //try recursing down each path
+                if let Some((l, r)) = c.0.try_explode(depth - 1) {
+                    exploded = true;
                     if depth == 1 {
                         //immediate child exploded. replace it.
-                        match d {
-                            Dir::Left => c.0 = Self::new_leaf(0),
-                            Dir::Right => c.1 = Self::new_leaf(0),
-                        }
+                        c.0 = Self::new_leaf(0);
                     }
-                    //try to push the left and right bits to their places.
-                    match (d, l, r) {
-                        (Dir::Left, _, Some(r)) => {
-                            c.1.add_to_edge(Dir::Left, r);
-                            (l, None)
-                        }
-                        (Dir::Right, Some(l), _) => {
-                            c.0.add_to_edge(Dir::Right, l);
-                            (None, r)
-                        }
-                        _ => (l, r),
+                    //left child exploded, we can push the right bit now.
+                    if r > 0 {
+                        c.1.add_to_edge(Dir::Left, r);
                     }
-                })
+                    left_bits = l;
+                }
+                if let Some((l, r)) = c.1.try_explode(depth - 1) {
+                    exploded = true;
+                    if depth == 1 {
+                        //immediate child exploded. replace it.
+                        c.1 = Self::new_leaf(0);
+                    }
+                    //right child exploded, we can push the left bit now.
+                    if l > 0 {
+                        c.0.add_to_edge(Dir::Right, l);
+                    }
+                    right_bits = r;
+                }
+                if exploded {
+                    Some((left_bits, right_bits))
+                } else {
+                    None
+                }
             }
         }
     }
@@ -137,7 +144,13 @@ impl Snail {
         }
     }
     fn reduce(&mut self) {
-        while self.try_explode(4).is_some() || self.try_split() {}
+        loop {
+            self.try_explode(4);
+            //assert that it's now unexplodable.
+            if !self.try_split() {
+                break;
+            }
+        }
     }
 
     fn get_value(&self) -> Option<usize> {
@@ -199,13 +212,13 @@ mod snailtest {
     }
     #[test]
     fn test_explodes() {
+        // assert_eq!(
+        //     exp("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"),
+        //     "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"
+        // );
+        assert_eq!(exp("[[6,[5,[4,[3,2]]]],1]"), "[[6,[5,[7,0]]],3]");
         assert_eq!(exp("[[[[[9,8],1],2],3],4]"), "[[[[0,9],2],3],4]");
         assert_eq!(exp("[7,[6,[5,[4,[3,2]]]]]"), "[7,[6,[5,[7,0]]]]");
-        assert_eq!(exp("[[6,[5,[4,[3,2]]]],1]"), "[[6,[5,[7,0]]],3]");
-        assert_eq!(
-            exp("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"),
-            "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"
-        );
         assert_eq!(
             exp("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"),
             "[[3,[2,[8,0]]],[9,[5,[7,0]]]]"
@@ -219,13 +232,13 @@ mod snailtest {
         );
     }
     const ADDITION_SCRIPT: &str = "
-  [[[[4,3],4],4],[7,[[8,4],9]]]
-+ [1,1]
-= [[[[0,7],4],[[7,8],[6,0]]],[8,1]]
-
   [[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
 + [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
 = [[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]
+
+  [[[[4,3],4],4],[7,[[8,4],9]]]
++ [1,1]
+= [[[[0,7],4],[[7,8],[6,0]]],[8,1]]
 
   [[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]
 + [[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
