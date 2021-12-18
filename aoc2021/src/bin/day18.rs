@@ -25,11 +25,11 @@ enum Snail {
 fn parse_snail(s: &str) -> (Snail, &str) {
     match s.chars().next().unwrap() {
         '[' => {
-            let (left, s) = parse_snail(&s[1..]);
+            let (a, s) = parse_snail(&s[1..]);
             assert_eq!(s.as_bytes().get(0), Some(&b','));
-            let (right, s) = parse_snail(&s[1..]);
+            let (b, s) = parse_snail(&s[1..]);
             assert_eq!(s.as_bytes().get(0), Some(&b']'));
-            let ans = Snail::new_pair(left, right);
+            let ans = Snail::new_pair(a,b);
             (ans, &s[1..])
         }
         c => (
@@ -65,11 +65,6 @@ impl Display for Snail {
         Ok(())
     }
 }
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
-enum Dir {
-    Left,
-    Right,
-}
 impl Snail {
     fn new_leaf(n: usize) -> Self {
         Snail::Leaf(n)
@@ -79,8 +74,8 @@ impl Snail {
     }
     fn try_split(&mut self) -> bool {
         match self {
-            Self::Leaf(x) if *x >= 10 => {
-                *self = Self::new_pair(Self::new_leaf(*x / 2), Self::new_leaf(*x / 2 + *x % 2));
+            &mut Self::Leaf(x) if x >= 10 => {
+                *self = Self::new_pair(Self::new_leaf(x / 2), Self::new_leaf(x / 2 + x % 2));
                 true
             }
             Self::Leaf(_) => false,
@@ -88,40 +83,37 @@ impl Snail {
         }
     }
     fn try_explode(&mut self, depth: usize) -> Option<(usize, usize)> {
+        if depth == 0 {
+            //explode here. we assert that the values in c are leaf nodes.
+            if let Self::Pair(c) = self {
+                let l = c.0.get_value().unwrap();
+                let r = c.1.get_value().unwrap();
+                *self = Self::Leaf(0);
+                return Some((l, r));
+            } else {
+                return None;
+            }
+        }
         match self {
             Self::Leaf(_) => None,
             Self::Pair(c) => {
-                if depth == 0 {
-                    //explode here. we assert that the values in c are leaf nodes.
-                    let l = c.0.get_value().unwrap();
-                    let r = c.1.get_value().unwrap();
-                    return Some((l, r));
-                }
                 let mut exploded = false;
                 let mut left_bits = 0;
                 let mut right_bits = 0;
                 //try recursing down each path
                 if let Some((l, r)) = c.0.try_explode(depth - 1) {
                     exploded = true;
-                    if depth == 1 {
-                        //immediate child exploded. replace it.
-                        c.0 = Self::new_leaf(0);
-                    }
                     //left child exploded, we can push the right bit now.
                     if r > 0 {
-                        c.1.add_to_edge(Dir::Left, r);
+                        c.1.add_to_left_edge(r);
                     }
                     left_bits = l;
                 }
                 if let Some((l, r)) = c.1.try_explode(depth - 1) {
                     exploded = true;
-                    if depth == 1 {
-                        //immediate child exploded. replace it.
-                        c.1 = Self::new_leaf(0);
-                    }
                     //right child exploded, we can push the left bit now.
                     if l > 0 {
-                        c.0.add_to_edge(Dir::Right, l);
+                        c.0.add_to_right_edge(l);
                     }
                     right_bits = r;
                 }
@@ -133,16 +125,24 @@ impl Snail {
             }
         }
     }
-    ///Add `val` to the left-most or right-most value in the number.
-    fn add_to_edge(&mut self, dir: Dir, val: usize) {
+    fn add_to_right_edge(&mut self, val: usize) {
         match self {
             Self::Leaf(n) => {
                 *n += val;
             }
-            Self::Pair(c) => match dir {
-                Dir::Left => c.0.add_to_edge(dir, val),
-                Dir::Right => c.1.add_to_edge(dir, val),
-            },
+            Self::Pair(c) => {
+                c.1.add_to_right_edge(val);
+            }
+        }
+    }
+    fn add_to_left_edge(&mut self,  val: usize) {
+        match self {
+            Self::Leaf(n) => {
+                *n += val;
+            }
+            Self::Pair(c) => {
+                c.0.add_to_left_edge(val);
+            }
         }
     }
     fn reduce(&mut self) {
@@ -168,13 +168,6 @@ impl Snail {
         }
     }
 }
-#[derive(Debug)]
-struct SnailNumberView<'a> {
-    current_node: &'a Snail,
-    i_am_of_parent: Option<Dir>,
-    parent: Option<Box<SnailNumberView<'a>>>,
-}
-
 fn p1(input: &[Snail]) -> usize {
     input
         .iter()
