@@ -29,7 +29,7 @@ fn parse_snail(s: &str) -> (Snail, &str) {
             assert_eq!(s.as_bytes().get(0), Some(&b','));
             let (b, s) = parse_snail(&s[1..]);
             assert_eq!(s.as_bytes().get(0), Some(&b']'));
-            let ans = Snail::new_pair(a,b);
+            let ans = Snail::new_pair(a, b);
             (ans, &s[1..])
         }
         c => (
@@ -135,7 +135,7 @@ impl Snail {
             }
         }
     }
-    fn add_to_left_edge(&mut self,  val: usize) {
+    fn add_to_left_edge(&mut self, val: usize) {
         match self {
             Self::Leaf(n) => {
                 *n += val;
