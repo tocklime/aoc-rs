@@ -298,3 +298,5 @@ mod snailtest {
         }
     }
 }
+
+//TODO: study https://github.com/erikaderstedt/aoc-2020/blob/9248a45c5ca0b6bfe8887c6cabf54f0e074511b5/src/days_2021/day18.rs
