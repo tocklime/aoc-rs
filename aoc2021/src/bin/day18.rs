@@ -1,8 +1,10 @@
+use itertools::chain;
+use rayon::prelude::*;
 use std::{fmt::Display, ops::Add, str::FromStr};
 
 use aoc_harness::*;
 
-aoc_main!(2021 day 18, generator lines::<Snail>, part1 [p1] => 4641, part2 [p2] => 4624, example part1 EG => 4140);
+aoc_main!(2021 day 18, generator lines::<Snail>, part1 [p1] => 4641, part2 [p2,p2_parallel] => 4624, example part1 EG => 4140, example part2 EG => 3993);
 
 const EG: &str = "[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
 [[[5,[2,8]],4],[5,[[9,9],0]]]
@@ -180,6 +182,19 @@ fn p1(input: &[Snail]) -> usize {
         .reduce(|item, accum| item + accum)
         .unwrap()
         .magnitude()
+}
+fn p2_parallel(input: &[Snail]) -> usize {
+    let l = input.len();
+    (0..l)
+        .into_par_iter()
+        .map(|x| {
+            chain!(0..x, x + 1..l)
+                .map(|y| (input[x].clone() + input[y].clone()).magnitude())
+                .max()
+                .unwrap()
+        })
+        .max()
+        .unwrap()
 }
 fn p2(input: &[Snail]) -> usize {
     input
