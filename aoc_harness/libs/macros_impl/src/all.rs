@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use itertools::Itertools;
 use proc_macro2::{Literal, TokenStream};
 use quote::{format_ident, quote};
 use syn::{parse::Parse, Token};
@@ -33,7 +34,8 @@ impl AocAllMainInput {
             .read_dir()
             .expect("Can't read dir")
             .map(|x| x.unwrap().file_name().to_str().unwrap().to_owned())
-            .filter(|x| x.starts_with(prefix));
+            .filter(|x| x.starts_with(prefix))
+            .sorted();
         for f in fs {
             let short = format_ident!("{}", &f[..f.len() - 3]);
             mods.extend(quote! {
