@@ -27,6 +27,7 @@ dependencies = [
  "aoc_harness",
  "dotenv",
  "itertools",
+ "lazy_static",
  "nalgebra",
  "ndarray",
  "num",

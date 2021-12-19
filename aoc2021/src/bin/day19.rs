@@ -5,8 +5,8 @@ use std::{
 };
 
 use aoc_harness::*;
+use lazy_static::lazy_static;
 use nalgebra::{Matrix4, Vector4};
-use structopt::lazy_static;
 
 aoc_main!(2021 day 19, generator whole_input_is::<Day19>, both [p1] => (419,13210), example both EG => (79,3621));
 
@@ -38,11 +38,14 @@ impl FromStr for Day19 {
         Ok(Self { scanner_readings })
     }
 }
+lazy_static! {
+    static ref ALL_ROTATIONS: Vec<Matrix4<isize>> = all_rotation_matrices();
+}
 
 fn all_rotation_matrices() -> Vec<Matrix4<isize>> {
     let sin = [0, 1, 0, -1];
     let cos = [1, 0, -1, 0];
-    let mut ans = Vec::new();
+    let mut ans = HashSet::new();
     for a in 0..4 {
         for b in 0..4 {
             for c in 0..4 {
@@ -64,11 +67,11 @@ fn all_rotation_matrices() -> Vec<Matrix4<isize>> {
                     0,
                     1,
                 ]);
-                ans.push(m);
+                ans.insert(m);
             }
         }
     }
-    ans
+    ans.into_iter().collect()
 }
 
 struct PlacedScanners {
@@ -77,17 +80,17 @@ struct PlacedScanners {
 }
 
 fn try_find_mat(placed: &PlacedScanners, beacons: &[Vector4<isize>]) -> Option<Matrix4<isize>> {
-    let rotates = all_rotation_matrices();
-    for rotation in &rotates {
-        //lets assume rotation is correct.
-        //what is the most common difference between points?
-        let mut counts: HashMap<Vector4<isize>, usize> = HashMap::new();
-        for my_point in beacons {
+    //hashmap of (rotation_ix, difference) to count of instances.
+
+    let mut counts: Vec<HashMap<Vector4<isize>, usize>> = vec![HashMap::new(); 24];
+    for my_point in beacons {
+        for (r_ix, rotation) in ALL_ROTATIONS.iter().enumerate() {
             let r = rotation * my_point;
             for solid_point in &placed.beacons {
                 let d = solid_point - r;
-                *counts.entry(d).or_default() += 1;
-                if counts[&d] >= 12 {
+                let entry = counts[r_ix].entry(d).or_default();
+                *entry += 1;
+                if *entry >= 12 {
                     let mut ans = *rotation;
                     ans[(0, 3)] = d[0];
                     ans[(1, 3)] = d[1];
@@ -98,6 +101,19 @@ fn try_find_mat(placed: &PlacedScanners, beacons: &[Vector4<isize>]) -> Option<M
         }
     }
     None
+}
+fn find_biggest_distance_between_scanners(placed: &PlacedScanners) -> isize {
+    placed
+        .scanners
+        .iter()
+        .permutations(2)
+        .map(|v| {
+            (0..3)
+                .map(|d| max(v[0][(d, 3)], v[1][(d, 3)]) - min(v[0][(d, 3)], v[1][(d, 3)]))
+                .sum()
+        })
+        .max()
+        .unwrap()
 }
 
 fn p1(input: &Day19) -> (usize, isize) {
@@ -130,22 +146,10 @@ fn p1(input: &Day19) -> (usize, isize) {
         }
         to_place = try_later;
     }
-    let p1 = placed.beacons.len();
-
-    let p2 = placed
-        .scanners
-        .iter()
-        .permutations(2)
-        .map(|v| {
-            let xdist = max(v[0][(0, 3)], v[1][(0, 3)]) - min(v[0][(0, 3)], v[1][(0, 3)]);
-            let ydist = max(v[0][(1, 3)], v[1][(1, 3)]) - min(v[0][(0, 3)], v[1][(1, 3)]);
-            let zdist = max(v[0][(2, 3)], v[1][(2, 3)]) - min(v[0][(0, 3)], v[1][(2, 3)]);
-            xdist + ydist + zdist
-        })
-        .max()
-        .unwrap();
-
-    (p1, p2)
+    (
+        placed.beacons.len(),
+        find_biggest_distance_between_scanners(&placed),
+    )
 }
 
 const EG: &str = "--- scanner 0 ---
