@@ -11,4 +11,5 @@ pub mod numset;
 pub mod ocr;
 pub mod span;
 // pub mod spantree;
+pub mod imap;
 pub mod take_upto_n;
