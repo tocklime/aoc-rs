@@ -5,8 +5,10 @@ use std::{
 };
 
 use aoc_harness::*;
+use itertools::chain;
 use lazy_static::lazy_static;
 use nalgebra::{Matrix4, Vector4};
+use utils::imap::IMap;
 
 aoc_main!(2021 day 19, generator whole_input_is::<Day19>, both [p1] => (419,13210), example both EG => (79,3621));
 
@@ -78,77 +80,162 @@ struct PlacedScanners {
     scanners: Vec<Matrix4<isize>>,
     beacons: HashSet<Vector4<isize>>,
 }
-
-fn try_find_mat(placed: &PlacedScanners, beacons: &[Vector4<isize>]) -> Option<Matrix4<isize>> {
-    //hashmap of (rotation_ix, difference) to count of instances.
-
-    let mut counts: Vec<HashMap<Vector4<isize>, usize>> = vec![HashMap::new(); 24];
-    for my_point in beacons {
-        for (r_ix, rotation) in ALL_ROTATIONS.iter().enumerate() {
-            let r = rotation * my_point;
-            for solid_point in &placed.beacons {
-                let d = solid_point - r;
-                let entry = counts[r_ix].entry(d).or_default();
-                *entry += 1;
-                if *entry >= 12 {
-                    let mut ans = *rotation;
-                    ans[(0, 3)] = d[0];
-                    ans[(1, 3)] = d[1];
-                    ans[(2, 3)] = d[2];
-                    return Some(ans);
+const MATCH_REQUIREMENT: usize = 12;
+impl PlacedScanners {
+    fn matches_enough(&self, locations: impl Iterator<Item = Vector4<isize>>) -> bool {
+        let mut count = 0;
+        for x in locations {
+            if self.beacons.contains(&x) {
+                count += 1;
+                if count == 12 {
+                    return true;
                 }
             }
         }
+        false
     }
-    None
+    fn try_insert(&mut self, locations: &[Vector4<isize>]) -> bool {
+        let match_count = locations
+            .iter()
+            .filter(|x| self.beacons.contains(x))
+            .count();
+        if match_count >= MATCH_REQUIREMENT {
+            self.beacons.extend(locations);
+            true
+        } else {
+            false
+        }
+    }
+    fn find_biggest_distance_between_scanners(&self) -> isize {
+        self.scanners
+            .iter()
+            .combinations(2)
+            .map(|v| {
+                (0..3)
+                    .map(|d| max(v[0][(d, 3)], v[1][(d, 3)]) - min(v[0][(d, 3)], v[1][(d, 3)]))
+                    .sum()
+            })
+            .max()
+            .unwrap()
+    }
+    #[allow(dead_code)]
+    fn try_find_mat_slow(&self, beacons: &[Vector4<isize>]) -> Option<Matrix4<isize>> {
+        //hashmap of (rotation_ix, difference) to count of instances.
+        let mut counts: Vec<HashMap<Vector4<isize>, usize>> = vec![HashMap::new(); 24];
+        for my_point in beacons {
+            for (r_ix, rotation) in ALL_ROTATIONS.iter().enumerate() {
+                let r = rotation * my_point;
+                for solid_point in &self.beacons {
+                    let d = solid_point - r;
+                    let entry = counts[r_ix].entry(d).or_default();
+                    *entry += 1;
+                    if *entry >= 12 {
+                        let mut ans = *rotation;
+                        ans[(0, 3)] = d[0];
+                        ans[(1, 3)] = d[1];
+                        ans[(2, 3)] = d[2];
+                        return Some(ans);
+                    }
+                }
+            }
+        }
+        None
+    }
+    fn suggest_dimension_translations(
+        &self,
+        dim: usize,
+        beacons: &[Vector4<isize>],
+    ) -> Vec<([isize; 3], isize)> {
+        //hashmap of (rotation_ix, difference) to count of instances.
+        let mut counts: Vec<IMap<usize>> = vec![IMap::with_elem(3000, 0); ALL_DIM_FLIPS.len()];
+        let mut ans = Vec::new();
+        for my_point in beacons {
+            for (flip_ix, flip) in ALL_DIM_FLIPS.iter().enumerate() {
+                let me: isize = (0..3).map(|x| my_point[x] * flip[x]).sum();
+                for solid_point in &self.beacons {
+                    let diff = solid_point[dim] - me;
+                    {
+                        let entry = &mut counts[flip_ix][diff];
+                        *entry += 1;
+                        if *entry == 12 {
+                            ans.push((*flip, diff));
+                        }
+                    }
+                }
+            }
+        }
+        ans
+    }
+    fn try_find_mat_dimensionwise(&self, beacons: &[Vector4<isize>]) -> Option<Matrix4<isize>> {
+        let suggestions = (0..3).map(|d| self.suggest_dimension_translations(d, beacons));
+        // println!("s counts: {:?}", suggestions.iter().map(std::vec::Vec::len).collect_vec());
+        for s in suggestions.multi_cartesian_product() {
+            //1: do the flips match?
+            let dims = s
+                .iter()
+                .map(|(f, _)| f.iter().position(|&x| x != 0).unwrap())
+                .sorted()
+                .collect_vec();
+            if dims == [0, 1, 2] {
+                //2. does the thing match enough?
+                let mat = chain!(
+                    s[0].0,
+                    [s[0].1],
+                    s[1].0,
+                    [s[1].1],
+                    s[2].0,
+                    [s[2].1],
+                    [0, 0, 0, 1]
+                );
+                let matrix = Matrix4::from_iterator(mat).transpose();
+                // println!("Mat: {}", matrix);
+                if self.matches_enough(beacons.iter().map(|b| matrix * b)) {
+                    return Some(matrix);
+                }
+            }
+        }
+        None
+    }
 }
-fn find_biggest_distance_between_scanners(placed: &PlacedScanners) -> isize {
-    placed
-        .scanners
-        .iter()
-        .permutations(2)
-        .map(|v| {
-            (0..3)
-                .map(|d| max(v[0][(d, 3)], v[1][(d, 3)]) - min(v[0][(d, 3)], v[1][(d, 3)]))
-                .sum()
-        })
-        .max()
-        .unwrap()
-}
+
+const ALL_DIM_FLIPS: [[isize; 3]; 6] = [
+    [1, 0, 0],
+    [-1, 0, 0],
+    [0, 1, 0],
+    [0, -1, 0],
+    [0, 0, 1],
+    [0, 0, -1],
+];
 
 fn p1(input: &Day19) -> (usize, isize) {
     let mut i = input.scanner_readings.iter();
     let first = i.next().unwrap();
-    let matrix_id: Matrix4<isize> = Matrix4::identity();
     let mut placed = PlacedScanners {
-        scanners: vec![matrix_id],
-        beacons: first.iter().cloned().collect(),
+        scanners: vec![Matrix4::identity()],
+        beacons: first.iter().copied().collect(),
     };
-    // let mut unplacable = Vec::new();
     let mut to_place = i.collect_vec();
     while !to_place.is_empty() {
         let mut try_later = Vec::new();
+        let len_before = to_place.len();
         for scanner in to_place {
-            let answer = try_find_mat(&placed, scanner);
+            let answer = placed.try_find_mat_dimensionwise(scanner);
             if let Some(answer) = answer {
-                let len_before = placed.beacons.len();
                 placed.scanners.push(answer);
-                for b in scanner {
-                    let t = answer * b;
-                    placed.beacons.insert(t);
+                let in_absolute = scanner.iter().map(|b| answer * b).collect_vec();
+                if !placed.try_insert(&in_absolute) {
+                    try_later.push(scanner);
                 }
-                let len_after = placed.beacons.len();
-                let inserted = scanner.len();
-                assert!(len_after <= len_before + inserted - 12);
             } else {
                 try_later.push(scanner);
             }
         }
         to_place = try_later;
+        assert!(to_place.len() < len_before);
     }
     (
         placed.beacons.len(),
-        find_biggest_distance_between_scanners(&placed),
+        placed.find_biggest_distance_between_scanners(),
     )
 }
 
