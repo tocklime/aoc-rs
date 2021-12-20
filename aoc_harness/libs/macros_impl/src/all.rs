@@ -43,7 +43,7 @@ impl AocAllMainInput {
             });
             inner.extend(quote! {
                 println!("{}", #f);
-                #short::main();
+                times.push(#short::run());
             });
         }
 
@@ -52,7 +52,14 @@ impl AocAllMainInput {
             #mods
             pub fn main() {
                 dotenv::dotenv().ok();
+                let mut times = Vec::new();
                 #inner
+
+                let total_time = times.iter().map(|x| x.total_time()).sum();
+                // for t in times {
+                //     println!("{}", t.output_line())
+                // }
+                println!("Total time: {}", aoc_harness::render_duration(total_time));
             }
         }
     }

@@ -1,5 +1,7 @@
 //Convenience re-exports
 
+pub mod dayresult;
+
 use std::{env, path::PathBuf, str::FromStr, time::Instant};
 
 pub use aoc_harness_macros::*;
