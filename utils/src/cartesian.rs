@@ -194,15 +194,15 @@ impl<T: Num + WrappingAdd + WrappingSub> Point<T> {
         T: Copy,
     {
         [
-            self.left().up(),
-            self.up(),
-            self.up().right(),
-            self.left(),
-            *self,
-            self.right(),
             self.down().left(),
             self.down(),
             self.right().down(),
+            self.left(),
+            *self,
+            self.right(),
+            self.left().up(),
+            self.up(),
+            self.up().right(),
         ]
     }
     pub fn neighbours_with_diagonals(&self) -> [Self; 8]

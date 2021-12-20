@@ -1,9 +1,9 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use aoc_harness::*;
-use utils::{aabb::Aabb, cartesian::Point};
+use utils::{aabb::Aabb, cartesian::Point, nums::NumBitExt};
 
-aoc_main!(2021 day 20, part1 [p1::<2>], part2 [p1::<50>], example part1 EG => 35);
+aoc_main!(2021 day 20, part1 [p1::<2>] => 5786, part2 [p1::<50>] => 16757, example both EG => (35,3351));
 
 const EG: &str = "..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#..#..##..###..######.###...####..#..#####..##..#.#####...##.#.#..#.##..#.#......#.###.######.###.####...#.##.##..#..#..#####.....#.#....###..#.##......#.....#..#..#..##..#...##.######.####.####.#.#...#.......#..#.#.#...####.##.#......#..#...##.#.##..#...##.#.##..###.#......#.#.......#.#.#.####.###.##...#.....####.#..#..#.##.#....##..#.####....##...##..#...#......#.#.......#.......##..####..#...#.#.#...##..#.#..###..#####........#..####......#..#
 
@@ -13,28 +13,48 @@ const EG: &str = "..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....
 ..#..
 ..###";
 
-fn step(map: &[bool; 512], lit: &HashSet<Point<isize>>, outside: bool) -> HashSet<Point<isize>> {
-    let mut ans = HashSet::new();
-    let bb1: Aabb<isize> = lit.iter().collect();
-    let mut bb2 = bb1;
-    bb2.top_right += Point::new(1, 1);
-    bb2.bottom_left += Point::new(-1, -1);
-    for p in bb2.all_points() {
-        let ns = p.neighbours_and_self_with_diagonals_in_order();
-        let bools = ns
-            .iter()
-            .map(|n| lit.contains(n) || (outside && !bb1.contains(n)))
-            .collect_vec();
-        let n = bools
-            .iter()
-            .fold(0_usize, |acc, n| acc << 1 | usize::from(*n));
-        // dbg!(p, bools, n);
-        let is_set = map[n];
-        if is_set {
-            ans.insert(p);
+struct Picture<'a> {
+    rules: &'a [bool; 512],
+    set: HashSet<Point<isize>>,
+    infinite_value: bool,
+    bb: Aabb<isize>,
+}
+impl<'a> Picture<'a> {
+    fn is_lit(&self, p: &Point<isize>) -> bool {
+        if self.bb.contains(p) {
+            self.set.contains(p)
+        } else {
+            self.infinite_value
         }
     }
-    ans
+    fn step1(&self) -> Self {
+        let mut bb = self.bb;
+        let new_inf_value = if self.infinite_value {
+            self.rules[511]
+        } else {
+            self.rules[0]
+        };
+        bb.top_right += Point::new(1, 1);
+        bb.bottom_left += Point::new(-1, -1);
+        let set = bb
+            .all_points()
+            .filter(|p| {
+                let n = p
+                    .neighbours_and_self_with_diagonals_in_order()
+                    .iter()
+                    .map(|n| self.is_lit(n))
+                    .fold(0_usize, |acc, n| acc << 1 | usize::from(n));
+                // dbg!(p, bools, n);
+                self.rules[n]
+            })
+            .collect();
+        Self {
+            rules: self.rules,
+            set,
+            infinite_value: new_inf_value,
+            bb,
+        }
+    }
 }
 fn p1<const ITER: usize>(input: &str) -> usize {
     let mut map = [false; 512];
@@ -42,17 +62,22 @@ fn p1<const ITER: usize>(input: &str) -> usize {
     s.next().unwrap().chars().enumerate().for_each(|(ix, c)| {
         map[ix] = c == '#';
     });
-    let char_map = utils::cartesian::as_point_map::<isize>(s.next().unwrap(), true);
-    let mut lit_set: HashSet<Point<isize>> = char_map
+    let char_map = utils::cartesian::as_point_map::<isize>(s.next().unwrap(), false);
+    let lit_set: HashSet<Point<isize>> = char_map
         .into_iter()
         .filter(|x| x.1 == '#')
         .map(|x| x.0)
         .collect();
-    let flip_hack = map[0];
-    for s in 0..ITER {
-        lit_set = step(&map, &lit_set, flip_hack && s % 2 == 1);
+    let bb: Aabb<isize> = lit_set.iter().collect();
+    let mut p = Picture {
+        rules: &map,
+        set: lit_set,
+        infinite_value: false,
+        bb,
+    };
+    for _ in 0..ITER {
+        // println!("{}", utils::cartesian::render_set_w(&p.set, '#', '.', true));
+        p = p.step1();
     }
-    lit_set.len()
+    p.set.len()
 }
-//10410: wrong.
-//5960 wrong
