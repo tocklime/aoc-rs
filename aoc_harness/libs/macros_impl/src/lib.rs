@@ -236,7 +236,7 @@ impl AocMainInput {
                     PartNum::Both => inner.extend(quote! {
                         results.expect_p1(expected.0);
                         results.expect_p2(expected.1);
-                    })
+                    }),
                 }
                 true
             }
@@ -256,9 +256,9 @@ impl AocMainInput {
                     let (t, a) = opts.time_fn(|| #f(&generated));
                 });
                 match part.part_num {
-                    PartNum::Part1 => inner.extend(quote!{ results.record_p1(a.clone(),t);}),
-                    PartNum::Part2 => inner.extend(quote!{ results.record_p2(a.clone(),t);}),
-                    PartNum::Both => inner.extend(quote! { results.record_both(a.clone(),t);})
+                    PartNum::Part1 => inner.extend(quote! { results.record_p1(a.clone(),t);}),
+                    PartNum::Part2 => inner.extend(quote! { results.record_p2(a.clone(),t);}),
+                    PartNum::Both => inner.extend(quote! { results.record_both(a.clone(),t);}),
                 }
                 if !do_ans_check || is_single_solution {
                     inner.extend(quote! {
