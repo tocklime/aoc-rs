@@ -1,7 +1,9 @@
-use std::collections::{HashMap, HashSet};
+use std::ops::IndexMut;
 
 use aoc_harness::*;
-use utils::{aabb::Aabb, cartesian::Point, nums::NumBitExt};
+
+use pathfinding::prelude::Grid;
+use utils::grid2d::{Grid2d, ICoord};
 
 aoc_main!(2021 day 20, part1 [p1::<2>] => 5786, part2 [p1::<50>] => 16757, example both EG => (35,3351));
 
@@ -15,45 +17,40 @@ const EG: &str = "..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....
 
 struct Picture<'a> {
     rules: &'a [bool; 512],
-    set: HashSet<Point<isize>>,
+    set: Grid2d<bool>,
     infinite_value: bool,
-    bb: Aabb<isize>,
 }
 impl<'a> Picture<'a> {
-    fn is_lit(&self, p: &Point<isize>) -> bool {
-        if self.bb.contains(p) {
-            self.set.contains(p)
-        } else {
-            self.infinite_value
+    fn is_lit(&self, p: ICoord) -> bool {
+        match self.set.get_i(p) {
+            Some(x) => *x,
+            None => self.infinite_value,
         }
     }
-    fn step1(&self) -> Self {
-        let mut bb = self.bb;
+    fn lit_next_time(&self, p: ICoord) -> bool {
+        //p is in the new base, not the old...
+        let n: usize = (p.0 - 1..=p.0 + 1)
+            .cartesian_product(p.1 - 1..=p.1 + 1)
+            .map(|p| self.is_lit(p))
+            .fold(0_usize, |acc, n| acc << 1 | usize::from(n));
+        self.rules[n]
+    }
+    fn step_into(&self, target: &mut Self) {
+        let (my, mx) = self.set.dim();
+        let new_dim = (my + 2, mx + 2);
+        target.set.grow_and_invalidate_all_data(new_dim, false);
+        for ((y, x), v) in target.set.indexed_iter_mut() {
+            *v = self.lit_next_time((
+                isize::try_from(y).unwrap() - 1,
+                isize::try_from(x).unwrap() - 1,
+            ));
+        }
         let new_inf_value = if self.infinite_value {
             self.rules[511]
         } else {
             self.rules[0]
         };
-        bb.top_right += Point::new(1, 1);
-        bb.bottom_left += Point::new(-1, -1);
-        let set = bb
-            .all_points()
-            .filter(|p| {
-                let n = p
-                    .neighbours_and_self_with_diagonals_in_order()
-                    .iter()
-                    .map(|n| self.is_lit(n))
-                    .fold(0_usize, |acc, n| acc << 1 | usize::from(n));
-                // dbg!(p, bools, n);
-                self.rules[n]
-            })
-            .collect();
-        Self {
-            rules: self.rules,
-            set,
-            infinite_value: new_inf_value,
-            bb,
-        }
+        target.infinite_value = new_inf_value;
     }
 }
 fn p1<const ITER: usize>(input: &str) -> usize {
@@ -62,22 +59,22 @@ fn p1<const ITER: usize>(input: &str) -> usize {
     s.next().unwrap().chars().enumerate().for_each(|(ix, c)| {
         map[ix] = c == '#';
     });
-    let char_map = utils::cartesian::as_point_map::<isize>(s.next().unwrap(), false);
-    let lit_set: HashSet<Point<isize>> = char_map
-        .into_iter()
-        .filter(|x| x.1 == '#')
-        .map(|x| x.0)
-        .collect();
-    let bb: Aabb<isize> = lit_set.iter().collect();
-    let mut p = Picture {
+    let set = Grid2d::from_str(s.next().unwrap(), |x| x == '#');
+    let mut a = Picture {
         rules: &map,
-        set: lit_set,
+        set,
         infinite_value: false,
-        bb,
     };
+    let mut b = Picture {
+        rules: &map,
+        set: Grid2d::from_elem((0, 0), false),
+        infinite_value: false,
+    };
+    let ar = &mut a;
+    let br = &mut b;
     for _ in 0..ITER {
-        // println!("{}", utils::cartesian::render_set_w(&p.set, '#', '.', true));
-        p = p.step1();
+        ar.step_into(br);
+        std::mem::swap(ar, br);
     }
-    p.set.len()
+    ar.set.iter().filter(|&&x| x).count()
 }

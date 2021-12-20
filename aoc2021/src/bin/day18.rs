@@ -90,9 +90,8 @@ impl Snail {
                 let r = c.1.get_value().unwrap();
                 *self = Self::Leaf(0);
                 return Some((l, r));
-            } else {
-                return None;
             }
+            return None;
         }
         match self {
             Self::Leaf(_) => None,

@@ -56,12 +56,12 @@ where
         let mut min_step = None;
         let mut max_step = 0;
         let mut in_range = true;
-        let (x, time_offset) = if x.signum() != target.0.signum() {
+        let (x, time_offset) = if x.signum() == target.0.signum() {
+            (x, 0)
+        } else {
             //we're firing in the wrong direction! (which we only do in the y direction)
             //first 2n steps will take us back to point zero with opposite velocity, so lets skip those.
             (-x, 2 * usize::try_from(x.abs()).unwrap())
-        } else {
-            (x, 0)
         };
         for (step, xp) in posses(x, check).enumerate() {
             in_range = xp >= target.0 && xp < target.1;

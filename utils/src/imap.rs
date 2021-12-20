@@ -15,9 +15,11 @@ impl<T: Copy> IMap<T> {
     }
 }
 impl<T: Default> IMap<T> {
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
+    #[must_use]
     pub fn with_capacity(n: usize) -> Self {
         Self {
             pos: Vec::with_capacity(n),
@@ -43,6 +45,7 @@ impl<T: Default> IMap<T> {
         }
     }
 
+    #[must_use]
     pub fn get(&self, index: isize) -> Option<&T> {
         let (ix, v) = self.to_ix_and_arr(index);
         v.get(ix)

@@ -13,12 +13,25 @@ pub struct Grid2d<T> {
 }
 
 pub type Coord = (usize, usize);
+pub type ICoord = (isize, isize);
 impl<T: Copy> Grid2d<T> {
     pub fn from_elem(size: Coord, elem: T) -> Self {
         Self {
             data: vec![elem; size.0 * size.1],
             size,
         }
+    }
+    pub fn from_fn<F>(size: Coord, mut f: F) -> Self
+    where
+        F: FnMut(Coord) -> T,
+    {
+        let mut data = Vec::with_capacity(size.0 * size.1);
+        for a in 0..size.0 {
+            for b in 0..size.1 {
+                data.push(f((a, b)));
+            }
+        }
+        Self { data, size }
     }
 }
 impl<T> Index<Coord> for Grid2d<T> {
@@ -44,6 +57,13 @@ impl<T: Display> Display for Grid2d<T> {
         Ok(())
     }
 }
+impl<T: Copy> Grid2d<T> {
+    pub fn grow_and_invalidate_all_data(&mut self, new_size: Coord, new_t: T) {
+        self.size = new_size;
+        let need_len = self.size.0 * self.size.1;
+        self.data.extend((self.data.len()..need_len).map(|_| new_t));
+    }
+}
 impl<T> Grid2d<T> {
     pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, T> {
         self.data.iter_mut()
@@ -65,6 +85,12 @@ impl<T> Grid2d<T> {
         }
     }
     #[must_use]
+    pub fn get_i(&self, p: ICoord) -> Option<&T> {
+        let y: usize = p.0.try_into().ok()?;
+        let x: usize = p.1.try_into().ok()?;
+        self.get((y, x))
+    }
+    #[must_use]
     pub fn dim(&self) -> Coord {
         self.size
     }
@@ -77,6 +103,34 @@ impl<T> Grid2d<T> {
             .iter()
             .enumerate()
             .map(|(x, v)| (x.div_mod_floor(&self.size.1), v))
+    }
+    pub fn indexed_iter_mut(&mut self) -> impl Iterator<Item = (Coord, &mut T)> {
+        self.data
+            .iter_mut()
+            .enumerate()
+            .map(|(x, v)| (x.div_mod_floor(&self.size.1), v))
+    }
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
+        self.data.iter()
+    }
+    #[must_use]
+    pub fn ordered_neighbours_with_self(&self, p: Coord) -> [Option<Coord>; 9] {
+        let s = self.dim();
+        let up = p.0.checked_sub(1);
+        let left = p.1.checked_sub(1);
+        let down = if p.0 + 1 == s.0 { None } else { Some(p.0 + 1) };
+        let right = if p.1 + 1 == s.1 { None } else { Some(p.1 + 1) };
+        [
+            up.and_then(|y| left.map(|x| (y, x))),
+            up.map(|y| (y, p.1)),
+            up.and_then(|y| right.map(|x| (y, x))),
+            left.map(|x| (p.0, x)),
+            Some(p),
+            right.map(|x| (p.0, x)),
+            down.and_then(|y| left.map(|x| (y, x))),
+            down.map(|y| (y, p.1)),
+            down.and_then(|y| right.map(|x| (y, x))),
+        ]
     }
     pub fn neighbours_with_diagonals(&'_ self, p: Coord) -> impl Iterator<Item = Coord> {
         let s = self.dim();
