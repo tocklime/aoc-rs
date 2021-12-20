@@ -382,10 +382,11 @@ impl AocMainInput {
                 use structopt::StructOpt;
                 use dotenv;
                 #[cfg(test)]
-                mod test {
+                mod autotests {
                     #[test]
                     fn full_solution() {
-                        super::run_with_opts(&aoc_harness::Opts::for_test(), true);
+                        let mut results = aoc_harness::dayresult::DayResult::new(#year,#day,file!());
+                        super::run_with_opts(&mut results, &aoc_harness::Opts::for_test(), true);
                     }
                     #[test]
                     pub fn examples() {
