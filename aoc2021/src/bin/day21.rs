@@ -1,8 +1,9 @@
-use std::{collections::HashMap, str::FromStr};
+use std::str::FromStr;
 
 use aoc_harness::*;
+use intmap::IntMap;
 
-aoc_main!(2021 day 21, generator whole_input_is::<Game>, part1 [p1] => 598416, part2 [p2], example part1 EG => 739_785, example part2 EG => 444_356_092_776_315);
+aoc_main!(2021 day 21, generator whole_input_is::<Game>, part1 [p1] => 598_416, part2 [p2] => 27_674_034_218_179, example part1 EG => 739_785, example part2 EG => 444_356_092_776_315);
 
 const EG: &str = "Player 1 starting position: 4
 Player 2 starting position: 8";
@@ -23,19 +24,26 @@ impl Game {
             target_score: 0,
         }
     }
-    fn increase(val: &mut u16, increase: u16, modulo: u16) -> u16 {
-        *val = (*val + increase) % modulo;
-        *val
+    fn as_int(&self) -> u64 {
+        //for p2, scores need 6 bits (16<21<32)
+        //and positions need 5 bits (8<10<16)
+        u64::from(self.scores[0])
+            | u64::from(self.scores[1]) << 6
+            | u64::from(self.positions[0]) << 12
+            | u64::from(self.positions[1]) << 17
     }
     fn take_turn(&mut self, roll: u16) -> Option<(usize, usize)> {
-        let p_ix = self.turn % 2;
+        let p_ix = 0;
         self.turn += 1;
-        let pos = Self::increase(&mut self.positions[p_ix], roll, 10);
+        self.positions[p_ix] = (self.positions[p_ix] + roll) % 10;
+        let pos = self.positions[p_ix];
         let score = if pos == 0 { 10 } else { pos };
-        self.scores[p_ix] += u16::from(score);
+        self.scores[p_ix] += score;
         if self.scores[p_ix] >= self.target_score {
             Some((p_ix, 3 * self.turn * usize::from(self.scores[1 - p_ix])))
         } else {
+            self.scores.swap(0, 1);
+            self.positions.swap(0, 1);
             None
         }
     }
@@ -58,46 +66,38 @@ fn p1(input: &Game) -> usize {
     let mut die = all_rolls.into_iter().map(std::iter::Iterator::sum);
     loop {
         let roll = die.next().unwrap();
-
         if let Some(x) = g.take_turn(roll) {
             return x.1;
         }
     }
 }
 
-//outcome of 3 dice:
-/*
-3 1
-4 3
-5 6
-6 7
-7 6
-8 3
-9 1
-*/
 const ROLLS: [(u16, usize); 7] = [(3, 1), (4, 3), (5, 6), (6, 7), (7, 6), (8, 3), (9, 1)];
-fn explore_from(g: &Game, weight: usize, cache: &mut HashMap<Game, [usize; 2]>) -> [usize; 2] {
-    if let Some(w) = cache.get(g) {
-        return [w[0] * weight, w[1] * weight];
-    }
+fn explore_from(g: &Game, weight: usize, cache: &mut IntMap<[usize; 2]>) -> [usize; 2] {
+    let n = g.as_int() % (1 << 23);
     let mut wins = [0, 0];
-    for (r, w) in ROLLS {
-        let mut g = g.clone();
-        if let Some((p, _)) = g.take_turn(r) {
-            wins[p] += w;
-        } else {
-            let w = explore_from(&g, w, cache);
-            wins[0] += w[0];
-            wins[1] += w[1];
+    if let Some(w) = cache.get(n) {
+        wins = *w;
+    } else {
+        for (r, w) in ROLLS {
+            let mut g = g.clone();
+            if let Some((p, _)) = g.take_turn(r) {
+                wins[p] += w;
+            } else {
+                let w = explore_from(&g, w, cache);
+                wins[0] += w[1];
+                wins[1] += w[0];
+            }
         }
+        cache.insert(n, wins);
     }
-    cache.insert(g.clone(), wins);
     [wins[0] * weight, wins[1] * weight]
 }
+
 fn p2(input: &Game) -> usize {
     let mut g = input.clone();
     g.target_score = 21;
-    let mut cache = HashMap::new();
-    let [a, b] = explore_from(&g, 1, &mut cache);
-    std::cmp::max(a, b)
+    let mut cache = IntMap::new();
+    let ws = explore_from(&g, 1, &mut cache);
+    ws.into_iter().max().unwrap()
 }

@@ -26,6 +26,7 @@ version = "0.1.0"
 dependencies = [
  "aoc_harness",
  "dotenv",
+ "intmap",
  "itertools",
  "lazy_static",
  "nalgebra",
@@ -296,6 +297,12 @@ checksum = "276ec31bcb4a9ee45f58bec6f9ec700ae4cf4f4f8f2fa7e06cb406bd5ffdd770"
 dependencies = [
  "num-traits",
 ]
+
+[[package]]
+name = "intmap"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae52f28f45ac2bc96edb7714de995cffc174a395fb0abf5bff453587c980d7b9"
 
 [[package]]
 name = "itertools"
