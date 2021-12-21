@@ -35,7 +35,7 @@ impl Game {
         self.turn += 1;
         self.positions[0] += roll;
         self.positions[0] %= 10;
-        self.scores[0] += PLACE_SCORES[usize::from(self.positions[0])];
+        self.scores[0] += self.positions[0] + 1;
         if self.scores[0] >= self.target_score {
             Some(3 * self.turn * usize::from(self.scores[1]))
         } else {
@@ -45,7 +45,6 @@ impl Game {
         }
     }
 }
-const PLACE_SCORES: [u16; 10] = [10, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 impl FromStr for Game {
     type Err = ();
 
@@ -54,14 +53,45 @@ impl FromStr for Game {
             .lines()
             .map(|x| x.split(": ").nth(1).unwrap().parse().unwrap())
             .collect_vec();
-        Ok(Self::new(p[0], p[1]))
+        Ok(Self::new(p[0] - 1, p[1] - 1))
+    }
+}
+struct DeterministicDie {
+    state: u16
+}
+impl DeterministicDie {
+    fn new() -> Self {
+        Self {state : 1}
+    }
+}
+impl Iterator for DeterministicDie {
+    type Item = u16;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.state {
+            98 => {
+                self.state = 1;
+                Some(98+99+100)
+            }
+            99 => {
+                self.state = 2;
+                Some(99+100+1)
+            }
+            100 => {
+                self.state = 3;
+                Some(100+1+2)
+            }
+            x => {
+                self.state += 3;
+                Some(x * 3 + 3)
+            }
+        }
     }
 }
 fn p1(input: &Game) -> usize {
     let mut g = input.clone();
     g.target_score = 1000;
-    let all_rolls = (1..=100).cycle().chunks(3);
-    let mut die = all_rolls.into_iter().map(std::iter::Iterator::sum);
+    let mut die = DeterministicDie::new();
     loop {
         let roll = die.next().unwrap();
         if let Some(x) = g.take_turn(roll) {
