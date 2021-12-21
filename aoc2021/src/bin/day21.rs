@@ -24,11 +24,12 @@ impl Game {
         }
     }
     fn as_int(&self) -> u16 {
-        //for p2, scores need 6 bits (16<21<32)
-        //and positions need 5 bits (8<10<16)
-        let n1 = self.scores[0] * 10 + (self.positions[0]);
-        let n2 = self.scores[1] * 10 + (self.positions[1]);
-        n1 | n2 << 8
+        //pack the game state into as few bits as possible,
+        //for caching.
+        let n1 = self.positions[0] * 20 + (self.scores[0]);
+        let n2 = self.positions[1] * 20 + (self.scores[1]);
+        //max here is 201 * (200)
+        n1 * 200 + n2
     }
     fn take_turn(&mut self, roll: u16) -> Option<usize> {
         self.turn += 1;
@@ -71,7 +72,7 @@ fn p1(input: &Game) -> usize {
 
 const ROLLS: [(u16, usize); 7] = [(3, 1), (4, 3), (5, 6), (6, 7), (7, 6), (8, 3), (9, 1)];
 fn explore_from(g: &Game, weight: usize, cache: &mut P2Cache) -> [usize; 2] {
-    let n: usize = g.as_int().into();
+    let n: usize = usize::from(g.as_int()) - 1;
     let mut wins = cache[n];
     if wins[0] == 0 && wins[1] == 0 {
         for (r, w) in ROLLS {
@@ -89,12 +90,12 @@ fn explore_from(g: &Game, weight: usize, cache: &mut P2Cache) -> [usize; 2] {
     [wins[0] * weight, wins[1] * weight]
 }
 
-type P2Cache = Box<[[usize; 2]; 1 << 16]>;
+type P2Cache = Vec<[usize; 2]>;
 
 fn p2(input: &Game) -> usize {
     let mut g = input.clone();
     g.target_score = 21;
-    let mut cache = Box::new([[0, 0]; 1 << 16]);
+    let mut cache = vec![[0, 0]; 201 * 200];
     let ws = explore_from(&g, 1, &mut cache);
     ws.into_iter().max().unwrap()
 }
