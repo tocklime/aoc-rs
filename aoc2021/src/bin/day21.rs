@@ -24,13 +24,12 @@ impl Game {
             target_score: 0,
         }
     }
-    fn as_int(&self) -> u64 {
+    fn as_int(&self) -> u16 {
         //for p2, scores need 6 bits (16<21<32)
         //and positions need 5 bits (8<10<16)
-        u64::from(self.scores[0])
-            | u64::from(self.scores[1]) << 6
-            | u64::from(self.positions[0]) << 12
-            | u64::from(self.positions[1]) << 17
+        let n1 = self.scores[0] * 10 + (self.positions[0]);
+        let n2 = self.scores[1] * 10 + (self.positions[1]);
+        n1 | n2 << 8
     }
     fn take_turn(&mut self, roll: u16) -> Option<(usize, usize)> {
         let p_ix = 0;
@@ -74,7 +73,7 @@ fn p1(input: &Game) -> usize {
 
 const ROLLS: [(u16, usize); 7] = [(3, 1), (4, 3), (5, 6), (6, 7), (7, 6), (8, 3), (9, 1)];
 fn explore_from(g: &Game, weight: usize, cache: &mut IntMap<[usize; 2]>) -> [usize; 2] {
-    let n = g.as_int() % (1 << 23);
+    let n: u64 = g.as_int().into();
     let mut wins = [0, 0];
     if let Some(w) = cache.get(n) {
         wins = *w;

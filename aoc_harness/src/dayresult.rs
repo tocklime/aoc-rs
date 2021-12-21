@@ -57,8 +57,8 @@ impl DayResult {
     }
     pub fn record_generator(&mut self, t: Duration) {
         match &self.generator_time {
-            Some(_) => panic!("{} multiple generators?", self.desc()),
-            None => self.generator_time = Some(t),
+            Some(a) if *a <= t => {}
+            _ => self.generator_time = Some(t),
         }
     }
     fn record_ans<T: Display>(slot: &mut Option<String>, ans: T) -> Result<(), String> {
