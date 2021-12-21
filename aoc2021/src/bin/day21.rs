@@ -33,12 +33,11 @@ impl Game {
     }
     fn take_turn(&mut self, roll: u16) -> Option<usize> {
         self.turn += 1;
-        self.positions[0] = (self.positions[0] + roll) % 10;
-        let pos = self.positions[0];
-        let score = if pos == 0 { 10 } else { pos };
-        self.scores[0] += score;
+        self.positions[0] += roll;
+        self.positions[0] %= 10;
+        self.scores[0] += PLACE_SCORES[usize::from(self.positions[0])];
         if self.scores[0] >= self.target_score {
-            Some(3 * self.turn * usize::from(self.scores[1 - 0]))
+            Some(3 * self.turn * usize::from(self.scores[1]))
         } else {
             self.scores.swap(0, 1);
             self.positions.swap(0, 1);
@@ -46,6 +45,7 @@ impl Game {
         }
     }
 }
+const PLACE_SCORES: [u16; 10] = [10, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 impl FromStr for Game {
     type Err = ();
 
