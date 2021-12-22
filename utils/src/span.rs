@@ -1,6 +1,7 @@
-use std::{cmp::{max, min, Ordering}, array::IntoIter, ops::Range};
-
-use num::Num;
+use std::{
+    cmp::{max, min, Ordering},
+    ops::Range,
+};
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug, Hash)]
 pub struct Span<T> {
@@ -34,9 +35,9 @@ impl<T: Eq + Ord + Copy> Span<T> {
     }
     pub fn intersection(&self, other: &Self) -> Option<Self> {
         let start = max(self.start, other.start);
-        let end = min(self.end,other.end);
+        let end = min(self.end, other.end);
         if start <= end {
-            Some(Self{start,end})
+            Some(Self { start, end })
         } else {
             None
         }
@@ -72,22 +73,22 @@ impl<T: Eq + Ord + Copy> Span<T> {
         match self.collide_with(other) {
             CollisionType::Equal => vec![*self],
             CollisionType::Before(_) => vec![*self],
-            CollisionType::OverlapsStart(a, b, _) => vec![a,b],
-            CollisionType::StrictlyBigger(a, b, c) => vec![a,b,c],
+            CollisionType::OverlapsStart(a, b, _) => vec![a, b],
+            CollisionType::StrictlyBigger(a, b, c) => vec![a, b, c],
             CollisionType::StrictlySmaller(_, b, _) => vec![b],
-            CollisionType::OverlapsEnd(_, b, c) => vec![b,c],
-            CollisionType::After(_) => vec![*self]
+            CollisionType::OverlapsEnd(_, b, c) => vec![b, c],
+            CollisionType::After(_) => vec![*self],
         }
     }
     pub fn subtract(&self, other: &Self) -> Vec<Self> {
         match self.collide_with(other) {
             CollisionType::Equal => vec![],
             CollisionType::Before(_) => vec![*self],
-            CollisionType::OverlapsStart(a, b, _) => vec![a,b],
-            CollisionType::StrictlyBigger(a, _, c) => vec![a,c],
+            CollisionType::OverlapsStart(a, b, _) => vec![a, b],
+            CollisionType::StrictlyBigger(a, _, c) => vec![a, c],
             CollisionType::StrictlySmaller(_, _, _) => vec![],
-            CollisionType::OverlapsEnd(_, b, c) => vec![b,c],
-            CollisionType::After(_) => vec![*self]
+            CollisionType::OverlapsEnd(_, b, c) => vec![b, c],
+            CollisionType::After(_) => vec![*self],
         }
     }
 
