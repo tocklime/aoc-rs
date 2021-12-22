@@ -1,4 +1,6 @@
-use std::cmp::{max, min, Ordering};
+use std::{cmp::{max, min, Ordering}, array::IntoIter, ops::Range};
+
+use num::Num;
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
 pub struct Span<T> {
@@ -16,6 +18,20 @@ pub enum CollisionType<T> {
     After(Span<T>),
 }
 
+impl IntoIterator for Span<isize> {
+    type Item = isize;
+
+    type IntoIter = Range<isize>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.start..self.end
+    }
+}
+impl Span<isize> {
+    fn iter(&self) -> impl Iterator<Item=isize> {
+        self.start..self.end
+    }
+}
 impl<T: Eq + Ord + Copy> Span<T> {
     pub fn new(start: T, end: T) -> Self {
         assert!(start <= end);
@@ -31,8 +47,46 @@ impl<T: Eq + Ord + Copy> Span<T> {
         candidate >= self.start && candidate < self.end
     }
     pub fn intersects(&self, other: &Self) -> bool {
-        !(self.end <= other.start || other.end <= self.start)
+        !self.is_disjoint(other)
     }
+    pub fn is_disjoint(&self, other: &Self) -> bool {
+        self.end <= other.start || other.end <= self.start
+    }
+    pub fn is_entirely_within(&self, other: &Self) -> bool {
+        match self.collide_with(other) {
+            CollisionType::Equal => true,
+            CollisionType::Before(_) => false,
+            CollisionType::OverlapsStart(_, _, _) => false,
+            CollisionType::StrictlyBigger(_, _, _) => false,
+            CollisionType::StrictlySmaller(_, _, _) => true,
+            CollisionType::OverlapsEnd(_, _, _) => false,
+            CollisionType::After(_) => false,
+        }
+    }
+
+    pub fn cut_by(&self, other: &Self) -> Vec<Self> {
+        match self.collide_with(other) {
+            CollisionType::Equal => vec![*self],
+            CollisionType::Before(_) => vec![*self],
+            CollisionType::OverlapsStart(a, b, _) => vec![a,b],
+            CollisionType::StrictlyBigger(a, b, c) => vec![a,b,c],
+            CollisionType::StrictlySmaller(_, b, _) => vec![b],
+            CollisionType::OverlapsEnd(_, b, c) => vec![b,c],
+            CollisionType::After(_) => vec![*self]
+        }
+    }
+    pub fn subtract(&self, other: &Self) -> Vec<Self> {
+        match self.collide_with(other) {
+            CollisionType::Equal => vec![],
+            CollisionType::Before(_) => vec![*self],
+            CollisionType::OverlapsStart(a, b, _) => vec![a,b],
+            CollisionType::StrictlyBigger(a, _, c) => vec![a,c],
+            CollisionType::StrictlySmaller(_, _, _) => vec![],
+            CollisionType::OverlapsEnd(_, b, c) => vec![b,c],
+            CollisionType::After(_) => vec![*self]
+        }
+    }
+
     pub fn collide_with(&self, other: &Self) -> CollisionType<T> {
         match (
             self.start.cmp(&other.start),
