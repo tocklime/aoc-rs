@@ -1,9 +1,8 @@
-use std::{fmt::Display, cmp::max};
+use std::{cmp::max, fmt::Display};
 
 use itertools::Itertools;
 
 use crate::span::Span;
-
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Cube {
@@ -31,8 +30,8 @@ impl Display for Cube {
 }
 
 impl Cube {
-    pub fn new(s: [Span<isize>;3])-> Self {
-        Self {s}
+    pub fn new(s: [Span<isize>; 3]) -> Self {
+        Self { s }
     }
     pub fn size(&self) -> isize {
         self.s.iter().map(|z| max(0, z.end - z.start)).product()

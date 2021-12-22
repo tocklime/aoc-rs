@@ -57,11 +57,11 @@ impl FromStr for Game {
     }
 }
 struct DeterministicDie {
-    state: u16
+    state: u16,
 }
 impl DeterministicDie {
     fn new() -> Self {
-        Self {state : 1}
+        Self { state: 1 }
     }
 }
 impl Iterator for DeterministicDie {
@@ -71,15 +71,15 @@ impl Iterator for DeterministicDie {
         match self.state {
             98 => {
                 self.state = 1;
-                Some(98+99+100)
+                Some(98 + 99 + 100)
             }
             99 => {
                 self.state = 2;
-                Some(99+100+1)
+                Some(99 + 100 + 1)
             }
             100 => {
                 self.state = 3;
-                Some(100+1+2)
+                Some(100 + 1 + 2)
             }
             x => {
                 self.state += 3;

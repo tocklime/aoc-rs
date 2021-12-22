@@ -2,11 +2,10 @@ use std::{collections::HashMap, str::FromStr};
 
 use aoc_harness::*;
 use scan_fmt::scan_fmt;
-use utils::span::Span;
 use utils::cube::Cube;
+use utils::span::Span;
 
-
-aoc_main!(2021 day 22, generator lines::<X>, 
+aoc_main!(2021 day 22, generator lines::<X>,
     part1 [by_block::<20>, construction::<20>, region_weights::<20>] => 582644, example part1 EG => 39, 
     part2 [by_block::<420>, construction::<420>, region_weights::<420>] => 1263804707062415);
 
@@ -39,12 +38,11 @@ impl FromStr for X {
         .unwrap();
         Ok(Self {
             target_state: s == "on",
-            cube: Cube::new(
-                [
-                    Span::new(x1, x2 + 1),
-                    Span::new(y1, y2 + 1),
-                    Span::new(z1, z2 + 1),
-                ]),
+            cube: Cube::new([
+                Span::new(x1, x2 + 1),
+                Span::new(y1, y2 + 1),
+                Span::new(z1, z2 + 1),
+            ]),
         })
     }
 }
@@ -53,7 +51,7 @@ fn volume_remaining(me: &Cube, future: &[Cube], depth: usize) -> isize {
     let mut my_vol = me.size();
     let filtered_future = future
         .iter()
-        .filter_map(|x| me.intersection(&x))
+        .filter_map(|x| me.intersection(x))
         .collect_vec();
     for ix in 0..filtered_future.len() {
         my_vol -= volume_remaining(&filtered_future[ix], &filtered_future[ix + 1..], depth + 1);
