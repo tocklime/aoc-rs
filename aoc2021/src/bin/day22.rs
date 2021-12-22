@@ -14,9 +14,7 @@ on x=10..10,y=10..10,z=10..10";
 #[derive(Debug, Clone, Copy)]
 struct X {
     target_state: bool,
-    x: Span<isize>,
-    y: Span<isize>,
-    z: Span<isize>,
+    s: [Span<isize>; 3],
 }
 
 impl Display for X {
@@ -24,12 +22,12 @@ impl Display for X {
         f.write_fmt(format_args!(
             "{} x={}..{},y={}..{},z={}..{} ({})",
             if self.target_state { "on" } else { "off" },
-            self.x.start,
-            self.x.end,
-            self.y.start,
-            self.y.end,
-            self.z.start,
-            self.z.end,
+            self.s[0].start,
+            self.s[0].end,
+            self.s[1].start,
+            self.s[1].end,
+            self.s[2].start,
+            self.s[2].end,
             self.size()
         ))
     }
@@ -38,35 +36,28 @@ impl Display for X {
 impl X {
     fn size(&self) -> isize {
         [
-            self.z.end - self.z.start,
-            self.y.end - self.y.start,
-            self.x.end - self.x.start,
+            self.s[2].end - self.s[2].start,
+            self.s[1].end - self.s[1].start,
+            self.s[0].end - self.s[0].start,
         ]
         .iter()
         .product()
     }
+    fn intersects(&self, other: &Self) -> bool {
+        self.s.iter().zip(&other.s).all(|(a, b)| a.intersects(b))
+    }
     fn subtract(&self, other: &Self) -> Vec<Self> {
-        //subtract
         let mut ans = Vec::new();
-        if self.x.intersects(&other.x) && self.y.intersects(&other.y) && self.z.intersects(&other.z)
-        {
-            for x in self.x.cut_by(&other.x) {
-                for y in self.y.cut_by(&other.y) {
-                    for z in self.z.cut_by(&other.z) {
-                        if x.is_entirely_within(&other.x)
-                            && y.is_entirely_within(&other.y)
-                            && z.is_entirely_within(&other.z)
-                        {
-                            //no.
-                        } else {
-                            ans.push(Self {
-                                target_state: true,
-                                x,
-                                y,
-                                z,
-                            })
-                        }
-                    }
+        if self.intersects(other) {
+            for v in (0..3)
+                .map(|x| self.s[x].cut_by(&other.s[x]))
+                .multi_cartesian_product()
+            {
+                if v.iter().zip(&other.s).any(|(a, b)| a.is_disjoint(b)) {
+                    ans.push(Self {
+                        target_state: true,
+                        s: [v[0], v[1], v[2]],
+                    });
                 }
             }
         } else {
@@ -94,51 +85,25 @@ impl FromStr for X {
         .unwrap();
         Ok(Self {
             target_state: s == "on",
-            x: Span::new(x1, x2 + 1),
-            y: Span::new(y1, y2 + 1),
-            z: Span::new(z1, z2 + 1),
+            s: [
+                Span::new(x1, x2 + 1),
+                Span::new(y1, y2 + 1),
+                Span::new(z1, z2 + 1),
+            ],
         })
     }
 }
 
-fn solve<const ONLY_SMALL: bool> (input: &[X]) -> isize {
+fn solve<const ONLY_SMALL: bool>(input: &[X]) -> isize {
     let mut ons: Vec<X> = Vec::new();
     for i in input {
-        if ONLY_SMALL && i.x.start.abs() > 50 {
+        if ONLY_SMALL && i.s[0].start.abs() > 50 {
             continue;
         }
+        ons = ons.into_iter().flat_map(|x| x.subtract(i)).collect();
         if i.target_state {
-            //on. we want this, and everything in ons, that doesn't intersect this.
-            let mut new_ons = vec![*i];
-            for o in ons {
-                new_ons.extend(o.subtract(i));
-            }
-            ons = new_ons;
-        } else {
-            //off. take this away from everything.
-            ons = ons.into_iter().flat_map(|p: X| p.subtract(i)).collect();
+            ons.push(*i);
         }
     }
     ons.into_iter().map(|x| x.size()).sum()
 }
-#[cfg(test)]
-mod test {
-    use super::*;
-    #[test]
-    fn test_sub() {
-        let a: X = "on x=10..11,y=11..13,z=11..13".parse().unwrap();
-        let b: X = "off x=9..12,y=9..12,z=9..12".parse().unwrap();
-        let s = a.subtract(&b);
-        dbg!(&a, &b, &s);
-        assert!(s.len() > 0);
-        for x in &s {
-            println!("{}", x);
-        }
-        assert!(false);
-    }
-}
-/*
-on x=10..11,y=11..13,z=11..13 (4)
-subtract
-off x=9..12,y=9..12,z=9..12 (27)
-*/

@@ -27,11 +27,6 @@ impl IntoIterator for Span<isize> {
         self.start..self.end
     }
 }
-impl Span<isize> {
-    fn iter(&self) -> impl Iterator<Item=isize> {
-        self.start..self.end
-    }
-}
 impl<T: Eq + Ord + Copy> Span<T> {
     pub fn new(start: T, end: T) -> Self {
         assert!(start <= end);
