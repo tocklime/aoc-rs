@@ -1,10 +1,10 @@
-use std::{collections::HashSet, fmt::Display, str::FromStr};
+use std::{fmt::Display, str::FromStr};
 
 use aoc_harness::*;
 use scan_fmt::scan_fmt;
 use utils::span::Span;
 
-aoc_main!(2021 day 22, generator lines::<X>, part1 [p1] => 582644, example part1 EG => 39, part2 [p2]);
+aoc_main!(2021 day 22, generator lines::<X>, part1 [solve::<true>] => 582644, example part1 EG => 39, part2 [solve::<false>] => 1263804707062415);
 
 const EG: &str = "on x=10..12,y=10..12,z=10..12
 on x=11..13,y=11..13,z=11..13
@@ -74,21 +74,6 @@ impl X {
         }
         ans
     }
-    fn combine(&self, other: &Self) -> Vec<Self> {
-        //on X,
-        if self.target_state {
-            if other.target_state {
-                //union = self, + other - self.
-                let mut ans = other.subtract(self);
-                ans.push(*self);
-                ans
-            } else {
-                self.subtract(other)
-            }
-        } else {
-            vec![]
-        }
-    }
 }
 
 impl FromStr for X {
@@ -115,53 +100,13 @@ impl FromStr for X {
         })
     }
 }
-fn p1(input: &[X]) -> usize {
-    let mut on = HashSet::new();
-    // dbg!(input[0].combine(&input[2]));
+
+fn solve<const ONLY_SMALL: bool> (input: &[X]) -> isize {
     let mut ons: Vec<X> = Vec::new();
     for i in input {
-        if i.x.start <= 50 && i.x.start >= -50 {
-            if i.target_state {
-                //on. we want this, and everything in ons, that doesn't intersect this.
-                let mut new_ons = vec![*i];
-                for o in ons {
-                    new_ons.extend(o.subtract(i));
-                }
-                ons = new_ons;
-            } else {
-                //off. take this away from everything.
-                ons = ons.into_iter().flat_map(|p: X| p.subtract(i)).collect();
-            }
-            // for x in &ons {
-            //     // println!("  {}",x);
-            // }
-            // for o in &on {
-            //     println!("    {:?}",o);
-            // }
-            for x in i.x {
-                for y in i.y {
-                    for z in i.z {
-                        if i.target_state {
-                            on.insert((x, y, z));
-                        } else {
-                            on.remove(&(x, y, z));
-                        }
-                    }
-                }
-            }
-            assert_eq!(
-                on.len() as isize,
-                ons.iter().map(|x| x.size()).sum::<isize>()
-            );
+        if ONLY_SMALL && i.x.start.abs() > 50 {
+            continue;
         }
-    }
-    on.len()
-}
-
-fn p2(input: &[X]) -> isize {
-    let mut ons: Vec<X> = Vec::new();
-    for (ix, i) in input.iter().enumerate() {
-        println!("{} {}", ix, i);
         if i.target_state {
             //on. we want this, and everything in ons, that doesn't intersect this.
             let mut new_ons = vec![*i];
