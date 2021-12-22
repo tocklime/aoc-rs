@@ -2,7 +2,7 @@ use std::{cmp::{max, min, Ordering}, array::IntoIter, ops::Range};
 
 use num::Num;
 
-#[derive(Eq, PartialEq, Clone, Copy, Debug)]
+#[derive(Eq, PartialEq, Clone, Copy, Debug, Hash)]
 pub struct Span<T> {
     pub start: T,
     pub end: T,
@@ -31,6 +31,15 @@ impl<T: Eq + Ord + Copy> Span<T> {
     pub fn new(start: T, end: T) -> Self {
         assert!(start <= end);
         Self { start, end }
+    }
+    pub fn intersection(&self, other: &Self) -> Option<Self> {
+        let start = max(self.start, other.start);
+        let end = min(self.end,other.end);
+        if start <= end {
+            Some(Self{start,end})
+        } else {
+            None
+        }
     }
     pub fn union(&self, other: &Self) -> Self {
         Self {
