@@ -13,4 +13,5 @@ pub mod span;
 // pub mod spantree;
 pub mod cube;
 pub mod imap;
+pub mod path;
 pub mod take_upto_n;

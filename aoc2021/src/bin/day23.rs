@@ -3,9 +3,12 @@ use std::str::FromStr;
 use aoc_harness::*;
 
 use pathfinding::prelude::{astar, dijkstra};
-use utils::cartesian::Point;
+use utils::{cartesian::Point, path::run_dijkstra};
 
-aoc_main!(2021 day 23, generator whole_input_is::<X>, part1 [solve_astar::<false>, solve_dijkstra::<false>] => 15358, part2 [solve_astar::<true>, solve_dijkstra::<true>]=>51436, example part1 EG => 12521);
+aoc_main!(2021 day 23, generator whole_input_is::<X>, 
+        part1 [solve_astar::<false>, solve_dijkstra_no_path::<false>, solve_dijkstra_pathfinding::<false>] => 15358, 
+        part2 [solve_astar::<true>, solve_dijkstra_no_path::<true>, solve_dijkstra_pathfinding::<true>]=>51436, 
+        example part1 EG => 12521);
 
 const EG: &str = "#############
 #...........#
@@ -221,11 +224,20 @@ fn solve_astar<const PART2: bool>(input: &X) -> usize {
     x.1
 }
 
-fn solve_dijkstra<const PART2: bool>(input: &X) -> usize {
+fn solve_dijkstra_pathfinding<const PART2: bool>(input: &X) -> usize {
     let mut s = input.clone();
     if PART2 {
         s.part2_mod();
     }
     let x = dijkstra(&s, |x| x.moves(), |x| x.heuristic() == 0).unwrap();
     x.1
+}
+fn solve_dijkstra_no_path<const PART2: bool>(input: &X) -> usize {
+    let mut s = input.clone();
+    if PART2 {
+        s.part2_mod();
+    }
+    let x = run_dijkstra::<X, usize, _, _, _>(&s, &mut |x| x.moves(), &mut |x| x.heuristic() == 0)
+        .unwrap();
+    x
 }
