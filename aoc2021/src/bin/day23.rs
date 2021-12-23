@@ -3,6 +3,8 @@ use std::str::FromStr;
 use aoc_harness::*;
 
 use pathfinding::prelude::{astar, dijkstra};
+use smallvec::smallvec;
+use smallvec::SmallVec;
 use utils::cartesian::Point;
 
 aoc_main!(2021 day 23, generator whole_input_is::<X>, 
@@ -18,7 +20,7 @@ const EG: &str = "#############
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct X {
-    rooms: [Vec<usize>; 4],
+    rooms: [SmallVec<[usize; 4]>; 4],
     hallway: [Option<usize>; 11],
     room_depth: usize,
 }
@@ -216,11 +218,24 @@ impl FromStr for X {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let map = utils::cartesian::as_point_map::<usize>(s, false);
-        let mut rooms = [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
-        for r in 0..4 {
-            rooms[r].push((map[&Point::new(3 + 2 * r, 3)] as u32 - b'A' as u32) as usize);
-            rooms[r].push((map[&Point::new(3 + 2 * r, 2)] as u32 - b'A' as u32) as usize);
-        }
+        let rooms = [
+            smallvec![
+                (map[&Point::new(3, 3)] as u32 - b'A' as u32) as usize,
+                (map[&Point::new(3, 2)] as u32 - b'A' as u32) as usize,
+            ],
+            smallvec![
+                (map[&Point::new(5, 3)] as u32 - b'A' as u32) as usize,
+                (map[&Point::new(5, 2)] as u32 - b'A' as u32) as usize,
+            ],
+            smallvec![
+                (map[&Point::new(7, 3)] as u32 - b'A' as u32) as usize,
+                (map[&Point::new(7, 2)] as u32 - b'A' as u32) as usize,
+            ],
+            smallvec![
+                (map[&Point::new(9, 3)] as u32 - b'A' as u32) as usize,
+                (map[&Point::new(9, 2)] as u32 - b'A' as u32) as usize,
+            ],
+        ];
         let hallway = [None; 11];
         Ok(Self {
             hallway,
