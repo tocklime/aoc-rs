@@ -152,13 +152,13 @@ impl X {
                 let move_cost = Self::move_cost(*c).unwrap();
                 //i am in hallway, am only allowed to go to target room, and only if the path there is free
                 //and only if all things in that room are in target room.
-                match self.path_len(Location::Hallway(ix), Location::Room(target_room)) {
-                    Some(r) => Some((
-                        self.do_move(Location::Hallway(ix), Location::Room(target_room)),
-                        move_cost * r,
-                    )),
-                    None => None,
-                }
+                self.path_len(Location::Hallway(ix), Location::Room(target_room))
+                    .map(|r| {
+                        (
+                            self.do_move(Location::Hallway(ix), Location::Room(target_room)),
+                            move_cost * r,
+                        )
+                    })
             } else {
                 None
             }
@@ -171,13 +171,13 @@ impl X {
             if let Some(c) = v.last() {
                 let move_cost = Self::move_cost(*c).unwrap();
                 let costs = HALL_STOPS.iter().filter_map(|s| {
-                    match self.path_len(Location::Room(ix), Location::Hallway(*s)) {
-                        Some(c) => Some((
-                            self.do_move(Location::Room(ix), Location::Hallway(*s)),
-                            move_cost * c,
-                        )),
-                        None => None,
-                    }
+                    self.path_len(Location::Room(ix), Location::Hallway(*s))
+                        .map(|c| {
+                            (
+                                self.do_move(Location::Room(ix), Location::Hallway(*s)),
+                                move_cost * c,
+                            )
+                        })
                 });
                 ans.extend(costs);
             }
@@ -237,7 +237,5 @@ fn solve_dijkstra_no_path<const PART2: bool>(input: &X) -> usize {
     if PART2 {
         s.part2_mod();
     }
-    let x = run_dijkstra::<X, usize, _, _, _>(&s, &mut |x| x.moves(), &mut |x| x.heuristic() == 0)
-        .unwrap();
-    x
+    run_dijkstra(&s, &mut |x| x.moves(), &mut |x| x.heuristic() == 0).unwrap()
 }
