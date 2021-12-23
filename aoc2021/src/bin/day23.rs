@@ -85,7 +85,7 @@ impl X {
             .map(|(r_ix, x)| x.iter().take_while(|a| usize::from(**a) == r_ix).count())
             .collect_vec()
     }
-    fn heuristic(&self) -> usize {
+    fn static_costs(&self) -> usize {
         //if we could move everything home with no collisions, how much would it cost?
         let solved_counts = self.solved_counts();
         let mut hole_counts = solved_counts
@@ -253,5 +253,5 @@ fn solve<const PART2: bool>(input: &X) -> usize {
     if PART2 {
         start.part2_mod();
     }
-    start.heuristic() + dijkstra(&start, X::successors, X::success).unwrap().1
+    start.static_costs() + dijkstra(&start, X::successors, X::success).unwrap().1
 }
