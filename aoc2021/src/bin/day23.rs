@@ -1,15 +1,17 @@
+use std::cmp::max;
+use std::cmp::min;
 use std::str::FromStr;
 
 use aoc_harness::*;
 
-use pathfinding::prelude::{astar, dijkstra};
+use pathfinding::prelude::dijkstra;
 use smallvec::smallvec;
 use smallvec::SmallVec;
 use utils::cartesian::Point;
 
-aoc_main!(2021 day 23, generator whole_input_is::<X>, 
-        part1 [solve_astar::<false>,  solve_dijkstra::<false>] => 15358, 
-        part2 [solve_astar::<true>,  solve_dijkstra::<true>]=>51436, 
+aoc_main!(2021 day 23, generator whole_input_is::<X>,
+        part1 [solve::<false>] => 15358,
+        part2 [solve::<true>]=>51436,
         example part1 EG => 12521);
 
 const EG: &str = "#############
@@ -18,11 +20,39 @@ const EG: &str = "#############
   #A#D#C#A#
   #########";
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 struct X {
     rooms: [SmallVec<[u8; 4]>; 4],
     hallway: [u8; 11],
     room_depth: usize,
+}
+fn u8_to_char(x: u8) -> char {
+    match x {
+        0 => 'A',
+        1 => 'B',
+        2 => 'C',
+        3 => 'D',
+        EMPTY => '.',
+        _ => '?',
+    }
+}
+impl std::fmt::Debug for X {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = "\n".to_owned();
+        s += &self
+            .hallway
+            .iter()
+            .map(|&x| u8_to_char(x))
+            .collect::<String>();
+
+        for i in (0..self.room_depth).rev() {
+            s += "\n  ";
+            for r in self.rooms.iter() {
+                s += &format!("{} ", r.get(i).map(|&x| u8_to_char(x)).unwrap_or('.'));
+            }
+        }
+        f.write_str(&s)
+    }
 }
 const EMPTY: u8 = 99;
 #[derive(Debug)]
@@ -48,48 +78,35 @@ impl X {
                 r.len() == self.room_depth && r.iter().all(|c| usize::from(*c) == ix)
             })
     }
+    fn solved_counts(&self) -> Vec<usize> {
+        self.rooms
+            .iter()
+            .enumerate()
+            .map(|(r_ix, x)| x.iter().take_while(|a| usize::from(**a) == r_ix).count())
+            .collect_vec()
+    }
     fn heuristic(&self) -> usize {
         //if we could move everything home with no collisions, how much would it cost?
-        let mut hole_counts = self
-            .rooms
+        let solved_counts = self.solved_counts();
+        let mut hole_counts = solved_counts
             .iter()
-            .enumerate()
-            .map(|(r_ix, x)| {
-                self.room_depth - x.iter().take_while(|a| usize::from(**a) == r_ix).count()
-            })
+            .map(|&x| self.room_depth - x)
             .collect_vec();
-        let hallway_moves = self
-            .hallway
-            .iter()
-            .enumerate()
-            .map(|(ix, &c)| match c {
-                EMPTY => 0,
-                c => {
-                    let step_cost = Self::move_cost(c);
-                    let hall_target = usize::from(2 * c + 2);
-                    let s = abs_diff(hall_target, ix);
-                    let cusize = usize::from(c);
-                    let into_room = hole_counts[cusize];
-                    hole_counts[cusize] -= 1;
-                    (into_room + s) * step_cost
-                }
-            })
-            .sum::<usize>();
         let room_moves = self
             .rooms
             .iter()
             .enumerate()
-            .map(|(ix, v)| {
+            .map(|(room_ix, v)| {
                 v.iter()
                     .enumerate()
-                    .map(|(ix2, &c)| {
+                    .map(|(amph_ix, &c)| {
                         let step_cost = Self::move_cost(c);
                         let cu = usize::from(c);
-                        if cu == ix {
+                        if cu == room_ix && amph_ix < solved_counts[cu] {
                             0
                         } else {
-                            let out_of_this_room = ix2 + 1;
-                            let across_hall = abs_diff(ix, cu) * 2;
+                            let out_of_this_room = self.room_depth - amph_ix;
+                            let across_hall = abs_diff(room_ix, cu) * 2;
                             let into_room = hole_counts[cu];
                             hole_counts[cu] -= 1;
                             (out_of_this_room + across_hall + into_room) * step_cost
@@ -98,7 +115,7 @@ impl X {
                     .sum::<usize>()
             })
             .sum::<usize>();
-        hallway_moves + room_moves
+        room_moves
     }
     fn do_move(&self, from: Location, to: Location) -> Self {
         let mut new = self.clone();
@@ -116,48 +133,43 @@ impl X {
         }
         new
     }
+    fn hallway_dist(from: usize, to: usize) -> usize {
+        max(from, to) - min(from, to)
+    }
     fn path_len(&self, c: u8, from: Location, to: Location) -> Option<(Self, usize)> {
-        let (hall_pos, leave_room) = match from {
-            Location::Room(r) => (2 * r + 2, 1 + self.room_depth - self.rooms[r].len()),
-            Location::Hallway(a) => (a, 0),
+        let hallway_destination = usize::from(2 * c + 2);
+        let (h_from, h_to, cost) = match (&from, &to) {
+            (&Location::Room(r), &Location::Hallway(h)) => (
+                2 * r + 2,
+                h,
+                Self::hallway_dist(2 * r + 2, h) + Self::hallway_dist(h, hallway_destination)
+                    - Self::hallway_dist(2 * r + 2, hallway_destination),
+            ),
+            (&Location::Hallway(h), &Location::Room(r)) => (h, 2 * r + 2, 0),
+            (Location::Room(_), Location::Room(_)) => unreachable!(),
+            (Location::Hallway(_), Location::Hallway(_)) => unreachable!(),
         };
-        let hallway_target = match to {
-            Location::Room(r) => 2 * r + 2,
-            Location::Hallway(n) => n,
-        };
-        let hall_move = if hallway_target < hall_pos {
+        let blocked = if h_to < h_from {
             //going left.
-            let blocked = self.hallway[hallway_target..hall_pos]
-                .iter()
-                .any(|&x| x != EMPTY);
-            if blocked {
-                return None;
-            }
-            hall_pos - hallway_target
+            self.hallway[h_to..h_from].iter().any(|&x| x != EMPTY)
         } else {
             //going right.
-            let blocked = self.hallway[hall_pos + 1..=hallway_target]
-                .iter()
-                .any(|&x| x != EMPTY);
-            if blocked {
+            self.hallway[h_from + 1..=h_to].iter().any(|&x| x != EMPTY)
+        };
+        if blocked {
+            return None;
+        }
+        if let Location::Room(r) = to {
+            //can only move into a room if all amphipods in there are
+            //the right kind.
+            if self.rooms[r].iter().any(|&x| usize::from(x) != r) {
                 return None;
             }
-            hallway_target - hall_pos
-        };
-        let into_room = match to {
-            Location::Room(r) => {
-                if self.rooms[r].iter().any(|&x| usize::from(x) != r) {
-                    return None;
-                }
-                self.room_depth.checked_sub(self.rooms[r].len())?
-            }
-            Location::Hallway(_) => 0,
+            //checked sub here to check room isn't full.
+            self.room_depth.checked_sub(self.rooms[r].len())?;
         };
         let step_cost = Self::move_cost(c);
-        Some((
-            self.do_move(from, to),
-            step_cost * (leave_room + hall_move + into_room),
-        ))
+        Some((self.do_move(from, to), step_cost * cost))
     }
     fn successors(&self) -> Vec<(Self, usize)> {
         //try moving hall to room.
@@ -173,26 +185,19 @@ impl X {
                 }
             }
         }
-        //try moving direct from room to room.
-        for (ix, x) in self.rooms.iter().enumerate() {
-            if let Some(&top) = x.last() {
-                let topu = usize::from(top);
-                if topu != ix {
-                    if let Some(p) = self.path_len(top, Location::Room(ix), Location::Room(topu)) {
-                        return vec![p];
-                    }
-                }
-            }
-        }
         //otherwise we need to unpack something from room to hallway.
         let mut ans = Vec::new();
-        for (ix, v) in self.rooms.iter().enumerate() {
+        let solved_counts = self.solved_counts();
+        for (room_ix, v) in self.rooms.iter().enumerate() {
             const HALL_STOPS: [usize; 7] = [0, 1, 3, 5, 7, 9, 10];
+            if solved_counts[room_ix] == v.len() {
+                continue;
+            }
             //can only move last in room.
             if let Some(&c) = v.last() {
-                let costs = HALL_STOPS
-                    .iter()
-                    .filter_map(|s| self.path_len(c, Location::Room(ix), Location::Hallway(*s)));
+                let costs = HALL_STOPS.iter().filter_map(|s| {
+                    self.path_len(c, Location::Room(room_ix), Location::Hallway(*s))
+                });
                 ans.extend(costs);
             }
         }
@@ -242,20 +247,11 @@ impl FromStr for X {
         })
     }
 }
-fn solve_astar<const PART2: bool>(input: &X) -> usize {
-    let mut start = input.clone();
-    if PART2 {
-        start.part2_mod();
-    }
-    astar(&start, X::successors, X::heuristic, X::success)
-        .unwrap()
-        .1
-}
 
-fn solve_dijkstra<const PART2: bool>(input: &X) -> usize {
+fn solve<const PART2: bool>(input: &X) -> usize {
     let mut start = input.clone();
     if PART2 {
         start.part2_mod();
     }
-    dijkstra(&start, X::successors, X::success).unwrap().1
+    start.heuristic() + dijkstra(&start, X::successors, X::success).unwrap().1
 }
