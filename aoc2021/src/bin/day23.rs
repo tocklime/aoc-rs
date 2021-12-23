@@ -2,10 +2,10 @@ use std::str::FromStr;
 
 use aoc_harness::*;
 
-use pathfinding::directed::dijkstra;
+use pathfinding::prelude::{astar, dijkstra};
 use utils::cartesian::Point;
 
-aoc_main!(2021 day 23, generator whole_input_is::<X>, part1 [p1], part2 [p2], example part1 EG => 12521);
+aoc_main!(2021 day 23, generator whole_input_is::<X>, part1 [solve_astar::<false>, solve_dijkstra::<false>] => 15358, part2 [solve_astar::<true>, solve_dijkstra::<true>]=>51436, example part1 EG => 12521);
 
 const EG: &str = "#############
 #...........#
@@ -23,6 +23,13 @@ struct X {
 enum Location {
     Room(usize),
     Hallway(usize),
+}
+fn abs_diff(a: usize, b: usize) -> usize {
+    if a > b {
+        a - b
+    } else {
+        b - a
+    }
 }
 impl X {
     fn move_cost(c: char) -> Option<usize> {
@@ -42,6 +49,47 @@ impl X {
             'D' => 3,
             _ => unreachable!(),
         }
+    }
+    fn heuristic(&self) -> usize {
+        //if we could move everything home with no collisions, how much would it cost?
+        let mut ans = 0;
+        ans += self
+            .hallway
+            .iter()
+            .enumerate()
+            .map(|(ix, c)| match c {
+                Some(c) => {
+                    let target = Self::target_room(*c);
+                    let step_cost = Self::move_cost(*c).unwrap();
+                    let hall_target = 2 * target + 2;
+                    let s = abs_diff(hall_target, ix);
+                    s * step_cost
+                }
+                None => 0,
+            })
+            .sum::<usize>();
+        ans += self
+            .rooms
+            .iter()
+            .enumerate()
+            .map(|(ix, v)| {
+                v.iter()
+                    .enumerate()
+                    .map(|(ix2, c)| {
+                        let target_room = Self::target_room(*c);
+                        let step_cost = Self::move_cost(*c).unwrap();
+                        if target_room == ix {
+                            0
+                        } else {
+                            let out_of_this_room = ix2 + 1;
+                            let across_hall = abs_diff(ix, target_room) * 2;
+                            (out_of_this_room + across_hall) * step_cost
+                        }
+                    })
+                    .sum::<usize>()
+            })
+            .sum::<usize>();
+        ans
     }
     fn do_move(&self, from: Location, to: Location) -> Self {
         let mut new = self.clone();
@@ -92,7 +140,7 @@ impl X {
         };
         Some(leave_room + hall_move + into_room)
     }
-    fn moves(&self) -> Vec<(Location, Location, usize)> {
+    fn moves(&self) -> Vec<(Self, usize)> {
         let mut ans = Vec::new();
         let from_hall = self.hallway.iter().enumerate().filter_map(|(ix, x)| {
             if let Some(c) = x {
@@ -103,8 +151,7 @@ impl X {
                 //and only if all things in that room are in target room.
                 match self.path_len(Location::Hallway(ix), Location::Room(target_room)) {
                     Some(r) => Some((
-                        Location::Hallway(ix),
-                        Location::Room(target_room),
+                        self.do_move(Location::Hallway(ix), Location::Room(target_room)),
                         move_cost * r,
                     )),
                     None => None,
@@ -122,7 +169,10 @@ impl X {
                 let move_cost = Self::move_cost(*c).unwrap();
                 let costs = HALL_STOPS.iter().filter_map(|s| {
                     match self.path_len(Location::Room(ix), Location::Hallway(*s)) {
-                        Some(c) => Some((Location::Room(ix), Location::Hallway(*s), move_cost * c)),
+                        Some(c) => Some((
+                            self.do_move(Location::Room(ix), Location::Hallway(*s)),
+                            move_cost * c,
+                        )),
                         None => None,
                     }
                 });
@@ -130,6 +180,17 @@ impl X {
             }
         }
         ans
+    }
+    fn part2_mod(&mut self) {
+        self.room_depth = 4;
+        self.rooms[0].insert(1, 'D');
+        self.rooms[0].insert(1, 'D');
+        self.rooms[1].insert(1, 'C');
+        self.rooms[1].insert(1, 'B');
+        self.rooms[2].insert(1, 'B');
+        self.rooms[2].insert(1, 'A');
+        self.rooms[3].insert(1, 'A');
+        self.rooms[3].insert(1, 'C');
     }
 }
 
@@ -151,76 +212,20 @@ impl FromStr for X {
         })
     }
 }
-fn p1(input: &X) -> usize {
+fn solve_astar<const PART2: bool>(input: &X) -> usize {
     let mut s = input.clone();
-    s.room_depth = 2;
-    let x = dijkstra::dijkstra(
-        &s,
-        |x| {
-            let options = x.moves();
-            let ans = options
-                .into_iter()
-                .map(|(f, t, c)| (x.do_move(f, t), c))
-                .collect_vec();
-            ans
-        },
-        |x| {
-            x.rooms.iter().enumerate().all(|(ix, r)| {
-                r.len() == x.room_depth && r.iter().all(|x| ix == X::target_room(*x))
-            })
-        },
-    )
-    .unwrap();
-    x.1
-}
-fn p2(input: &X) -> usize {
-    let mut s = input.clone();
-    s.room_depth = 4;
-    s.rooms[0].insert(1, 'D');
-    s.rooms[0].insert(1, 'D');
-    s.rooms[1].insert(1, 'C');
-    s.rooms[1].insert(1, 'B');
-    s.rooms[2].insert(1, 'B');
-    s.rooms[2].insert(1, 'A');
-    s.rooms[3].insert(1, 'A');
-    s.rooms[3].insert(1, 'C');
-
-    let x = dijkstra::dijkstra(
-        &s,
-        |x| {
-            let options = x.moves();
-            let ans = options
-                .into_iter()
-                .map(|(f, t, c)| (x.do_move(f, t), c))
-                .collect_vec();
-            ans
-        },
-        |x| {
-            x.rooms.iter().enumerate().all(|(ix, r)| {
-                r.len() == x.room_depth && r.iter().all(|x| ix == X::target_room(*x))
-            })
-        },
-    )
-    .unwrap();
-    dbg!(&x);
-    x.1
-}
-
-#[cfg(test)]
-mod test {
-    use aoc_harness::whole_input_is;
-
-    #[test]
-    fn test() {
-        let input = "
-#############
-#...........#
-###A#B#D#C###
-  #A#B#C#D#
-  #########";
-        let g = whole_input_is(input.trim());
-        let x = super::p1(&g);
-        assert_eq!(x, 4600);
+    if PART2 {
+        s.part2_mod();
     }
+    let x = astar(&s, |x| x.moves(), |z| z.heuristic(), |x| x.heuristic() == 0).unwrap();
+    x.1
 }
-//43450 toolow.
+
+fn solve_dijkstra<const PART2: bool>(input: &X) -> usize {
+    let mut s = input.clone();
+    if PART2 {
+        s.part2_mod();
+    }
+    let x = dijkstra(&s, |x| x.moves(), |x| x.heuristic() == 0).unwrap();
+    x.1
+}
