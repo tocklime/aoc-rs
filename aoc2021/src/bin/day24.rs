@@ -1,9 +1,11 @@
-use std::fmt::Debug;
+use std::{
+    cmp::{max, min},
+    fmt::Debug,
+};
 
 use aoc_harness::*;
-use pathfinding::prelude::{dfs, dijkstra};
 
-aoc_main!(2021 day 24, part1 [p1]);
+aoc_main!(2021 day 24, both [both] => (69914999975369, 14911675311114));
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct Alu {
@@ -98,6 +100,7 @@ impl Alu {
     }
 }
 
+#[allow(dead_code)]
 fn render_z(mut z: isize) -> String {
     let mut s = String::new();
     while z > 0 {
@@ -107,7 +110,29 @@ fn render_z(mut z: isize) -> String {
     }
     s
 }
-fn p1(input: &str) -> usize {
+fn read_constraints(input: &str) -> Vec<(usize, usize, isize)> {
+    let blocks = input.split("inp w");
+    let mut stack = Vec::new();
+    let mut ans = Vec::new();
+    for (ix, b) in blocks.filter(|x| !x.is_empty()).enumerate() {
+        let lines = b.lines().collect_vec();
+        if lines.is_empty() {
+            continue;
+        }
+        //is this a push or pop?
+        if lines[4] == "div z 1" {
+            //what difference do we push?
+            let diff: isize = lines[15].split(' ').nth(2).unwrap().parse().unwrap();
+            stack.push((ix, diff));
+        } else {
+            let diff2: isize = lines[5].split(' ').nth(2).unwrap().parse().unwrap();
+            let (ix1, diff1) = stack.pop().unwrap();
+            ans.push((ix, ix1, diff1 + diff2));
+        }
+    }
+    ans
+}
+fn both(input: &str) -> (isize, isize) {
     let s = Alu {
         wxyz: [0; 4],
         line: 0,
@@ -115,72 +140,34 @@ fn p1(input: &str) -> usize {
         state: AluState::Going,
     };
     let code = input.lines().collect_vec();
-    let mut a = s.clone();
-    //               1 2 3 5 7 8 9
-    //let s = [6, 9, 9, 4, 9, 9, 9];
-    let s = [1, 4, 9, 1, 7, 5, 3];
-    let full_seq = [
-        s[0],
-        s[1],
-        s[2],
-        s[2] - 8,
-        s[3],
-        s[3] + 5,
-        s[4],
-        s[5],
-        s[6],
-        s[6] - 2,
-        s[5] - 4,
-        s[4] - 6,
-        s[1] - 3,
-        s[0] + 3,
-    ];
-    for (ix, i) in full_seq.iter().enumerate() {
-        if *i >= 1 && *i <= 9 {
-            a.next_input = Some(*i);
-            a.run_to_input(&code);
-            println!("After {}: {}", i, render_z(a.read("z")));
-        } else {
-            panic!("Out of range at ix {}", ix);
-        }
-    }
-    dbg!(&full_seq);
-
-    let x = dijkstra(
-        &(0, 0),
-        |(z, line)| {
-            let mut v: Vec<((isize, usize), usize)> = (1..=9)
-                .rev()
-                .filter_map(|i| {
-                    // println!("{} {} {}", i, z, render_z(z));
-                    let mut a = Alu {
-                        wxyz: [0, 0, 0, *z],
-                        line: *line,
-                        next_input: Some(i),
-                        state: AluState::Going,
-                    };
-                    a.state = a.run_to_input(&code);
-                    match a.state {
-                        AluState::NeedsInput | AluState::Done => Some(((a.read("z"), a.line), 1)),
-                        AluState::Crashed => None,
-                        AluState::Going => unreachable!(),
-                    }
-                })
-                .collect_vec();
-            //prefer ones where z is smaller.
-            v.sort_by_key(|x| x.0 .0);
-            v
-        },
-        |(z, line)| {
-            if *line == code.len() {
-                // dbg!(choices, z, line);
-                // println!("z: {}", z);
-                *z == 0
-            } else {
-                false
+    let constraints = read_constraints(input);
+    let min_max = (0..14)
+        .map(|ix| {
+            for &(a, b, diff) in &constraints {
+                if a == ix {
+                    return (max(1, 1 + diff), min(9, 9 + diff));
+                } else if b == ix {
+                    return (max(1, 1 - diff), min(9, 9 - diff));
+                }
             }
-        },
-    );
-    dbg!(x);
-    0
+            panic!("unconstrained ix: {}", ix);
+        })
+        .collect_vec();
+    {
+        let mut min_alu = s.clone();
+        let mut max_alu = s;
+        for (min, max) in &min_max {
+            min_alu.next_input = Some(*min);
+            max_alu.next_input = Some(*max);
+            min_alu.run_to_input(&code);
+            max_alu.run_to_input(&code);
+        }
+        assert_eq!(min_alu.read("z"), 0);
+        assert_eq!(max_alu.read("z"), 0);
+    }
+    min_max.iter().fold((0, 0), |(max, min), &v| {
+        let min = min * 10 + v.0;
+        let max = max * 10 + v.1;
+        (max, min)
+    })
 }
