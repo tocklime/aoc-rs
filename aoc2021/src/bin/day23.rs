@@ -181,7 +181,11 @@ impl X {
                 //if i can do that, it is undoubtedly the best thing to do.
                 let cu = usize::from(c);
                 if let Some(r) = self.path_len(c, Location::Hallway(ix), Location::Room(cu)) {
-                    return vec![r];
+                    if r.0.success() {
+                        return vec![r];
+                    } else {
+                        return r.0.successors();
+                    }
                 }
             }
         }
