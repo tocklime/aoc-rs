@@ -6,6 +6,8 @@ use std::{
 use itertools::Itertools;
 use num::Integer;
 
+use crate::nums::{add_i, add_i_mod};
+
 #[derive(Debug, Clone)]
 pub struct Grid2d<T> {
     data: Vec<T>,
@@ -157,6 +159,21 @@ impl<T> Grid2d<T> {
         ]
         .into_iter()
         .filter(move |&x| x.0 < s.0 && x.1 < s.1)
+    }
+    pub fn wraparound_relative_lookup(&self, p: Coord, relative: ICoord) -> &T {
+        let d = self.dim();
+        let targety = add_i_mod(p.0, &relative.0, d.0);
+        let targetx = add_i_mod(p.1, &relative.1, d.1);
+        &self[(targety, targetx)]
+    }
+    pub fn wraparound_neighbours(&self, (y, x): Coord) -> [Coord; 4] {
+        let (sy, sx) = self.dim();
+        [
+            ((y + sy - 1) % sy, x),
+            (y, (x + sx - 1) % sx),
+            (y, (x + 1) % sx),
+            ((y + 1) % sy, x),
+        ]
     }
     pub fn to_string_with<F>(&self, disp: F) -> String
     where

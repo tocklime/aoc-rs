@@ -57,6 +57,18 @@ where
     result
 }
 
+pub fn add_i_mod<T: Num + Signed + TryInto<usize>>(u: usize, i: &T, modulo: usize) -> usize {
+    let i_as_u: usize = i.abs().try_into().ok().unwrap() % modulo;
+    if i.is_negative() {
+        if u >= i_as_u {
+            u - i_as_u
+        } else {
+            u + modulo - i_as_u
+        }
+    } else {
+        (u + i_as_u) % modulo
+    }
+}
 pub fn add_i<T: Num + Signed + TryInto<usize>>(u: usize, i: &T) -> usize {
     let i_as_u: usize = i.abs().try_into().ok().unwrap();
     if i.is_negative() {
