@@ -1,4 +1,7 @@
+use aoc_harness::aoc_main;
 use utils::intcode::Computer;
+
+aoc_main!(2019 day 21, part1 [p1] => 19359316, part2 [p2a] => 1141281622);
 
 pub fn go(input: &str, string_script: &str) -> Option<i32> {
     let mut c: Computer = input.parse().unwrap();
@@ -13,7 +16,7 @@ pub fn go(input: &str, string_script: &str) -> Option<i32> {
             None
         })
 }
-//#[aoc(day21, part1)]
+
 pub fn p1(input: &str) -> i32 {
     //(a+b+c)*D
     go(
@@ -30,7 +33,6 @@ WALK
     .unwrap_or(0)
 }
 
-//#[aoc(day21, part2)]
 pub fn p2a(input: &str) -> i32 {
     //Jump if there's a hole and we can either step or jump after.
     //(a + b + c) & D & (E + H)

@@ -1,7 +1,14 @@
 use aoc2019::utils::points::{as_point_map, Point};
+use aoc_harness::aoc_main;
 use std::cmp::min;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::hash::BuildHasher;
+
+aoc_main!(2019 day 18, part1 [p1] => 4204, part2 [p2] => 1682,
+        example part1 MAZ0 => 86,
+        example part1 MAZ1 => 132,
+        example part1 MAZ2 => 136
+);
 
 pub fn search2<S: BuildHasher>(
     map: &HashMap<Point, char, S>,
@@ -58,7 +65,7 @@ pub fn search<S: BuildHasher>(
                         && (here == &'.' || !min_dist_map.contains_key(&p2))
                         && (!here.is_uppercase() || keys.contains(&here.to_ascii_lowercase()))
                     {
-                        if here.is_lowercase() && !keys.contains(&here) {
+                        if here.is_lowercase() && !keys.contains(here) {
                             min_dist_map.insert(p2, (*here, (count + 1, p2)));
                         } else {
                             points.push_back((p2, count + 1));
@@ -74,14 +81,12 @@ pub fn search<S: BuildHasher>(
         .collect()
 }
 
-//#[aoc(day18, part1)]
 pub fn p1(input: &str) -> usize {
     let map = as_point_map(input);
     let at_sym = *map.iter().find(|(_, &v)| v == '@').expect("No @").0;
     solve(&map, &[at_sym])
 }
 
-//#[aoc(day18, part2)]
 pub fn p2(input: &str) -> usize {
     let mut map = as_point_map(input);
     let at_sym = *map.iter().find(|(_, &v)| v == '@').expect("No @").0;
@@ -112,7 +117,7 @@ pub fn solve<S: BuildHasher>(map: &HashMap<Point, char, S>, starts: &[Point]) ->
     let info: MapInfo = locations
         .iter()
         .map(|&ap| {
-            let reachable = search2(&map, ap);
+            let reachable = search2(map, ap);
             (ap, reachable)
         })
         .collect();
@@ -144,22 +149,20 @@ pub fn solve<S: BuildHasher>(map: &HashMap<Point, char, S>, starts: &[Point]) ->
     *known_bests.values().min().expect("No answers?")
 }
 
-#[cfg(test)]
-mod test {
-    //                  012345678901234567890123
-    const MAZ0: &str = "########################\n\
-                        #f.D.E.e.C.b.A.@.a.B.c.#\n\
-                        ######################.#\n\
-                        #d.....................#\n\
-                        ########################";
+//                  012345678901234567890123
+const MAZ0: &str = "########################\n\
+                    #f.D.E.e.C.b.A.@.a.B.c.#\n\
+                    ######################.#\n\
+                    #d.....................#\n\
+                    ########################";
 
-    const MAZ1: &str = "########################
+const MAZ1: &str = "########################
 #...............b.C.D.f#
 #.######################
 #.....@.a.B.c.d.A.e.F.g#
 ########################
 ";
-    const MAZ2: &str = "#################
+const MAZ2: &str = "#################
 #i.G..c...e..H.p#
 ########.########
 #j.A..b...f..D.o#
@@ -169,11 +172,3 @@ mod test {
 #l.F..d...h..C.m#
 #################
 ";
-
-    #[test]
-    pub fn d18p1tests() {
-        assert_eq!(super::p1(&MAZ0), 86);
-        assert_eq!(super::p1(&MAZ1), 132);
-        assert_eq!(super::p1(&MAZ2), 136);
-    }
-}

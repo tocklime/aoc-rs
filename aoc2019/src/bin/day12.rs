@@ -1,7 +1,10 @@
 use aoc2019::utils::iter::all_ix_pairs;
+use aoc_harness::aoc_main;
 use num::integer::lcm;
 use regex::Regex;
 use std::str::FromStr;
+
+aoc_main!(2019 day 12, generator gen, part1 [p1] => 7098, part2 [p2] => 400128139852752);
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct Moon {
@@ -37,7 +40,6 @@ impl Moon {
     }
 }
 
-//#[aoc_generator(day12)]
 pub fn gen(input: &str) -> Vec<Moon> {
     input.lines().map(|l| l.parse::<Moon>().unwrap()).collect()
 }
@@ -50,7 +52,6 @@ fn do_gravity(moons: &mut [Moon], dimension: usize) {
     })
 }
 
-//#[aoc(day12, part1)]
 pub fn p1(input: &[Moon]) -> i64 {
     let mut moons = input.to_vec();
     for _ in 0..1000 {
@@ -60,7 +61,6 @@ pub fn p1(input: &[Moon]) -> i64 {
     moons.iter().map(Moon::energy).sum()
 }
 
-//#[aoc(day12, part2)]
 #[allow(clippy::maybe_infinite_iter)]
 pub fn p2(input: &[Moon]) -> usize {
     let periods = (0..3).map(|d| {

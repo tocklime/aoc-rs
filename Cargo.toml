@@ -2,7 +2,7 @@
 members = [
     "utils",
     "aoc_harness",
-    # "aoc2019", # not ready yet.
+    "aoc2019", # not ready yet.
     "aoc2021",
 ]
 [profile.release]

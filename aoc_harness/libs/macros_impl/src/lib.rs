@@ -400,9 +400,9 @@ impl AocMainInput {
                 #examples
                 pub fn main() {
                     dotenv::dotenv().ok();
-                    run();
+                    run_main();
                 }
-                pub fn run() -> aoc_harness::dayresult::DayResult {
+                pub fn run_main() -> aoc_harness::dayresult::DayResult {
                     let opts = aoc_harness::Opts::from_args();
                     check_examples();
                     let mut results = aoc_harness::dayresult::DayResult::new(#year,#day,file!());

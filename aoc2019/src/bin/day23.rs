@@ -1,5 +1,8 @@
 use std::collections::{HashMap, VecDeque};
+use aoc_harness::aoc_main;
 use utils::intcode::Computer;
+
+aoc_main!(2019 day 23, part1 [p1] => 20225, part2 [p2] => 14348);
 
 pub fn run_comp(
     comp: &mut Computer<i64>,
@@ -57,13 +60,13 @@ where
             if ix == 255 {
                 nat = Some((x, y));
             } else {
-                let mut c = comps.get_mut(&ix).unwrap();
-                run_comp(&mut c, &[x, y], &mut send_q);
+                let c = comps.get_mut(&ix).unwrap();
+                run_comp(c, &[x, y], &mut send_q);
             }
         }
         //idle loop - try sending -1 to computers until someone sends something.
-        for mut c in comps.values_mut() {
-            if run_comp(&mut c, &[-1], &mut send_q) {
+        for c in comps.values_mut() {
+            if run_comp(c, &[-1], &mut send_q) {
                 break;
             }
         }

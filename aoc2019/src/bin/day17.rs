@@ -1,7 +1,9 @@
 use aoc2019::utils::points::as_point_map;
 use aoc2019::utils::prelude::*;
+use aoc_harness::aoc_main;
 
-//#[aoc(day17, part1)]
+aoc_main!(2019 day 17, part1 [p1] => 3608, part2 [p2] => 897426);
+
 pub fn p1(input: &str) -> isize {
     let mut c: Computer = input.parse().unwrap();
     let output = c.run().output_as_string();
@@ -18,7 +20,7 @@ pub fn p1(input: &str) -> isize {
         .sum()
 }
 
-//#[aoc(day17, part2)]
+
 pub fn p2(input: &str) -> i32 {
     let mut c: Computer = input.parse().unwrap();
     c.abs_store(0, 2);

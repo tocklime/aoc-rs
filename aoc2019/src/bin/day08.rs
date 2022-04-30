@@ -1,7 +1,11 @@
+use aoc_harness::aoc_main;
 use counter::Counter;
 use itertools::Itertools;
 use std::cmp::max;
 use transpose::transpose_inplace;
+use utils::ocr::OcrString;
+
+aoc_main!(2019 day 8, part1 [p1] => 2460, part2 [p2_forloop, p2_transpose, p2_steps] => "LRFKU");
 
 const WIDTH: usize = 25;
 const HEIGHT: usize = 6;
@@ -28,8 +32,8 @@ pub fn p1(input: &str) -> usize {
         .unwrap();
     fewest0[&'1'] * fewest0[&'2']
 }
-//#[aoc(day8, part2, forloop)]
-pub fn p2_forloop(input: &str) -> String {
+
+pub fn p2_forloop(input: &str) -> OcrString {
     let layers = input.trim().chars().map(conv).chunks(IM_SIZE);
     let mut image = vec![vec!['X'; WIDTH]; HEIGHT];
     for l in &layers {
@@ -45,9 +49,10 @@ pub fn p2_forloop(input: &str) -> String {
         .iter()
         .map(|x| format!("\n{}", x.iter().format("")))
         .join("")
+        .into()
 }
-//#[aoc(day8, part2, transpose)]
-pub fn p2_transpose(input: &str) -> String {
+
+pub fn p2_transpose(input: &str) -> OcrString {
     let mut pixels: Vec<_> = input.trim().chars().map(conv).collect();
     let layer_count = pixels.len() / IM_SIZE;
     let mut scratch = vec!['X'; max(IM_SIZE, layer_count)];
@@ -59,9 +64,10 @@ pub fn p2_transpose(input: &str) -> String {
         .into_iter()
         .map(|x| format!("\n{}", x.format("")))
         .join("")
+        .into()
 }
-//#[aoc(day8, part2, steps)]
-pub fn p2_steps(input: &str) -> String {
+
+pub fn p2_steps(input: &str) -> OcrString {
     let pixels: Vec<_> = input.trim().chars().map(conv).collect();
     (0..IM_SIZE)
         .map(|p| {
@@ -76,4 +82,5 @@ pub fn p2_steps(input: &str) -> String {
         .into_iter()
         .map(|x| format!("\n{}", x.format("")))
         .join("")
+        .into()
 }

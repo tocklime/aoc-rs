@@ -1,6 +1,9 @@
 use aoc2019::utils::prelude::*;
+use aoc_harness::aoc_main;
+use regex::Regex;
 use std::io::{stdin, stdout, Write};
 
+aoc_main!(2019 day 25, part1 [p1] => 537002052);
 const SOLUTION: &str = "east
 east
 east
@@ -27,15 +30,19 @@ north
 west
 ";
 
+const ANSWER_PAT : &str = r"You should be able to get in by typing (\d+)";
 //#[aoc(day25, part1)]
-pub fn p1(input: &str) -> String {
+pub fn p1(input: &str) -> usize {
     let mut c: Computer<i64> = input.parse().unwrap();
     c.with_string_input(SOLUTION);
     c.run_to_input();
     c.clear_output();
-    c.with_string_input(&"north\n");
+    c.with_string_input("north\n");
     c.run_to_input();
-    c.output_as_string()
+    let x = c.output_as_string();
+    let regex = Regex::new(ANSWER_PAT).unwrap();
+    let m = regex.captures(&x).unwrap().get(1).unwrap().as_str();
+    m.parse().unwrap()
 }
 pub fn interactive(input: &str) -> i64 {
     let mut c: Computer<i64> = input.parse().unwrap();
@@ -48,7 +55,7 @@ pub fn interactive(input: &str) -> i64 {
         let _ = stdout().flush();
         let mut s = String::new();
         stdin().read_line(&mut s).expect("Bad input");
-        let r = s.find("\r").unwrap();
+        let r = s.find('\r').unwrap();
         s.remove(r);
         if s.trim().is_empty() {
             c = save.clone();

@@ -1,10 +1,16 @@
 use aoc2019::utils::algorithms::{bfs_dist_all, to_lookup};
 use aoc2019::utils::points::{as_point_map, Point};
 use aoc2019::utils::prelude::HashMap;
+use aoc_harness::aoc_main;
 use itertools::Itertools;
 use pathfinding::directed::dijkstra::dijkstra;
 use std::convert::TryInto;
 use std::hash::Hash;
+
+aoc_main!(2019 day 20, part1 [p1] => 692, part2 [p2] => 8314,
+example part1 EG0 => 58,
+example part2 EG2A => 11,
+example part2 EG2B => 396);
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub struct Telepad {
@@ -22,7 +28,7 @@ pub fn p2(input: &str) -> u32 {
 }
 pub fn solve(input: &str, depth_step: isize) -> u32 {
     let maz = as_point_map(input);
-    let width: isize = input.lines().nth(0).unwrap().len().try_into().unwrap();
+    let width: isize = input.lines().next().unwrap().len().try_into().unwrap();
     let height: isize = input.lines().count().try_into().unwrap();
     let telepads = to_lookup::<_, String, Telepad>(maz.iter().filter_map(|(p, c)| {
         if c.is_ascii_alphabetic() {
@@ -42,7 +48,7 @@ pub fn solve(input: &str, depth_step: isize) -> u32 {
                 let is_outer = p.0 < 3 || ((width - p.0) < 3) || p.1 < 3 || ((height - p.1) < 3);
                 a.map(|(name, pos)| {
                     (
-                        name.to_owned(),
+                        name,
                         Telepad {
                             pos,
                             depth_change: if is_outer { -1 } else { 1 },
@@ -124,11 +130,7 @@ pub fn solve(input: &str, depth_step: isize) -> u32 {
     .1
 }
 
-#[cfg(test)]
-mod test {
-    #[test]
-    pub fn d20p1tests() {
-        let a = "                   A               
+const EG0: &str = "                   A               
                    A               
   #################.#############  
   #.#...#...................#.#.#  
@@ -166,12 +168,7 @@ YN......#               VT..#....QG
            B   J   C               
            U   P   P               
 ";
-        assert_eq!(super::p1(a), 58);
-    }
-
-    #[test]
-    pub fn d20p2tests() {
-        let triv = "       A       
+const EG2A: &str = "       A       
        A       
   #####.#####  
   #####.#####  
@@ -183,7 +180,7 @@ BC..## BC....ZZ
                
                
 ";
-        let a = "             Z L X W       C                 
+const EG2B: &str = "             Z L X W       C                 
              Z P Q B       K                 
   ###########.#.#.#.#######.###############  
   #...#.......#.#.......#.#.......#.#.#...#  
@@ -221,7 +218,3 @@ RE....#.#                           #......RF
                A O F   N                     
                A A D   M                     
 ";
-        assert_eq!(super::p2(triv), 11);
-        assert_eq!(super::p2(a), 396);
-    }
-}

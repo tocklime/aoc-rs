@@ -6,7 +6,7 @@ use std::{
 use itertools::Itertools;
 use num::Integer;
 
-use crate::nums::{add_i, add_i_mod};
+use crate::nums::add_i_mod;
 
 #[derive(Debug, Clone)]
 pub struct Grid2d<T> {

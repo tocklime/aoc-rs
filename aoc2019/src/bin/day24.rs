@@ -1,12 +1,14 @@
 use aoc2019::utils::algorithms::{automata_step, automata_step_mut};
 use aoc2019::utils::points::Point;
+use aoc_harness::aoc_main;
 use itertools::iterate;
 use num::pow;
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::hash::BuildHasher;
 
-//#[aoc_generator(day24)]
+aoc_main!(2019 day 24, generator gen, part1 [p1] => 32509983, part2 [p2m,p2c] => 2012);
+
 pub fn gen(input: &str) -> HashSet<Point> {
     let hm = aoc2019::utils::points::as_point_map(input);
     hm.iter()
@@ -14,7 +16,6 @@ pub fn gen(input: &str) -> HashSet<Point> {
         .collect()
 }
 
-//#[aoc(day24, part1)]
 pub fn p1<S>(input: &HashSet<Point, S>) -> usize
 where
     S: BuildHasher + Default + Clone,
@@ -22,12 +23,10 @@ where
     let mut seen = HashSet::new();
     iterate(input.clone(), |g| automata_step(g, flat_neighbours, lives))
         .map(|x| biodiversity(&x))
-        .filter(|&x| !seen.insert(x))
-        .nth(0)
+        .find(|&x| !seen.insert(x))
         .unwrap()
 }
 
-//#[aoc(day24, part2, mutate)]
 pub fn p2m<S: BuildHasher + Default>(input: &HashSet<Point, S>) -> usize {
     let mut g: HashSet<(Point, i32)> = input.iter().map(|a| (*a, 0)).collect();
     for _ in 0..200 {
@@ -36,7 +35,6 @@ pub fn p2m<S: BuildHasher + Default>(input: &HashSet<Point, S>) -> usize {
     g.len()
 }
 
-//#[aoc(day24, part2, recreate)]
 pub fn p2c<S: BuildHasher + Default>(input: &HashSet<Point, S>) -> usize {
     let mut g: HashSet<(Point, i32)> = input.iter().map(|a| (*a, 0)).collect();
     for _ in 0..200 {

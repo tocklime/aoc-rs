@@ -16,19 +16,19 @@ use crate::numset::NumSet;
 const ALPHA_6_4: &str = include_str!("6x4.txt");
 const ALPHA_10_6: &str = include_str!("10x6.txt");
 lazy_static! {
-    static ref ALPHA_6_4_MAP: HashMap<NumSet<u32>, char> = make_map::<u32>(ALPHA_6_4, '#', 4);
-    static ref ALPHA_10_6_MAP: HashMap<NumSet<u64>, char> = make_map::<u64>(ALPHA_10_6, '#', 6);
+    static ref ALPHA_6_4_MAP: HashMap<NumSet<u32>, char> = make_map::<u32>(ALPHA_6_4, 4);
+    static ref ALPHA_10_6_MAP: HashMap<NumSet<u64>, char> = make_map::<u64>(ALPHA_10_6, 6);
 }
 fn convert_art_to_sets<T: PrimInt>(
     ascii_art: &str,
-    solid_char: char,
     char_width: u8,
 ) -> Vec<NumSet<T>> {
     let wid = char_width + 1;
+    let min_leading_blanks : usize = ascii_art.lines().map(|x| x.chars().take_while(|c| char::is_whitespace(*c)).count()).min().unwrap();
     let mut sets = Vec::new();
     for (l, y) in ascii_art.lines().zip(0..) {
-        for (c, x) in l.chars().zip(0..) {
-            if c == solid_char {
+        for (c, x) in l.chars().skip(min_leading_blanks).zip(0..) {
+            if !char::is_whitespace(c) {
                 let char_pos: usize = (x / wid).into();
                 let char_x = x % (char_width + 1);
                 let bit_pos: u8 = y * char_width + char_x;
@@ -41,13 +41,13 @@ fn convert_art_to_sets<T: PrimInt>(
     }
     sets
 }
-fn make_map<T>(alphabet_ascii_art: &str, c: char, char_width: u8) -> HashMap<NumSet<T>, char>
+fn make_map<T>(alphabet_ascii_art: &str, char_width: u8) -> HashMap<NumSet<T>, char>
 where
     T: PrimInt + Hash,
 {
-    convert_art_to_sets(alphabet_ascii_art, c, char_width)
+    convert_art_to_sets(alphabet_ascii_art, char_width)
         .into_iter()
-        .zip('A'..'Z')
+        .zip('A'..='Z')
         .collect()
 }
 #[must_use]
@@ -74,35 +74,39 @@ where
         .collect()
 }
 #[must_use]
-pub fn ascii_art_4_to_str(input: &str, c: char) -> String {
-    convert_art_to_sets(input.trim_matches('\n'), c, 4)
+pub fn ascii_art_4_to_str(input: &str) -> String {
+    convert_art_to_sets(input.trim_matches('\n'), 4)
         .into_iter()
         .map(|c| ALPHA_6_4_MAP.get(&c).copied().unwrap_or('?'))
         .collect()
 }
 #[must_use]
-pub fn ascii_art_6_to_str(input: &str, c: char) -> String {
-    convert_art_to_sets(input.trim_matches('\n'), c, 6)
+pub fn ascii_art_6_to_str(input: &str) -> String {
+    convert_art_to_sets(input.trim_matches('\n'), 6)
         .into_iter()
         .map(|c| ALPHA_10_6_MAP.get(&c).copied().unwrap_or('?'))
         .collect()
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone)]
 #[allow(clippy::module_name_repetitions)]
 pub struct OcrString {
-    inner: String,
-    c: char,
+    inner: String
+}
+impl From<String> for OcrString {
+    fn from(s: String) -> Self {
+        Self::new(s)
+    }
 }
 
 impl OcrString {
     #[must_use]
     pub fn ocr(&self) -> String {
-        ascii_art_4_to_str(&self.inner, self.c)
+        ascii_art_4_to_str(&self.inner)
     }
     #[must_use]
-    pub fn new(inner: String, c: char) -> Self {
-        Self { inner, c }
+    pub fn new(inner: String) -> Self {
+        Self { inner }
     }
 }
 impl Debug for OcrString {

@@ -1,15 +1,16 @@
+use aoc_harness::aoc_main;
 use utils::intcode::Computer;
 use aoc2019::utils::points::{Dir, Point};
-use log::info;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::hash::BuildHasher;
 
+aoc_main!(2019 day 15, generator explore, part1 [p1] => 230, part2 [p2] => 288);
+
 const WALL: char = '█';
 const SPACE: char = '.';
 const EXPLORED_SPACE: char = ' ';
-const UNKNOWN: char = '░';
 const OXYGEN: char = 'O';
 const DEAD_END: char = 'D';
 const BRANCH: char = '╳';
@@ -111,9 +112,5 @@ pub fn p2<S:BuildHasher>(input: &HashMap<Point, char, S>) -> u32 {
         .iter()
         .find(|(_, &v)| v == OXYGEN)
         .expect("No oxygen!");
-    info!(
-        "{}",
-        aoc2019::utils::points::render_char_map_w(input, 2, UNKNOWN)
-    );
     *bfs_depth(input, o_pos).values().max().unwrap()
 }

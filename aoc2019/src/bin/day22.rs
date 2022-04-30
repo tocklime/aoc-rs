@@ -1,7 +1,9 @@
 use aoc2019::utils::nums::{mod_add, mod_inv, mod_mul, mod_pow};
+use aoc_harness::aoc_main;
 use std::convert::TryInto;
 
-//#[aoc(day22, part1)]
+aoc_main!(2019 day 22, part1 [p1] => 6526, part2 [p2] => 79855812422607);
+
 pub fn p1(input: &str) -> usize {
     let card_count = 10007_u32;
     let (offset, increment) = handle_deck(input, card_count.try_into().unwrap());
@@ -13,6 +15,7 @@ pub fn p1(input: &str) -> usize {
     }
     deck.iter().enumerate().find(|x| x.1 == &2019).unwrap().0
 }
+
 pub fn handle_deck(input: &str, deck_size: u128) -> (u128, u128) {
     let mut offset = 0_u128;
     let mut increment = 1_u128;
@@ -47,7 +50,7 @@ pub fn handle_deck(input: &str, deck_size: u128) -> (u128, u128) {
     }
     (offset, increment)
 }
-//#[aoc(day22, part2)]
+
 pub fn p2(input: &str) -> u128 {
     let deck_size = 119_315_717_514_047_u128;
     let shuffle_count = 101_741_582_076_661_u128;

@@ -1,14 +1,17 @@
 use aoc2019::utils::nums::unbounded_bin_search;
 use aoc2019::utils::points::Point;
+use aoc_harness::aoc_main;
 use itertools::Itertools;
 use utils::intcode::Computer;
+
+aoc_main!(2019 day 19, part1 [p1] => 234, part2 [p2a] => 9290812);
 
 pub fn calc(c: &Computer<isize>, p: Point) -> isize {
     let mut c = c.clone();
     c.with_input(p.0).with_input(p.1).run().get_last_output()
 }
 
-//#[aoc(day19, part1)]
+
 pub fn p1(input: &str) -> isize {
     let c: Computer<isize> = input.parse().unwrap();
     (0..50)
@@ -16,14 +19,14 @@ pub fn p1(input: &str) -> isize {
         .map(|(x, y)| calc(&c, Point(x, y)))
         .sum()
 }
-//#[aoc(day19, part2, bin_search_incorrect)]
+
 ///This function wrongly assumes that the top edge of the tractor beam is on y=x.
 pub fn p2(input: &str) -> isize {
     let c: Computer<isize> = input.parse().unwrap();
     let s = unbounded_bin_search(|s| calc(&c, Point(s + 99, s - 99)), 1);
     s * 10000 + (s - 100)
 }
-//#[aoc(day19, part2, linear_search)]
+
 pub fn p2a(input: &str) -> isize {
     let c: Computer<isize> = input.parse().unwrap();
     let mut p = Point::origin();

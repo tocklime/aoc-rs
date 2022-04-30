@@ -1,6 +1,9 @@
+use aoc_harness::aoc_main;
 use utils::intcode::Computer;
 use aoc2019::utils::points::Point;
 use std::collections::HashMap;
+
+aoc_main!(2019 day 13, part1 [p1] => 301, part2 [p2] => 14096);
 
 pub fn symbol_for(i: isize) -> char {
     match i {

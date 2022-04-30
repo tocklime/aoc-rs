@@ -1,12 +1,15 @@
+use aoc_harness::aoc_main;
 use utils::intcode::Computer;
 use aoc2019::utils::points::*;
+use utils::ocr::OcrString;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::mpsc;
 use std::thread;
 
+aoc_main!(2019 day 11, part1 [p1] => 2160, part2 [p2] => "LRZECGFE");
 const WHITE: char = '█';
-const BLACK: char = '░';
+const BLACK: char = ' ';
 
 pub fn robot(
     input: &mpsc::Receiver<isize>,
@@ -42,7 +45,7 @@ pub fn robot(
     }
     painted_panels
 }
-pub fn run(input: &str, init_c: char) -> HashMap<Point, char> {
+pub fn my_run(input: &str, init_c: char) -> HashMap<Point, char> {
     let mut c: Computer<isize> = Computer::from_str(input).unwrap();
     let (tx,rx) = c.make_io_chans();
     let c_thr = thread::spawn(move || {
@@ -53,14 +56,12 @@ pub fn run(input: &str, init_c: char) -> HashMap<Point, char> {
     robot_thr.join().unwrap()
 }
 
-//#[aoc(day11, part1)]
 pub fn p1(input: &str) -> usize {
-    run(input, BLACK).len()
+    my_run(input, BLACK).len()
 }
 
-//#[aoc(day11, part2)]
-pub fn p2(input: &str) -> String {
-    aoc2019::utils::points::render_char_map(&run(input, WHITE))
+pub fn p2(input: &str) -> OcrString {
+    aoc2019::utils::points::render_char_map(&my_run(input, WHITE)).into()
 }
 #[test]
 pub fn example() {
@@ -75,11 +76,8 @@ pub fn example() {
     }
     drop(txb);
     let mut output = vec![];
-    loop {
-        match rxa.recv() {
-            Ok(i) => output.push(i),
-            Err(_) => break,
-        }
+    while let Ok(i) = rxa.recv() {
+        output.push(i);
     }
     assert_eq!(output, correct_output);
     assert_eq!(r.join().unwrap().len(), 6);

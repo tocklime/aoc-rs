@@ -43,7 +43,7 @@ impl AocAllMainInput {
             });
             inner.extend(quote! {
                 println!("{}", #f);
-                times.push(#short::run());
+                times.push(#short::run_main());
             });
         }
 

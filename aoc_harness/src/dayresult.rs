@@ -61,11 +61,11 @@ impl DayResult {
             _ => self.generator_time = Some(t),
         }
     }
-    fn record_ans<T: Display>(slot: &mut Option<String>, ans: T) -> Result<(), String> {
+    fn record_ans<T: Display>(part_num: u8, slot: &mut Option<String>, ans: T) -> Result<(), String> {
         let ans = format!("{}", ans);
         match slot {
             Some(s) if s != &ans => {
-                Err(format!("conflicting results for part 1: {} and {}", s, ans))
+                Err(format!("conflicting results for part {}: {} and {}", part_num, s, ans))
             }
             None => {
                 *slot = Some(ans);
@@ -81,7 +81,7 @@ impl DayResult {
         self.part2_ans = Some(format!("{}", s));
     }
     pub fn record_p1<T: Display>(&mut self, ans: T, time: Duration) {
-        if let Err(x) = Self::record_ans(&mut self.part1_ans, ans) {
+        if let Err(x) = Self::record_ans(1, &mut self.part1_ans, ans) {
             panic!("{} {}", self.desc(), x);
         }
         match &mut self.solve_time {
@@ -94,7 +94,7 @@ impl DayResult {
         }
     }
     pub fn record_p2<T: Display>(&mut self, ans: T, time: Duration) {
-        if let Err(x) = Self::record_ans(&mut self.part2_ans, ans) {
+        if let Err(x) = Self::record_ans(2, &mut self.part2_ans, ans) {
             panic!("{} {}", self.desc(), x);
         }
         match &mut self.solve_time {
@@ -107,10 +107,10 @@ impl DayResult {
         }
     }
     pub fn record_both<T: Display, T2: Display>(&mut self, ans: (T, T2), time: Duration) {
-        if let Err(x) = Self::record_ans(&mut self.part1_ans, ans.0) {
+        if let Err(x) = Self::record_ans(1, &mut self.part1_ans, ans.0) {
             panic!("{} {}", self.desc(), x);
         }
-        if let Err(x) = Self::record_ans(&mut self.part2_ans, ans.1) {
+        if let Err(x) = Self::record_ans(2, &mut self.part2_ans, ans.1) {
             panic!("{} {}", self.desc(), x);
         }
         match &mut self.solve_time {
