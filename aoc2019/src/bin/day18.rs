@@ -44,43 +44,6 @@ pub fn search2<S: BuildHasher>(
     min_dist_map
 }
 
-pub fn search<S: BuildHasher>(
-    map: &HashMap<Point, char, S>,
-    start: Point,
-    keys: &BTreeSet<char>,
-) -> HashMap<char, (usize, Point)> {
-    let mut points = std::collections::VecDeque::new();
-    points.push_back((start, 0));
-    let mut min_dist_map = HashMap::new();
-    let mut been: BTreeSet<Point> = BTreeSet::new();
-    while !points.is_empty() {
-        let (pos, count) = points.pop_front().unwrap();
-        been.insert(pos);
-        pos.neighbours()
-            .iter()
-            .filter(|&p| !been.contains(p))
-            .for_each(|&p2| {
-                if let Some(here) = map.get(&p2) {
-                    if here != &'#'
-                        && (here == &'.' || !min_dist_map.contains_key(&p2))
-                        && (!here.is_uppercase() || keys.contains(&here.to_ascii_lowercase()))
-                    {
-                        if here.is_lowercase() && !keys.contains(here) {
-                            min_dist_map.insert(p2, (*here, (count + 1, p2)));
-                        } else {
-                            points.push_back((p2, count + 1));
-                        }
-                    }
-                }
-            });
-    }
-    min_dist_map
-        .values()
-        .filter(|(c, _)| c.is_lowercase() && !keys.contains(c))
-        .cloned()
-        .collect()
-}
-
 pub fn p1(input: &str) -> usize {
     let map = as_point_map(input);
     let at_sym = *map.iter().find(|(_, &v)| v == '@').expect("No @").0;

@@ -19,12 +19,13 @@ lazy_static! {
     static ref ALPHA_6_4_MAP: HashMap<NumSet<u32>, char> = make_map::<u32>(ALPHA_6_4, 4);
     static ref ALPHA_10_6_MAP: HashMap<NumSet<u64>, char> = make_map::<u64>(ALPHA_10_6, 6);
 }
-fn convert_art_to_sets<T: PrimInt>(
-    ascii_art: &str,
-    char_width: u8,
-) -> Vec<NumSet<T>> {
+fn convert_art_to_sets<T: PrimInt>(ascii_art: &str, char_width: u8) -> Vec<NumSet<T>> {
     let wid = char_width + 1;
-    let min_leading_blanks : usize = ascii_art.lines().map(|x| x.chars().take_while(|c| char::is_whitespace(*c)).count()).min().unwrap();
+    let min_leading_blanks: usize = ascii_art
+        .lines()
+        .map(|x| x.chars().take_while(|c| char::is_whitespace(*c)).count())
+        .min()
+        .unwrap();
     let mut sets = Vec::new();
     for (l, y) in ascii_art.lines().zip(0..) {
         for (c, x) in l.chars().skip(min_leading_blanks).zip(0..) {
@@ -91,7 +92,7 @@ pub fn ascii_art_6_to_str(input: &str) -> String {
 #[derive(PartialEq, Eq, Clone)]
 #[allow(clippy::module_name_repetitions)]
 pub struct OcrString {
-    inner: String
+    inner: String,
 }
 impl From<String> for OcrString {
     fn from(s: String) -> Self {

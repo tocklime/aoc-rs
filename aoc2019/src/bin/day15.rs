@@ -1,10 +1,10 @@
-use aoc_harness::aoc_main;
-use utils::intcode::Computer;
 use aoc2019::utils::points::{Dir, Point};
+use aoc_harness::aoc_main;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::hash::BuildHasher;
+use utils::intcode::Computer;
 
 aoc_main!(2019 day 15, generator explore, part1 [p1] => 230, part2 [p2] => 288);
 
@@ -32,7 +32,10 @@ pub fn try_move(c: &mut Computer<i32>, d: Dir) -> char {
 }
 
 /// Performs a breadth first search of the map, and returns a map of point to distance from the start.
-pub fn bfs_depth<S: BuildHasher>(map: &HashMap<Point, char, S>, start: Point) -> HashMap<Point, u32> {
+pub fn bfs_depth<S: BuildHasher>(
+    map: &HashMap<Point, char, S>,
+    start: Point,
+) -> HashMap<Point, u32> {
     let mut points = std::collections::VecDeque::new();
     points.push_back((start, 0));
     let mut min_dist_map = HashMap::new();
@@ -107,7 +110,7 @@ pub fn p1<S: BuildHasher>(input: &HashMap<Point, char, S>) -> u32 {
     bfs_depth(input, Point(0, 0))[o_pos]
 }
 //#[aoc(day15, part2)]
-pub fn p2<S:BuildHasher>(input: &HashMap<Point, char, S>) -> u32 {
+pub fn p2<S: BuildHasher>(input: &HashMap<Point, char, S>) -> u32 {
     let (&o_pos, _) = input
         .iter()
         .find(|(_, &v)| v == OXYGEN)

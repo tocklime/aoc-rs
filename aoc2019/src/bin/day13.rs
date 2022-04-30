@@ -1,7 +1,7 @@
-use aoc_harness::aoc_main;
-use utils::intcode::Computer;
 use aoc2019::utils::points::Point;
+use aoc_harness::aoc_main;
 use std::collections::HashMap;
+use utils::intcode::Computer;
 
 aoc_main!(2019 day 13, part1 [p1] => 301, part2 [p2] => 14096);
 

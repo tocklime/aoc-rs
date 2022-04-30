@@ -21,7 +21,6 @@ pub fn gen(input: &str) -> AsteroidSet {
         .collect()
 }
 
-
 pub fn p1a(input: &AsteroidSet) -> usize {
     get_best_station(input).0
 }
@@ -47,7 +46,6 @@ pub fn get_best_station(input: &AsteroidSet) -> (usize, Point) {
         .max_by_key(|x| x.0)
         .unwrap()
 }
-
 
 pub fn p2a(input: &AsteroidSet) -> isize {
     p2(input, get_best_station(input).1, 200)

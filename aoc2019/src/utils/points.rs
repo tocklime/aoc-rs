@@ -151,10 +151,18 @@ impl Point {
     pub fn step(self, d: Dir) -> Self {
         self + d.as_point_delta()
     }
-    pub fn up(self) -> Self{ self.step(Dir::U) }
-    pub fn down(self) -> Self{ self.step(Dir::D) }
-    pub fn left(self) -> Self{ self.step(Dir::L) }
-    pub fn right(self) -> Self{ self.step(Dir::R) }
+    pub fn up(self) -> Self {
+        self.step(Dir::U)
+    }
+    pub fn down(self) -> Self {
+        self.step(Dir::D)
+    }
+    pub fn left(self) -> Self {
+        self.step(Dir::L)
+    }
+    pub fn right(self) -> Self {
+        self.step(Dir::R)
+    }
 }
 #[derive(Debug)]
 pub struct PolarCoord {
@@ -270,7 +278,7 @@ pub fn bb_tests() {
 
 use std::collections::HashMap;
 pub fn point_map_bounding_box<T, S: BuildHasher>(hm: &HashMap<Point, T, S>) -> Aabb {
-    let a_point = hm.keys().nth(0).unwrap();
+    let a_point = hm.keys().next().unwrap();
     hm.keys().fold(Aabb::new(*a_point), |bb, &k| bb.extend(k))
 }
 pub fn render_char_map<S: BuildHasher>(m: &HashMap<Point, char, S>) -> String {
@@ -281,7 +289,7 @@ pub fn render_char_map_w<S: BuildHasher>(
     width: u8,
     default: char,
 ) -> String {
-    let bb = crate::utils::points::point_map_bounding_box(&m);
+    let bb = crate::utils::points::point_map_bounding_box(m);
     let v = bb.vec_with(|p| *m.get(&p).unwrap_or(&default));
     v.iter()
         .map(|l| {
@@ -300,7 +308,7 @@ pub fn as_point_map(input: &str) -> HashMap<Point, char> {
         .flat_map(move |(y, line)| {
             line.chars()
                 .enumerate()
-                .map(move |(x, c)| (Point(x.try_into().unwrap() , y.try_into().unwrap()), c))
+                .map(move |(x, c)| (Point(x.try_into().unwrap(), y.try_into().unwrap()), c))
         })
         .collect()
 }

@@ -61,12 +61,17 @@ impl DayResult {
             _ => self.generator_time = Some(t),
         }
     }
-    fn record_ans<T: Display>(part_num: u8, slot: &mut Option<String>, ans: T) -> Result<(), String> {
+    fn record_ans<T: Display>(
+        part_num: u8,
+        slot: &mut Option<String>,
+        ans: T,
+    ) -> Result<(), String> {
         let ans = format!("{}", ans);
         match slot {
-            Some(s) if s != &ans => {
-                Err(format!("conflicting results for part {}: {} and {}", part_num, s, ans))
-            }
+            Some(s) if s != &ans => Err(format!(
+                "conflicting results for part {}: {} and {}",
+                part_num, s, ans
+            )),
             None => {
                 *slot = Some(ans);
                 Ok(())

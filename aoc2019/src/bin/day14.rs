@@ -39,7 +39,7 @@ pub fn ore_for_n_fuel(recipes: &RecipeBook, n: usize) -> usize {
     required.insert("FUEL", n);
     let mut ore_used = 0;
     while !required.is_empty() {
-        let (&lets_make, qty_needed) = required.iter().nth(0).unwrap();
+        let (&lets_make, qty_needed) = required.iter().next().unwrap();
         let (qty_per, ingredients) = &recipes[lets_make];
         let left_over = qty_needed % qty_per;
         let iterations_required = (qty_needed / qty_per) + if left_over > 0 { 1 } else { 0 };

@@ -20,10 +20,12 @@ jobs:
     - name: Build
       run: cargo build
     - name: Run tests
-      run: cargo test --bin all --lib -p aoc2021
+      run: cargo test --bin all --lib
     - name: Check clippy
       run: cargo clippy
-    - name: Run for score
+    - name: Run for score (2019)
+      run: cargo run --bin all --release -p aoc2019
+    - name: Run for score (2021)
       run: cargo run --bin all --release -p aoc2021
     - name: Check formatting
       run: cargo fmt --all -- --check

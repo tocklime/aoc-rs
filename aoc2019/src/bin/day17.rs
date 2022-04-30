@@ -11,15 +11,22 @@ pub fn p1(input: &str) -> isize {
     g.iter()
         .filter_map(|(p, c)| {
             if c == &'#' {
-                let nc = p.neighbours().iter().filter(|pn| g.get(pn) == Some(&'#')).count();
+                let nc = p
+                    .neighbours()
+                    .iter()
+                    .filter(|pn| g.get(pn) == Some(&'#'))
+                    .count();
                 if nc == 4 {
                     Some(p.0 * p.1)
-                } else { None }
-            } else { None }
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
         })
         .sum()
 }
-
 
 pub fn p2(input: &str) -> i32 {
     let mut c: Computer = input.parse().unwrap();

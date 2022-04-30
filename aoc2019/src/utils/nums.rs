@@ -64,7 +64,7 @@ pub fn mod_mul<T>(a: &T, b: &T, m: T) -> T
 where
     T: CheckedMul + Rem<Output = T> + Debug,
 {
-    match a.checked_mul(&b) {
+    match a.checked_mul(b) {
         None => panic!("mod_mul overflowed with {:?}x{:?}%{:?}", a, b, m),
         Some(ab) => ab % m,
     }
@@ -73,7 +73,7 @@ pub fn mod_add<T>(a: &T, b: &T, m: T) -> T
 where
     T: CheckedAdd + Rem<Output = T> + Debug,
 {
-    match a.checked_add(&b) {
+    match a.checked_add(b) {
         None => panic!("mod_add overflowed with {:?}+{:?}%{:?}", a, b, m),
         Some(ab) => ab % m,
     }

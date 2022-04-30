@@ -1,7 +1,7 @@
 use aoc_harness::aoc_main;
 use rayon::prelude::*;
+use std::cmp::{max, min};
 use std::convert::TryInto;
-use std::cmp::{max,min};
 
 aoc_main!(2019 day 16, generator gen, part1 [p1] => 63794407, part2 [p2] => 77247538,
     example part1 "80871224585914546619083218645595" => 24176176,
@@ -13,7 +13,11 @@ aoc_main!(2019 day 16, generator gen, part1 [p1] => 63794407, part2 [p2] => 7724
 );
 
 pub fn gen(input: &str) -> Vec<usize> {
-    input.trim().bytes().map(|x| (x - b'0').try_into().unwrap()).collect()
+    input
+        .trim()
+        .bytes()
+        .map(|x| (x - b'0').try_into().unwrap())
+        .collect()
 }
 
 pub fn p1(input: &[usize]) -> usize {
@@ -46,35 +50,50 @@ pub fn p2(input: &[usize]) -> usize {
     list_to_int(&input[..8])
 }
 
+#[allow(dead_code)]
 pub fn p2_naive(input: &[usize]) -> usize {
     let offset = list_to_int(&input[..7]);
-    let mut x : Vec<usize> = input.iter().cycle().take(input.len() * 10_000).cloned().collect::<Vec<_>>();
+    let mut x: Vec<usize> = input
+        .iter()
+        .cycle()
+        .take(input.len() * 10_000)
+        .cloned()
+        .collect::<Vec<_>>();
     (0..100).for_each(|n| {
-        println!("{}",n);
+        println!("{}", n);
         x = fft(&x)
     });
     list_to_int(&x[offset..8 + offset])
 }
 
 pub fn fft(input: &[usize]) -> Vec<usize> {
-    let mut psums = input.iter().scan(0,|a,&b| {*a += b;  Some(*a)}).collect::<Vec<_>>();
-    psums.insert(0,0);
+    let mut psums = input
+        .iter()
+        .scan(0, |a, &b| {
+            *a += b;
+            Some(*a)
+        })
+        .collect::<Vec<_>>();
+    psums.insert(0, 0);
     let len = input.len();
-    (0..len).into_par_iter()
+    (0..len)
+        .into_par_iter()
         .map(|ix| {
             let pos = (ix..len)
                 .step_by(4 * (ix + 1))
                 .map(|start| {
-                    let end = min(len,start + 1 + ix);
+                    let end = min(len, start + 1 + ix);
                     psums[end] - psums[start]
-                }).sum::<usize>();
+                })
+                .sum::<usize>();
             let neg = (3 * ix + 2..len)
                 .step_by(4 * (ix + 1))
                 .map(|start| {
-                    let end = min(len,start + 1 + ix);
+                    let end = min(len, start + 1 + ix);
                     psums[end] - psums[start]
-                }).sum::<usize>();
-            (max(pos,neg) - min(pos,neg)) % 10
+                })
+                .sum::<usize>();
+            (max(pos, neg) - min(pos, neg)) % 10
         })
         .collect()
 }

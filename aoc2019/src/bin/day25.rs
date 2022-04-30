@@ -30,7 +30,7 @@ north
 west
 ";
 
-const ANSWER_PAT : &str = r"You should be able to get in by typing (\d+)";
+const ANSWER_PAT: &str = r"You should be able to get in by typing (\d+)";
 //#[aoc(day25, part1)]
 pub fn p1(input: &str) -> usize {
     let mut c: Computer<i64> = input.parse().unwrap();
@@ -44,6 +44,9 @@ pub fn p1(input: &str) -> usize {
     let m = regex.captures(&x).unwrap().get(1).unwrap().as_str();
     m.parse().unwrap()
 }
+
+//I used this func to play through the game.
+#[allow(dead_code)]
 pub fn interactive(input: &str) -> i64 {
     let mut c: Computer<i64> = input.parse().unwrap();
     let mut save = c.clone();

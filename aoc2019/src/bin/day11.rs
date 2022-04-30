@@ -1,11 +1,11 @@
-use aoc_harness::aoc_main;
-use utils::intcode::Computer;
 use aoc2019::utils::points::*;
-use utils::ocr::OcrString;
+use aoc_harness::aoc_main;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::mpsc;
 use std::thread;
+use utils::intcode::Computer;
+use utils::ocr::OcrString;
 
 aoc_main!(2019 day 11, part1 [p1] => 2160, part2 [p2] => "LRZECGFE");
 const WHITE: char = '█';
@@ -47,7 +47,7 @@ pub fn robot(
 }
 pub fn my_run(input: &str, init_c: char) -> HashMap<Point, char> {
     let mut c: Computer<isize> = Computer::from_str(input).unwrap();
-    let (tx,rx) = c.make_io_chans();
+    let (tx, rx) = c.make_io_chans();
     let c_thr = thread::spawn(move || {
         c.run();
     });
