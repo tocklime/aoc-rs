@@ -1,4 +1,4 @@
-use aoc2019::utils::points::Point;
+use aoc::utils::points::Point;
 use aoc_harness::aoc_main;
 use itertools::Itertools;
 use utils::intcode::Computer;

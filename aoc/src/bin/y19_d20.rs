@@ -1,6 +1,6 @@
-use aoc2019::utils::algorithms::{bfs_dist_all, to_lookup};
-use aoc2019::utils::points::{as_point_map, Point};
-use aoc2019::utils::prelude::HashMap;
+use aoc::utils::algorithms::{bfs_dist_all, to_lookup};
+use aoc::utils::points::{as_point_map, Point};
+use aoc::utils::prelude::HashMap;
 use aoc_harness::aoc_main;
 use itertools::Itertools;
 use pathfinding::directed::dijkstra::dijkstra;

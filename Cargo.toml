@@ -2,8 +2,7 @@
 members = [
     "utils",
     "aoc_harness",
-    "aoc2019",
-    "aoc2021",
+    "aoc",
 ]
 [profile.release]
 debug = true

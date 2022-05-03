@@ -1,4 +1,4 @@
-use aoc2019::utils::prelude::*;
+use aoc::utils::prelude::*;
 use aoc_harness::aoc_main;
 use regex::Regex;
 use std::io::{stdin, stdout, Write};

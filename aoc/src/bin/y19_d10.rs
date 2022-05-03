@@ -1,4 +1,4 @@
-use aoc2019::utils::points::{Point, PolarCoord};
+use aoc::utils::points::{Point, PolarCoord};
 use aoc_harness::aoc_main;
 use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap, HashSet};

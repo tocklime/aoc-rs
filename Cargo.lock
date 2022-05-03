@@ -21,13 +21,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "aoc2019"
+name = "aoc"
 version = "0.1.0"
 dependencies = [
  "aoc_harness",
  "counter",
  "dotenv",
+ "intmap",
  "itertools",
+ "lazy_static",
  "nalgebra",
  "ndarray",
  "num",
@@ -36,30 +38,10 @@ dependencies = [
  "rayon",
  "regex",
  "scan_fmt",
- "structopt",
- "time",
- "transpose",
- "utils",
-]
-
-[[package]]
-name = "aoc2021"
-version = "0.1.0"
-dependencies = [
- "aoc_harness",
- "dotenv",
- "intmap",
- "itertools",
- "lazy_static",
- "nalgebra",
- "ndarray",
- "num",
- "pathfinding",
- "rayon",
- "scan_fmt",
  "smallvec",
  "structopt",
  "time",
+ "transpose",
  "utils",
 ]
 

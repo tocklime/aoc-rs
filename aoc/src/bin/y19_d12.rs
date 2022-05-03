@@ -1,4 +1,4 @@
-use aoc2019::utils::iter::all_ix_pairs;
+use aoc::utils::iter::all_ix_pairs;
 use aoc_harness::aoc_main;
 use num::integer::lcm;
 use regex::Regex;
