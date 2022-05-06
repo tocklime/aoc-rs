@@ -38,8 +38,12 @@ impl AocAllMainInput {
             .sorted();
         for f in fs {
             let short = format_ident!("{}", &f[..f.len() - 3]);
+            let abs_path = path.as_path().join(&f).canonicalize().unwrap();
+            let path = abs_path.to_str().unwrap();
             mods.extend(quote! {
-                mod #short;
+                mod #short {
+                    include!(#path);
+                }
             });
             inner.extend(quote! {
                 println!("{}", #f);
