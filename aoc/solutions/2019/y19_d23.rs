@@ -9,7 +9,7 @@ pub fn run_comp(
     input: &[i64],
     send_q: &mut VecDeque<(i64, (i64, i64))>,
 ) -> bool {
-    input.iter().cloned().for_each(|x| {
+    input.iter().copied().for_each(|x| {
         comp.with_input(x);
         comp.run_to_input();
     });

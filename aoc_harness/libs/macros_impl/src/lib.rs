@@ -14,6 +14,7 @@ use syn::Result;
 use syn::Token;
 
 pub mod all;
+pub mod latest;
 
 mod kw {
     syn::custom_keyword!(generator);

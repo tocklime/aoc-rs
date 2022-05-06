@@ -7,8 +7,9 @@ use std::collections::HashSet;
 use std::convert::TryInto;
 use std::hash::BuildHasher;
 
-aoc_main!(2019 day 24, generator gen, part1 [p1] => 32509983, part2 [p2m,p2c] => 2012);
+aoc_main!(2019 day 24, generator gen, part1 [p1] => 32_509_983, part2 [p2m,p2c] => 2012);
 
+#[must_use]
 pub fn gen(input: &str) -> HashSet<Point> {
     let hm = aoc::utils::points::as_point_map(input);
     hm.iter()
@@ -77,6 +78,7 @@ pub fn recur_neighbours(p: (Point, i32)) -> Vec<(Point, i32)> {
     ans
 }
 
+#[must_use]
 pub fn lives(is_alive: bool, neighbour_count: usize) -> bool {
     neighbour_count == 1 || (!is_alive && neighbour_count == 2)
 }

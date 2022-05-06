@@ -3,7 +3,8 @@ use aoc_harness::aoc_main;
 use regex::Regex;
 use std::io::{stdin, stdout, Write};
 
-aoc_main!(2019 day 25, part1 [p1] => 537002052);
+aoc_main!(2019 day 25, part1 [p1] => 537_002_052);
+
 const SOLUTION: &str = "east
 east
 east
