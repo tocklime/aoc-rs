@@ -1,1 +1,1 @@
-include!(aoc_harness::find_most_recent!("aoc/src/solutions"));
+include!(aoc_harness::find_most_recent!("aoc/solutions"));
