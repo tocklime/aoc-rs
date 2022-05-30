@@ -1,12 +1,11 @@
-
 use std::{collections::BTreeMap, time::Duration};
 
+use aoc_harness::{dayresult::DayResult, Opts};
 use clap::Parser;
-use aoc_harness::{Opts, dayresult::DayResult};
 use seq_macro::seq;
 type Day = ((i32, u8), fn(&mut DayResult, &Opts));
 fn make_all() -> Vec<Day> {
-    let mut ans : Vec<Day> = Vec::with_capacity(56);
+    let mut ans: Vec<Day> = Vec::with_capacity(56);
     seq!(N in 01..=25 {
         ans.push(((2019, N), aoc::solutions::y2019::y19_d~N::run_with_opts));
     });
@@ -36,10 +35,11 @@ pub fn main() {
     let mut times = Vec::new();
     let opts = Default::default();
     let mut total_time = Duration::ZERO;
-    let mut time_per_year : BTreeMap<i32, Duration> = BTreeMap::new();
-    for ((year,day), f) in all {
-        if (args.year.is_none() || args.year == Some(year)) &&
-           (args.day.is_none() || args.day == Some(day)) {
+    let mut time_per_year: BTreeMap<i32, Duration> = BTreeMap::new();
+    for ((year, day), f) in all {
+        if (args.year.is_none() || args.year == Some(year))
+            && (args.day.is_none() || args.day == Some(day))
+        {
             let mut dr = DayResult::new(year, day, "Name");
             f(&mut dr, &opts);
             let t = dr.total_time();
@@ -49,7 +49,7 @@ pub fn main() {
         }
     }
 
-    for (y,d) in &time_per_year {
+    for (y, d) in &time_per_year {
         println!("Time for year {}: {}", y, aoc_harness::render_duration(*d));
     }
     if time_per_year.len() > 1 {

@@ -34,7 +34,7 @@ impl FindLatestInput {
                 if x.file_type().is_file() {
                     let file_name = x.file_name().to_string_lossy();
                     file_name.ends_with(".rs") && file_name.contains(&filename_part)
-                }else {
+                } else {
                     false
                 }
             })

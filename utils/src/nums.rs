@@ -1,10 +1,10 @@
 use modinverse::modinverse;
-use num::{Integer, Num, One, Signed, Zero, CheckedAdd, CheckedMul, CheckedSub};
+use num::{CheckedAdd, CheckedMul, CheckedSub, Integer, Num, One, Signed, Zero};
 use std::{
     convert::TryInto,
-    iter::{Product, Sum},
-    ops::{Add, BitAnd, BitOr, Mul, MulAssign, Not, Shl, Shr, AddAssign, Rem},
     fmt::Debug,
+    iter::{Product, Sum},
+    ops::{Add, AddAssign, BitAnd, BitOr, Mul, MulAssign, Not, Rem, Shl, Shr},
 };
 
 #[must_use]
@@ -159,7 +159,6 @@ where
         *self = self.with_set_bit(bit_ix, bit_value);
     }
 }
-
 
 pub fn is_sorted(i: &[u8]) -> bool {
     i.iter().zip(i.iter().skip(1)).all(|(a, b)| a <= b)

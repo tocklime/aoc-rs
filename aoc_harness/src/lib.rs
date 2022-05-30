@@ -27,7 +27,13 @@ pub struct Opts {
 
 impl Default for Opts {
     fn default() -> Self {
-        Self { input: None, quiet: false, test_mode: false, repeats: 1, bypass: false }
+        Self {
+            input: None,
+            quiet: false,
+            test_mode: false,
+            repeats: 1,
+            bypass: false,
+        }
     }
 }
 
