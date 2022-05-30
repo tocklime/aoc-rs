@@ -2,11 +2,11 @@ pub use std::collections::{HashMap, HashSet};
 pub use std::convert::{TryFrom, TryInto};
 pub use std::str::FromStr;
 
-pub use crate::utils::algorithms::*;
-pub use crate::utils::iter::all_ix_pairs;
-pub use crate::utils::nums::*;
-pub use crate::utils::points::*;
-pub use utils::intcode::Computer;
+pub use crate::algorithms::*;
+pub use crate::iter::all_ix_pairs;
+pub use crate::nums::*;
+pub use crate::points::*;
+pub use crate::intcode::Computer;
 
 pub use itertools::Itertools;
 pub use num::integer::lcm;

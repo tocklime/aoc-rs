@@ -15,3 +15,8 @@ pub mod cube;
 pub mod imap;
 pub mod path;
 pub mod take_upto_n;
+
+pub mod algorithms;
+pub mod iter;
+pub mod points;
+pub mod prelude;

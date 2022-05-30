@@ -3,6 +3,7 @@ members = [
     "utils",
     "aoc_harness",
     "aoc",
+    "aoc_latest"
 ]
 [profile.release]
 debug = true

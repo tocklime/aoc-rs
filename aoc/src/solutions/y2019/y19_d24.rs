@@ -1,5 +1,5 @@
-use aoc::utils::algorithms::{automata_step, automata_step_mut};
-use aoc::utils::points::Point;
+use utils::algorithms::{automata_step, automata_step_mut};
+use utils::points::Point;
 use aoc_harness::aoc_main;
 use itertools::iterate;
 use num::pow;
@@ -11,7 +11,7 @@ aoc_main!(2019 day 24, generator gen, part1 [p1] => 32_509_983, part2 [p2m,p2c] 
 
 #[must_use]
 pub fn gen(input: &str) -> HashSet<Point> {
-    let hm = aoc::utils::points::as_point_map(input);
+    let hm = utils::points::as_point_map(input);
     hm.iter()
         .filter_map(|(a, b)| if b == &'#' { Some(*a) } else { None })
         .collect()

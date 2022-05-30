@@ -25,3 +25,4 @@ pub fn p2(input: &HashSet<usize>) -> usize {
         .find(|&x| !input.contains(&(x)) && input.contains(&(x + 1)))
         .unwrap()
 }
+ 

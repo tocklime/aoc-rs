@@ -289,7 +289,7 @@ pub fn render_char_map_w<S: BuildHasher>(
     width: u8,
     default: char,
 ) -> String {
-    let bb = crate::utils::points::point_map_bounding_box(m);
+    let bb = crate::points::point_map_bounding_box(m);
     let v = bb.vec_with(|p| *m.get(&p).unwrap_or(&default));
     v.iter()
         .map(|l| {

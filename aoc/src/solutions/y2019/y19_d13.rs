@@ -1,4 +1,4 @@
-use aoc::utils::points::Point;
+use utils::points::Point;
 use aoc_harness::aoc_main;
 use std::collections::HashMap;
 use utils::intcode::Computer;

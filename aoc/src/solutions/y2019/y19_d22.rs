@@ -1,4 +1,4 @@
-use aoc::utils::nums::{mod_add, mod_inv, mod_mul, mod_pow};
+use utils::nums::{mod_add, mod_inv, mod_mul, mod_pow};
 use aoc_harness::aoc_main;
 use std::convert::TryInto;
 

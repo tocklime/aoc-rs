@@ -25,6 +25,12 @@ pub struct Opts {
     pub bypass: bool,
 }
 
+impl Default for Opts {
+    fn default() -> Self {
+        Self { input: None, quiet: false, test_mode: false, repeats: 1, bypass: false }
+    }
+}
+
 impl Opts {
     #[must_use]
     pub fn for_test() -> Self {

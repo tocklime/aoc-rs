@@ -1,4 +1,4 @@
-use aoc::utils::points::{Dir, Point};
+use utils::points::{Dir, Point};
 use aoc_harness::aoc_main;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;

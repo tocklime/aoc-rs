@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use aoc::utils::nums::*;
+use utils::nums::*;
 
 use aoc_harness::aoc_main;
 use itertools::Itertools;

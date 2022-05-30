@@ -1,4 +1,4 @@
-use aoc::utils::points::{as_point_map, Point};
+use utils::points::{as_point_map, Point};
 use aoc_harness::aoc_main;
 use std::cmp::min;
 use std::collections::{BTreeSet, HashMap, HashSet};

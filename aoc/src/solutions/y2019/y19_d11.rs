@@ -1,4 +1,4 @@
-use aoc::utils::points::*;
+use utils::points::*;
 use aoc_harness::aoc_main;
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -61,7 +61,7 @@ pub fn p1(input: &str) -> usize {
 }
 
 pub fn p2(input: &str) -> OcrString {
-    aoc::utils::points::render_char_map(&my_run(input, WHITE)).into()
+    utils::points::render_char_map(&my_run(input, WHITE)).into()
 }
 #[test]
 pub fn example() {

@@ -1,5 +1,5 @@
-use aoc::utils::points::as_point_map;
-use aoc::utils::prelude::*;
+use utils::points::as_point_map;
+use utils::prelude::*;
 use aoc_harness::aoc_main;
 
 aoc_main!(2019 day 17, part1 [p1] => 3608, part2 [p2] => 897426);
