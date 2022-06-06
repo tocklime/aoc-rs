@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, time::Duration};
 use aoc_harness::{dayresult::DayResult, Opts};
 use clap::Parser;
 use seq_macro::seq;
-type Day = ((i32, u8), fn(&mut DayResult, &Opts));
+type Day = ((i32, u8), fn(&mut DayResult, &mut Opts));
 fn make_all() -> Vec<Day> {
     let mut ans: Vec<Day> = Vec::with_capacity(56);
     seq!(N in 01..=25 {
@@ -33,7 +33,7 @@ pub fn main() {
     let args = Args::parse();
     let all = make_all();
     let mut times = Vec::new();
-    let opts = Default::default();
+    let mut opts = Default::default();
     let mut total_time = Duration::ZERO;
     let mut time_per_year: BTreeMap<i32, Duration> = BTreeMap::new();
     for ((year, day), f) in all {
@@ -41,7 +41,7 @@ pub fn main() {
             && (args.day.is_none() || args.day == Some(day))
         {
             let mut dr = DayResult::new(year, day, "Name");
-            f(&mut dr, &opts);
+            f(&mut dr, &mut opts);
             let t = dr.total_time();
             total_time += t;
             *time_per_year.entry(year).or_default() += t;

@@ -10,13 +10,15 @@ enum ExecutionTime {
     Both(Duration),
 }
 pub struct DayResult {
-    year: i32,
-    day: u8,
+    pub year: i32,
+    pub day: u8,
     name: &'static str,
     generator_time: Option<Duration>,
     solve_time: ExecutionTime,
-    part1_ans: Option<String>,
-    part2_ans: Option<String>,
+    pub part1_ans: Option<String>,
+    pub part1_confirmed: bool,
+    pub part2_ans: Option<String>,
+    pub part2_confirmed: bool,
 }
 
 impl DayResult {
@@ -29,6 +31,8 @@ impl DayResult {
             solve_time: ExecutionTime::NoneRecorded,
             part1_ans: None,
             part2_ans: None,
+            part1_confirmed: false,
+            part2_confirmed: false,
         }
     }
     pub fn output_line(&self) -> String {
@@ -81,9 +85,11 @@ impl DayResult {
     }
     pub fn expect_p1<T: Display>(&mut self, s: T) {
         self.part1_ans = Some(format!("{}", s));
+        self.part1_confirmed = true;
     }
     pub fn expect_p2<T: Display>(&mut self, s: T) {
         self.part2_ans = Some(format!("{}", s));
+        self.part2_confirmed = true;
     }
     pub fn record_p1<T: Display>(&mut self, ans: T, time: Duration) {
         if let Err(x) = Self::record_ans(1, &mut self.part1_ans, ans) {

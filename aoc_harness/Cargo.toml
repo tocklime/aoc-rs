@@ -10,3 +10,5 @@ structopt = "0.3"
 itertools = "0.10.1"
 ureq = "2.3.1"
 aoc_harness_macros = { path = "libs/macros"}
+serde = {version = "1", features = ["derive"]}
+serde_yaml = "0.8"

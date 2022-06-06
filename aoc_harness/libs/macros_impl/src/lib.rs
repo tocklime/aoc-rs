@@ -387,30 +387,28 @@ impl AocMainInput {
                     #[test]
                     fn full_solution() {
                         let mut results = aoc_harness::dayresult::DayResult::new(#year,#day,file!());
-                        super::run_with_opts(&mut results, &aoc_harness::Opts::for_test());
+                        super::run_with_opts(&mut results, &mut aoc_harness::Opts::for_test());
                     }
                     #[test]
                     pub fn examples() {
                         super::check_examples();
                     }
                 }
-                pub fn run_with_opts(results: &mut aoc_harness::dayresult::DayResult, opts: &aoc_harness::Opts) {
+                pub fn run_with_opts(results: &mut aoc_harness::dayresult::DayResult, opts: &mut aoc_harness::Opts) {
                     #setup
                     #solutions
+                    opts.answers.record_dayresult(results).expect("Mismatched results");
                 }
                 #examples
-                // pub fn main() {
-                //     dotenv::dotenv().ok();
-                //     run_main();
-                // }
 
                 #[allow(dead_code)]
                 pub fn run_main() -> aoc_harness::dayresult::DayResult {
-                    let opts = aoc_harness::Opts::from_args();
+                    let mut opts = aoc_harness::Opts::from_args();
+                    dbg!(&opts.answers);
                     check_examples();
                     let mut results = aoc_harness::dayresult::DayResult::new(#year,#day,file!());
                     for _ in 0..opts.repeats {
-                        run_with_opts(&mut results, &opts);
+                        run_with_opts(&mut results, &mut opts);
                     }
                     results
                 }

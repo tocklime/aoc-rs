@@ -1,9 +1,11 @@
 //Convenience re-exports
 
+pub mod answers;
 pub mod dayresult;
 
 use std::{env, path::PathBuf, str::FromStr, time::Instant};
 
+use answers::AnswerAll;
 pub use aoc_harness_macros::*;
 pub use itertools::Itertools;
 use structopt::StructOpt;
@@ -23,6 +25,8 @@ pub struct Opts {
     /// Bypass lightweight benchmarking
     #[structopt(short, long)]
     pub bypass: bool,
+    #[structopt(skip)]
+    pub answers: AnswerAll,
 }
 
 impl Default for Opts {
@@ -33,6 +37,7 @@ impl Default for Opts {
             test_mode: false,
             repeats: 1,
             bypass: false,
+            answers: AnswerAll::from_file(),
         }
     }
 }
@@ -46,6 +51,7 @@ impl Opts {
             test_mode: true,
             repeats: 1,
             bypass: true,
+            answers: AnswerAll::blank(),
         }
     }
     pub fn log<F: FnOnce() -> String>(&self, f: F) {

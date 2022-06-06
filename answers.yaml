@@ -1,0 +1,284 @@
+---
+2019:
+  1:
+    part1: "3154112"
+    part1_confirmed: true
+    part2: "4728317"
+    part2_confirmed: true
+  2:
+    part1: "7594646"
+    part1_confirmed: true
+    part2: "3376"
+    part2_confirmed: true
+  3:
+    part1: "1017"
+    part1_confirmed: true
+    part2: "11432"
+    part2_confirmed: true
+  4:
+    part1: "921"
+    part1_confirmed: true
+    part2: "603"
+    part2_confirmed: true
+  5:
+    part1: "5577461"
+    part1_confirmed: true
+    part2: "7161591"
+    part2_confirmed: true
+  6:
+    part1: "227612"
+    part1_confirmed: true
+    part2: "454"
+    part2_confirmed: true
+  7:
+    part1: "273814"
+    part1_confirmed: true
+    part2: "34579864"
+    part2_confirmed: true
+  8:
+    part1: "2460"
+    part1_confirmed: true
+    part2: LRFKU
+    part2_confirmed: true
+  9:
+    part1: "4261108180"
+    part1_confirmed: true
+    part2: "77944"
+    part2_confirmed: true
+  10:
+    part1: "288"
+    part1_confirmed: true
+    part2: "616"
+    part2_confirmed: true
+  11:
+    part1: "2160"
+    part1_confirmed: true
+    part2: LRZECGFE
+    part2_confirmed: true
+  12:
+    part1: "7098"
+    part1_confirmed: true
+    part2: "400128139852752"
+    part2_confirmed: true
+  13:
+    part1: "301"
+    part1_confirmed: true
+    part2: "14096"
+    part2_confirmed: true
+  14:
+    part1: "892207"
+    part1_confirmed: true
+    part2: "1935265"
+    part2_confirmed: true
+  15:
+    part1: "230"
+    part1_confirmed: true
+    part2: "288"
+    part2_confirmed: true
+  16:
+    part1: "63794407"
+    part1_confirmed: true
+    part2: "77247538"
+    part2_confirmed: true
+  17:
+    part1: "3608"
+    part1_confirmed: true
+    part2: "897426"
+    part2_confirmed: true
+  18:
+    part1: "4204"
+    part1_confirmed: true
+    part2: "1682"
+    part2_confirmed: true
+  19:
+    part1: "234"
+    part1_confirmed: true
+    part2: "9290812"
+    part2_confirmed: true
+  20:
+    part1: "692"
+    part1_confirmed: true
+    part2: "8314"
+    part2_confirmed: true
+  21:
+    part1: "19359316"
+    part1_confirmed: true
+    part2: "1141281622"
+    part2_confirmed: true
+  22:
+    part1: "6526"
+    part1_confirmed: true
+    part2: "79855812422607"
+    part2_confirmed: true
+  23:
+    part1: "20225"
+    part1_confirmed: true
+    part2: "14348"
+    part2_confirmed: true
+  24:
+    part1: "32509983"
+    part1_confirmed: true
+    part2: "2012"
+    part2_confirmed: true
+  25:
+    part1: "537002052"
+    part1_confirmed: true
+    part2: ~
+    part2_confirmed: false
+2020:
+  1:
+    part1: "802011"
+    part1_confirmed: true
+    part2: "248607374"
+    part2_confirmed: true
+  2:
+    part1: "620"
+    part1_confirmed: true
+    part2: "727"
+    part2_confirmed: true
+  3:
+    part1: "242"
+    part1_confirmed: true
+    part2: "2265549792"
+    part2_confirmed: true
+  4:
+    part1: "233"
+    part1_confirmed: true
+    part2: "111"
+    part2_confirmed: true
+  5:
+    part1: "922"
+    part1_confirmed: true
+    part2: "747"
+    part2_confirmed: true
+  6:
+    part1: "6878"
+    part1_confirmed: false
+    part2: "3464"
+    part2_confirmed: false
+2021:
+  1:
+    part1: "1616"
+    part1_confirmed: true
+    part2: "1645"
+    part2_confirmed: true
+  2:
+    part1: "1868935"
+    part1_confirmed: true
+    part2: "1965970888"
+    part2_confirmed: true
+  3:
+    part1: "4001724"
+    part1_confirmed: true
+    part2: "587895"
+    part2_confirmed: true
+  4:
+    part1: "60368"
+    part1_confirmed: true
+    part2: "17435"
+    part2_confirmed: true
+  5:
+    part1: "5147"
+    part1_confirmed: true
+    part2: "16925"
+    part2_confirmed: true
+  6:
+    part1: "385391"
+    part1_confirmed: true
+    part2: "1728611055389"
+    part2_confirmed: true
+  7:
+    part1: "352997"
+    part1_confirmed: true
+    part2: "101571302"
+    part2_confirmed: true
+  8:
+    part1: "473"
+    part1_confirmed: true
+    part2: "1097568"
+    part2_confirmed: true
+  9:
+    part1: "633"
+    part1_confirmed: true
+    part2: "1050192"
+    part2_confirmed: true
+  10:
+    part1: "411471"
+    part1_confirmed: true
+    part2: "3122628974"
+    part2_confirmed: true
+  11:
+    part1: "1675"
+    part1_confirmed: true
+    part2: "515"
+    part2_confirmed: true
+  12:
+    part1: "3410"
+    part1_confirmed: true
+    part2: "98796"
+    part2_confirmed: true
+  13:
+    part1: "653"
+    part1_confirmed: true
+    part2: LKREBPRK
+    part2_confirmed: true
+  14:
+    part1: "3284"
+    part1_confirmed: true
+    part2: "4302675529689"
+    part2_confirmed: true
+  15:
+    part1: "717"
+    part1_confirmed: true
+    part2: "2993"
+    part2_confirmed: true
+  16:
+    part1: "883"
+    part1_confirmed: true
+    part2: "1675198555015"
+    part2_confirmed: true
+  17:
+    part1: "8911"
+    part1_confirmed: true
+    part2: "4748"
+    part2_confirmed: true
+  18:
+    part1: "4641"
+    part1_confirmed: true
+    part2: "4624"
+    part2_confirmed: true
+  19:
+    part1: "419"
+    part1_confirmed: true
+    part2: "13210"
+    part2_confirmed: true
+  20:
+    part1: "5786"
+    part1_confirmed: true
+    part2: "16757"
+    part2_confirmed: true
+  21:
+    part1: "598416"
+    part1_confirmed: true
+    part2: "27674034218179"
+    part2_confirmed: true
+  22:
+    part1: "582644"
+    part1_confirmed: true
+    part2: "1263804707062415"
+    part2_confirmed: true
+  23:
+    part1: "15358"
+    part1_confirmed: true
+    part2: "51436"
+    part2_confirmed: true
+  24:
+    part1: "69914999975369"
+    part1_confirmed: true
+    part2: "14911675311114"
+    part2_confirmed: true
+  25:
+    part1: "601"
+    part1_confirmed: true
+    part2: ~
+    part2_confirmed: false
