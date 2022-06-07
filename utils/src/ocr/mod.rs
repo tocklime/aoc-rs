@@ -94,6 +94,12 @@ pub fn ascii_art_6_to_str(input: &str) -> String {
 pub struct OcrString {
     inner: String,
 }
+impl aoc_harness::answertype::AnswerType for OcrString {
+    type Output = Self;
+    fn to_option(self) -> Option<Self::Output> {
+        Some(self)
+    }
+}
 impl From<String> for OcrString {
     fn from(s: String) -> Self {
         Self::new(s)

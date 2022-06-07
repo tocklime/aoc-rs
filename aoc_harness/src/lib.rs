@@ -1,6 +1,7 @@
 //Convenience re-exports
 
 pub mod answers;
+pub mod answertype;
 pub mod dayresult;
 
 use std::{env, path::PathBuf, str::FromStr, time::Instant};

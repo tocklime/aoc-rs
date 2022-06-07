@@ -7,6 +7,7 @@ use std::hash::BuildHasher;
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
 #[derive(PartialEq, Debug, Clone, Copy, TryFromPrimitive)]
 #[repr(u8)]
+#[must_use]
 pub enum Dir {
     U,
     L,
@@ -18,6 +19,7 @@ impl Dir {
     pub fn all() -> [Self; 4] {
         [Self::U, Self::D, Self::L, Self::R]
     }
+    #[must_use]
     pub fn from_udlr(c: &str) -> Option<Self> {
         match c {
             "U" => Some(Self::U),
@@ -27,6 +29,7 @@ impl Dir {
             _ => None,
         }
     }
+    #[must_use]
     pub fn from_nsew(c: &str) -> Option<Self> {
         match c {
             "N" => Some(Self::U),
@@ -68,11 +71,13 @@ impl Dir {
             Self::R => Self::D,
         }
     }
+    #[must_use]
     pub fn is_horizontal(self) -> bool {
         self == Self::R || self == Self::L
     }
 }
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
+#[must_use]
 pub struct Point(pub isize, pub isize);
 impl Mul<isize> for Point {
     type Output = Self;
@@ -115,23 +120,28 @@ impl Point {
     pub fn origin() -> Self {
         Self(0, 0)
     }
+    #[must_use]
     pub fn manhattan_from_origin(self) -> usize {
         (self.0.abs() + self.1.abs()).try_into().unwrap()
     }
+    #[must_use]
     pub fn manhattan(self, other: Self) -> usize {
         ((self.0 - other.0).abs() + (self.1 - other.1).abs())
             .try_into()
             .unwrap()
     }
+    #[must_use]
     pub fn gcd(self) -> isize {
         gcd(self.0, self.1)
     }
+    #[must_use]
     pub fn size_squared(self) -> isize {
         self.0 * self.0 + self.1 * self.1
     }
     pub fn simplest_direction(self) -> Self {
         self / self.gcd()
     }
+    #[must_use]
     pub fn quadrant_clockwise(self) -> usize {
         match (self.0 >= 0, self.1 >= 0) {
             (true, false) => 1,
@@ -165,6 +175,7 @@ impl Point {
     }
 }
 #[derive(Debug)]
+#[must_use]
 pub struct PolarCoord {
     pub r: f64,
     pub theta: f64,
@@ -197,6 +208,7 @@ impl PolarCoord {
 }
 
 #[derive(Clone, Copy, Debug)]
+#[must_use]
 pub struct Aabb {
     pub bottom_left: Point,
     pub top_right: Point,
@@ -218,6 +230,7 @@ impl Aabb {
         ans.top_right.1 = max(ans.top_right.1, p.1);
         ans
     }
+    #[must_use]
     pub fn contains(&self, p: Point) -> bool {
         self.bottom_left.0 <= p.0
             && self.bottom_left.1 <= p.1
@@ -254,11 +267,13 @@ impl Aabb {
         }
         v
     }
+    #[must_use]
     pub fn width(&self) -> usize {
         (1 + self.top_right.0 - self.bottom_left.0)
             .try_into()
             .unwrap()
     }
+    #[must_use]
     pub fn height(&self) -> usize {
         (1 + self.top_right.1 - self.bottom_left.1)
             .try_into()
@@ -301,6 +316,7 @@ pub fn render_char_map_w<S: BuildHasher>(
         .rev() //looks upside down...
         .collect()
 }
+#[must_use]
 pub fn as_point_map(input: &str) -> HashMap<Point, char> {
     input
         .lines()

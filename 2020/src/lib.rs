@@ -1,4 +1,4 @@
-#![warn(clippy::all, clippy::cargo, clippy::pedantic, clippy::nursery)]
+#![warn(clippy::all, clippy::cargo)]
 #![allow(clippy::must_use_candidate)] //doesn't play nice with aoc part functions.
 #![allow(clippy::cargo_common_metadata)] //I don't want to add this metadata.
 #![allow(clippy::implicit_hasher)] //I don't want to deal with this.

@@ -16,10 +16,10 @@ pub struct Password {
 }
 
 impl Password {
-    pub fn is_valid_1(&self) -> bool {
+    fn is_valid_1(&self) -> bool {
         (self.min..=self.max).contains(&self.password.chars().filter(|&x| x == self.letter).count())
     }
-    pub fn is_valid_2(&self) -> bool {
+    fn is_valid_2(&self) -> bool {
         self.password
             .chars()
             //decorate with indices
@@ -32,12 +32,12 @@ impl Password {
     }
 }
 
-pub fn gen(input: &str) -> Vec<Password> {
+fn gen(input: &str) -> Vec<Password> {
     parse_input_from_str_sep_by(input, "\n")
 }
-pub fn p1(input: &[Password]) -> usize {
+fn p1(input: &[Password]) -> usize {
     input.iter().filter(|x| x.is_valid_1()).count()
 }
-pub fn p2(input: &[Password]) -> usize {
+fn p2(input: &[Password]) -> usize {
     input.iter().filter(|x| x.is_valid_2()).count()
 }

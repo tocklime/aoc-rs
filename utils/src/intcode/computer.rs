@@ -143,7 +143,7 @@ where
         self
     }
     pub fn with_string_input(&mut self, input: &str) -> &mut Self {
-        self.give_input(input.bytes().map(|x| x.into()).collect());
+        self.give_input(input.bytes().map(std::convert::Into::into).collect());
         self
     }
     pub fn output_as_string(&self) -> String {

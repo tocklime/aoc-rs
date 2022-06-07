@@ -42,7 +42,17 @@ pub fn main() {
         {
             let mut dr = DayResult::new(year, day, "Name");
             f(&mut dr, &mut opts);
-            let t = dr.total_time();
+            let t = {
+                let ref this = dr;
+                this.generator_time.unwrap_or(Duration::ZERO)
+                    + match this.solve_time {
+                        ExecutionTime::Both(b) => b,
+                        ExecutionTime::NoneRecorded => Duration::ZERO,
+                        ExecutionTime::Part1(a) => a,
+                        ExecutionTime::Separate(a, b) => a + b,
+                        ExecutionTime::Part2(b) => b,
+                    }
+            };
             total_time += t;
             *time_per_year.entry(year).or_default() += t;
             times.push(dr);

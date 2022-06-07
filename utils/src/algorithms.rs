@@ -33,7 +33,7 @@ where
 {
     let mut m = HashMap::new();
     for (k, v) in tuples {
-        m.entry(k).or_insert_with(Vec::new).push(v)
+        m.entry(k).or_insert_with(Vec::new).push(v);
     }
     m
 }
@@ -76,7 +76,7 @@ where
             *counts.entry(n).or_default() += 1;
         }
     }
-    for (p, c) in counts.into_iter() {
+    for (p, c) in counts {
         let is_alive = g.contains(&p);
         let next_alive = check(is_alive, c);
         if is_alive && !next_alive {

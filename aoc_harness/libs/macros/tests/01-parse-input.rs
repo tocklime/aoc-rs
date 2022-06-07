@@ -26,8 +26,8 @@ mod no_gen {
     aoc_main!(2021 day 2, part1 [p1] => 42, part2 [p2] => "answer");
 }
 fn main() {
-    full::main();
-    no_gen::main();
+    full::run_main();
+    no_gen::run_main();
 }
 
 // We want to say something like:

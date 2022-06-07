@@ -257,9 +257,15 @@ impl AocMainInput {
                     let (t, a) = opts.time_fn(|| #f(&generated));
                 });
                 match part.part_num {
-                    PartNum::Part1 => inner.extend(quote! { results.record_p1(a.clone(),t);}),
-                    PartNum::Part2 => inner.extend(quote! { results.record_p2(a.clone(),t);}),
-                    PartNum::Both => inner.extend(quote! { results.record_both(a.clone(),t);}),
+                    PartNum::Part1 => {
+                        inner.extend(quote! { results.record_p1(aoc_harness::answertype::AnswerType::to_option(a.clone()),t);});
+                    }
+                    PartNum::Part2 => {
+                        inner.extend(quote! { results.record_p2(aoc_harness::answertype::AnswerType::to_option(a.clone()),t);});
+                    }
+                    PartNum::Both => {
+                        inner.extend(quote! { results.record_both(aoc_harness::answertype::AnswerType::to_option(a.clone()),t);});
+                    }
                 }
                 if !do_ans_check || is_single_solution {
                     inner.extend(quote! {
@@ -404,7 +410,6 @@ impl AocMainInput {
                 #[allow(dead_code)]
                 pub fn run_main() -> aoc_harness::dayresult::DayResult {
                     let mut opts = aoc_harness::Opts::from_args();
-                    dbg!(&opts.answers);
                     check_examples();
                     let mut results = aoc_harness::dayresult::DayResult::new(#year,#day,file!());
                     for _ in 0..opts.repeats {

@@ -5,8 +5,8 @@ use itertools::Itertools;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
-use utils::inputs::input_from_str_sep_by;
 use lazy_static::lazy_static;
+use utils::inputs::input_from_str_sep_by;
 
 lazy_static! {
     static ref HEIGHT_RE: Regex = Regex::new(r"^(\d+)(cm|in)$").unwrap();
@@ -15,7 +15,7 @@ lazy_static! {
     static ref REQUIRED_SET: HashSet<&'static str> =
         ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
             .iter()
-            .cloned()
+            .copied()
             .collect();
 }
 fn validate(k: &str, v: &str) -> Option<bool> {
@@ -39,28 +39,29 @@ fn validate(k: &str, v: &str) -> Option<bool> {
     Some(a)
 }
 
-pub fn gen(input: &str) -> Vec<HashMap<&str, &str>> {
+fn gen(input: &str) -> Vec<HashMap<&str, &str>> {
     input_from_str_sep_by(input, "\n\n", |p| {
         p.split_whitespace()
-                .flat_map(move |p| p.split(':')).tuples()
-                .collect()
+            .flat_map(move |p| p.split(':'))
+            .tuples()
+            .collect()
     })
 }
 
-pub fn p1(input: &[HashMap<&str, &str>]) -> usize {
+fn p1(input: &[HashMap<&str, &str>]) -> usize {
     input
         .iter()
         .filter(|&fns| REQUIRED_SET.iter().all(|&k| fns.contains_key(k)))
         .count()
 }
 
-pub fn p2(input: &[HashMap<&str, &str>]) -> usize {
+fn p2(input: &[HashMap<&str, &str>]) -> usize {
     input
         .iter()
         .filter(|&fns| {
             REQUIRED_SET
                 .iter()
-                .all(|&k| fns.get(k).and_then(|x| validate(k,x)) == Some(true))
+                .all(|&k| fns.get(k).and_then(|x| validate(k, x)) == Some(true))
         })
         .count()
 }

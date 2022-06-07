@@ -18,6 +18,7 @@ pub struct AnswerAll {
     data: BTreeMap<i32, AnswerYear>,
 }
 impl AnswerAll {
+    #[must_use]
     pub fn from_file() -> Self {
         let data = match std::fs::File::open("answers.yaml") {
             Ok(f) => serde_yaml::from_reader(f).expect("Bad yaml format in answers.yaml"),
@@ -25,6 +26,7 @@ impl AnswerAll {
         };
         Self { data }
     }
+    #[must_use]
     pub fn blank() -> Self {
         Self {
             data: BTreeMap::new(),

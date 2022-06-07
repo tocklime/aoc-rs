@@ -5,6 +5,7 @@ use itertools::Itertools;
 use crate::span::Span;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[must_use]
 pub struct Cube {
     s: [Span<isize>; 3],
 }
@@ -33,12 +34,15 @@ impl Cube {
     pub fn new(s: [Span<isize>; 3]) -> Self {
         Self { s }
     }
+    #[must_use]
     pub fn size(&self) -> isize {
         self.s.iter().map(|z| max(0, z.end - z.start)).product()
     }
+    #[must_use]
     pub fn intersects(&self, other: &Self) -> bool {
         self.intersection(other).is_some()
     }
+    #[must_use]
     pub fn intersection(&self, other: &Self) -> Option<Self> {
         Some(Self {
             s: [
@@ -48,6 +52,7 @@ impl Cube {
             ],
         })
     }
+    #[must_use]
     pub fn subtract(&self, other: &Self) -> Vec<Self> {
         let mut ans = Vec::new();
         if self.intersects(other) {

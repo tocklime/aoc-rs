@@ -127,6 +127,7 @@ where
     }
 }
 pub trait NumBitExt {
+    #[must_use]
     fn with_set_bit(self, bit_ix: u8, bit_value: bool) -> Self;
     fn set_bit(&mut self, bit_ix: u8, bit_value: bool);
     fn get_bit(self, bit_ix: u8) -> bool;
@@ -160,6 +161,7 @@ where
     }
 }
 
+#[must_use]
 pub fn is_sorted(i: &[u8]) -> bool {
     i.iter().zip(i.iter().skip(1)).all(|(a, b)| a <= b)
 }

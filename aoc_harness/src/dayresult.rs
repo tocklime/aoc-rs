@@ -22,6 +22,7 @@ pub struct DayResult {
 }
 
 impl DayResult {
+    #[must_use]
     pub fn new(year: i32, day: u8, name: &'static str) -> Self {
         Self {
             year,
@@ -35,6 +36,7 @@ impl DayResult {
             part2_confirmed: false,
         }
     }
+    #[must_use]
     pub fn output_line(&self) -> String {
         let t = match self.solve_time {
             ExecutionTime::NoneRecorded => "Not run".to_string(),
@@ -49,8 +51,7 @@ impl DayResult {
             "{}\tgen: {}\t{}\t{}\t{}",
             self.desc(),
             self.generator_time
-                .map(render_duration)
-                .unwrap_or_else(|| "N/A".to_owned()),
+                .map_or_else(|| "N/A".to_owned(), render_duration),
             t,
             self.part1_ans.as_ref().unwrap_or(&"N/A".to_owned()),
             self.part2_ans.as_ref().unwrap_or(&"N/A".to_owned())
@@ -68,9 +69,12 @@ impl DayResult {
     fn record_ans<T: Display>(
         part_num: u8,
         slot: &mut Option<String>,
-        ans: T,
+        ans: Option<T>,
     ) -> Result<(), String> {
-        let ans = format!("{}", ans);
+        let ans = match ans {
+            Some(a) => format!("{}", a),
+            None => "".to_owned(),
+        };
         match slot {
             Some(s) if s != &ans => Err(format!(
                 "conflicting results for part {}: {} and {}",
@@ -91,7 +95,7 @@ impl DayResult {
         self.part2_ans = Some(format!("{}", s));
         self.part2_confirmed = true;
     }
-    pub fn record_p1<T: Display>(&mut self, ans: T, time: Duration) {
+    pub fn record_p1<T: Display>(&mut self, ans: Option<T>, time: Duration) {
         if let Err(x) = Self::record_ans(1, &mut self.part1_ans, ans) {
             panic!("{} {}", self.desc(), x);
         }
@@ -100,11 +104,11 @@ impl DayResult {
             ExecutionTime::Part2(b) => self.solve_time = ExecutionTime::Separate(time, *b),
             ExecutionTime::Part1(p) if *p > time => *p = time,
             ExecutionTime::Separate(a, _) if *a > time => *a = time,
-            ExecutionTime::Both(_) => {} //assume 'both' times are better.
+            // ExecutionTime::Both(_) => {} //assume 'both' times are better.
             _ => {}
         }
     }
-    pub fn record_p2<T: Display>(&mut self, ans: T, time: Duration) {
+    pub fn record_p2<T: Display>(&mut self, ans: Option<T>, time: Duration) {
         if let Err(x) = Self::record_ans(2, &mut self.part2_ans, ans) {
             panic!("{} {}", self.desc(), x);
         }
@@ -113,15 +117,19 @@ impl DayResult {
             ExecutionTime::Part1(a) => self.solve_time = ExecutionTime::Separate(*a, time),
             ExecutionTime::Part2(p) if *p > time => *p = time,
             ExecutionTime::Separate(_, b) if *b > time => *b = time,
-            ExecutionTime::Both(_) => {} //assume 'both' times are better.
+            // ExecutionTime::Both(_) => {} //assume 'both' times are better.
             _ => {}
         }
     }
-    pub fn record_both<T: Display, T2: Display>(&mut self, ans: (T, T2), time: Duration) {
-        if let Err(x) = Self::record_ans(1, &mut self.part1_ans, ans.0) {
+    pub fn record_both<T: Display, T2: Display>(&mut self, ans: Option<(T, T2)>, time: Duration) {
+        let (p1, p2) = match ans {
+            Some((p1, p2)) => (Some(p1), Some(p2)),
+            None => (None, None),
+        };
+        if let Err(x) = Self::record_ans(1, &mut self.part1_ans, p1) {
             panic!("{} {}", self.desc(), x);
         }
-        if let Err(x) = Self::record_ans(2, &mut self.part2_ans, ans.1) {
+        if let Err(x) = Self::record_ans(2, &mut self.part2_ans, p2) {
             panic!("{} {}", self.desc(), x);
         }
         match &mut self.solve_time {
@@ -133,14 +141,13 @@ impl DayResult {
             _ => self.solve_time = ExecutionTime::Both(time),
         }
     }
+    #[must_use]
     pub fn total_time(&self) -> Duration {
         self.generator_time.unwrap_or(Duration::ZERO)
             + match self.solve_time {
-                ExecutionTime::Both(b) => b,
+                ExecutionTime::Both(b) | ExecutionTime::Part1(b) | ExecutionTime::Part2(b) => b,
                 ExecutionTime::NoneRecorded => Duration::ZERO,
-                ExecutionTime::Part1(a) => a,
                 ExecutionTime::Separate(a, b) => a + b,
-                ExecutionTime::Part2(b) => b,
             }
     }
 }

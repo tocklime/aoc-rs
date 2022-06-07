@@ -25,3 +25,4 @@ seq-macro = "0.3"
 parse-display = "0.5.5"
 automod = "1.0.3"
 clap = { version = "3.1", features = ["derive"]}
+petgraph = "0.6.2"

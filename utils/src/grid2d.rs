@@ -160,12 +160,14 @@ impl<T> Grid2d<T> {
         .into_iter()
         .filter(move |&x| x.0 < s.0 && x.1 < s.1)
     }
+    #[must_use]
     pub fn wraparound_relative_lookup(&self, p: Coord, relative: ICoord) -> &T {
         let d = self.dim();
-        let targety = add_i_mod(p.0, &relative.0, d.0);
-        let targetx = add_i_mod(p.1, &relative.1, d.1);
-        &self[(targety, targetx)]
+        let y = add_i_mod(p.0, &relative.0, d.0);
+        let x = add_i_mod(p.1, &relative.1, d.1);
+        &self[(y, x)]
     }
+    #[must_use]
     pub fn wraparound_neighbours(&self, (y, x): Coord) -> [Coord; 4] {
         let (sy, sx) = self.dim();
         [

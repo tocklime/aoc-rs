@@ -7,6 +7,7 @@ use std::iter::FromIterator;
 use std::ops::RangeInclusive;
 
 #[derive(Clone, Copy, Debug)]
+#[must_use]
 pub struct Aabb<T> {
     pub bottom_left: Point<T>,
     pub top_right: Point<T>,
