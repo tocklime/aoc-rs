@@ -2,7 +2,7 @@ use std::{fmt::Display, time::Duration};
 
 use crate::render_duration;
 
-enum ExecutionTime {
+pub enum ExecutionTime {
     NoneRecorded,
     Part1(Duration),
     Part2(Duration),
@@ -13,8 +13,8 @@ pub struct DayResult {
     pub year: i32,
     pub day: u8,
     name: &'static str,
-    generator_time: Option<Duration>,
-    solve_time: ExecutionTime,
+    pub generator_time: Option<Duration>,
+    pub solve_time: ExecutionTime,
     pub part1_ans: Option<String>,
     pub part1_confirmed: bool,
     pub part2_ans: Option<String>,

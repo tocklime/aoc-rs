@@ -1,9 +1,9 @@
-use utils::points::{Point, PolarCoord};
 use aoc_harness::aoc_main;
 use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::convert::TryInto;
 use std::f64::consts::FRAC_PI_2;
+use utils::points::{Point, PolarCoord};
 
 aoc_main!(2019 day 10, generator gen, part1 [p1a] => 288, part2 [p2a] => 616);
 type AsteroidSet = HashSet<Point>;
@@ -77,7 +77,7 @@ pub fn p2(input: &AsteroidSet, station: Point, nth: usize) -> isize {
             order.push(x);
             list_ix += 1;
         } else {
-            dir_list.remove(list_ix);
+            let _ = dir_list.remove(list_ix);
         }
     }
     let x = order[nth - 1];

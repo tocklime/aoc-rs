@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, time::Duration};
 
-use aoc_harness::{dayresult::DayResult, Opts};
+use aoc_harness::{dayresult::DayResult, dayresult::ExecutionTime, Opts};
 use clap::Parser;
 use seq_macro::seq;
 type Day = ((i32, u8), fn(&mut DayResult, &mut Opts));
@@ -43,7 +43,7 @@ pub fn main() {
             let mut dr = DayResult::new(year, day, "Name");
             f(&mut dr, &mut opts);
             let t = {
-                let ref this = dr;
+                let this = &dr;
                 this.generator_time.unwrap_or(Duration::ZERO)
                     + match this.solve_time {
                         ExecutionTime::Both(b) => b,
