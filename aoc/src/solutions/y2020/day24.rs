@@ -37,7 +37,11 @@ fn make_floor(input: &str) -> HashSet<Point<i32>> {
         .map(parse_line)
         .collect::<Option<Counter<Point<i32>>>>()
         .unwrap();
-    counts.iter().filter(|x| x.1 % 2 == 1).map(|(&x, _)| x).collect()
+    counts
+        .iter()
+        .filter(|x| x.1 % 2 == 1)
+        .map(|(&x, _)| x)
+        .collect()
 }
 
 fn p1(input: &str) -> usize {
@@ -54,16 +58,4 @@ fn step(a: &HashSet<Point<i32>>) -> HashSet<Point<i32>> {
 
 fn p2(input: &str) -> usize {
     100.applications_of_ref(make_floor(input), step).len()
-}
-
-#[cfg(test)]
-mod regression {
-    use super::{p1, p2};
-    const ANS: (usize, usize) = (434, 3955);
-    const INP: &str = include_str!("../../input/2020/day24.txt");
-    #[test]
-    fn regression() {
-        assert_eq!(p1(INP), ANS.0);
-        assert_eq!(p2(INP), ANS.1);
-    }
 }
