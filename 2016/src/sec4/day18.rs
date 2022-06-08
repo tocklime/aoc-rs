@@ -14,13 +14,13 @@ fn next_line(input: &[char]) -> Vec<char> {
 }
 
 #[aoc(day18, part1)]
-#[post(ret == 1_974)]
+
 fn p1(input: &str) -> usize {
     solve(input, 40)
 }
 
 #[aoc(day18, part2)]
-#[post(ret == 19_991_126)]
+
 fn p2(input: &str) -> usize {
     solve(input, 400_000)
 }

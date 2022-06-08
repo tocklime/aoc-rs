@@ -3,7 +3,7 @@ use itertools::Itertools;
 use std::cmp::max;
 
 #[aoc(day20, part1)]
-#[post(ret == 32_259_706)]
+
 fn p1(input: &str) -> u32 {
     let limits: BTreeSet<(u32, u32)> = input.lines().map(|x| {
         let s = x.split('-').map(|x| x.parse::<u32>().unwrap()).collect_vec();
@@ -20,7 +20,7 @@ fn p1(input: &str) -> u32 {
 }
 
 #[aoc(day20, part2)]
-#[post(ret == 113)]
+
 fn p2(input: &str) -> u32 {
     let limits: BTreeSet<(u32, u32)> = input.lines().map(|x| {
         let s = x.split('-').map(|x| x.parse::<u32>().unwrap()).collect_vec();

@@ -52,12 +52,12 @@ fn solve(input: &str,hash_reps:usize) -> usize {
 }
 
 #[aoc(day14, part1)]
-#[post(ret == 23769)]
+
 fn p1(input: &str) -> usize {
     solve(input,1)
 }
 #[aoc(day14, part2)]
-#[post(ret == 20606)]
+
 fn p2(input: &str) -> usize {
     solve(input,2017)
 }

@@ -42,13 +42,13 @@ fn has_ssl(l: &&str) -> bool {
 }
 
 #[aoc(day7, part1)]
-#[post(ret == 115)]
+
 fn p1(input: &str) -> usize {
     input.lines().filter(has_tls).count()
 }
 
 #[aoc(day7, part2)]
-#[post(ret == 231)]
+
 fn p2(input: &str) -> usize {
     input.lines().filter(has_ssl).count()
 }

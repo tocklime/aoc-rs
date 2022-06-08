@@ -3,7 +3,7 @@ use nom::lib::std::collections::HashSet;
 use std::collections::HashMap;
 
 #[aoc(day6,part1)]
-#[post(ret == 5042)]
+
 fn p1(input: &str) -> usize {
     let mut mem = input.split('\t').map(|n| n.parse::<usize>().unwrap()).collect_vec();
     let mut seen = HashSet::new();

@@ -112,7 +112,7 @@ impl Op {
 }
 
 #[aoc(day21,part1)]
-#[post(ret == "agcebfdh")]
+
 fn p1(input: &str) -> String {
     let steps = input.lines().map(|x| Op::parse(x).unwrap());
     let mut s : VecDeque<char> = "abcdefgh".chars().collect();
@@ -123,7 +123,7 @@ fn p1(input: &str) -> String {
 }
 
 #[aoc(day21,part2)]
-#[post(ret == "afhdbegc")]
+
 fn p2(input: &str) -> String {
     let steps = input.lines().map(|x| Op::parse(x).unwrap());
     let mut s : VecDeque<char> = "fbgdceah".chars().collect();

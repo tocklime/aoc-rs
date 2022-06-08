@@ -1,7 +1,7 @@
 use crate::utils::assembunny::Computer;
 
 #[aoc(day23,part1)]
-#[post(ret == 12_775)]
+
 fn p1(input: &str) -> i64 {
     let mut c = Computer::parse(input);
     c.set_reg('a',7);
@@ -9,7 +9,7 @@ fn p1(input: &str) -> i64 {
     c.get_reg('a')
 }
 #[aoc(day23,part2)]
-#[post(ret == 479_009_335)]
+
 fn p2(input: &str) -> i64 {
     let mut c = Computer::parse(input);
     c.set_reg('a',12);

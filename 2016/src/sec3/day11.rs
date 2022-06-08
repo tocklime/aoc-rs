@@ -174,7 +174,7 @@ fn gen(input: &str) -> World {
 }
 
 #[aoc(day11, part1)]
-#[post(ret == 33)]
+
 fn p1(input: &str) -> usize {
     let w = gen(input);
     astar(&w, World::neighbours, World::heuristic, World::is_done)
@@ -185,7 +185,7 @@ fn p1(input: &str) -> usize {
 }
 
 #[aoc(day11, part2)]
-#[post(ret == 57)]
+
 fn p2(input: &str) -> usize {
     let mut w = gen(input);
     w.add(Item::Generator(Element::Elerium), 0);

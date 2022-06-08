@@ -66,7 +66,7 @@ fn process(input: &[Line]) -> HashMap<GiveTarget, Vec<usize>> {
 }
 
 #[aoc(day10, part1)]
-#[post(ret == Some(101))]
+
 fn p1(input: &[Line]) -> Option<usize> {
     let known_handlings = process(input);
     //find bot which handles 61 and 17
@@ -76,7 +76,7 @@ fn p1(input: &[Line]) -> Option<usize> {
 }
 
 #[aoc(day10,part2)]
-#[post(ret == 37789)]
+
 fn p2(input: &[Line]) -> usize {
     let known_handlings = process(input);
     (0..3).map(|i| known_handlings[&GiveTarget::Output(i)][0]).product()

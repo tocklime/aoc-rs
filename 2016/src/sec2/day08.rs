@@ -41,7 +41,7 @@ fn screen(input: &str) -> Vec<Vec<bool>> {
 }
 
 #[aoc(day8,part1)]
-#[post(ret == 123)]
+
 fn p1(input: &str) -> usize {
     screen(input).iter().flat_map(|x| x.iter()).filter(|&&x| x).count()
 }

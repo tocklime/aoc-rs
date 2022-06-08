@@ -53,12 +53,12 @@ impl Seg {
 
 
 #[aoc(day9, part1)]
-#[post(ret == 107_035)]
+
 fn p1(input: &str) -> usize {
     Seg::parse(input).into_iter().map(|x| x.shallow_depth()).sum()
 }
 #[aoc(day9, part2)]
-#[post(ret == 11_451_628_995)]
+
 fn p2(input: &str) -> usize {
     Seg::parse(input).into_iter().map(|x| x.full_depth()).sum()
 }

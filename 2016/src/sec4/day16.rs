@@ -14,13 +14,13 @@ fn collapse(a: &[char]) -> Vec<char> {
 }
 
 #[aoc(day16, part1)]
-#[post(ret == "10010010110011010")]
+
 fn p1(input: &str) -> String {
     solve(input.trim(), 272)
 }
 
 #[aoc(day16, part2)]
-#[post(ret == "01010100101011100")]
+
 fn p2(input: &str) -> String {
     solve(input.trim(), 35_651_584)
 }

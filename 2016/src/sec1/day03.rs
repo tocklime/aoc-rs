@@ -10,7 +10,7 @@ fn gen(input: &str) -> Vec<Vec<usize>> {
 }
 
 #[aoc(day3,part1)]
-#[post(ret == 1050)]
+
 fn p1(input: &[Vec<usize>]) -> usize {
     input.iter().filter(|&l| {
         let mut t : Vec<usize> = l.clone();
@@ -20,7 +20,7 @@ fn p1(input: &[Vec<usize>]) -> usize {
 }
 
 #[aoc(day3,part2)]
-#[post(ret == 1921)]
+
 fn p2(input: &[Vec<usize>]) -> usize {
     input.chunks(3).flat_map(|ch|{
         let mut ts = vec![

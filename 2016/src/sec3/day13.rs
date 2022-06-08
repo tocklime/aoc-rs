@@ -10,7 +10,7 @@ fn is_open(p: Point<i64>, n: i64) -> bool {
 }
 
 #[aoc(day13,part1)]
-#[post(ret == 90)]
+
 fn p1(input: &str) -> usize {
     let favourite_n : i64 = input.parse().unwrap();
     let target:Point<i64> = Point::new(31,39);
@@ -26,7 +26,7 @@ fn p1(input: &str) -> usize {
 }
 
 #[aoc(day13,part2)]
-#[post(ret == 135)]
+
 fn p2(input: &str) -> usize {
     let favourite_n : i64 = input.parse().unwrap();
     let step_limit = 50;

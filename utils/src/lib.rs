@@ -20,3 +20,4 @@ pub mod algorithms;
 pub mod iter;
 pub mod points;
 pub mod prelude;
+pub mod assembunny;

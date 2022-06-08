@@ -17,13 +17,13 @@ fn solve_pad(pad: &str, input: &str) -> String {
 }
 
 #[aoc(day2, part1)]
-#[post(ret == "52981")]
+
 fn p1(input: &str) -> String {
     solve_pad("123\n456\n789", input)
 }
 
 #[aoc(day2, part2)]
-#[post(ret == "74CD2")]
+
 fn p2(input: &str) -> String {
     solve_pad("  1  \n 234 \n56789\n ABC \n  D  ", input)
 }

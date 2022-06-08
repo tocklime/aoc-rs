@@ -2,7 +2,7 @@ use counter::Counter;
 use std::iter::once;
 
 #[aoc(day6, part1)]
-#[post(ret == "qrqlznrl")]
+
 fn p1a(input: &str) -> String {
     let width = input.lines().nth(0).unwrap().len();
     let mut counts = vec![Counter::<char>::new(); width];
@@ -15,7 +15,7 @@ fn p1a(input: &str) -> String {
 }
 
 #[aoc(day6, part2)]
-#[post(ret == "kgzdfaon")]
+
 fn p2a(input: &str) -> String {
     let width = input.lines().nth(0).unwrap().len();
     let mut counts = vec![Counter::<char>::new(); width];

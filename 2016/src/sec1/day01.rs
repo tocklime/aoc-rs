@@ -20,13 +20,13 @@ fn gen(input: &str) -> Vec<Point<i32>> {
 }
 
 #[aoc(day1, part1)]
-#[post(ret == 236)]
+
 fn p1(input: &[Point<i32>]) -> i32 {
     input.last().unwrap().manhattan()
 }
 
 #[aoc(day1, part2)]
-#[post(ret == Some(182))]
+
 fn p2(input: &[Point<i32>]) -> Option<i32> {
     let mut seen = HashSet::new();
     input.iter().find_map(|x| {

@@ -3,7 +3,7 @@
 use md5;
 
 #[aoc(day5, part1)]
-#[post(ret == "2414bc77")]
+
 pub fn p1(input: &str) -> String {
     (0..)
         .filter_map(|i| {
@@ -18,7 +18,7 @@ pub fn p1(input: &str) -> String {
 }
 
 #[aoc(day5, part2)]
-#[post(ret == "437e60fc")]
+
 pub fn p2(input: &str) -> String {
     let matches = (0..)
         .map(|i| {
