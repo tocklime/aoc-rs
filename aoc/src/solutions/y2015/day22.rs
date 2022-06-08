@@ -29,7 +29,13 @@ enum Spell {
 
 impl Spell {
     fn all() -> &'static [Self; 5] {
-        static SPELLS: [Spell; 5] = [Spell::MagicMissile, Spell::Drain, Spell::Shield, Spell::Poison, Spell::Recharge];
+        static SPELLS: [Spell; 5] = [
+            Spell::MagicMissile,
+            Spell::Drain,
+            Spell::Shield,
+            Spell::Poison,
+            Spell::Recharge,
+        ];
         &SPELLS
     }
     fn mana_cost(&self) -> isize {
@@ -43,19 +49,18 @@ impl Spell {
     }
 }
 
-
 impl State {
     fn effect_is_recastable(&self, sp: Spell) -> bool {
         match sp {
             Spell::Shield => self.shield_turns <= 1,
             Spell::Poison => self.poison_turns <= 1,
             Spell::Recharge => self.recharge_turns <= 1,
-            _ => true
+            _ => true,
         }
     }
 
     fn apply_effects(&self) -> Self {
-        let mut t = self.clone();
+        let mut t = *self;
         if t.recharge_turns > 0 {
             t.my_mana += 101;
             t.recharge_turns -= 1;
@@ -114,31 +119,43 @@ impl State {
         t
     }
     fn neighbours(&self) -> Vec<(State, isize)> {
-        Spell::all().iter().filter_map(|&sp| {
-            if self.effect_is_recastable(sp) {
-                let t = self.cast_spell(sp);
-                if t.is_loss() {
-                    None
-                } else if t.is_win() {
-                    Some((t, sp.mana_cost()))
-                } else {
-                    let t2 = t.boss_turn();
-                    if t2.is_loss() {
+        Spell::all()
+            .iter()
+            .filter_map(|&sp| {
+                if self.effect_is_recastable(sp) {
+                    let t = self.cast_spell(sp);
+                    if t.is_loss() {
                         None
+                    } else if t.is_win() {
+                        Some((t, sp.mana_cost()))
                     } else {
-                        Some((t2, sp.mana_cost()))
+                        let t2 = t.boss_turn();
+                        if t2.is_loss() {
+                            None
+                        } else {
+                            Some((t2, sp.mana_cost()))
+                        }
                     }
+                } else {
+                    None
                 }
-            } else {
-                None
-            }
-        }).collect()
+            })
+            .collect()
     }
 }
 
-
 fn gen(input: &str) -> State {
-    let data = input.lines().map(|x| x.split(":").nth(1).unwrap().trim().parse::<isize>().unwrap()).collect_vec();
+    let data = input
+        .lines()
+        .map(|x| {
+            x.split(':')
+                .nth(1)
+                .unwrap()
+                .trim()
+                .parse::<isize>()
+                .unwrap()
+        })
+        .collect_vec();
     State {
         my_health: 50,
         boss_health: data[0],
@@ -153,18 +170,18 @@ fn gen(input: &str) -> State {
     }
 }
 
-
 fn p1(init: &State) -> isize {
     dijkstra(init, |s| s.neighbours(), |s| s.is_win())
-        .unwrap().1
+        .unwrap()
+        .1
 }
 
-
 fn p2(init: &State) -> isize {
-    let mut hard = init.clone();
+    let mut hard = *init;
     hard.is_hard_mode = true;
     dijkstra(&hard, |s| s.neighbours(), |s| s.is_win())
-        .unwrap().1
+        .unwrap()
+        .1
 }
 //1408 too high
 //1295 too high

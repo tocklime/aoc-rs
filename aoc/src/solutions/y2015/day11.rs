@@ -2,8 +2,8 @@ use aoc_harness::aoc_main;
 
 aoc_main!(2015 day 11, part1 [p1], part2 [p2]);
 use itertools::Itertools;
-use std::collections::HashSet;
 use std::char;
+use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
 struct Password(Vec<char>);
@@ -46,12 +46,15 @@ impl Password {
         false
     }
     fn no_forbidden_letters(&self) -> bool {
-        !self.0.contains(&'i')
-            && !self.0.contains(&'o')
-            && !self.0.contains(&'l')
+        !self.0.contains(&'i') && !self.0.contains(&'o') && !self.0.contains(&'l')
     }
     fn two_pair(&self) -> bool {
-        let pairs: HashSet<_> = self.0.iter().tuple_windows().filter(|(a, b)| a == b).collect();
+        let pairs: HashSet<_> = self
+            .0
+            .iter()
+            .tuple_windows()
+            .filter(|(a, b)| a == b)
+            .collect();
         pairs.len() >= 2
     }
     fn acceptable(&self) -> bool {
@@ -59,13 +62,10 @@ impl Password {
     }
 }
 
-
-
 fn p1(input: &str) -> String {
     let pw: Password = input.into();
-    pw.filter(Password::acceptable).nth(0).unwrap().into()
+    pw.into_iter().find(Password::acceptable).unwrap().into()
 }
-
 
 fn p2(input: &str) -> String {
     let pw: Password = input.into();

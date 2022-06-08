@@ -1,5 +1,7 @@
-use nom::lib::std::collections::VecDeque;
+use aoc_harness::aoc_main;
 
+aoc_main!(2016 day 19, part1 [p1], part2 [p2]);
+use nom::lib::std::collections::VecDeque;
 
 fn p1(input: &str) -> usize {
     let n = input.trim().parse::<usize>().unwrap();
@@ -11,7 +13,6 @@ fn p1(input: &str) -> usize {
     }
     arr[0]
 }
-
 
 fn p2(input: &str) -> usize {
     let n = input.trim().parse::<usize>().unwrap();
@@ -33,5 +34,5 @@ fn solve2(n: usize) -> usize {
 
 #[test]
 fn test19() {
-    assert_eq!(solve2(5),2);
+    assert_eq!(solve2(5), 2);
 }

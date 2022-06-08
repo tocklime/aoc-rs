@@ -12,7 +12,8 @@ pub struct Restriction {
 }
 impl Restriction {
     fn in_range(&self, n: u32) -> bool {
-        (self.ranges[0].0 <= n && n <= self.ranges[0].1) || (self.ranges[1].0 <= n && n <= self.ranges[1].1)
+        (self.ranges[0].0 <= n && n <= self.ranges[0].1)
+            || (self.ranges[1].0 <= n && n <= self.ranges[1].1)
     }
 }
 
@@ -24,7 +25,10 @@ impl FromStr for Restriction {
         let _name = x[0].into();
         let mut ranges = Vec::new();
         for r in x[1].split(" or ") {
-            let rs = r.split('-').map(|n| n.trim().parse()).collect::<Result<Vec<u32>, _>>()?;
+            let rs = r
+                .split('-')
+                .map(|n| n.trim().parse())
+                .collect::<Result<Vec<u32>, _>>()?;
             ranges.push((rs[0], rs[1]));
         }
         Ok(Self { _name, ranges })
@@ -54,7 +58,7 @@ impl FromStr for Prob {
     }
 }
 fn gen(input: &str) -> Prob {
-    input.replace("\r", "").trim().parse().expect("Bad input")
+    input.replace('\r', "").trim().parse().expect("Bad input")
 }
 fn p1(input: &Prob) -> u32 {
     input
@@ -71,7 +75,10 @@ fn p2(input: &Prob) -> u64 {
     let valid_nearbys = input
         .nearby_tickets
         .iter()
-        .filter(|t| t.iter().all(|&v| input.restrictions.iter().any(|r| r.in_range(v))))
+        .filter(|t| {
+            t.iter()
+                .all(|&v| input.restrictions.iter().any(|r| r.in_range(v)))
+        })
         .collect_vec();
     let field_count = input.restrictions.len();
     assert!(field_count <= 32);
@@ -100,5 +107,8 @@ fn p2(input: &Prob) -> u64 {
             *p &= !x;
         }
     }
-    ans[0..6].iter().map(|&v| u64::from(input.my_ticket[v as usize])).product()
+    ans[0..6]
+        .iter()
+        .map(|&v| u64::from(input.my_ticket[v as usize]))
+        .product()
 }

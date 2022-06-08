@@ -1,25 +1,33 @@
+use aoc_harness::aoc_main;
+
+aoc_main!(2016 day 18, part1 [p1], part2 [p2]);
 fn calc(l: char, r: char) -> char {
     let l = l == '^';
     let r = r == '^';
-    if l && !r || !l && r
-    { '^' } else { '.' }
+    if l && !r || !l && r {
+        '^'
+    } else {
+        '.'
+    }
 }
 
 fn next_line(input: &[char]) -> Vec<char> {
-    (0..input.len()).map(|x| {
-        let l = if x > 0 { input.get(x - 1).unwrap_or(&'.') } else { &'.' };
-        let r = input.get(x + 1).unwrap_or(&'.');
-        calc(*l, *r)
-    }).collect()
+    (0..input.len())
+        .map(|x| {
+            let l = if x > 0 {
+                input.get(x - 1).unwrap_or(&'.')
+            } else {
+                &'.'
+            };
+            let r = input.get(x + 1).unwrap_or(&'.');
+            calc(*l, *r)
+        })
+        .collect()
 }
-
-
 
 fn p1(input: &str) -> usize {
     solve(input, 40)
 }
-
-
 
 fn p2(input: &str) -> usize {
     solve(input, 400_000)
@@ -36,9 +44,11 @@ fn solve(input: &str, n: usize) -> usize {
     safe_count
 }
 
-
 #[test]
 fn test18() {
     use itertools::Itertools;
-    assert_eq!(next_line(&".^^.^.^^^^".chars().collect_vec()), "^^^...^..^".chars().collect_vec())
+    assert_eq!(
+        next_line(&".^^.^.^^^^".chars().collect_vec()),
+        "^^^...^..^".chars().collect_vec()
+    );
 }

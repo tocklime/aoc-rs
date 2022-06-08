@@ -1,1 +1,1 @@
-// automod::dir!(pub "src/solutions/y2016");
+automod::dir!(pub "src/solutions/y2016");

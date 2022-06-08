@@ -17,7 +17,7 @@ pub mod path;
 pub mod take_upto_n;
 
 pub mod algorithms;
+pub mod assembunny;
 pub mod iter;
 pub mod points;
 pub mod prelude;
-pub mod assembunny;

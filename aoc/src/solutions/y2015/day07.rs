@@ -1,12 +1,12 @@
 use aoc_harness::aoc_main;
 
 aoc_main!(2015 day 7, part1 [p1], part2 [p2]);
-use nom::IResult;
-use nom::character::complete::{alpha1, digit1};
-use nom::bytes::complete::tag;
 use nom::branch::alt;
+use nom::bytes::complete::tag;
+use nom::character::complete::{alpha1, digit1};
 use nom::combinator::all_consuming;
 use nom::sequence::tuple;
+use nom::IResult;
 use std::collections::HashMap;
 
 fn item(i: &str) -> IResult<&str, Item> {
@@ -28,23 +28,19 @@ fn lhs_not(i: &str) -> IResult<&str, LineOp> {
 }
 
 fn lhs_lshift(i: &str) -> IResult<&str, LineOp> {
-    tuple((item, tag(" LSHIFT "), item))(i)
-        .map(|(i, (a, _, b))| (i, LineOp::LShift(a, b)))
+    tuple((item, tag(" LSHIFT "), item))(i).map(|(i, (a, _, b))| (i, LineOp::LShift(a, b)))
 }
 
 fn lhs_rshift(i: &str) -> IResult<&str, LineOp> {
-    tuple((item, tag(" RSHIFT "), item))(i)
-        .map(|(i, (a, _, b))| (i, LineOp::RShift(a, b)))
+    tuple((item, tag(" RSHIFT "), item))(i).map(|(i, (a, _, b))| (i, LineOp::RShift(a, b)))
 }
 
 fn lhs_or(i: &str) -> IResult<&str, LineOp> {
-    tuple((item, tag(" OR "), item))(i)
-        .map(|(i, (a, _, b))| (i, LineOp::Or(a, b)))
+    tuple((item, tag(" OR "), item))(i).map(|(i, (a, _, b))| (i, LineOp::Or(a, b)))
 }
 
 fn lhs_and(i: &str) -> IResult<&str, LineOp> {
-    tuple((item, tag(" AND "), item))(i)
-        .map(|(i, (a, _, b))| (i, LineOp::And(a, b)))
+    tuple((item, tag(" AND "), item))(i).map(|(i, (a, _, b))| (i, LineOp::And(a, b)))
 }
 
 fn lhs_const(i: &str) -> IResult<&str, LineOp> {
@@ -83,50 +79,55 @@ pub struct Line<'a> {
 }
 
 fn gen(input: &str) -> Vec<Line> {
-    input.lines().map(|x|
-        {
-            line(x).unwrap().1
-        }
-    ).collect()
+    input.lines().map(|x| line(x).unwrap().1).collect()
 }
 
-fn find_value<'a>(by_name: &'a HashMap<&'a str, Line<'a>>, known_values: &mut HashMap<&'a str, u16>, target: &'a Item) -> u16 {
+fn find_value<'a>(
+    by_name: &'a HashMap<&'a str, Line<'a>>,
+    known_values: &mut HashMap<&'a str, u16>,
+    target: &'a Item,
+) -> u16 {
     match target {
         Item::Const(v) => *v,
         Item::Ref(target) => {
             if let Some(x) = known_values.get(target) {
                 *x
-            }else {
+            } else {
                 let l = by_name.get(target).expect("Unknown wire");
                 let val = match &l.lhs {
-                    LineOp::Const(a) => find_value(by_name,known_values,&a),
-                    LineOp::Not(a ) => !find_value(by_name,known_values,&a),
-                    LineOp::And(a,b) => find_value(by_name,known_values,&a) & find_value(by_name,known_values,&b),
-                    LineOp::Or(a,b) => find_value(by_name,known_values,&a) | find_value(by_name,known_values,&b),
-                    LineOp::LShift(a,b) => find_value(by_name,known_values,&a) << find_value(by_name,known_values,&b),
-                    LineOp::RShift(a,b) => find_value(by_name,known_values,&a) >> find_value(by_name,known_values,&b),
+                    LineOp::Const(a) => find_value(by_name, known_values, a),
+                    LineOp::Not(a) => !find_value(by_name, known_values, a),
+                    LineOp::And(a, b) => {
+                        find_value(by_name, known_values, a) & find_value(by_name, known_values, b)
+                    }
+                    LineOp::Or(a, b) => {
+                        find_value(by_name, known_values, a) | find_value(by_name, known_values, b)
+                    }
+                    LineOp::LShift(a, b) => {
+                        find_value(by_name, known_values, a) << find_value(by_name, known_values, b)
+                    }
+                    LineOp::RShift(a, b) => {
+                        find_value(by_name, known_values, a) >> find_value(by_name, known_values, b)
+                    }
                 };
                 known_values.insert(target, val);
                 val
             }
         }
     }
-
 }
-
 
 fn p1(input: &str) -> u16 {
     let parsed = gen(input);
-    let by_name = parsed.into_iter().map(|l| (l.rhs,l)).collect();
+    let by_name = parsed.into_iter().map(|l| (l.rhs, l)).collect();
     find_value(&by_name, &mut HashMap::new(), &Item::Ref("a"))
 }
 
-
 fn p2(input: &str) -> u16 {
     let parsed = gen(input);
-    let by_name = parsed.into_iter().map(|l| (l.rhs,l)).collect();
+    let by_name = parsed.into_iter().map(|l| (l.rhs, l)).collect();
     let a_val = find_value(&by_name, &mut HashMap::new(), &Item::Ref("a"));
     let mut values = HashMap::new();
-    values.insert("b",a_val);
+    values.insert("b", a_val);
     find_value(&by_name, &mut values, &Item::Ref("a"))
 }

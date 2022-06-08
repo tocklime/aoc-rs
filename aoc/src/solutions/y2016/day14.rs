@@ -2,16 +2,22 @@ use aoc_harness::aoc_main;
 
 aoc_main!(2016 day 14, part1 [p1], part2 [p2]);
 use itertools::Itertools;
-use std::collections::{VecDeque,HashMap};
-use md5;
+use std::collections::{HashMap, VecDeque};
 
 fn groups(i: &str, group_size: usize) -> Vec<char> {
     let gs = i.chars().group_by(|c| *c);
-    gs.into_iter().filter_map(|(k, g)| if g.count() >= group_size { Some(k) } else { None })
+    gs.into_iter()
+        .filter_map(|(k, g)| {
+            if g.count() >= group_size {
+                Some(k)
+            } else {
+                None
+            }
+        })
         .collect()
 }
 
-fn hash(input: &str, n: usize,reps:usize) -> String {
+fn hash(input: &str, n: usize, reps: usize) -> String {
     let mut s = String::new() + input + &n.to_string();
     for _ in 0..reps {
         s = format!("{:?}", md5::compute(&s));
@@ -19,17 +25,20 @@ fn hash(input: &str, n: usize,reps:usize) -> String {
     s
 }
 
-fn solve(input: &str,hash_reps:usize) -> usize {
+fn solve(input: &str, hash_reps: usize) -> usize {
     let mut memory = HashMap::new();
-    let mut hashes : Vec<String> = Vec::new();
+    let mut hashes: Vec<String> = Vec::new();
     let mut ix = 0;
     let mut hi_ix = 0;
     let mut answers = Vec::new();
     while answers.len() <= 64 {
         while hi_ix < ix + 1000 {
-            let h = hash(input, hi_ix,hash_reps);
+            let h = hash(input, hi_ix, hash_reps);
             for c in groups(&h, 5) {
-                memory.entry(c).or_insert_with(VecDeque::new).push_back(hi_ix);
+                memory
+                    .entry(c)
+                    .or_insert_with(VecDeque::new)
+                    .push_back(hi_ix);
             }
             hashes.push(h);
             hi_ix += 1;
@@ -40,7 +49,7 @@ fn solve(input: &str,hash_reps:usize) -> usize {
             }
         }
         let h = &hashes[ix];
-        for &t in groups(&h, 3).iter().take(1) {
+        for &t in groups(h, 3).iter().take(1) {
             if !memory.entry(t).or_insert_with(VecDeque::new).is_empty() {
                 answers.push(ix);
             }
@@ -50,17 +59,13 @@ fn solve(input: &str,hash_reps:usize) -> usize {
     answers[63]
 }
 
-
-
 fn p1(input: &str) -> usize {
-    solve(input.trim(),1)
+    solve(input.trim(), 1)
 }
-
 
 fn p2(input: &str) -> usize {
-    solve(input.trim(),2017)
+    solve(input.trim(), 2017)
 }
-
 
 #[test]
 fn testd14() {

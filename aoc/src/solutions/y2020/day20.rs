@@ -38,7 +38,11 @@ impl<'a> Placement<'a> {
     }
     pub const fn put_edge_a_on_x(tile: &'a Tile, a: u8, x: u8, flip: bool) -> Self {
         let rotations = given_a_is_b_what_is_c(a, x, 0, flip);
-        Self { tile, rotations, flip }
+        Self {
+            tile,
+            rotations,
+            flip,
+        }
     }
     fn edge_matches(&self, edge: u8, connections: &HashMap<usize, Vec<Self>>) -> Vec<Self> {
         //we want `edge` edge, after rotating.
@@ -56,7 +60,9 @@ impl<'a> Placement<'a> {
         connections[&edge_pattern]
             .iter()
             .filter(|opt| opt.tile != self.tile)
-            .map(|&opt| Placement::put_edge_a_on_x(opt.tile, opt.rotations, opposite_edge, !opt.flip))
+            .map(|&opt| {
+                Placement::put_edge_a_on_x(opt.tile, opt.rotations, opposite_edge, !opt.flip)
+            })
             .collect::<Vec<_>>()
     }
     #[allow(dead_code)]
@@ -88,12 +94,19 @@ impl Tile {
             _ => panic!("where is edge {}?", n),
         };
         if rev {
-            x.iter().rev().enumerate().map(|(ix, val)| ((*val as usize) << ix)).sum()
+            x.iter()
+                .rev()
+                .enumerate()
+                .map(|(ix, val)| ((*val as usize) << ix))
+                .sum()
         } else {
-            x.iter().enumerate().map(|(ix, val)| ((*val as usize) << ix)).sum()
+            x.iter()
+                .enumerate()
+                .map(|(ix, val)| ((*val as usize) << ix))
+                .sum()
         }
     }
-    fn get_all_possible_ids<'a>(&'a self) -> impl Iterator<Item = (usize, Placement<'a>)> + 'a {
+    fn get_all_possible_ids(&self) -> impl Iterator<Item = (usize, Placement)> {
         [false, true].iter().flat_map(move |&flip| {
             (0..4).map(move |rotations| {
                 (
@@ -229,40 +242,63 @@ fn mark_monster_tiles(marks: &mut Array2<bool>, arr: &Array2<bool>, monster: &Ar
 fn p1(input: &str) -> usize {
     let tiles = input
         .trim()
-        .replace("\r", "")
+        .replace('\r', "")
         .split("\n\n")
         .map(|x| x.parse::<Tile>().unwrap())
         .collect::<Vec<_>>();
-    let connections: HashMap<usize, Vec<Placement>> = tiles.iter().flat_map(Tile::get_all_possible_ids).collect_lookup();
+    let connections: HashMap<usize, Vec<Placement>> = tiles
+        .iter()
+        .flat_map(Tile::get_all_possible_ids)
+        .collect_lookup();
 
     let map = connections
         .values()
         .flat_map(move |v| v.iter().permutations(2).map(move |x| (x[0].tile.id, ())))
         .collect_lookup();
-    let corners: Vec<usize> = map.iter().filter(|x| x.1.len() == 4).map(|x| *x.0).collect();
+    let corners: Vec<usize> = map
+        .iter()
+        .filter(|x| x.1.len() == 4)
+        .map(|x| *x.0)
+        .collect();
     corners.iter().product()
 }
 
 fn p2(input: &str) -> usize {
     let tiles = input
         .trim()
-        .replace("\r", "")
+        .replace('\r', "")
         .split("\n\n")
         .map(|x| x.parse::<Tile>().unwrap())
         .collect::<Vec<_>>();
-    let connections: HashMap<usize, Vec<Placement>> = tiles.iter().flat_map(Tile::get_all_possible_ids).collect_lookup();
+    let connections: HashMap<usize, Vec<Placement>> = tiles
+        .iter()
+        .flat_map(Tile::get_all_possible_ids)
+        .collect_lookup();
 
     let map: HashMap<usize, Vec<(&Placement, &Placement)>> = connections
         .values()
-        .flat_map(move |v| v.iter().permutations(2).map(move |x| (x[0].tile.id, (x[0], x[1]))))
+        .flat_map(move |v| {
+            v.iter()
+                .permutations(2)
+                .map(move |x| (x[0].tile.id, (x[0], x[1])))
+        })
         .collect_lookup();
     let corner_p = map.iter().find(|x| x.1.len() == 4).unwrap().1;
     let c = corner_p[0].0.tile;
     let wid = if tiles.len() > 10 { 12 } else { 3 };
     let mut array: Array2<Option<Placement>> = Array2::from_elem((wid, wid), None);
     //wlog, lets just stick one corner down. Which two edges are unused?
-    let dirs: HashSet<u8> = map[&c.id].iter().filter(|x| !x.0.flip).map(|x| x.0.rotations).collect();
-    let orientation = match (dirs.contains(&0), dirs.contains(&1), dirs.contains(&2), dirs.contains(&3)) {
+    let dirs: HashSet<u8> = map[&c.id]
+        .iter()
+        .filter(|x| !x.0.flip)
+        .map(|x| x.0.rotations)
+        .collect();
+    let orientation = match (
+        dirs.contains(&0),
+        dirs.contains(&1),
+        dirs.contains(&2),
+        dirs.contains(&3),
+    ) {
         (false, false, true, true) => 1,
         (false, true, true, false) => 0,
         (true, true, false, false) => 3,
@@ -284,13 +320,21 @@ fn p2(input: &str) -> usize {
             //outside grid, or already set.
             continue;
         }
-        let neighbours: Vec<(usize, usize)> = vec![(r.wrapping_sub(1), c), (r, c + 1), (r + 1, c), (r, c.wrapping_sub(1))];
+        let neighbours: Vec<(usize, usize)> = vec![
+            (r.wrapping_sub(1), c),
+            (r, c + 1),
+            (r + 1, c),
+            (r, c.wrapping_sub(1)),
+        ];
         let mut found = false;
         for d in 0..4 {
             let adj_arr_ix = neighbours[d as usize];
             if let Some(Some(adj_placement)) = array.get(adj_arr_ix).copied() {
                 let candidates = adj_placement.edge_matches((d + 2) % 4, &connections);
-                let filtered = candidates.iter().filter(|p| !used.contains(&p.tile.id)).collect::<Vec<_>>();
+                let filtered = candidates
+                    .iter()
+                    .filter(|p| !used.contains(&p.tile.id))
+                    .collect::<Vec<_>>();
                 if filtered.len() == 1 {
                     let my_placement = *filtered[0];
                     *array.get_mut((r, c)).unwrap() = Some(my_placement);

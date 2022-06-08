@@ -5,7 +5,7 @@ use counter::Counter;
 use std::iter::once;
 
 fn p1(input: &str) -> String {
-    let width = input.lines().nth(0).unwrap().len();
+    let width = input.lines().next().unwrap().len();
     let mut counts = vec![Counter::<char>::new(); width];
     for l in input.lines() {
         for (p, c) in l.chars().enumerate() {
@@ -16,7 +16,7 @@ fn p1(input: &str) -> String {
 }
 
 fn p2(input: &str) -> String {
-    let width = input.lines().nth(0).unwrap().len();
+    let width = input.lines().next().unwrap().len();
     let mut counts = vec![Counter::<char>::new(); width];
     for l in input.lines() {
         for (p, c) in l.chars().enumerate() {

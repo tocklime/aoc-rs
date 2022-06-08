@@ -5,9 +5,12 @@ use clap::Parser;
 use seq_macro::seq;
 type Day = ((i32, u8), fn(&mut DayResult, &mut Opts));
 fn make_all() -> Vec<Day> {
-    let mut ans: Vec<Day> = Vec::with_capacity(56);
+    let mut ans: Vec<Day> = Vec::with_capacity(7 * 25 + 1);
     seq!(N in 01..=25 {
         ans.push(((2015, N), aoc::solutions::y2015::day~N::run_with_opts));
+    });
+    seq!(N in 01..=25 {
+        ans.push(((2016, N), aoc::solutions::y2015::day~N::run_with_opts));
     });
     seq!(N in 01..=25 {
         ans.push(((2019, N), aoc::solutions::y2019::y19_d~N::run_with_opts));
