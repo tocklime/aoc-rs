@@ -1,3 +1,6 @@
+use aoc_harness::aoc_main;
+
+aoc_main!(2017 day 21, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 use std::collections::HashMap;
 
@@ -6,52 +9,86 @@ pub struct Block<T>(Vec<Vec<T>>);
 
 impl Block<bool> {
     fn from_str(input: &str) -> Self {
-        Block(input.split("/").map(|l| l.chars().map(|x| x == '#').collect()).collect())
+        Block(
+            input
+                .split('/')
+                .map(|l| l.chars().map(|x| x == '#').collect())
+                .collect(),
+        )
     }
+    #[allow(dead_code)]
     fn to_str(&self) -> String {
-        self.0.iter().map(|l| l.iter().map(|c| if *c { '#' } else { '.' }).collect::<String>()).join("\n")
+        self.0
+            .iter()
+            .map(|l| {
+                l.iter()
+                    .map(|c| if *c { '#' } else { '.' })
+                    .collect::<String>()
+            })
+            .join("\n")
     }
 }
 
 impl<T> Block<T> {
     fn map<F>(&self, f: F) -> Block<T>
-        where F: Fn(&T) -> T {
-        Block(self.0.iter().map(move |l| l.iter().map(|c| f(c)).collect()).collect())
+    where
+        F: Fn(&T) -> T,
+    {
+        #[allow(clippy::redundant_closure)]
+        Block(
+            self.0
+                .iter()
+                .map(move |l| l.iter().map(|c| f(c)).collect())
+                .collect(),
+        )
     }
     fn sub_grid(&self, size: usize, x: usize, y: usize) -> Self
-        where T: Clone {
-        let vec = (y..y + size).map(|y_1| self.0[y_1][x..x + size].to_vec()).collect();
+    where
+        T: Clone,
+    {
+        let vec = (y..y + size)
+            .map(|y_1| self.0[y_1][x..x + size].to_vec())
+            .collect();
         Block(vec)
     }
     fn split(self, size: usize) -> Block<Self>
-        where T: Clone {
+    where
+        T: Clone,
+    {
         assert_eq!(self.0.len() % size, 0);
         let mut ans = Vec::with_capacity(self.0.len() / size);
         for y in (0..self.0.len()).step_by(size) {
             let v = (0..self.0[0].len())
                 .step_by(size)
-                .map(|x| self.sub_grid(size, x, y)).collect();
+                .map(|x| self.sub_grid(size, x, y))
+                .collect();
             ans.push(v);
         }
         Block(ans)
     }
     fn mirror(self) -> Self
-        where T: Clone {
-        Block(self.0.clone().into_iter().rev().collect())
+    where
+        T: Clone,
+    {
+        Block(self.0.into_iter().rev().collect())
     }
     fn rotate(self) -> Self
-        where T: Clone
+    where
+        T: Clone,
     {
-        let rot_and_tranposed = (0..self.0.len()).rev().map(|c|
-            self.0.iter().map(|r| r[c].clone()).collect_vec()
-        ).collect_vec();
+        let rot_and_tranposed = (0..self.0.len())
+            .rev()
+            .map(|c| self.0.iter().map(|r| r[c].clone()).collect_vec())
+            .collect_vec();
         Block(rot_and_tranposed)
     }
 }
 
 impl<T> Block<Block<T>> {
     fn join(self) -> Block<T>
-        where T: Clone {
+    where
+        T: Clone,
+    {
         //#join grid of grids into single grid.
         let mut ans: Vec<Vec<T>> = Vec::new();
         for l in &self.0 {
@@ -59,7 +96,7 @@ impl<T> Block<Block<T>> {
             //height of subblocks.
             for y in 0..h {
                 //y is a row we want to extract from every item of l.
-                let r = l.iter().map(|b| &b.0[y]).flatten().cloned().collect_vec();
+                let r = l.iter().flat_map(|b| &b.0[y]).cloned().collect_vec();
                 ans.push(r);
             }
         }
@@ -67,11 +104,9 @@ impl<T> Block<Block<T>> {
     }
 }
 
-
 fn p1(input: &str) -> usize {
     run(input, 5)
 }
-
 
 fn p2(input: &str) -> usize {
     run(input, 18)
@@ -101,6 +136,9 @@ fn run(input: &str, iter_count: usize) -> usize {
         let mapped = split.map(|c| hm.get(c).unwrap().clone());
         block = mapped.join();
     }
-    block.0.iter().map(|l| l.iter().filter(|x| **x).count()).sum()
+    block
+        .0
+        .iter()
+        .map(|l| l.iter().filter(|x| **x).count())
+        .sum()
 }
-

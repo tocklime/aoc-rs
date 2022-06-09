@@ -1,6 +1,9 @@
+use aoc_harness::aoc_main;
+
+aoc_main!(2017 day 18, part1 [p1], part2 [p2]);
+use itertools::Itertools;
 use reformation::Reformation;
 use std::collections::{HashMap, VecDeque};
-use itertools::Itertools;
 use std::convert::TryInto;
 
 #[derive(Debug, Reformation, Copy, Clone)]
@@ -63,7 +66,7 @@ impl<'a> Duet<'a> {
     fn lookup(&self, v: Val) -> i64 {
         match v {
             Val::Literal(x) => x,
-            Val::Ref(c) => self.get(c)
+            Val::Ref(c) => self.get(c),
         }
     }
     fn set(&mut self, c: char, i: i64) {
@@ -79,11 +82,15 @@ impl<'a> Duet<'a> {
             Some(Op::Add(c, v)) => self.set(c, self.get(c) + self.lookup(v)),
             Some(Op::Mul(c, v)) => self.set(c, self.get(c) * self.lookup(v)),
             Some(Op::Mod(c, v)) => self.set(c, self.get(c) % self.lookup(v)),
-            Some(Op::Rcv(c)) => if self.get(c) != 0 {
-                self.last_rcv = self.last_sound;
-            },
-            Some(Op::Jgz(v, w)) => if self.lookup(v) > 0 {
-                next_ip = self.ip + self.lookup(w);
+            Some(Op::Rcv(c)) => {
+                if self.get(c) != 0 {
+                    self.last_rcv = self.last_sound;
+                }
+            }
+            Some(Op::Jgz(v, w)) => {
+                if self.lookup(v) > 0 {
+                    next_ip = self.ip + self.lookup(w);
+                }
             }
         }
         self.ip = next_ip;
@@ -98,7 +105,7 @@ impl<'a> Duet<'a> {
         match self.get_op() {
             Some(Op::Rcv(_)) => self.input_queue.is_empty(),
             None => true,
-            _ => false
+            _ => false,
         }
     }
 
@@ -117,18 +124,18 @@ impl<'a> Duet<'a> {
                     res = StepResult::NeedInput;
                     next_ip = self.ip;
                 }
-                Some(x) => self.set(c, x)
+                Some(x) => self.set(c, x),
             },
-            Some(Op::Jgz(v, w)) => if self.lookup(v) > 0 {
-                next_ip = self.ip + self.lookup(w);
+            Some(Op::Jgz(v, w)) => {
+                if self.lookup(v) > 0 {
+                    next_ip = self.ip + self.lookup(w);
+                }
             }
         }
         self.ip = next_ip;
         res
     }
 }
-
-
 
 fn p1(input: &str) -> i64 {
     let m = input.lines().map(|x| Op::parse(x).unwrap()).collect_vec();
@@ -144,7 +151,6 @@ fn p1(input: &str) -> i64 {
     0
 }
 
-
 fn p2(input: &str) -> i64 {
     let m = input.lines().map(|x| Op::parse(x).unwrap()).collect_vec();
     let mut a = Duet::new(&m);
@@ -153,7 +159,8 @@ fn p2(input: &str) -> i64 {
     b.set('p', 1);
     let mut b_send_count = 0;
     while !(a.is_blocked() && b.is_blocked()) {
-        while !a.is_blocked() { //a
+        while !a.is_blocked() {
+            //a
             if let StepResult::Send(x) = a.step_2() {
                 b.input_queue.push_back(x)
             }

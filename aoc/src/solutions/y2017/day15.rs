@@ -1,3 +1,6 @@
+use aoc_harness::aoc_main;
+
+aoc_main!(2017 day 15, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 
 #[derive(Copy, Clone)]
@@ -8,8 +11,12 @@ struct Gen {
 }
 
 impl Gen {
-    fn new(curr: u64, factor: u64,require_mod: u64) -> Self {
-        Self { curr, factor, require_mod }
+    fn new(curr: u64, factor: u64, require_mod: u64) -> Self {
+        Self {
+            curr,
+            factor,
+            require_mod,
+        }
     }
     fn step(&mut self) -> u64 {
         loop {
@@ -22,13 +29,15 @@ impl Gen {
     }
 }
 
-
-
 fn p1(input: &str) -> usize {
     /*Generator A starts with 618\nGenerator B starts with 814*/
-    let (a, b) = input.lines().map(|x| x[24..].parse::<u64>().unwrap()).next_tuple().unwrap();
-    let mut a = Gen::new(a, 16807,1);
-    let mut b = Gen::new(b, 48271,1);
+    let (a, b) = input
+        .lines()
+        .map(|x| x[24..].parse::<u64>().unwrap())
+        .next_tuple()
+        .unwrap();
+    let mut a = Gen::new(a, 16807, 1);
+    let mut b = Gen::new(b, 48271, 1);
     let mut matches = 0;
     for _ in 0..40_000_000 {
         let x = a.step();
@@ -42,9 +51,13 @@ fn p1(input: &str) -> usize {
 
 fn p2(input: &str) -> usize {
     /*Generator A starts with 618\nGenerator B starts with 814*/
-    let (a, b) = input.lines().map(|x| x[24..].parse::<u64>().unwrap()).next_tuple().unwrap();
-    let mut a = Gen::new(a, 16807,4);
-    let mut b = Gen::new(b, 48271,8);
+    let (a, b) = input
+        .lines()
+        .map(|x| x[24..].parse::<u64>().unwrap())
+        .next_tuple()
+        .unwrap();
+    let mut a = Gen::new(a, 16807, 4);
+    let mut b = Gen::new(b, 48271, 8);
     let mut matches = 0;
     for _ in 0..5_000_000 {
         let x = a.step();

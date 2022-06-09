@@ -1,7 +1,9 @@
-#![allow(clippy::redundant_pattern_matching)]
+use aoc_harness::aoc_main;
+
+aoc_main!(2017 day 8, part1 [p1], part2 [p2]);
 use reformation::Reformation;
-use std::collections::HashMap;
 use std::cmp::max;
+use std::collections::HashMap;
 
 #[derive(Reformation, Debug)]
 enum Cmp {
@@ -38,9 +40,8 @@ struct Line<'a> {
     cnd_val: i32,
 }
 
-
 fn p1(input: &str) -> i32 {
-    let mut regs: HashMap::<&str, i32> = HashMap::new();
+    let mut regs: HashMap<&str, i32> = HashMap::new();
     for l in input.lines() {
         let l = Line::parse(l).unwrap();
         let go = match (regs.get(l.cnd_target).unwrap_or(&0), l.cnd_cmp, &l.cnd_val) {
@@ -62,9 +63,8 @@ fn p1(input: &str) -> i32 {
     *regs.values().max().unwrap()
 }
 
-
 fn p2(input: &str) -> i32 {
-    let mut regs: HashMap::<&str, i32> = HashMap::new();
+    let mut regs: HashMap<&str, i32> = HashMap::new();
     let mut highest = 0;
     for l in input.lines() {
         let l = Line::parse(l).unwrap();
@@ -82,7 +82,7 @@ fn p2(input: &str) -> i32 {
                 Op::Inc => *e += l.op_size,
                 Op::Dec => *e -= l.op_size,
             }
-            highest = max(highest,*e);
+            highest = max(highest, *e);
         }
     }
     highest

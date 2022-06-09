@@ -10,7 +10,10 @@ fn make_all() -> Vec<Day> {
         ans.push(((2015, N), aoc::solutions::y2015::day~N::run_with_opts));
     });
     seq!(N in 01..=25 {
-        ans.push(((2016, N), aoc::solutions::y2015::day~N::run_with_opts));
+        ans.push(((2016, N), aoc::solutions::y2016::day~N::run_with_opts));
+    });
+    seq!(N in 01..=25 {
+        ans.push(((2017, N), aoc::solutions::y2017::day~N::run_with_opts));
     });
     seq!(N in 01..=25 {
         ans.push(((2019, N), aoc::solutions::y2019::y19_d~N::run_with_opts));

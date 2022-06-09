@@ -1,5 +1,7 @@
-use std::collections::VecDeque;
+use aoc_harness::aoc_main;
 
+aoc_main!(2017 day 17, part1 [p1], part2 [p2]);
+use std::collections::VecDeque;
 
 fn p1(input: &str) -> usize {
     let step = input.trim().parse::<usize>().unwrap();
@@ -12,7 +14,6 @@ fn p1(input: &str) -> usize {
     }
     d[(pos + 1) % d.len()]
 }
-
 
 fn p2(input: &str) -> usize {
     let step = input.trim().parse::<usize>().unwrap();

@@ -1,3 +1,6 @@
+use aoc_harness::aoc_main;
+
+aoc_main!(2017 day 24, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 use pathfinding::directed::dijkstra::dijkstra_all;
 use std::collections::HashMap;
@@ -10,18 +13,21 @@ struct Part {
 
 impl Part {
     fn from_str(input: &str) -> Self {
-        let a = input.split('/').map(|a| a.parse::<usize>().unwrap()).collect_vec();
+        let a = input
+            .split('/')
+            .map(|a| a.parse::<usize>().unwrap())
+            .collect_vec();
         Part { a: a[0], b: a[1] }
     }
 }
 
-fn get_all_bridges(input: &str) -> HashMap<(usize,Vec<Part>),((usize,Vec<Part>),usize)>
-{
+type CostAndPartSeq = (usize, Vec<Part>);
+
+fn get_all_bridges(input: &str) -> HashMap<CostAndPartSeq, (CostAndPartSeq, usize)> {
     let parts = input.lines().map(Part::from_str).collect_vec();
-    dijkstra_all(
-        &(0, parts),
-        |(open_port, bits)| {
-            bits.iter().filter_map(move |c|
+    dijkstra_all(&(0, parts), |(open_port, bits)| {
+        bits.iter()
+            .filter_map(move |c| {
                 if c.a == *open_port {
                     let left = bits.iter().filter(|&x| x != c).cloned().collect_vec();
                     Some(((c.b, left), c.a + c.b))
@@ -31,19 +37,21 @@ fn get_all_bridges(input: &str) -> HashMap<(usize,Vec<Part>),((usize,Vec<Part>),
                 } else {
                     None
                 }
-            ).collect_vec()
-        },
-    )
+            })
+            .collect_vec()
+    })
 }
-
 
 fn p1(input: &str) -> usize {
     get_all_bridges(input).values().map(|x| x.1).max().unwrap()
 }
 
-
 fn p2(input: &str) -> usize {
     let n = input.lines().count();
     let x = get_all_bridges(input);
-    *x.values().map(|((_,rem),str)| (n - rem.len(),str)).max().unwrap().1
+    *x.values()
+        .map(|((_, rem), str)| (n - rem.len(), str))
+        .max()
+        .unwrap()
+        .1
 }

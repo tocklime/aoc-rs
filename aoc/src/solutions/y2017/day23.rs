@@ -1,6 +1,9 @@
+use aoc_harness::aoc_main;
+
+aoc_main!(2017 day 23, part1 [p1], part2 [p2]);
+use itertools::Itertools;
 use reformation::Reformation;
 use std::collections::HashMap;
-use itertools::Itertools;
 use std::convert::TryInto;
 
 #[derive(Debug, Reformation, Copy, Clone)]
@@ -51,7 +54,7 @@ impl<'a> Duet<'a> {
     fn lookup(&self, v: Val) -> i64 {
         match v {
             Val::Literal(x) => x,
-            Val::Ref(c) => self.get(c)
+            Val::Ref(c) => self.get(c),
         }
     }
     fn set(&mut self, c: char, i: i64) {
@@ -68,8 +71,10 @@ impl<'a> Duet<'a> {
                 self.set(c, self.get(c) * self.lookup(v));
                 self.mul_count += 1;
             }
-            Some(Op::Jnz(v, w)) => if self.lookup(v) != 0 {
-                next_ip = self.ip + self.lookup(w);
+            Some(Op::Jnz(v, w)) => {
+                if self.lookup(v) != 0 {
+                    next_ip = self.ip + self.lookup(w);
+                }
             }
         }
         self.ip = next_ip;
@@ -82,14 +87,12 @@ impl<'a> Duet<'a> {
     }
 }
 
-
 fn p1(input: &str) -> usize {
     let m = input.lines().map(|x| Op::parse(x).unwrap()).collect_vec();
     let mut c = Duet::new(&m);
     while c.step_1() != StepResult::Halt {}
     c.mul_count
 }
-
 
 fn p2(input: &str) -> usize {
     let m = input.lines().map(|x| Op::parse(x).unwrap()).collect_vec();

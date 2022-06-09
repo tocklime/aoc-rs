@@ -1,8 +1,10 @@
-use std::collections::{HashMap, HashSet};
+use aoc_harness::aoc_main;
+
+aoc_main!(2017 day 12, generator gen, part1 [p1], part2 [p2]);
 use itertools::Itertools;
+use std::collections::{HashMap, HashSet};
 
 type Prob = HashMap<usize, HashSet<usize>>;
-
 
 fn gen(input: &str) -> Prob {
     let mut hm: Prob = HashMap::new();
@@ -15,11 +17,9 @@ fn gen(input: &str) -> Prob {
     hm
 }
 
-
 fn p1(input: &Prob) -> usize {
     find_group(input, 0).len()
 }
-
 
 fn p2(input: &Prob) -> usize {
     let mut handled: HashSet<usize> = HashSet::new();

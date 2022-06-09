@@ -1,10 +1,11 @@
-use pathfinding::utils::absdiff;
-use utils::cartesian::{Dir, Point};
-use std::collections::HashMap;
+use aoc_harness::aoc_main;
 
+aoc_main!(2017 day 3, part1 [p1], part2 [p2]);
+use std::collections::HashMap;
+use utils::cartesian::{Dir, Point};
 
 fn p1(input: &str) -> u32 {
-    let n = input.parse::<u32>().unwrap();
+    let n = input.trim().parse::<u32>().unwrap();
     let mut sqrt = (f64::from(n)).sqrt() as u32;
     if sqrt % 2 == 0 {
         sqrt -= 1;
@@ -15,19 +16,21 @@ fn p1(input: &str) -> u32 {
     let quad = 4 * (n - lowest_on_ring) / ring_range;
     let quad_start = lowest_on_ring + quad * ring_range / 4;
     let orth_target = quad_start + sqrt / 2;
-    absdiff(n, orth_target) + sqrt / 2 + 1
+    n.abs_diff(orth_target) + sqrt / 2 + 1
 }
-
 
 fn p2(input: &str) -> u32 {
     let mut grid: HashMap<Point<i32>, u32> = HashMap::new();
     grid.insert(Point::new(0, 0), 1);
-    let n = input.parse::<u32>().unwrap();
+    let n = input.trim().parse::<u32>().unwrap();
     let mut pos = Point::new(1, 0);
     let mut dir = Dir::Up;
     loop {
-        let n_sum = pos.neighbours_with_diagonals().iter()
-            .map(|x| grid.get(x).unwrap_or(&0)).sum();
+        let n_sum = pos
+            .neighbours_with_diagonals()
+            .iter()
+            .map(|x| grid.get(x).unwrap_or(&0))
+            .sum();
         grid.insert(pos, n_sum);
         if n_sum > n {
             return n_sum;

@@ -1389,6 +1389,7 @@ name = "utils"
 version = "0.1.0"
 dependencies = [
  "aoc_harness",
+ "bitintr",
  "indexmap",
  "itertools",
  "lazy_static",

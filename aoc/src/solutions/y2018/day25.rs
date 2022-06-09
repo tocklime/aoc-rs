@@ -7,7 +7,6 @@ fn manhattan(a: &[i64], b: &[i64]) -> i64 {
     a.iter().zip(b.iter()).map(|(a, b)| abs(*a - *b)).sum()
 }
 
-
 fn p1(input: &str) -> usize {
     let neighbours = gen(input);
     let mut root_to_members: HashMap<usize, HashSet<usize>> = (0..neighbours.len())
@@ -19,7 +18,7 @@ fn p1(input: &str) -> usize {
                 if v[0]
                     .1
                     .iter()
-                    .any(|&s| neighbours[s].intersection(v[1].1).nth(0).is_some())
+                    .any(|&s| neighbours[s].intersection(v[1].1).next().is_some())
                 {
                     Some((*v[0].0, *v[1].0))
                 } else {
@@ -53,7 +52,6 @@ fn gen(input: &str) -> Vec<HashSet<usize>> {
     }
     neighbours
 }
-
 
 fn p1b(input: &str) -> usize {
     let neighbours = gen(input);
