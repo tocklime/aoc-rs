@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 15, generator gen, part1 [p1] => 237996, part2 [p2] => 69700);
 use utils::cartesian::{as_point_map, Point};
 use itertools::Itertools;
 use pathfinding::prelude::astar_bag;
@@ -54,7 +55,7 @@ impl State {
         use utils::aabb::Aabb;
 
         let mut ans = String::new();
-        let bb: Aabb<i32> = Aabb::from_iter(&mut self.walls.iter().cloned());
+        let bb: Aabb<i32> = Aabb::from_iter(self.walls.iter());
         for y in bb.bottom_left.y..=bb.top_right.y {
             //draw row.
             let mut notes = vec![];

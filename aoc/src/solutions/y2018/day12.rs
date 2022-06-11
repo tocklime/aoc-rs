@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 12, generator gen, part1 [p1], part2 [p2]);
 use std::collections::{BTreeSet, HashSet};
 
 fn step(plants: &BTreeSet<i64>, rules: &HashSet<u8>) -> BTreeSet<i64> {

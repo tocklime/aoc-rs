@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 23, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 use nom::lib::std::collections::BinaryHeap;
 use nom::lib::std::hash::Hash;

@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 21, part1 [p1], part2 [p2]);
 use utils::comp::*;
 use itertools::Itertools;
 use reformation::Reformation;

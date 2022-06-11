@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 22, part1 [p1], part2 [p2]);
 use utils::cartesian::Point;
 use nom::lib::std::collections::HashMap;
 use utils::aabb::Aabb;

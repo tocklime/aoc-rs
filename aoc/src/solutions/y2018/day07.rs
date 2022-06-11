@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 7, generator gen, part1 [p1], part2 [p2]);
 // Step P must be finished before step Z can begin.
 use std::collections::{HashSet, BTreeMap, HashMap};
 #[derive(Debug)]

@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 10, generator gen, both [p]);
 use utils::{aabb::Aabb, cartesian::render_char_map_w, cartesian::Point};
 use itertools::Itertools;
 use regex::Regex;
@@ -38,7 +39,7 @@ impl Star {
         }
     }
     fn field_bb(l: &[Self]) -> Aabb<i32> {
-        Aabb::from_iter(l.iter().map(|x| x.loc))
+        Aabb::from_iter(l.iter().map(|x| &x.loc))
     }
 }
 
@@ -63,7 +64,9 @@ fn p(input: &[Star]) -> (String, usize) {
         let size = Star::field_bb(&new_stars).area();
         if size > last_size {
             let grid: HashMap<Point<i32>, char> = stars.iter().map(|x| (x.loc, 'X')).collect();
-            return (render_char_map_w(&grid, 1, ' ', false), t);
+            let drawn = render_char_map_w(&grid, 1, " ", false);
+            let parsed = utils::ocr::ascii_art_6_to_str(&drawn);
+            return (parsed, t);
         }
         stars = new_stars;
         last_size = size;
@@ -72,10 +75,3 @@ fn p(input: &[Star]) -> (String, usize) {
 }
 
 
-fn p1(input: &[Star]) -> String {
-    p(input).0
-}
-
-fn p2(input: &[Star]) -> usize {
-    p(input).1
-}

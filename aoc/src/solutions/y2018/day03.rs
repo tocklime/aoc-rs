@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 3, generator gen, part1 [part1, part1_vec, part1_hm], part2 [part2, part2_map]);
 use parse_display::{Display, FromStr};
 use std::collections::HashMap;
 
@@ -23,7 +24,7 @@ impl Claim {
         let intersects_y = self.bottom() >= other.top && self.top <= other.bottom();
         intersects_x && intersects_y
     }
-    fn squares(self: &Self) -> impl Iterator<Item = (usize, usize)> + '_ {
+    fn squares(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
         (self.left..self.right()).flat_map(move |x| (self.top..self.bottom()).map(move |y| (x, y)))
     }
 }
@@ -38,7 +39,7 @@ fn gen(input: &str) -> Vec<Claim> {
 
 
 fn part1(input: &[Claim]) -> usize {
-    let mut grid = [[0 as u8; 1000]; 1000];
+    let mut grid = [[0_u8; 1000]; 1000];
     let mut count = 0;
     for c in input {
         for (x, y) in c.squares() {
@@ -52,7 +53,7 @@ fn part1(input: &[Claim]) -> usize {
 }
 
 fn part1_vec(input: &[Claim]) -> usize {
-    let mut grid = vec![vec![0 as u8; 1000]; 1000];
+    let mut grid = vec![vec![0_u8; 1000]; 1000];
     let mut count = 0;
     for c in input {
         for (x, y) in c.squares() {
@@ -118,7 +119,7 @@ fn part2_map(input: &[Claim]) -> usize {
 }
 
 #[cfg(test)]
-const HINT_INPUT: &'static str = r#"
+const HINT_INPUT: &str = r#"
 #1 @ 1,3: 4x4
 #2 @ 3,1: 4x4
 #3 @ 5,5: 2x2

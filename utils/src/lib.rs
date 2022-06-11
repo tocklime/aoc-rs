@@ -22,3 +22,4 @@ pub mod iter;
 pub mod knot_hash;
 pub mod points;
 pub mod prelude;
+pub mod comp;

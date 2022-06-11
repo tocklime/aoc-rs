@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 9, part1 [p1], part2 [p2]);
 use std::collections::VecDeque;
 
 fn solve(input: &str, last_marble_scale: usize) -> usize {
@@ -6,7 +7,6 @@ fn solve(input: &str, last_marble_scale: usize) -> usize {
     let last_marble = last_marble * last_marble_scale;
     let mut scores = vec![0; player_count];
     let mut list = VecDeque::new();
-    dbg!(player_count, last_marble);
     list.push_back(0);
     for turn in 0..last_marble {
         let marble = turn + 1;

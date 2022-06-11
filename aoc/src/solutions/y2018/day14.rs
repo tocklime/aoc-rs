@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 14, generator gen, part1 [p1], part2 [p2]);
 use utils::nums::digits;
 use itertools::Itertools;
 

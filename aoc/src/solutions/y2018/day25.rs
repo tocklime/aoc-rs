@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 25, part1 [p1,p1b]);
 use itertools::Itertools;
 use num::abs;
 use std::collections::{HashMap, HashSet};

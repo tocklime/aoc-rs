@@ -1,4 +1,5 @@
 
+aoc_harness::aoc_main!(2018 day 1, generator input_generator, part1 [part1], part2 [part2]);
 fn input_generator(input: &str) -> Vec<i32> {
     input
         .lines()

@@ -57,6 +57,9 @@ pub enum Dir {
 }
 
 impl Dir {
+    pub fn try_from_x(udlr: &str, c: char) -> Option<Self> {
+        udlr.find(c).map(|ix| [Self::Up, Self::Down, Self::Left, Self::Right][ix])
+    }
     pub fn from_x(udlr: &str, c: char) -> Self {
         let ix = udlr.find(c).expect("Unknown direction");
         [Self::Up, Self::Down, Self::Left, Self::Right][ix]

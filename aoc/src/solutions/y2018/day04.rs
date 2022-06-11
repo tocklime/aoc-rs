@@ -1,6 +1,6 @@
-#![allow(clippy::trivial_regex)]
-use utils::collections::de_prefixsum;
-use std::fmt;
+aoc_harness::aoc_main!(2018 day 4, generator gen, part1 [part1], part2 [part2]);
+
+use utils::nums::de_prefixsum;
 #[allow(clippy::trivial_regex)]
 #[derive(parse_display::Display, parse_display::FromStr, PartialEq, Debug)]
 pub enum LogEvent {
@@ -21,7 +21,7 @@ pub struct LogLine {
 }
 
 #[cfg(test)]
-const HINT_INPUT: &'static str = r#"[1518-11-01 00:00] Guard #10 begins shift
+const HINT_INPUT: &str = r#"[1518-11-01 00:00] Guard #10 begins shift
 [1518-11-01 00:05] falls asleep
 [1518-11-01 00:25] wakes up
 [1518-11-01 00:30] falls asleep
@@ -55,25 +55,7 @@ fn test_parse() {
     assert_eq!(gen(HINT_INPUT).len(), 17);
 }
 
-#[derive(PartialEq, Debug)]
-pub struct Answer {
-    guard_id: usize,
-    minute: usize,
-}
-impl fmt::Display for Answer {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{} @ {} = {}",
-            self.guard_id,
-            self.minute,
-            self.guard_id * self.minute
-        )
-    }
-}
-
-
-fn part1(input: &[LogLine]) -> Answer {
+fn part1(input: &[LogLine]) -> usize {
     let mut mins_per_guard: std::collections::HashMap<usize, Vec<isize>> =
         std::collections::HashMap::new();
     let mut guard_id: usize = 0;
@@ -104,13 +86,10 @@ fn part1(input: &[LogLine]) -> Answer {
         .enumerate()
         .max_by_key(|x| x.1)
         .expect("no minutes");
-    Answer {
-        guard_id: *g,
-        minute: m,
-    }
+    *g * m
 }
 
-fn part2(input: &[LogLine]) -> Answer {
+fn part2(input: &[LogLine]) -> usize {
     let mut hm = std::collections::HashMap::new();
     let mut guard_id = 0;
     let mut asleep_at = 0;
@@ -126,20 +105,14 @@ fn part2(input: &[LogLine]) -> Answer {
         }
     }
     let ((g, m), _) = hm.iter().max_by_key(|x| x.1).expect("no lines");
-    Answer {
-        guard_id: *g,
-        minute: *m,
-    }
+    *g * *m
 }
 
 #[test]
 fn test_part1() {
     assert_eq!(
         part1(&gen(HINT_INPUT)),
-        Answer {
-            guard_id: 10,
-            minute: 24
-        }
+        10 * 24
     )
 }
 
@@ -147,9 +120,6 @@ fn test_part1() {
 fn test_part2() {
     assert_eq!(
         part2(&gen(HINT_INPUT)),
-        Answer {
-            guard_id: 99,
-            minute: 45
-        }
+        99 * 45
     )
 }

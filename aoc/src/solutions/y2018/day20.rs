@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 20, generator gen, part1 [p1], part2 [p2]);
 use std::collections::HashMap;
 use utils::cartesian::{Dir, Point};
 
@@ -37,10 +38,10 @@ fn gen(input: &str) -> HashMap<Point<i64>,usize> {
     shortests
 }
 
-fn p1(input: &str) -> usize {
-    *gen(input).values().max().unwrap()
+fn p1(input: &HashMap<Point<i64>,usize>) -> usize {
+    *input.values().max().unwrap()
 }
 
-fn p2(input: &str) -> usize {
-    gen(input).values().filter(|x| **x >= 1000).count()
+fn p2(input: &HashMap<Point<i64>,usize>) -> usize {
+    input.values().filter(|x| **x >= 1000).count()
 }

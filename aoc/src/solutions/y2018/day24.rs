@@ -1,8 +1,9 @@
+aoc_harness::aoc_main!(2018 day 24, part1 [p1], part2 [p2]);
 use nom::bytes::complete::*;
 use nom::IResult;
 use nom::sequence::tuple;
 use nom::character::complete::{digit1, alpha1};
-use nom::multi::separated_list;
+use nom::multi::separated_list0;
 use nom::branch::alt;
 use itertools::Itertools;
 use nom::combinator::opt;
@@ -27,7 +28,7 @@ impl AttackGroup {
     fn parse_a_status_set<'a>(i: &'a str, name: &'a str) -> IResult<&'a str, Vec<String>> {
         let (i, _) = tag(name)(i)?;
         let (i, _) = tag(" to ")(i)?;
-        let (i, ns) = separated_list(tag(", "), alpha1)(i)?;
+        let (i, ns) = separated_list0(tag(", "), alpha1)(i)?;
         let (i, _) = alt((tag("; "), tag(") ")))(i)?;
         let our_names = ns.iter().map(|x| x.to_string()).collect_vec();
         Ok((i, our_names))

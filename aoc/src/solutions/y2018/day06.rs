@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 6, generator gen, part1 [p1], part2 [p2]);
 
 use utils::cartesian::Point;
 use utils::aabb::Aabb;
@@ -26,7 +27,7 @@ fn p1(input: &[Point<i32>]) -> usize {
         if points_at_min_dist.len() == 1 {
             let (p2,_) = points_at_min_dist[0];
             let e = nearest_points.entry(*p2).or_default();
-            let on_edge = !bb.contains(p);
+            let on_edge = !bb.contains(&p);
             e.0 += 1;
             e.1 |= on_edge;
         }

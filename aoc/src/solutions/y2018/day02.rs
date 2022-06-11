@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 2, part1 [part1], part2 [part2]);
 use std::collections::HashMap;
 use std::collections::HashSet;
 

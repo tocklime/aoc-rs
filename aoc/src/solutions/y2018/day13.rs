@@ -1,3 +1,4 @@
+aoc_harness::aoc_main!(2018 day 13, generator gen, part1 [p1], part2 [p2]);
 use utils::cartesian::{as_point_map, Dir, Point};
 use std::collections::{BTreeMap, HashMap, HashSet};
 
@@ -64,23 +65,24 @@ fn gen(input: &str) -> State {
 }
 
 
-fn p1(input: &State) -> Point<u32> {
+fn p1(input: &State) -> String {
     let mut s = input.clone();
     loop {
         let crashes = s.step_carts();
         if !crashes.is_empty() {
-            return crashes[0];
+            return format!("{},{}", crashes[0].x, crashes[0].y);
         }
     }
 }
 
 
-fn p2(input: &State) -> Point<u32> {
+fn p2(input: &State) -> String {
     let mut s = input.clone();
     loop {
         s.step_carts();
         if s.carts.len() == 1 {
-            return *s.carts.iter().next().unwrap().0;
+            let a = *s.carts.iter().next().unwrap().0;
+            return format!("{},{}",a.x,a.y);
         }
     }
 }

@@ -4,7 +4,7 @@ use std::{
     convert::TryInto,
     fmt::Debug,
     iter::{Product, Sum},
-    ops::{Add, AddAssign, BitAnd, BitOr, Mul, MulAssign, Not, Rem, Shl, Shr},
+    ops::{Add, AddAssign, BitAnd, BitOr, Mul, MulAssign, Not, Rem, Shl, Shr, RemAssign, DivAssign},
 };
 
 #[must_use]
@@ -18,6 +18,27 @@ pub fn int_to_digits_big_endian<const SIZE: usize>(mut i: usize) -> [u8; SIZE] {
         i /= 10;
     }
     ans
+}
+
+pub fn digits<T>(mut n: T) -> impl Iterator<Item = T>
+where
+    T: Num + RemAssign<T> + DivAssign<T> + From<u8> + MulAssign<T> + PartialOrd + Copy,
+{
+    let ten: T = 10.into();
+    let mut div = T::one();
+    while n >= div * ten {
+        div *= ten;
+    }
+    std::iter::from_fn(move || {
+        if div == T::zero() {
+            None
+        } else {
+            let v = n / div;
+            n %= div;
+            div /= ten;
+            Some(v)
+        }
+    })
 }
 
 pub fn exp_by_squares<N>(base: &N, mut exp: usize) -> N
