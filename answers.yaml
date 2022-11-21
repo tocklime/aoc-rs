@@ -480,9 +480,9 @@
     part2_confirmed: false
   23:
     part1: "613"
-    part1_confirmed: false
-    part2: "101599539"
-    part2_confirmed: false
+    part1_confirmed: true
+    part2: "101599540"
+    part2_confirmed: true
   24:
     part1: "23174"
     part1_confirmed: false

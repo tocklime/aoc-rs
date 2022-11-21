@@ -1,4 +1,4 @@
-aoc_harness::aoc_main!(2018 day 23, part1 [p1], part2 [p2, p2b]);
+aoc_harness::aoc_main!(2018 day 23, part1 [p1] => 613, part2 [p2, p2b] => 101_599_540);
 use itertools::Itertools;
 use nom::lib::std::collections::BinaryHeap;
 use nom::lib::std::hash::Hash;
@@ -118,6 +118,7 @@ fn p2(input: &str) -> N {
         .map(|x| x.distance_to_origin() - x.r)
         .max()
         .unwrap()
+        + 1
 }
 
 #[derive(Ord, PartialEq, Eq, PartialOrd, Debug)]
