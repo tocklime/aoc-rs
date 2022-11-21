@@ -1,12 +1,11 @@
 aoc_harness::aoc_main!(2018 day 16, part1 [p1], part2 [p2]);
-use utils::comp::*;
 use itertools::Itertools;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
-
+use utils::comp::*;
 
 fn p1(input: &str) -> usize {
-    let input = input.replace("\r", "");
+    let input = input.replace('\r', "");
     let secs: Vec<&str> = input.split("\n\n\n").collect();
     let mut match_count = 0;
     let lines = secs[0].lines().collect_vec();
@@ -44,9 +43,8 @@ fn p1(input: &str) -> usize {
     match_count
 }
 
-
 fn p2(input: &str) -> N {
-    let input = input.replace("\r", "");
+    let input = input.replace('\r', "");
     let secs: Vec<&str> = input.split("\n\n\n\n").collect();
     let lines = secs[0].lines().collect_vec();
     let ops = Op::all();
@@ -68,7 +66,7 @@ fn p2(input: &str) -> N {
             a[4].parse().unwrap(),
         ]);
         let insn = Insn::parse_basic(ch[1]);
-        let opts: HashSet<Op> = ops
+        let new_opts: HashSet<Op> = ops
             .iter()
             .filter(|o| {
                 let i = Insn::Op(**o, insn.1[0], insn.1[1], insn.1[2]);
@@ -76,12 +74,12 @@ fn p2(input: &str) -> N {
                 x.eval(i);
                 x == after
             })
-            .cloned()
+            .copied()
             .collect();
         options
             .entry(insn.0)
-            .and_modify(|x: &mut HashSet<Op>| *x = x.intersection(&opts).cloned().collect())
-            .or_insert(opts);
+            .and_modify(|x: &mut HashSet<Op>| *x = x.intersection(&new_opts).copied().collect())
+            .or_insert(new_opts);
     }
     let mut known = HashMap::new();
     loop {

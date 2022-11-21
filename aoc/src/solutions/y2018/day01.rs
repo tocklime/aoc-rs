@@ -1,4 +1,3 @@
-
 aoc_harness::aoc_main!(2018 day 1, generator input_generator, part1 [part1], part2 [part2]);
 fn input_generator(input: &str) -> Vec<i32> {
     input
@@ -7,13 +6,11 @@ fn input_generator(input: &str) -> Vec<i32> {
         .collect()
 }
 
-
 fn part1(input: &[i32]) -> i32 {
     input.iter().sum()
 }
 
 use std::collections::HashSet;
-
 
 fn part2(input: &[i32]) -> i32 {
     //Find first number reached twice.

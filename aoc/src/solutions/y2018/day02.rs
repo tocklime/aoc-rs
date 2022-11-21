@@ -2,8 +2,6 @@ aoc_harness::aoc_main!(2018 day 2, part1 [part1], part2 [part2]);
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-//
-
 fn part1(input: &str) -> u32 {
     let mut c2 = 0;
     let mut c3 = 0;
@@ -21,7 +19,6 @@ fn part1(input: &str) -> u32 {
     }
     c2 * c3
 }
-
 
 fn part2(input: &str) -> String {
     let mut hs = HashSet::new();

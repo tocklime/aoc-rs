@@ -1,13 +1,19 @@
 aoc_harness::aoc_main!(2018 day 11, generator gen, part1 [p1], part2 [p2]);
 use utils::grid2d::Grid2d;
 
+fn as_i(n: usize) -> isize {
+    n.try_into().unwrap()
+}
+fn as_u(n: isize) -> usize {
+    n.try_into().unwrap()
+}
 fn level(sn: usize, x: usize, y: usize) -> isize {
     let rack_id = x + 10;
     let power_level = rack_id * y;
     let power_level = power_level + sn;
     let power_level = power_level * rack_id;
     let hundreds = (power_level / 100) % 10;
-    (hundreds as isize) - 5
+    as_i(hundreds) - 5
 }
 
 const SIZE: usize = 300;
@@ -16,8 +22,8 @@ fn gen(input: &str) -> Grid2d<isize> {
     let n: usize = input.trim().parse().unwrap();
     let g = Grid2d::from_fn((SIZE, SIZE), |(x, y)| level(n, x + 1, y + 1));
     let mut prefix_grid = Grid2d::from_elem((SIZE, SIZE), 0);
-    for y in 0..(SIZE as isize) {
-        for x in 0..(SIZE as isize) {
+    for y in 0..as_i(SIZE) {
+        for x in 0..as_i(SIZE) {
             let s = g.get_i((x, y)).unwrap();
             let left = prefix_grid.get_i((x - 1, y)).copied().unwrap_or_default();
             let up = prefix_grid.get_i((x, y - 1)).copied().unwrap_or_default();
@@ -25,31 +31,31 @@ fn gen(input: &str) -> Grid2d<isize> {
                 .get_i((x - 1, y - 1))
                 .copied()
                 .unwrap_or_default();
-            prefix_grid[(x as usize, y as usize)] = s + left + up - left_up;
+            prefix_grid[(as_u(x), as_u(y))] = s + left + up - left_up;
         }
     }
     prefix_grid
 }
 fn window_sum_at(grid: &Grid2d<isize>, window_size: isize, x: isize, y: isize) -> isize {
-    let tl = grid.get_i((x-1, y-1)).copied().unwrap_or_default();
+    let tl = grid.get_i((x - 1, y - 1)).copied().unwrap_or_default();
     let br = grid
-        .get_i((x-1 + window_size, y-1 + window_size))
+        .get_i((x - 1 + window_size, y - 1 + window_size))
         .copied()
         .unwrap_or_default();
     let tr = grid
-        .get_i((x-1 + window_size, y-1))
+        .get_i((x - 1 + window_size, y - 1))
         .copied()
         .unwrap_or_default();
     let bl = grid
-        .get_i((x-1, y-1 + window_size))
+        .get_i((x - 1, y - 1 + window_size))
         .copied()
         .unwrap_or_default();
     br + tl - bl - tr
 }
 fn solve(input: &Grid2d<isize>, window_size: isize) -> (isize, isize, isize, isize) {
-    (0..(SIZE as isize) - window_size)
+    (0..as_i(SIZE) - window_size)
         .flat_map(|y| {
-            (0..(SIZE as isize) - window_size).map(move |x| {
+            (0..as_i(SIZE) - window_size).map(move |x| {
                 let val = window_sum_at(input, window_size, x, y);
                 (val, x + 1, y + 1, window_size)
             })

@@ -1,9 +1,8 @@
 aoc_harness::aoc_main!(2018 day 10, generator gen, both [p]);
-use utils::{aabb::Aabb, cartesian::render_char_map_w, cartesian::Point};
 use itertools::Itertools;
 use regex::Regex;
-use std::iter::FromIterator;
 use std::{collections::HashMap, str::FromStr};
+use utils::{aabb::Aabb, cartesian::render_char_map_w, cartesian::Point};
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 //#[from_str(regex = r"position=<\s*(?P<loc.x>[-0-9]+),\s*(?P<loc.y>[-0-9]+)} velocity=<\s*(?P<vel.x>[-0-9]+),\s*(?P<vel.y>[-0-9]+)")]
@@ -39,7 +38,7 @@ impl Star {
         }
     }
     fn field_bb(l: &[Self]) -> Aabb<i32> {
-        Aabb::from_iter(l.iter().map(|x| &x.loc))
+        l.iter().map(|x| &x.loc).collect()
     }
 }
 
@@ -57,10 +56,10 @@ fn gen(input: &str) -> Vec<Star> {
         .collect()
 }
 fn p(input: &[Star]) -> (String, usize) {
-    let mut stars = input.iter().cloned().collect_vec();
+    let mut stars = input.iter().copied().collect_vec();
     let mut last_size = Star::field_bb(&stars).area();
     for t in 0.. {
-        let new_stars = stars.iter().map(|s| s.step()).collect_vec();
+        let new_stars = stars.iter().map(Star::step).collect_vec();
         let size = Star::field_bb(&new_stars).area();
         if size > last_size {
             let grid: HashMap<Point<i32>, char> = stars.iter().map(|x| (x.loc, 'X')).collect();
@@ -73,5 +72,3 @@ fn p(input: &[Star]) -> (String, usize) {
     }
     unreachable!();
 }
-
-

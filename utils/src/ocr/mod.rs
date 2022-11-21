@@ -19,7 +19,11 @@ lazy_static! {
     static ref ALPHA_6_4_MAP: HashMap<NumSet<u32>, char> = make_map::<u32>(ALPHA_6_4, 4, 1);
     static ref ALPHA_10_6_MAP: HashMap<NumSet<u64>, char> = make_map::<u64>(ALPHA_10_6, 6, 1);
 }
-fn convert_art_to_sets<T: PrimInt>(ascii_art: &str, char_width: u8, whitespace_between: u8) -> Vec<NumSet<T>> {
+fn convert_art_to_sets<T: PrimInt>(
+    ascii_art: &str,
+    char_width: u8,
+    whitespace_between: u8,
+) -> Vec<NumSet<T>> {
     let wid = char_width + whitespace_between;
     let min_leading_blanks: usize = ascii_art
         .lines()
@@ -42,11 +46,15 @@ fn convert_art_to_sets<T: PrimInt>(ascii_art: &str, char_width: u8, whitespace_b
     }
     sets
 }
-fn make_map<T>(alphabet_ascii_art: &str, char_width: u8, whitespace_between: u8) -> HashMap<NumSet<T>, char>
+fn make_map<T>(
+    alphabet_ascii_art: &str,
+    char_width: u8,
+    whitespace_between: u8,
+) -> HashMap<NumSet<T>, char>
 where
     T: PrimInt + Hash,
 {
-    convert_art_to_sets(alphabet_ascii_art, char_width,whitespace_between)
+    convert_art_to_sets(alphabet_ascii_art, char_width, whitespace_between)
         .into_iter()
         .zip('A'..='Z')
         .collect()

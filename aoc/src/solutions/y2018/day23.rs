@@ -1,4 +1,4 @@
-aoc_harness::aoc_main!(2018 day 23, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2018 day 23, part1 [p1], part2 [p2, p2b]);
 use itertools::Itertools;
 use nom::lib::std::collections::BinaryHeap;
 use nom::lib::std::hash::Hash;
@@ -42,9 +42,8 @@ impl Nanobot {
     }
 }
 
-
 fn p1(input: &str) -> usize {
-    let bots = input.lines().map(|x| Nanobot::parse(x)).collect_vec();
+    let bots = input.lines().map(Nanobot::parse).collect_vec();
     let best = bots.iter().max_by_key(|b| b.r).unwrap();
     bots.iter().filter(|&b| best.can_see(b)).count()
 }
@@ -53,13 +52,12 @@ fn bron_kerbosch<'a, T>(neighbours: &HashMap<&'a T, HashSet<&'a T>>) -> HashSet<
 where
     T: Eq + Hash,
 {
-    let mut best: Cell<HashSet<&T>> = Cell::new(HashSet::new());
     fn recur<'a, 'b, T>(
         neighbours: &'a HashMap<&'b T, HashSet<&'b T>>,
         best: &'a mut Cell<HashSet<&'b T>>,
-        p: HashSet<&'b T>,
+        p: &HashSet<&'b T>,
         r: HashSet<&'b T>,
-        x: HashSet<&'b T>,
+        x: &HashSet<&'b T>,
     ) where
         T: Eq + Hash,
     {
@@ -71,7 +69,7 @@ where
             }
         } else {
             let most_neighbours_of_p_and_x =
-                p.union(&x).max_by_key(|&&x| neighbours[x].len()).unwrap();
+                p.union(x).max_by_key(|&&x| neighbours[x].len()).unwrap();
             for n in p.difference(&neighbours[most_neighbours_of_p_and_x]) {
                 let ns = &neighbours[n];
                 let mut new_r = r.clone();
@@ -79,37 +77,37 @@ where
                 recur(
                     neighbours,
                     best,
-                    p.intersection(ns).copied().collect(),
+                    &p.intersection(ns).copied().collect(),
                     new_r,
-                    x.intersection(ns).copied().collect(),
+                    &x.intersection(ns).copied().collect(),
                 );
             }
         }
     }
+    let mut best: Cell<HashSet<&T>> = Cell::new(HashSet::new());
     recur(
         neighbours,
         &mut best,
-        neighbours.keys().copied().collect(),
+        &neighbours.keys().copied().collect(),
         HashSet::new(),
-        HashSet::new(),
+        &HashSet::new(),
     );
     best.into_inner()
 }
 
-
 fn p2(input: &str) -> N {
-    let bots = input.lines().map(|x| Nanobot::parse(x)).collect_vec();
+    let bots = input.lines().map(Nanobot::parse).collect_vec();
     let mut shares_space_with: HashMap<&Nanobot, HashSet<&Nanobot>> = HashMap::new();
     for v in bots.iter().combinations(2) {
         let a = v[0];
         let b = v[1];
         if a.shares_space_with(b) {
             shares_space_with
-                .entry(&a)
+                .entry(a)
                 .or_insert_with(HashSet::new)
                 .insert(b);
             shares_space_with
-                .entry(&b)
+                .entry(b)
                 .or_insert_with(HashSet::new)
                 .insert(a);
         }
@@ -182,9 +180,8 @@ impl Cube {
     }
 }
 
-
 fn p2b(input: &str) -> N {
-    let bots = input.lines().map(|x| Nanobot::parse(x)).collect_vec();
+    let bots = input.lines().map(Nanobot::parse).collect_vec();
     let max_coord = *bots.iter().flat_map(|x| x.pos.iter()).max().unwrap();
     let mut power_2_bound = 1;
     while power_2_bound <= max_coord {
@@ -205,7 +202,7 @@ fn p2b(input: &str) -> N {
             return c.distance_to_origin();
         }
         for oct in c.octants() {
-            let reach = bots.iter().filter(|b| oct.intersects(&b)).count();
+            let reach = bots.iter().filter(|b| oct.intersects(b)).count();
             work.push((reach, oct.size(), -oct.distance_to_origin(), oct));
         }
     }

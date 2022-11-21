@@ -11,7 +11,7 @@ fn manhattan(a: &[i64], b: &[i64]) -> i64 {
 fn p1(input: &str) -> usize {
     let neighbours = gen(input);
     let mut root_to_members: HashMap<usize, HashSet<usize>> = (0..neighbours.len())
-        .map(|x| (x, [x].iter().cloned().collect::<HashSet<usize>>()))
+        .map(|x| (x, [x].iter().copied().collect::<HashSet<usize>>()))
         .collect();
     loop {
         let found_to_join: Option<(usize, usize)> =
@@ -70,7 +70,7 @@ fn p1b(input: &str) -> usize {
             fringe = fringe
                 .iter()
                 .flat_map(|x| neighbours[*x].iter().filter(|x| !visited.contains(x)))
-                .cloned()
+                .copied()
                 .collect();
         }
     }

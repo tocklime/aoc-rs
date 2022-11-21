@@ -2,7 +2,7 @@ aoc_harness::aoc_main!(2018 day 20, generator gen, part1 [p1], part2 [p2]);
 use std::collections::HashMap;
 use utils::cartesian::{Dir, Point};
 
-fn gen(input: &str) -> HashMap<Point<i64>,usize> {
+fn gen(input: &str) -> HashMap<Point<i64>, usize> {
     let mut hm = HashMap::new();
     let mut shortests = HashMap::new();
     let mut stack = Vec::new();
@@ -11,8 +11,7 @@ fn gen(input: &str) -> HashMap<Point<i64>,usize> {
     hm.insert(position, 'X');
     for c in input.trim().chars() {
         match c {
-            '^' => (),
-            '$' => (),
+            '^' | '$' => (),
             'N' | 'E' | 'W' | 'S' => {
                 let dir = Dir::from_x("NSEW", c);
                 let door_c = if c == 'N' || c == 'S' { '-' } else { '|' };
@@ -32,16 +31,18 @@ fn gen(input: &str) -> HashMap<Point<i64>,usize> {
             ')' => {
                 stack.pop();
             }
-            _ => { panic!("unknown char: {}", c); }
+            _ => {
+                panic!("unknown char: {}", c);
+            }
         }
     }
     shortests
 }
 
-fn p1(input: &HashMap<Point<i64>,usize>) -> usize {
+fn p1(input: &HashMap<Point<i64>, usize>) -> usize {
     *input.values().max().unwrap()
 }
 
-fn p2(input: &HashMap<Point<i64>,usize>) -> usize {
+fn p2(input: &HashMap<Point<i64>, usize>) -> usize {
     input.values().filter(|x| **x >= 1000).count()
 }

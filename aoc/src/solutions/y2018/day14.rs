@@ -1,7 +1,6 @@
 aoc_harness::aoc_main!(2018 day 14, generator gen, part1 [p1], part2 [p2]);
-use utils::nums::digits;
 use itertools::Itertools;
-
+use utils::nums::digits;
 
 fn gen(input: &str) -> usize {
     input.trim().parse().unwrap()
@@ -26,7 +25,6 @@ fn p1(input: &usize) -> String {
         .join("")
 }
 
-
 fn p2(input: &usize) -> usize {
     let mut d = vec![3, 7];
     let mut pos = vec![0, 1];
@@ -40,7 +38,7 @@ fn p2(input: &usize) -> usize {
             }
         }
 
-        for p in pos.iter_mut() {
+        for p in &mut pos {
             *p = (*p + 1 + d[*p]) % d.len();
         }
     }

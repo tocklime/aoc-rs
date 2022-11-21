@@ -1,9 +1,8 @@
 aoc_harness::aoc_main!(2018 day 21, part1 [p1], part2 [p2]);
-use utils::comp::*;
 use itertools::Itertools;
 use reformation::Reformation;
 use std::collections::HashSet;
-
+use utils::comp::*;
 
 fn p1(input: &str) -> i64 {
     let Macro::SetIp(ip) = Macro::parse(input.lines().next().unwrap()).unwrap();
@@ -57,10 +56,10 @@ fn p2(input: &str) -> i64 {
                 d.set(3, t);
             }
             28 => {
-                if !seen.insert(d.regs[4]) {
-                    break;
-                } else {
+                if seen.insert(d.regs[4]) {
                     last_insert = Some(d.regs[4]);
+                } else {
+                    break;
                 }
             }
             _ => {}

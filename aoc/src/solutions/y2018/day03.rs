@@ -29,7 +29,6 @@ impl Claim {
     }
 }
 
-
 fn gen(input: &str) -> Vec<Claim> {
     input
         .lines()
@@ -37,9 +36,8 @@ fn gen(input: &str) -> Vec<Claim> {
         .collect()
 }
 
-
 fn part1(input: &[Claim]) -> usize {
-    let mut grid = [[0_u8; 1000]; 1000];
+    let mut grid = vec![[0_u8; 1000]; 1000].into_boxed_slice();
     let mut count = 0;
     for c in input {
         for (x, y) in c.squares() {
@@ -82,7 +80,6 @@ fn part1_hm(input: &[Claim]) -> usize {
 
 use std::collections::HashSet;
 
-
 fn part2(input: &[Claim]) -> usize {
     let mut candidates: HashSet<usize> = input.iter().map(|c| c.id).collect();
     for c1ix in 0..input.len() {
@@ -97,7 +94,6 @@ fn part2(input: &[Claim]) -> usize {
     }
     *candidates.iter().next().expect("Not found")
 }
-
 
 fn part2_map(input: &[Claim]) -> usize {
     let mut grid = HashMap::new();

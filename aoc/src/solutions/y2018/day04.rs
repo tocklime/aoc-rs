@@ -40,7 +40,6 @@ const HINT_INPUT: &str = r#"[1518-11-01 00:00] Guard #10 begins shift
 [1518-11-05 00:55] wakes up
 "#;
 
-
 fn gen(input: &str) -> Vec<LogLine> {
     let mut v: Vec<LogLine> = input
         .lines()
@@ -110,16 +109,10 @@ fn part2(input: &[LogLine]) -> usize {
 
 #[test]
 fn test_part1() {
-    assert_eq!(
-        part1(&gen(HINT_INPUT)),
-        10 * 24
-    )
+    assert_eq!(part1(&gen(HINT_INPUT)), 10 * 24);
 }
 
 #[test]
 fn test_part2() {
-    assert_eq!(
-        part2(&gen(HINT_INPUT)),
-        99 * 45
-    )
+    assert_eq!(part2(&gen(HINT_INPUT)), 99 * 45);
 }

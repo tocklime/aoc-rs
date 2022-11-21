@@ -1,5 +1,5 @@
-aoc_harness::aoc_main!(2018 day 15, generator gen, part1 [p1] => 237996, part2 [p2] => 69700);
-use utils::cartesian::{as_point_map, Point};
+aoc_harness::aoc_main!(2018 day 15, generator gen, part1 [p1] => 237_996, part2 [p2] => 69700,
+    example part1 EG1 => 27730);
 use itertools::Itertools;
 use pathfinding::prelude::astar_bag;
 use std::{
@@ -7,6 +7,7 @@ use std::{
     cmp::max,
     collections::{BTreeMap, BTreeSet, HashSet},
 };
+use utils::cartesian::{as_point_map, Point};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 enum Side {
@@ -42,20 +43,18 @@ impl State {
     fn count_elves(&self) -> usize {
         self.units.values().filter(|x| x.side == Side::Elf).count()
     }
-    fn space_is_free(&self, p: &Point<i32>) -> bool {
-        !self.units.contains_key(p) && !self.walls.contains(p)
+    fn space_is_free(&self, p: Point<i32>) -> bool {
+        !self.units.contains_key(&p) && !self.walls.contains(&p)
     }
     fn total_health(&self) -> i32 {
         self.units.values().map(|x| max(x.hp.get(), 0)).sum::<i32>()
     }
     #[allow(dead_code)]
     fn render(&self) -> String {
-        use std::iter::FromIterator;
-
         use utils::aabb::Aabb;
 
         let mut ans = String::new();
-        let bb: Aabb<i32> = Aabb::from_iter(self.walls.iter());
+        let bb = self.walls.iter().collect::<Aabb<i32>>();
         for y in bb.bottom_left.y..=bb.top_right.y {
             //draw row.
             let mut notes = vec![];
@@ -123,22 +122,22 @@ impl State {
             //neighbour squares to each enemy unit
             .flat_map(|(p, _)| {
                 let n = p.neighbours();
-                n.iter().cloned().collect_vec()
+                n.iter().copied().collect_vec()
             })
             //of those, only those which are not off map and not walls.
-            .filter(|p2| &p == p2 || self.space_is_free(p2))
+            .filter(|p2| &p == p2 || self.space_is_free(*p2))
             .collect();
 
-        //println!("{}\n", self.render());
-        //dbg!(&p, u, &in_range);
+        // println!("{}\n", self.render());
+        // dbg!(&p, u, &in_range);
         if !in_range.is_empty() && !in_range.contains(&p) {
             let paths = astar_bag(
                 &p,
                 |p| {
                     p.neighbours()
                         .iter()
-                        .cloned()
-                        .filter(|x| self.space_is_free(x))
+                        .copied()
+                        .filter(|x| self.space_is_free(*x))
                         .map(|x| (x, 1))
                         .collect_vec()
                 },
@@ -161,7 +160,7 @@ impl State {
     //returns location of death.
     fn attack(&self, p: Point<i32>) -> Option<Point<i32>> {
         let me = self.units.get(&p).unwrap();
-        let mut neighbours = p.neighbours().iter().cloned().collect_vec();
+        let mut neighbours = p.neighbours().iter().copied().collect_vec();
         neighbours.sort();
 
         //find all targets
@@ -183,7 +182,6 @@ impl State {
         None
     }
 }
-
 
 fn gen(input: &str) -> State {
     let map = as_point_map(input, false);
@@ -226,7 +224,6 @@ fn gen(input: &str) -> State {
     }
 }
 
-
 fn p1(input: &State) -> i32 {
     let mut st: State = input.clone();
     for t in 0.. {
@@ -236,6 +233,8 @@ fn p1(input: &State) -> i32 {
                 return t * st.total_health();
             }
         }
+        // println!("{}", st.render());
+        // todo!();
     }
     unreachable!();
 }
@@ -244,23 +243,21 @@ fn run_with_no_elf_death(st: &mut State) -> Option<i32> {
     let elf_count = st.count_elves();
     for t in 0.. {
         match st.round() {
-            Ok(_) => {
+            Ok(()) => {
                 if st.count_elves() != elf_count {
                     return None;
                 }
             }
-            Err(_) => {
-                if st.count_elves() != elf_count {
-                    return None;
-                } else {
+            Err(Err::NoTargetsCombatEnded) => {
+                if st.count_elves() == elf_count {
                     return Some(t * st.total_health());
                 }
+                return None;
             }
         }
     }
     unreachable!();
 }
-
 
 fn p2(input: &State) -> i32 {
     for p in 1.. {
@@ -272,3 +269,11 @@ fn p2(input: &State) -> i32 {
     }
     unreachable!();
 }
+
+const EG1: &str = "#######   
+#.G...#
+#...EG#
+#.#.#G#
+#..G#E#
+#.....#   
+#######";

@@ -19,8 +19,8 @@ use crate::nums::NumExt;
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, PartialOrd, Ord)]
 #[must_use]
 pub struct Point<T> {
+    pub y: T, //important to order y then x, because that gives you row-major order, which is required for y2018d15.
     pub x: T,
-    pub y: T,
 }
 impl<T> IntoDimension for Point<T>
 where
@@ -58,7 +58,8 @@ pub enum Dir {
 
 impl Dir {
     pub fn try_from_x(udlr: &str, c: char) -> Option<Self> {
-        udlr.find(c).map(|ix| [Self::Up, Self::Down, Self::Left, Self::Right][ix])
+        udlr.find(c)
+            .map(|ix| [Self::Up, Self::Down, Self::Left, Self::Right][ix])
     }
     pub fn from_x(udlr: &str, c: char) -> Self {
         let ix = udlr.find(c).expect("Unknown direction");

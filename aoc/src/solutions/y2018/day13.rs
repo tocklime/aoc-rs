@@ -1,6 +1,6 @@
 aoc_harness::aoc_main!(2018 day 13, generator gen, part1 [p1], part2 [p2]);
-use utils::cartesian::{as_point_map, Dir, Point};
 use std::collections::{BTreeMap, HashMap, HashSet};
+use utils::cartesian::{as_point_map, Dir, Point};
 
 #[derive(Clone, Debug)]
 struct State {
@@ -12,7 +12,7 @@ impl State {
     fn step_carts(&mut self) -> Vec<Point<u32>> {
         let mut new_carts = BTreeMap::new();
         let mut crashes: Vec<Point<u32>> = Vec::new();
-        let mut orig_posses = self.carts.keys().cloned().collect::<HashSet<Point<u32>>>();
+        let mut orig_posses = self.carts.keys().copied().collect::<HashSet<Point<u32>>>();
         for (p, &(d, turn_count)) in &self.carts {
             if !orig_posses.contains(p) {
                 //already crashed?
@@ -21,14 +21,10 @@ impl State {
             let new_pos = p.step(d);
             orig_posses.remove(p);
             let new_dir = match (d, self.map.get(&new_pos)) {
-                (Dir::Down, Some('/')) => (Dir::Right, turn_count),
-                (Dir::Up, Some('/')) => (Dir::Left, turn_count),
-                (Dir::Left, Some('/')) => (Dir::Up, turn_count),
-                (Dir::Right, Some('/')) => (Dir::Down, turn_count),
-                (Dir::Down, Some('\\')) => (Dir::Left, turn_count),
-                (Dir::Up, Some('\\')) => (Dir::Right, turn_count),
-                (Dir::Left, Some('\\')) => (Dir::Down, turn_count),
-                (Dir::Right, Some('\\')) => (Dir::Up, turn_count),
+                (Dir::Down, Some('/')) | (Dir::Up, Some('\\')) => (Dir::Right, turn_count),
+                (Dir::Up, Some('/')) | (Dir::Down, Some('\\')) => (Dir::Left, turn_count),
+                (Dir::Left, Some('/')) | (Dir::Right, Some('\\')) => (Dir::Up, turn_count),
+                (Dir::Right, Some('/')) | (Dir::Left, Some('\\')) => (Dir::Down, turn_count),
                 (d, Some('+')) => match turn_count % 3 {
                     0 => (d.turn_right(), turn_count + 1),
                     1 => (d, turn_count + 1),
@@ -54,7 +50,6 @@ impl State {
     }
 }
 
-
 fn gen(input: &str) -> State {
     let map = as_point_map(input, false);
     let carts = map
@@ -63,7 +58,6 @@ fn gen(input: &str) -> State {
         .collect();
     State { map, carts }
 }
-
 
 fn p1(input: &State) -> String {
     let mut s = input.clone();
@@ -75,14 +69,13 @@ fn p1(input: &State) -> String {
     }
 }
 
-
 fn p2(input: &State) -> String {
     let mut s = input.clone();
     loop {
         s.step_carts();
         if s.carts.len() == 1 {
             let a = *s.carts.iter().next().unwrap().0;
-            return format!("{},{}",a.x,a.y);
+            return format!("{},{}", a.x, a.y);
         }
     }
 }

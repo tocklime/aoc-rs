@@ -6,23 +6,21 @@ use seq_macro::seq;
 type Day = ((i32, u8), fn(&mut DayResult, &mut Opts));
 fn make_all() -> Vec<Day> {
     let mut ans: Vec<Day> = Vec::with_capacity(7 * 25 + 1);
-    seq!(N in 01..=25 {
-        ans.push(((2015, N), aoc::solutions::y2015::day~N::run_with_opts));
+    seq!(Y in 2015..=2017 {
+        seq!(N in 01..=25 {
+            ans.push(((Y, N), aoc::solutions::y~Y::day~N::run_with_opts));
+        });
     });
-    seq!(N in 01..=25 {
-        ans.push(((2016, N), aoc::solutions::y2016::day~N::run_with_opts));
+    seq!(N in 01..=16 {
+        ans.push(((2018, N), aoc::solutions::y2018::day~N::run_with_opts));
     });
-    seq!(N in 01..=25 {
-        ans.push(((2017, N), aoc::solutions::y2017::day~N::run_with_opts));
+    seq!(N in 19..=25 {
+        ans.push(((2018, N), aoc::solutions::y2018::day~N::run_with_opts));
     });
-    seq!(N in 01..=25 {
-        ans.push(((2019, N), aoc::solutions::y2019::y19_d~N::run_with_opts));
-    });
-    seq!(N in 01..=25 {
-        ans.push(((2020, N), aoc::solutions::y2020::day~N::run_with_opts));
-    });
-    seq!(N in 01..=25 {
-        ans.push(((2021, N), aoc::solutions::y2021::y21_d~N::run_with_opts));
+    seq!(Y in 2019..=2021 {
+        seq!(N in 01..=25 {
+            ans.push(((Y, N), aoc::solutions::y~Y::day~N::run_with_opts));
+        });
     });
     ans
 }

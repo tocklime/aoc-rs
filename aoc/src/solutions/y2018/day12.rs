@@ -5,7 +5,7 @@ fn step(plants: &BTreeSet<i64>, rules: &HashSet<u8>) -> BTreeSet<i64> {
     let min = plants.iter().next().unwrap();
     let max = plants.iter().next_back().unwrap();
     (min - 2..=max + 2)
-        .filter_map(|ix| {
+        .filter(|ix| {
             let r: u8 = (0..5)
                 .filter_map(|i| {
                     if plants.contains(&(ix - 2 + i)) {
@@ -15,11 +15,7 @@ fn step(plants: &BTreeSet<i64>, rules: &HashSet<u8>) -> BTreeSet<i64> {
                     }
                 })
                 .sum();
-            if rules.contains(&r) {
-                Some(ix)
-            } else {
-                None
-            }
+            rules.contains(&r)
         })
         .collect()
 }
@@ -72,9 +68,8 @@ fn p2(input: &Prob) -> i64 {
         let diff = next.iter().sum::<i64>() - plants.iter().sum::<i64>();
         if diff == last_diff {
             break;
-        } else {
-            last_diff = diff;
         }
+        last_diff = diff;
         plants = next;
         time += 1;
     }

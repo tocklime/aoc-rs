@@ -4,7 +4,9 @@ use std::{
     convert::TryInto,
     fmt::Debug,
     iter::{Product, Sum},
-    ops::{Add, AddAssign, BitAnd, BitOr, Mul, MulAssign, Not, Rem, Shl, Shr, RemAssign, DivAssign},
+    ops::{
+        Add, AddAssign, BitAnd, BitOr, DivAssign, Mul, MulAssign, Not, Rem, RemAssign, Shl, Shr,
+    },
 };
 
 #[must_use]
