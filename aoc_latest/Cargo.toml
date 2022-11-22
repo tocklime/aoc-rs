@@ -3,13 +3,10 @@ name = "aoc_latest"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 utils = {path = "../utils"}
 aoc_harness = {path = "../aoc_harness"}
 dotenv = "0.15"
-scan_fmt = "0.2.6"
 structopt = "0.3"
 itertools = "0.10.1"
 ndarray = "0.15.4"

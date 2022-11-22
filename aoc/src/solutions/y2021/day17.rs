@@ -1,29 +1,18 @@
-use std::{collections::VecDeque, convert::Infallible, str::FromStr};
+use std::collections::VecDeque;
 
-use scan_fmt::scan_fmt;
+use parse_display::{Display, FromStr};
 
 use aoc_harness::*;
+use utils::span::Span;
 
 aoc_main!(2021 day 17, generator whole_input_is::<Day17>, part1 [p1] => 8911, part2 [p2] => 4748, example part1 EG => 45, example part2 EG => 112);
 
 const EG: &str = "target area: x=20..30, y=-10..-5";
-#[derive(Debug)]
+#[derive(Debug, Display, FromStr, Clone)]
+#[display("target area: x={x}, y={y}")]
 struct Day17 {
-    x: (i64, i64),
-    y: (i64, i64),
-}
-impl FromStr for Day17 {
-    type Err = Infallible;
-
-    #[allow(clippy::similar_names)]
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (xmin, xmax, ymin, ymax) =
-            scan_fmt!(s, "target area: x={}..{}, y={}..{}", i64, i64, i64, i64).unwrap();
-        Ok(Self {
-            x: (xmin, xmax + 1),
-            y: (ymin, ymax + 1),
-        })
-    }
+    x: Span<i64>,
+    y: Span<i64>,
 }
 /// for a given speed initial speed, return an iterator of all positions hit.
 /// stops when check returns true on the old position or the current velocity.
@@ -46,7 +35,7 @@ fn posses(mut vel: i64, check: Condition) -> impl Iterator<Item = i64> {
 /// for a given target, find all speeds in `range` which ever hit the target. Return an iterator of
 /// the speed and the range of step numbers that hit the target
 fn find_speeds(
-    target: (i64, i64),
+    target: Span<i64>,
     range: impl Iterator<Item = i64>,
     check: Condition,
 ) -> impl Iterator<Item = (usize, usize)>
@@ -56,7 +45,7 @@ where
         let mut min_step = None;
         let mut max_step = 0;
         let mut in_range = true;
-        let (x, time_offset) = if x.signum() == target.0.signum() {
+        let (x, time_offset) = if x.signum() == target.start.signum() {
             (x, 0)
         } else {
             //we're firing in the wrong direction! (which we only do in the y direction)
@@ -64,7 +53,7 @@ where
             (-x, 2 * usize::try_from(x.abs()).unwrap())
         };
         for (step, xp) in posses(x, check).enumerate() {
-            in_range = xp >= target.0 && xp < target.1;
+            in_range = xp >= target.start && xp < target.end;
             if in_range {
                 if min_step.is_none() {
                     min_step = Some(step);
@@ -87,7 +76,7 @@ where
 fn p1(i: &Day17) -> i64 {
     //fastest downward speed that hits is downward so it hits the end of target in 1 step.
     //hence, highest we can fire it upwards and hit is -1 * that.
-    i.y.0 * (i.y.0 + 1) / 2
+    i.y.start * (i.y.start + 1) / 2
 }
 
 #[derive(Clone, Copy)]
@@ -96,8 +85,11 @@ enum Condition {
     ZeroVelOrMaxPos(i64),
 }
 fn p2(i: &Day17) -> usize {
-    let ys = find_speeds(i.y, (i.y.0..-i.y.0).rev(), Condition::MinPos(i.y.0));
-    let mut xs = find_speeds(i.x, 0..i.x.1, Condition::ZeroVelOrMaxPos(i.x.1)).peekable();
+    let mut i = i.clone();
+    i.x.make_upper_inclusive();
+    i.y.make_upper_inclusive();
+    let ys = find_speeds(i.y, (i.y.start..-i.y.start).rev(), Condition::MinPos(i.y.start));
+    let mut xs = find_speeds(i.x, 0..i.x.end, Condition::ZeroVelOrMaxPos(i.x.end)).peekable();
     let mut matching_xs = VecDeque::new();
     //both xs and ys are in descending order of time-to-target (slowest shots first).
     //we iterate over the ys, and keep a sliding window (the VecDeque) of xs which match

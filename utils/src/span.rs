@@ -1,10 +1,13 @@
+use num::Num;
+use parse_display::{Display, FromStr};
 use std::{
     cmp::{max, min, Ordering},
     ops::Range,
 };
 
-#[derive(Eq, PartialEq, Clone, Copy, Debug, Hash)]
+#[derive(Display, FromStr, PartialEq, Debug, Eq, Clone, Copy, Hash)]
 #[must_use]
+#[display("{start}..{end}")]
 pub struct Span<T> {
     pub start: T,
     pub end: T,
@@ -27,6 +30,11 @@ impl IntoIterator for Span<isize> {
 
     fn into_iter(self) -> Self::IntoIter {
         self.start..self.end
+    }
+}
+impl<T: Num + std::ops::AddAssign> Span<T> {
+    pub fn make_upper_inclusive(&mut self) {
+        self.end += T::one();
     }
 }
 impl<T: Eq + Ord + Copy> Span<T> {
@@ -65,6 +73,7 @@ impl<T: Eq + Ord + Copy> Span<T> {
         )
     }
 
+    /// use other to cut self into pieces. both ends of other are cut points, if they are contained in self.
     pub fn cut_by(&self, other: &Self) -> Vec<Self> {
         match self.collide_with(other) {
             CollisionType::Equal | CollisionType::Before(_) | CollisionType::After(_) => {

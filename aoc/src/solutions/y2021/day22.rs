@@ -1,20 +1,19 @@
 use std::{collections::HashMap, str::FromStr};
 
 use aoc_harness::*;
-use scan_fmt::scan_fmt;
 use utils::cube::Cube;
-use utils::span::Span;
 
 aoc_main!(2021 day 22, generator lines::<X>,
-    part1 [by_block::<20>, construction::<20>, region_weights::<20>] => 582644, example part1 EG => 39,
-    part2 [by_block::<420>, construction::<420>, region_weights::<420>] => 1263804707062415);
+    example part1 EG => 39,
+    part1 [by_block::<20>, construction::<20>, region_weights::<20>] => 582_644,
+    part2 [by_block::<420>, construction::<420>, region_weights::<420>] => 1_263_804_707_062_415);
 
 const EG: &str = "on x=10..12,y=10..12,z=10..12
 on x=11..13,y=11..13,z=11..13
 off x=9..11,y=9..11,z=9..11
 on x=10..10,y=10..10,z=10..10";
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 struct X {
     target_state: bool,
     cube: Cube,
@@ -24,25 +23,12 @@ impl FromStr for X {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (s, x1, x2, y1, y2, z1, z2) = scan_fmt!(
-            s,
-            "{} x={}..{},y={}..{},z={}..{}",
-            String,
-            isize,
-            isize,
-            isize,
-            isize,
-            isize,
-            isize
-        )
-        .unwrap();
+        let (mode,c_str) = s.split_once(' ').ok_or_else(||"No space".to_owned())?;
+        let mut cube : Cube = c_str.parse().map_err(|x : parse_display::ParseError| x.to_string())?;
+        cube.make_upper_inclusive();
         Ok(Self {
-            target_state: s == "on",
-            cube: Cube::new([
-                Span::new(x1, x2 + 1),
-                Span::new(y1, y2 + 1),
-                Span::new(z1, z2 + 1),
-            ]),
+            target_state: mode == "on",
+            cube
         })
     }
 }

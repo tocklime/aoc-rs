@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use aoc_harness::*;
-use scan_fmt::scan_fmt;
 use utils::cartesian::{Dir, Point};
 
 aoc_main!(2021 day 2, generator lines::<Instruction>, part1 [p1] => 1_868_935, part2 [p2] => 1_965_970_888,
@@ -15,8 +14,9 @@ impl FromStr for Instruction {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (dir, distance) = scan_fmt!(s, "{} {}", String, isize).unwrap();
-        let dir = match dir.as_ref() {
+        let (dir, distance_str) = s.split_once(' ').unwrap();
+        let distance = distance_str.parse().unwrap();
+        let dir = match dir {
             "forward" => Dir::Right,
             "up" => Dir::Down,
             "down" => Dir::Up,
