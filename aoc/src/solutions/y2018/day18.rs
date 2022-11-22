@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use aoc_harness::{aoc_main, Itertools};
-use ndarray::Array2;
+use ndarray::{Array2, IntoDimension};
 use utils::cartesian::Point;
 
 aoc_main!(2018 day 18, generator gen_grid,
@@ -21,10 +21,10 @@ fn gen_grid(input: &str) -> Array2<char> {
 }
 fn step_world(input: &Array2<char>) -> Array2<char> {
     let mut counts = Array2::from_elem(input.dim(), (0, 0));
-    for ((r, c), ch) in input.indexed_iter() {
+    for (d, ch) in input.indexed_iter() {
         if *ch == TREES || *ch == LUMBERYARD {
-            for n in Point::new(c, r).neighbours_with_diagonals() {
-                match (*ch, counts.get_mut((n.y, n.x))) {
+            for n in Point::from_dim(d).neighbours_with_diagonals() {
+                match (*ch, counts.get_mut(n.into_dimension())) {
                     (TREES, Some(x)) => {
                         x.0 += 1;
                     }
@@ -61,6 +61,7 @@ fn step_world(input: &Array2<char>) -> Array2<char> {
         _ => panic!("Unknown character in world"),
     })
 }
+
 fn score_world(input: &Array2<char>) -> usize {
     let mut tree_count = 0;
     let mut lumber_count = 0;
@@ -75,12 +76,15 @@ fn score_world(input: &Array2<char>) -> usize {
 }
 
 fn p1(input: &Array2<char>) -> usize {
-    score_world(&(0..10).fold(input.clone(), |a, _| step_world(&a)))
+    fixed_count(input, 10)
+}
+fn fixed_count(input: &Array2<char>, n: usize) -> usize {
+    score_world(&(0..n).fold(input.clone(), |a, _| step_world(&a)))
 }
 fn p2(input: &Array2<char>) -> usize {
     let mut g = input.clone();
     let mut seen_at_ix = HashMap::new();
-    let mut ordered = vec![input.clone()];
+    let mut ordered = vec![g.clone()];
     seen_at_ix.insert(g.clone(), 0);
     let (prelude_len, loop_len) = loop {
         g = step_world(&g);
@@ -94,6 +98,7 @@ fn p2(input: &Array2<char>) -> usize {
     let remaining_after_loops = remaining_after_prelude % loop_len;
 
     score_world(&ordered[prelude_len + remaining_after_loops])
+    // fixed_count(input, prelude_len + remaining_after_loops)
 }
 
 const EG1: &str = ".#.#...|#.

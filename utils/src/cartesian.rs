@@ -57,6 +57,7 @@ pub enum Dir {
 }
 
 impl Dir {
+    #[must_use]
     pub fn try_from_x(udlr: &str, c: char) -> Option<Self> {
         udlr.find(c)
             .map(|ix| [Self::Up, Self::Down, Self::Left, Self::Right][ix])
@@ -122,7 +123,7 @@ impl<T: Default> Default for Point<T> {
 
 impl<T: Sized> Point<T> {
     pub const fn new(x: T, y: T) -> Self {
-        Self { x, y }
+        Self { y, x }
     }
     pub fn from_dim(p: (T, T)) -> Self {
         Self { x: p.1, y: p.0 }
