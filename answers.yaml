@@ -457,6 +457,11 @@
     part1_confirmed: false
     part2: '656'
     part2_confirmed: false
+  18:
+    part1: '519552'
+    part1_confirmed: true
+    part2: '165376'
+    part2_confirmed: true
   19:
     part1: '1120'
     part1_confirmed: false
@@ -870,3 +875,4 @@
     part1_confirmed: true
     part2: null
     part2_confirmed: false
+
