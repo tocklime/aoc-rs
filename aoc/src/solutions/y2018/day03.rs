@@ -2,7 +2,7 @@ aoc_harness::aoc_main!(2018 day 3, generator gen, part1 [part1, part1_vec, part1
 use parse_display::{Display, FromStr};
 use std::collections::HashMap;
 
-#[derive(Display, FromStr, PartialEq, Debug)]
+#[derive(Display, FromStr, PartialEq, Eq, Debug)]
 #[display("#{id} @ {left},{top}: {width}x{height}")]
 pub struct Claim {
     id: usize,

@@ -26,9 +26,9 @@ fn parse_snail(s: &str) -> (Snail, &str) {
     match s.chars().next().unwrap() {
         '[' => {
             let (a, s) = parse_snail(&s[1..]);
-            assert_eq!(s.as_bytes().get(0), Some(&b','));
+            assert_eq!(s.as_bytes().first(), Some(&b','));
             let (b, s) = parse_snail(&s[1..]);
-            assert_eq!(s.as_bytes().get(0), Some(&b']'));
+            assert_eq!(s.as_bytes().first(), Some(&b']'));
             let ans = Snail::new_pair(a, b);
             (ans, &s[1..])
         }
@@ -204,18 +204,18 @@ mod snailtest {
     fn exp(input: &str) -> String {
         let mut p: Snail = input.parse().unwrap();
         p.try_explode(4);
-        return format!("{}", p);
+        format!("{}", p)
     }
     fn spl(input: &str) -> String {
         let mut p: Snail = input.parse().unwrap();
         p.try_split();
-        return format!("{}", p);
+        format!("{}", p)
     }
     fn add(a: &str, b: &str) -> String {
         let a: Snail = a.parse().unwrap();
         let b: Snail = b.parse().unwrap();
         let c = a + b;
-        return format!("{}", c);
+        format!("{}", c)
     }
     #[test]
     fn test_explodes() {

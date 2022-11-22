@@ -6,7 +6,7 @@ use utils::cube::Cube;
 use utils::span::Span;
 
 aoc_main!(2021 day 22, generator lines::<X>,
-    part1 [by_block::<20>, construction::<20>, region_weights::<20>] => 582644, example part1 EG => 39, 
+    part1 [by_block::<20>, construction::<20>, region_weights::<20>] => 582644, example part1 EG => 39,
     part2 [by_block::<420>, construction::<420>, region_weights::<420>] => 1263804707062415);
 
 const EG: &str = "on x=10..12,y=10..12,z=10..12
@@ -47,14 +47,14 @@ impl FromStr for X {
     }
 }
 
-fn volume_remaining(me: &Cube, future: &[Cube], depth: usize) -> isize {
+fn volume_remaining(me: &Cube, future: &[Cube]) -> isize {
     let mut my_vol = me.size();
     let filtered_future = future
         .iter()
         .filter_map(|x| me.intersection(x))
         .collect_vec();
     for ix in 0..filtered_future.len() {
-        my_vol -= volume_remaining(&filtered_future[ix], &filtered_future[ix + 1..], depth + 1);
+        my_vol -= volume_remaining(&filtered_future[ix], &filtered_future[ix + 1..]);
     }
     my_vol
 }
@@ -64,7 +64,7 @@ fn by_block<const N: usize>(input: &[X]) -> isize {
     let cubes = input.iter().map(|x| x.cube).collect_vec();
     for (ix, i) in input.iter().enumerate().take(N) {
         if i.target_state {
-            let x = volume_remaining(&i.cube, &cubes[ix + 1..], 1);
+            let x = volume_remaining(&i.cube, &cubes[ix + 1..]);
             ans += x;
         }
     }

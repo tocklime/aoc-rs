@@ -25,7 +25,7 @@ fn gen(inp: &str) -> G {
 }
 
 fn p1(input: &G) -> usize {
-    Dfs::new(&input, "shiny gold").iter(Reversed(input)).count() - 1
+    Dfs::new(input, "shiny gold").iter(Reversed(input)).count() - 1
 }
 
 fn count_bags_from_graph(g: &G, name: &str) -> usize {

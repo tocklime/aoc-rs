@@ -88,11 +88,7 @@ impl Alu {
                 }
             }
             "eql" => {
-                self.wxyz[to_reg_ix(s[1])] = if self.read(s[1]) == self.read(s[2]) {
-                    1
-                } else {
-                    0
-                }
+                self.wxyz[to_reg_ix(s[1])] = isize::from(self.read(s[1]) == self.read(s[2]))
             }
             _ => panic!("wat is {}", input),
         }

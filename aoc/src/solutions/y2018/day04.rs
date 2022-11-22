@@ -2,7 +2,7 @@ aoc_harness::aoc_main!(2018 day 4, generator gen, part1 [part1], part2 [part2]);
 
 use utils::nums::de_prefixsum;
 #[allow(clippy::trivial_regex)]
-#[derive(parse_display::Display, parse_display::FromStr, PartialEq, Debug)]
+#[derive(parse_display::Display, parse_display::FromStr, PartialEq, Eq, Debug)]
 pub enum LogEvent {
     #[display("Guard #{guard_id} begins shift")]
     BeginShift { guard_id: usize },
@@ -12,7 +12,7 @@ pub enum LogEvent {
     Wakes,
 }
 
-#[derive(parse_display::Display, parse_display::FromStr, PartialEq, Debug)]
+#[derive(parse_display::Display, parse_display::FromStr, PartialEq, Eq, Debug)]
 #[display("[{date}:{minute}] {event}")]
 pub struct LogLine {
     date: String,

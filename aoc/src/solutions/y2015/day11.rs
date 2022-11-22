@@ -8,7 +8,7 @@ use std::collections::HashSet;
 #[derive(Debug, Clone)]
 struct Password(Vec<char>);
 
-impl<'a> Iterator for Password {
+impl Iterator for Password {
     type Item = Self;
     fn next(&mut self) -> Option<Self> {
         let mut pos_to_inc = self.0.len() - 1;

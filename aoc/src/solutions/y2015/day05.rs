@@ -49,20 +49,20 @@ fn is_nice_2(input: &str) -> bool {
 
 
 fn p1(input: &str) -> usize {
-    input.lines().filter(|x| is_nice(*x)).count()
+    input.lines().filter(|x| is_nice(x)).count()
 }
 
 
 fn p2(input: &str) -> usize {
-    input.lines().filter(|x| is_nice_2(*x)).count()
+    input.lines().filter(|x| is_nice_2(x)).count()
 }
 
 
 #[test]
 fn p2_test() {
-    assert_eq!(is_nice_2("aaa"),false);
-    assert_eq!(is_nice_2("qjhvhtzxzqqjkmpb"), true);// is nice
-    assert_eq!(is_nice_2("xxyxx"), true);
-    assert_eq!(is_nice_2("uurcxstgmygtbstg"), false);
-    assert_eq!(is_nice_2("ieodomkazucvgmuy"), false);
+    assert!(!is_nice_2("aaa"));
+    assert!(is_nice_2("qjhvhtzxzqqjkmpb"));// is nice
+    assert!(is_nice_2("xxyxx"));
+    assert!(!is_nice_2("uurcxstgmygtbstg"));
+    assert!(!is_nice_2("ieodomkazucvgmuy"));
 }

@@ -42,7 +42,7 @@ pub fn ore_for_n_fuel(recipes: &RecipeBook, n: usize) -> usize {
         let (&lets_make, qty_needed) = required.iter().next().unwrap();
         let (qty_per, ingredients) = &recipes[lets_make];
         let left_over = qty_needed % qty_per;
-        let iterations_required = (qty_needed / qty_per) + if left_over > 0 { 1 } else { 0 };
+        let iterations_required = (qty_needed / qty_per) + usize::from(left_over > 0);
         for (q, reagent) in ingredients {
             let needed = q * iterations_required;
             if *reagent == "ORE" {
@@ -71,7 +71,7 @@ pub fn p1(input: &str) -> usize {
 
 pub fn p2(input: &str) -> usize {
     let recipes = mk_rb(input);
-    unbounded_bin_search(&|x| ore_for_n_fuel(&recipes, x), 1_000_000_000_000)
+    unbounded_bin_search(|x| ore_for_n_fuel(&recipes, x), 1_000_000_000_000)
 }
 
 const E1: &str = "10 ORE => 10 A

@@ -5,7 +5,8 @@ use std::convert::TryInto;
 use std::f64::consts::PI;
 use std::hash::BuildHasher;
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
-#[derive(PartialEq, Debug, Clone, Copy, TryFromPrimitive)]
+
+#[derive(PartialEq, Eq, Debug, Clone, Copy, TryFromPrimitive)]
 #[repr(u8)]
 #[must_use]
 pub enum Dir {

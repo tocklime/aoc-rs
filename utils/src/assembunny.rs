@@ -73,7 +73,7 @@ impl Computer {
     }
     #[must_use]
     pub fn first_output(&self) -> Option<i64> {
-        self.output.get(0).copied()
+        self.output.first().copied()
     }
     pub fn clear_output(&mut self) {
         self.output.clear();
@@ -129,7 +129,7 @@ impl Computer {
         while self.running() && self.output.is_empty() {
             self.step();
         }
-        let out = self.output.get(0).cloned();
+        let out = self.first_output();
         self.output.clear();
         out
     }

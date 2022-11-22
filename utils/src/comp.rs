@@ -127,24 +127,10 @@ impl Device {
                 self.set(c, self.get(a, m));
             }
             Insn::Op(Op::Gt(m, n), a, b, c) => {
-                self.set(
-                    c,
-                    if self.get(a, m) > self.get(b, n) {
-                        1
-                    } else {
-                        0
-                    },
-                );
+                self.set(c, i64::from(self.get(a, m) > self.get(b, n)));
             }
             Insn::Op(Op::Eq(m, n), a, b, c) => {
-                self.set(
-                    c,
-                    if self.get(a, m) == self.get(b, n) {
-                        1
-                    } else {
-                        0
-                    },
-                );
+                self.set(c, i64::from(self.get(a, m) == self.get(b, n)));
             }
         }
     }

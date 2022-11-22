@@ -7,7 +7,7 @@ use utils::cartesian::{as_point_map, Point};
 fn step(hm: &HashMap<Point<u32>, char>) -> HashMap<Point<u32>, char> {
     hm.iter()
         .map(|(&p, &c)| {
-            let n = (&p.neighbours_with_diagonals())
+            let n = p.neighbours_with_diagonals()
                 .iter()
                 .filter(|x| hm.get(x) == Some(&'#'))
                 .count();

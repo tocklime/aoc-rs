@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use utils::nums::add_i;
 
-#[derive(Display, FromStr, PartialEq, Debug, Clone, Copy)]
+#[derive(Display, FromStr, PartialEq, Eq, Debug, Clone, Copy)]
 #[display(style = "lowercase")]
 pub enum Op {
     Jmp,
@@ -24,7 +24,7 @@ impl Op {
     }
 }
 
-#[derive(Display, FromStr, PartialEq, Debug, Clone, Copy)]
+#[derive(Display, FromStr, PartialEq, Eq, Debug, Clone, Copy)]
 #[display("{op} {n}")]
 pub struct Inst {
     op: Op,

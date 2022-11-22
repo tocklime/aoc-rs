@@ -22,7 +22,7 @@ fn p1(input: &str) -> usize {
 
 
 fn p2(input: &str) -> usize {
-    (b'a'..b'z').map(|c| {
+    (b'a'..=b'z').map(|c| {
         let new_input : String = input.trim().chars().filter(|x| x.to_ascii_lowercase() != char::from(c)).collect();
         reduce(&new_input).len()
     }).min().unwrap()
