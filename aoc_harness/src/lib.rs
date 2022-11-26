@@ -9,24 +9,24 @@ use std::{env, path::PathBuf, str::FromStr, time::Instant};
 use answers::AnswerAll;
 pub use aoc_harness_macros::*;
 pub use itertools::Itertools;
-use structopt::StructOpt;
+use clap::{Parser, arg};
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Opts {
     /// Override the input with the contents of this file
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub input: Option<PathBuf>,
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub quiet: bool,
     ///panic if results don't match expected.
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub test_mode: bool,
-    #[structopt(short, long, default_value = "1")]
+    #[arg(short, long, default_value = "1")]
     pub repeats: usize,
     /// Bypass lightweight benchmarking
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub bypass: bool,
-    #[structopt(skip)]
+    #[arg(skip)]
     pub answers: AnswerAll,
 }
 

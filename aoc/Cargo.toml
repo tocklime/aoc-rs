@@ -7,7 +7,6 @@ edition = "2021"
 utils = {path = "../utils"}
 aoc_harness = {path = "../aoc_harness"}
 dotenv = "0.15.0"
-structopt = "0.3"
 itertools = "0.10.1"
 ndarray = "0.15.4"
 nalgebra ="0.31.4"

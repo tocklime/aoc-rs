@@ -386,7 +386,7 @@ impl AocMainInput {
             unimplemented!();
         } else {
             quote! {
-                use structopt::StructOpt;
+                use clap::Parser;
                 use dotenv;
                 #[cfg(test)]
                 mod autotests {
@@ -409,7 +409,7 @@ impl AocMainInput {
 
                 #[allow(dead_code)]
                 pub fn run_main() -> aoc_harness::dayresult::DayResult {
-                    let mut opts = aoc_harness::Opts::from_args();
+                    let mut opts = aoc_harness::Opts::parse();
                     check_examples();
                     let mut results = aoc_harness::dayresult::DayResult::new(#year,#day,file!());
                     for _ in 0..opts.repeats {
