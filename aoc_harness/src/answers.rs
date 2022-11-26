@@ -5,11 +5,26 @@ use serde::{Deserialize, Serialize};
 use crate::dayresult::DayResult;
 
 #[derive(Deserialize, Serialize, Debug, Default)]
+enum AnswerPart {
+    #[default]
+    Unknown,
+    Checked(String),
+    Observed(String),
+}
+impl AnswerPart {
+    fn from_option(ans: &Option<String>, confirmed: bool) -> Self {
+        match (ans, confirmed) {
+            (None, true) => panic!("Missing answer is confirmed"),
+            (None, false) => AnswerPart::Unknown,
+            (Some(x), true) => AnswerPart::Checked(x.clone()),
+            (Some(x), false) => AnswerPart::Observed(x.clone()),
+        }
+    }
+}
+#[derive(Deserialize, Serialize, Debug, Default)]
 pub struct Answer {
-    part1: Option<String>,
-    part1_confirmed: bool,
-    part2: Option<String>,
-    part2_confirmed: bool,
+    part1: AnswerPart,
+    part2: AnswerPart,
 }
 
 pub type AnswerYear = BTreeMap<u8, Answer>;
@@ -21,7 +36,16 @@ impl AnswerAll {
     #[must_use]
     pub fn from_file() -> Self {
         let data = match std::fs::File::open("answers.yaml") {
-            Ok(f) => serde_yaml::from_reader(f).expect("Bad yaml format in answers.yaml"),
+            Ok(f) => match serde_yaml::from_reader(f) {
+                Ok(r) => r,
+                Err(err) => {
+                    eprintln!(
+                        "Failed to parse existing answers.yaml, will overwrite: {}",
+                        err
+                    );
+                    BTreeMap::new()
+                }
+            },
             Err(_) => BTreeMap::new(),
         };
         Self { data }
@@ -39,28 +63,24 @@ impl AnswerAll {
             .or_default()
             .entry(dr.day)
             .or_default();
-        match (&me.part1, &dr.part1_ans) {
-            (Some(f), Some(e)) if f != e && me.part1_confirmed => {
+        if let (AnswerPart::Checked(f), Some(e)) = (&me.part1, &dr.part1_ans) {
+            if f != e {
                 return Err(format!(
                     "actual part 1 result {} doesn't match expected {}",
                     e, f
                 ));
             }
-            _ => {}
         }
-        me.part1 = dr.part1_ans.clone();
-        me.part1_confirmed = dr.part1_confirmed;
-        match (&me.part2, &dr.part2_ans) {
-            (Some(f), Some(e)) if f != e && me.part2_confirmed => {
+        me.part1 = AnswerPart::from_option(&dr.part1_ans, dr.part1_confirmed);
+        if let (AnswerPart::Checked(f), Some(e)) = (&me.part2, &dr.part2_ans) {
+            if f != e {
                 return Err(format!(
                     "actual part 2 result {} doesn't match expected {}",
                     e, f
                 ));
             }
-            _ => {}
         }
-        me.part2 = dr.part2_ans.clone();
-        me.part2_confirmed = dr.part2_confirmed;
+        me.part2 = AnswerPart::from_option(&dr.part2_ans, dr.part2_confirmed);
         Ok(())
     }
 }
@@ -75,8 +95,10 @@ impl Drop for AnswerAll {
         let f = std::fs::File::options()
             .write(true)
             .create(true)
-            .open("answers.yaml")
-            .expect("could not open answers.yaml");
-        serde_yaml::to_writer(f, &self.data).expect("Failed serializing answers.yaml");
+            .open("answers.new.yaml")
+            .expect("could not open answers.new.yaml");
+        serde_yaml::to_writer(f, &self.data).expect("Failed serializing answers.new.yaml");
+        std::fs::rename("answers.new.yaml", "answers.yaml")
+            .expect("Failed to move answers.new.yaml to answers.yaml");
     }
 }
