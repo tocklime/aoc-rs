@@ -8,8 +8,8 @@ use std::{env, path::PathBuf, str::FromStr, time::Instant};
 
 use answers::AnswerAll;
 pub use aoc_harness_macros::*;
+use clap::{arg, Parser};
 pub use itertools::Itertools;
-use clap::{Parser, arg};
 
 #[derive(Parser, Debug)]
 pub struct Opts {
