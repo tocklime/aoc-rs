@@ -88,9 +88,11 @@ impl Opts {
                     day
                 ));
                 if p.exists() {
-                    Some(std::fs::read_to_string(p)
-                        .expect("couldn't read cached input file")
-                        .replace('\r', ""))
+                    Some(
+                        std::fs::read_to_string(p)
+                            .expect("couldn't read cached input file")
+                            .replace('\r', ""),
+                    )
                 } else {
                     std::fs::create_dir_all(p.parent().unwrap())
                         .expect("couldn't create year input dir");
@@ -113,9 +115,11 @@ impl Opts {
                     Some(i)
                 }
             }
-            Some(f) => Some(std::fs::read_to_string(f)
-                .expect("Couldn't read file")
-                .replace('\r', "")),
+            Some(f) => Some(
+                std::fs::read_to_string(f)
+                    .expect("Couldn't read file")
+                    .replace('\r', ""),
+            ),
         }
     }
     pub fn time_fn<O, F>(&self, f: F) -> (std::time::Duration, O)
