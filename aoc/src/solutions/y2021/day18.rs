@@ -67,7 +67,7 @@ impl Display for Snail {
 }
 impl Snail {
     fn new_leaf(n: usize) -> Self {
-        Snail::Leaf(n)
+        Self::Leaf(n)
     }
     fn new_pair(a: Self, b: Self) -> Self {
         Self::Pair(Box::new((a, b)))
@@ -145,13 +145,11 @@ impl Snail {
         }
     }
     fn reduce(&mut self) {
-        loop {
+        while {
             self.try_explode(4);
             //assert that it's now unexplodable.
-            if !self.try_split() {
-                break;
-            }
-        }
+            self.try_split()
+        } {}
     }
 
     fn get_value(&self) -> Option<usize> {
