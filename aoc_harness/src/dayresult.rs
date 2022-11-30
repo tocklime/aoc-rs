@@ -73,7 +73,7 @@ impl DayResult {
     ) -> Result<(), String> {
         let ans = match ans {
             Some(a) => format!("{}", a),
-            None => "".to_owned(),
+            None => String::new(),
         };
         match slot {
             Some(s) if s != &ans => Err(format!(

@@ -1,0 +1,22 @@
+[tasks.watch]
+description = "watch for latest changes to a single solution file and recompile and run on changes"
+install_crate = "cargo-watch"
+command = "cargo"
+args = ["watch", "--why", "-x", "run --release -p aoc_latest"]
+workspace = false
+
+[tasks.watch2]
+description = "watch for latest changes to a single solution file and recompile and run on changes"
+install_crate = "cargo-watch"
+command = "cargo"
+args = ["run", "--release", "-p", "aoc_latest"]
+watch = true
+workspace = false
+
+[tasks.run_all]
+description = "compile and run all solutions"
+command = "cargo"
+args = ["run", "--release", "-b", "aoc"]
+
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
