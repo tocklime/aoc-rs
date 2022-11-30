@@ -77,7 +77,7 @@ impl Opts {
         }
     }
     #[must_use]
-    pub fn get_input(&self, year: i32, day: u8) -> String {
+    pub fn get_input(&self, year: i32, day: u8) -> Option<String> {
         match &self.input {
             None => {
                 //try in cache dir first.
@@ -88,9 +88,9 @@ impl Opts {
                     day
                 ));
                 if p.exists() {
-                    std::fs::read_to_string(p)
+                    Some(std::fs::read_to_string(p)
                         .expect("couldn't read cached input file")
-                        .replace('\r', "")
+                        .replace('\r', ""))
                 } else {
                     std::fs::create_dir_all(p.parent().unwrap())
                         .expect("couldn't create year input dir");
@@ -106,16 +106,16 @@ impl Opts {
                         ),
                     )
                     .call()
-                    .unwrap()
+                    .ok()?
                     .into_string()
                     .unwrap();
                     std::fs::write(p, &i).expect("failed to write cached input file");
-                    i
+                    Some(i)
                 }
             }
-            Some(f) => std::fs::read_to_string(f)
+            Some(f) => Some(std::fs::read_to_string(f)
                 .expect("Couldn't read file")
-                .replace('\r', ""),
+                .replace('\r', "")),
         }
     }
     pub fn time_fn<O, F>(&self, f: F) -> (std::time::Duration, O)

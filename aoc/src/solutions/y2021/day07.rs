@@ -37,7 +37,7 @@ mod easter_egg {
     #[test]
     fn its_intcode() {
         let opts = Opts::for_test();
-        let mut c: Computer<isize> = opts.get_input(2021, 7).parse().unwrap();
+        let mut c: Computer<isize> = opts.get_input(2021, 7).unwrap().parse().unwrap();
         let output = c.run().output_as_string();
         assert_eq!(output, "Ceci n'est pas une intcode program\n");
     }

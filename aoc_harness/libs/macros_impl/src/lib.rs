@@ -355,7 +355,10 @@ impl AocMainInput {
         let day = self.day.day;
         let year = self.day.year;
         let mut setup = quote! {
-            let s : String = opts.get_input(#year, #day);
+            let Some(s) : Option<String> = opts.get_input(#year, #day) else {
+                eprintln!("Missing input for {}, {}", #year, #day);
+                return;
+            };
         };
         match self.gen.as_ref().map(|z| &z.gen_fn) {
             Some(g) => setup.extend(quote! {
