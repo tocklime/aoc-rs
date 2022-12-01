@@ -17,19 +17,23 @@ fn num_val_2(j: &JsonValue) -> f64 {
         JsonValue::Number(n) => (*n).into(),
         JsonValue::Array(a) => a.iter().map(num_val_2).sum(),
         JsonValue::Object(o) => {
-            let red = o.iter().any(|(_,v)| v.as_str() == Some("red"));
-            if red {0.0} else {o.iter().map(|(_, x)| num_val_2(x)).sum()}
-        },
+            let red = o.iter().any(|(_, v)| v.as_str() == Some("red"));
+            if red {
+                0.0
+            } else {
+                o.iter().map(|(_, x)| num_val_2(x)).sum()
+            }
+        }
         _ => 0.0,
     }
 }
 
-
+#[allow(clippy::cast_possible_truncation)]
 fn p1(input: &str) -> i64 {
     num_val(&json::parse(input).expect("Bad JSON")) as i64
 }
 
-
+#[allow(clippy::cast_possible_truncation)]
 fn p2(input: &str) -> i64 {
     num_val_2(&json::parse(input).expect("Bad JSON")) as i64
 }

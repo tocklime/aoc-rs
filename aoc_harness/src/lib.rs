@@ -88,7 +88,6 @@ impl Opts {
             });
         }
     }
-    #[must_use]
     pub fn get_input(&self, year: i32, day: u8) -> Result<String, InputFetchFailure> {
         match &self.input {
             None => {

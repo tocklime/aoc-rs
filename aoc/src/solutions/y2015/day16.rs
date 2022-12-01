@@ -33,7 +33,7 @@ fn p1(input: &str) -> String {
         ("perfumes", 1),
     ]
     .iter()
-    .cloned()
+    .copied()
     .collect();
     for f in input.lines() {
         let split_1 = f.splitn(2, ':').collect_vec();
@@ -63,7 +63,7 @@ fn p2(input: &str) -> String {
         ("perfumes", (1, Ordering::Equal)),
     ]
     .iter()
-    .cloned()
+    .copied()
     .collect();
     for f in input.lines() {
         let split_1 = f.splitn(2, ':').collect_vec();

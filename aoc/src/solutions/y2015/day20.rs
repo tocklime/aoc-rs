@@ -1,21 +1,20 @@
 use aoc_harness::aoc_main;
 
 aoc_main!(2015 day 20, part1 [p1], part2 [p2]);
-use primal;
-use std::iter;
 use itertools::Itertools;
+use primal;
 use std::collections::HashSet;
+use std::iter;
 
 fn presents(s: &primal::Sieve, n: usize) -> usize {
     let f = s.factor(n).unwrap();
-    let sum: usize = f.iter()
-        .map(|&(a, b)|
-            (usize::pow(a, b as u32 + 1) - 1) / (a - 1)
-        ).product();
+    let sum: usize = f
+        .iter()
+        .map(|&(a, b)| (usize::pow(a, b as u32 + 1) - 1) / (a - 1))
+        .product();
     //println!("n: {}, prime_factors: {:?}, sum: {}",n,f,sum);
     sum * 10
 }
-
 
 fn p1(input: &str) -> usize {
     let target = input.trim().parse::<usize>().unwrap();
@@ -25,19 +24,24 @@ fn p1(input: &str) -> usize {
 
 fn presents2(s: &primal::Sieve, n: usize) -> usize {
     let f = s.factor(n).unwrap();
-    let factors = f.iter().flat_map(|&(a, b)| iter::repeat(a).take(b)).collect_vec();
-    let all_divs: HashSet<usize> = (0..=factors.len())
-        .flat_map(|s| factors.iter().combinations(s)
-            .map(|n| n.iter().map(|&&x| x).product())
-        ).collect();
-    let filtered = all_divs.iter()
-        .filter(|&&d| n / d <= 50)
+    let factors = f
+        .iter()
+        .flat_map(|&(a, b)| iter::repeat(a).take(b))
         .collect_vec();
+    let all_divs: HashSet<usize> = (0..=factors.len())
+        .flat_map(|s| {
+            factors
+                .iter()
+                .combinations(s)
+                .map(|n| n.iter().map(|&&x| x).product())
+        })
+        .collect();
+    let filtered = all_divs.iter().filter(|&&d| n / d <= 50).collect_vec();
     let sum: usize = filtered.iter().map(|x| **x).sum();
     sum * 11
 }
 
-
+#[allow(clippy::maybe_infinite_iter)]
 fn p2(input: &str) -> usize {
     let target = input.trim().parse::<usize>().expect("Bad input");
     let sieve = primal::Sieve::new(target);
@@ -46,7 +50,7 @@ fn p2(input: &str) -> usize {
 
 #[test]
 fn day20p1tests() {
-    let s = primal::Sieve::new(10000000);
+    let s = primal::Sieve::new(10_000_000);
     assert_eq!(presents(&s, 1), 10);
     assert_eq!(presents(&s, 2), 30);
     assert_eq!(presents(&s, 3), 40);

@@ -1,10 +1,10 @@
-use utils::points::{Dir, Point};
 use aoc_harness::aoc_main;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::hash::BuildHasher;
 use utils::intcode::Computer;
+use utils::points::{Dir, Point};
 
 aoc_main!(2019 day 15, generator explore, part1 [p1] => 230, part2 [p2] => 288);
 
@@ -42,14 +42,14 @@ pub fn bfs_depth<S: BuildHasher>(
     min_dist_map.insert(start, 0);
     while !points.is_empty() {
         let (pos, count) = points.pop_front().unwrap();
-        Dir::all().iter().for_each(|d| {
+        for d in &Dir::all() {
             let p2 = pos + d.as_point_delta();
             if map.get(&p2) != Some(&WALL) && !min_dist_map.contains_key(&p2) {
                 min_dist_map.insert(p2, count + 1);
                 let t = (p2, count + 1);
                 points.push_back(t);
             }
-        });
+        }
     }
     min_dist_map
 }

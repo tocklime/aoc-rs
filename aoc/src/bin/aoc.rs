@@ -4,8 +4,9 @@ use aoc_harness::{dayresult::DayResult, dayresult::ExecutionTime, Opts};
 use clap::Parser;
 use seq_macro::seq;
 type Day = ((i32, u8), fn(&mut DayResult, &mut Opts));
+
 fn make_all() -> Vec<Day> {
-    let mut ans: Vec<Day> = Vec::with_capacity(7 * 25 + 1);
+    let mut ans: Vec<Day> = Vec::with_capacity(8 * 25 + 1);
     seq!(Y in 2015..=2022 {
         seq!(N in 01..=25 {
             ans.push(((Y, N), aoc::solutions::y~Y::day~N::run_with_opts));
@@ -29,7 +30,7 @@ pub fn main() {
     let args = Args::parse();
     let all = make_all();
     let mut times = Vec::new();
-    let mut opts = Default::default();
+    let mut opts = aoc_harness::Opts::default();
     let mut total_time = Duration::ZERO;
     let mut time_per_year: BTreeMap<i32, Duration> = BTreeMap::new();
     for ((year, day), f) in all {
@@ -42,11 +43,11 @@ pub fn main() {
                 let this = &dr;
                 this.generator_time.unwrap_or(Duration::ZERO)
                     + match this.solve_time {
-                        ExecutionTime::Both(b) => b,
+                        ExecutionTime::Both(d)
+                        | ExecutionTime::Part1(d)
+                        | ExecutionTime::Part2(d) => d,
                         ExecutionTime::NoneRecorded => Duration::ZERO,
-                        ExecutionTime::Part1(a) => a,
                         ExecutionTime::Separate(a, b) => a + b,
-                        ExecutionTime::Part2(b) => b,
                     }
             };
             total_time += t;
