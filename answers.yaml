@@ -530,3 +530,7 @@
   25:
     part1: !Checked '601'
     part2: Unknown
+2022:
+  1:
+    part1: !Checked '67633'
+    part2: !Checked '199628'
