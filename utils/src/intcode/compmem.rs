@@ -1,4 +1,4 @@
-use num::traits::*;
+use num::traits::PrimInt;
 use std::cmp::Ord;
 use std::convert::{From, TryInto};
 use std::fmt::{Debug, Display};

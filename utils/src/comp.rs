@@ -32,7 +32,7 @@ pub enum Op {
 }
 
 impl Op {
-    pub fn all() -> [Self; 16] {
+    #[must_use] pub fn all() -> [Self; 16] {
         [
             Op::Add(Mode::I),
             Op::Add(Mode::R),
@@ -75,7 +75,7 @@ pub enum Insn {
 }
 
 impl Insn {
-    pub fn parse_basic(input: &str) -> (N, [N; 3]) {
+    #[must_use] pub fn parse_basic(input: &str) -> (N, [N; 3]) {
         let v = input
             .split(' ')
             .map(|x| x.trim().parse::<N>().expect("parse_basic"))
@@ -85,20 +85,20 @@ impl Insn {
 }
 
 impl Device {
-    pub fn new(reg_count: usize) -> Self {
+    #[must_use] pub fn new(reg_count: usize) -> Self {
         Self {
             regs: vec![0; reg_count],
             ip: None,
         }
     }
-    pub fn with_regs(regs: Vec<N>) -> Self {
+    #[must_use] pub fn with_regs(regs: Vec<N>) -> Self {
         Self { regs, ip: None }
     }
-    pub fn get_r(&self, reg: N) -> N {
+    #[must_use] pub fn get_r(&self, reg: N) -> N {
         let u: usize = reg.try_into().unwrap();
         self.regs[u]
     }
-    pub fn get(&self, reg: N, m: Mode) -> N {
+    #[must_use] pub fn get(&self, reg: N, m: Mode) -> N {
         match m {
             Mode::I => reg,
             Mode::R => self.get_r(reg),

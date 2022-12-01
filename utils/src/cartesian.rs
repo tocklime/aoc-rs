@@ -43,7 +43,7 @@ impl<T: FromStr> FromStr for Point<T> {
         if s.next().is_some() {
             return Err(">2 items");
         }
-        Ok(Self { x, y })
+        Ok(Self { y, x })
     }
 }
 

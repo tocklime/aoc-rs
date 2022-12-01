@@ -2,7 +2,7 @@ use std::fmt;
 
 use super::compmem::CompMem;
 use super::computer::Computer;
-use super::enums::*;
+use super::enums::ParameterMode;
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Arg<MemType>(MemType, ParameterMode);
 

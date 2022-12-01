@@ -7,7 +7,7 @@ use std::str::FromStr;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{mpsc, Arc, Mutex};
 
-use super::enums::*;
+use super::enums::{ComputerState, ParameterMode};
 use super::oparg::Arg;
 use super::opcode::OpCode;
 
