@@ -12,3 +12,4 @@ aoc_harness_macros = { path = "libs/macros"}
 serde = {version = "1", features = ["derive"]}
 serde_yaml = "0.9.14"
 clap = { version = "4.0.26", features = ["derive"]}
+chrono = "0.4.23"

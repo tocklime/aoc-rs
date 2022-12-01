@@ -355,9 +355,14 @@ impl AocMainInput {
         let day = self.day.day;
         let year = self.day.year;
         let mut setup = quote! {
-            let Some(s) : Option<String> = opts.get_input(#year, #day) else {
-                eprintln!("Missing input for {}, {}", #year, #day);
-                return;
+            let s : String = match opts.get_input(#year, #day) {
+                Ok(s) => s,
+                Err(i) => {
+                    if i != aoc_harness::InputFetchFailure::PuzzleNotReleasedYet {
+                        opts.log(||format!("Missing input for {}, {}: {:?}", #year, #day, i));
+                    }
+                    return;
+                }
             };
         };
         match self.gen.as_ref().map(|z| &z.gen_fn) {

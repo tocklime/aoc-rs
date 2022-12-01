@@ -8,6 +8,7 @@ use std::{env, path::PathBuf, str::FromStr, time::Instant};
 
 use answers::AnswerAll;
 pub use aoc_harness_macros::*;
+use chrono::TimeZone;
 use clap::{arg, Parser};
 pub use itertools::Itertools;
 
@@ -41,6 +42,17 @@ impl Default for Opts {
             answers: AnswerAll::from_file(),
         }
     }
+}
+#[derive(Debug, PartialEq, Eq)]
+pub enum InputFetchFailure {
+    CantReadCachedFile,
+    CantWriteCachedFile,
+    PuzzleNotReleasedYet,
+    NoAdventOfCodeCookie,
+    CantCreateDirectoryForYear,
+    Unauthorized,
+    HttpNotFound,
+    SomethingElse(String),
 }
 
 impl Opts {
@@ -77,7 +89,7 @@ impl Opts {
         }
     }
     #[must_use]
-    pub fn get_input(&self, year: i32, day: u8) -> Option<String> {
+    pub fn get_input(&self, year: i32, day: u8) -> Result<String, InputFetchFailure> {
         match &self.input {
             None => {
                 //try in cache dir first.
@@ -88,14 +100,19 @@ impl Opts {
                     day
                 ));
                 if p.exists() {
-                    Some(
-                        std::fs::read_to_string(p)
-                            .expect("couldn't read cached input file")
-                            .replace('\r', ""),
-                    )
+                    Ok(std::fs::read_to_string(p)
+                        .map_err(|_| InputFetchFailure::CantReadCachedFile)?
+                        .replace('\r', ""))
                 } else {
+                    let now = chrono::Utc::now();
+                    let release_date = chrono::Utc
+                        .with_ymd_and_hms(year, 12, day.into(), 5, 0, 0)
+                        .unwrap();
+                    if release_date > now {
+                        return Err(InputFetchFailure::PuzzleNotReleasedYet);
+                    }
                     std::fs::create_dir_all(p.parent().unwrap())
-                        .expect("couldn't create year input dir");
+                        .map_err(|_| InputFetchFailure::CantCreateDirectoryForYear)?;
                     let i = ureq::get(&format!(
                         "https://adventofcode.com/{}/day/{}/input",
                         year, day
@@ -108,18 +125,28 @@ impl Opts {
                         ),
                     )
                     .call()
-                    .ok()?
+                    .map_err(|e| match e {
+                        ureq::Error::Status(s, r) => match s {
+                            404 => InputFetchFailure::HttpNotFound,
+                            403 => InputFetchFailure::Unauthorized,
+                            _ => InputFetchFailure::SomethingElse(format!(
+                                "HTTP Error {} fetching input: {:?}",
+                                s, r
+                            )),
+                        },
+                        ureq::Error::Transport(t) => {
+                            InputFetchFailure::SomethingElse(format!("HTTP Transport error: {}", t))
+                        }
+                    })?
                     .into_string()
-                    .unwrap();
-                    std::fs::write(p, &i).expect("failed to write cached input file");
-                    Some(i)
+                    .expect("Failed to convert HTTP response to string");
+                    std::fs::write(p, &i).map_err(|_| InputFetchFailure::CantWriteCachedFile)?;
+                    Ok(i)
                 }
             }
-            Some(f) => Some(
-                std::fs::read_to_string(f)
-                    .expect("Couldn't read file")
-                    .replace('\r', ""),
-            ),
+            Some(f) => Ok(std::fs::read_to_string(f)
+                .map_err(|_| InputFetchFailure::CantReadCachedFile)?
+                .replace('\r', "")),
         }
     }
     pub fn time_fn<O, F>(&self, f: F) -> (std::time::Duration, O)

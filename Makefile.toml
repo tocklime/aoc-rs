@@ -16,7 +16,14 @@ workspace = false
 [tasks.run_all]
 description = "compile and run all solutions"
 command = "cargo"
-args = ["run", "--release", "-b", "aoc"]
+args = ["run", "--release", "-p", "aoc"]
+workspace = false
+
+[tasks.this_year]
+description = "compile and run all solutions"
+command = "cargo"
+args = ["run", "--release", "-p", "aoc", "--", "-y2022"]
+workspace = false
 
 [env]
 CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
