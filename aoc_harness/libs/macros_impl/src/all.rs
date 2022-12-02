@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use proc_macro2::{Literal, TokenStream};
-use quote::{quote, format_ident};
+use quote::{format_ident, quote};
 use syn::parse::Parse;
 use walkdir::WalkDir;
 
@@ -51,8 +51,8 @@ impl AocAllMainInput {
                             (Some(y), Some(d)) => Some((
                                 i32::try_from(y).expect("bad year"),
                                 u8::try_from(d).expect("day too big"),
-                                format_ident!("{}",parent_dir_name),
-                                format_ident!("{}",stripped)
+                                format_ident!("{}", parent_dir_name),
+                                format_ident!("{}", stripped),
                             )),
                             _ => None,
                         };
@@ -68,7 +68,7 @@ impl AocAllMainInput {
                 ans.push(((#y, #d), aoc::solutions::#dir::#file::run_with_opts));
             })
         }
-        quote!{
+        quote! {
             fn make_all() -> Vec<Day>{
                 let mut ans : Vec<Day> = Vec::with_capacity(#len);
                 #adds
