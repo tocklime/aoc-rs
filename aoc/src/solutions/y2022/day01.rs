@@ -1,5 +1,3 @@
-use std::cmp::Reverse;
-
 use aoc_harness::*;
 
 aoc_main!(2022 day 1, generator gen, part1 [solve::<1>] => 67633, part2 [solve::<3>] => 199_628,
@@ -12,7 +10,9 @@ fn gen(input: &str) -> Vec<usize> {
         .collect()
 }
 fn solve<const N: usize>(input: &[usize]) -> usize {
-    input.iter().sorted_by_key(|&&k| Reverse(k)).take(N).sum()
+    let mut input = input.to_vec();
+    input.select_nth_unstable_by(N, |a, b| b.cmp(a));
+    input.into_iter().take(N).sum()
 }
 
 const EG: &str = "1000
