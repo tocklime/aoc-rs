@@ -33,7 +33,7 @@ impl AocAllMainInput {
         let path = PathBuf::from(dir)
             .canonicalize()
             .expect("cannot find directory");
-        let files: Vec<_> = WalkDir::new(&path)
+        let mut files: Vec<_> = WalkDir::new(&path)
             .into_iter()
             .filter_map(Result::ok)
             .filter_map(|x| {
@@ -63,6 +63,7 @@ impl AocAllMainInput {
             .collect();
         let mut adds = TokenStream::new();
         let len = files.len();
+        files.sort();
         for (y, d, dir, file) in files {
             adds.extend(quote! {
                 ans.push(((#y, #d), aoc::solutions::#dir::#file::run_with_opts));

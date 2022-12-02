@@ -217,8 +217,6 @@ impl AocMainInput {
     fn add_solution(&self, part: &SolutionPart) -> TokenStream {
         let mut inner = TokenStream::new();
         let part_num = format!("{}", part.part_num);
-        let year = self.day.year;
-        let day = self.day.day;
         let is_single_solution = part.fns.len() == 1;
         let do_ans_check = match part.ans.as_ref() {
             None => false,
@@ -228,7 +226,7 @@ impl AocMainInput {
                 });
                 if !is_single_solution {
                     inner.extend(quote! {
-                        opts.log(||format!("Year {} Day {} {} expected result: {:?}",#year,#day,#part_num, expected));
+                        opts.log(||format!("{} {} expected result: {:?}",desc,#part_num, expected));
                     });
                 }
                 match part.part_num {
@@ -356,7 +354,7 @@ impl AocMainInput {
         let year = self.day.year;
         let mut setup = quote! {
             let basename = std::path::Path::new(file!()).file_name().unwrap();
-            let desc = format!("Year {} Day {} in {:?}",#year,#day, basename);
+            let desc = format!("Year {} Day {:02} in {:?}",#year,#day, basename);
             let s : String = match opts.get_input(#year, #day) {
                 Ok(s) => s,
                 Err(i) => {
