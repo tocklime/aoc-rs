@@ -15,7 +15,8 @@ impl KnotHash {
             data: (0..=255).collect(),
         }
     }
-    #[must_use] pub fn data(&self) -> &[u8] {
+    #[must_use]
+    pub fn data(&self) -> &[u8] {
         &self.data
     }
     pub fn step(&mut self, input: &[usize]) {
