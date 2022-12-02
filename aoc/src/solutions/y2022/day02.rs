@@ -1,30 +1,38 @@
 use aoc_harness::*;
 
-aoc_main!(2022 day 2, part1 [p1] => 11150, part2 [p2] => 8295, example both EG => (15, 12));
+aoc_main!(2022 day 2, generator gen, part1 [p1] => 11150, part2 [p2] => 8295, example both EG => (15, 12));
 
-fn p1(input: &str) -> usize {
+fn gen(input: &str) -> Vec<(usize, usize)> {
     input
         .lines()
         .map(|l| {
             let (they, me) = l.split_once(' ').unwrap();
             let they = usize::from(they.as_bytes()[0] - b'A');
             let me = usize::from(me.as_bytes()[0] - b'X');
-            let outcome = (4 + me - they) % 3;
-            (1 + me) + (outcome * 3)
+            (they, me)
         })
+        .collect()
+}
+
+// me_shape is 0 = ROCK, 1 = PAPER, 2 = SCISSORS.
+// outcome is 0 = LOSS, 1 = DRAW, 2 = WIN.
+// score is shape score (1 + me_shape)
+// and win score (outcome * 3)
+// round score is (1 + me_shape) + (outcome * 3)
+
+// in part one we calculate outcome from me and they.
+fn p1(input: &[(usize, usize)]) -> usize {
+    input
+        .iter()
+        .map(|(they, me)| (1 + me) + (((4 + me - they) % 3) * 3))
         .sum()
 }
 
-fn p2(input: &str) -> usize {
+//in part two we calculate our shape from they and outcome.
+fn p2(input: &[(usize, usize)]) -> usize {
     input
-        .lines()
-        .map(|l| {
-            let (they, me) = l.split_once(' ').unwrap();
-            let they = usize::from(they.as_bytes()[0] - b'A');
-            let outcome = usize::from(me.as_bytes()[0] - b'X'); //0: lose, 1: draw, 2: win
-            let me = (they + outcome + 2) % 3;
-            (1 + me) + (outcome * 3)
-        })
+        .iter()
+        .map(|(they, outcome)| (1 + ((they + outcome + 2) % 3)) + (outcome * 3))
         .sum()
 }
 
