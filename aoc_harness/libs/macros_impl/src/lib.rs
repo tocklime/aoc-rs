@@ -246,7 +246,7 @@ impl AocMainInput {
         for f in &part.fns {
             inner.extend(quote! {
                 let solver_name = stringify!(#f);
-                let full_name = format!("Year {} Day {} {} via `{}`",#year,#day, #part_num, solver_name);
+                let full_name = format!("{} {} via `{}`",&desc, #part_num, solver_name);
             });
             if self.bench {
                 inner.extend(quote! {
@@ -355,11 +355,13 @@ impl AocMainInput {
         let day = self.day.day;
         let year = self.day.year;
         let mut setup = quote! {
+            let basename = std::path::Path::new(file!()).file_name().unwrap();
+            let desc = format!("Year {} Day {} in {:?}",#year,#day, basename);
             let s : String = match opts.get_input(#year, #day) {
                 Ok(s) => s,
                 Err(i) => {
                     if i != aoc_harness::InputFetchFailure::PuzzleNotReleasedYet {
-                        opts.log(||format!("Missing input for {}, {}: {:?}", #year, #day, i));
+                        opts.log(||format!("Missing input for {}: {:?}", &desc, i));
                     }
                     return;
                 }
@@ -369,7 +371,7 @@ impl AocMainInput {
             Some(g) => setup.extend(quote! {
                 let (t, generated) = opts.time_fn(||#g(&s));
                 results.record_generator(t);
-                opts.log(||format!("Year {} Day {} generated in {}", #year, #day, aoc_harness::render_duration(t)));
+                opts.log(||format!("{} generated in {}", &desc, aoc_harness::render_duration(t)));
             }),
             None => setup.extend(quote! {
                 let generated = s;

@@ -1,19 +1,10 @@
 use std::{collections::BTreeMap, time::Duration};
 
-use aoc_harness::{dayresult::DayResult, dayresult::ExecutionTime, Opts};
+use aoc_harness::{aoc_all_main, dayresult::DayResult, dayresult::ExecutionTime, Opts};
 use clap::Parser;
-use seq_macro::seq;
 type Day = ((i32, u8), fn(&mut DayResult, &mut Opts));
 
-fn make_all() -> Vec<Day> {
-    let mut ans: Vec<Day> = Vec::with_capacity(8 * 25 + 1);
-    seq!(Y in 2015..=2022 {
-        seq!(N in 01..=25 {
-            ans.push(((Y, N), aoc::solutions::y~Y::day~N::run_with_opts));
-        });
-    });
-    ans
-}
+aoc_all_main!("aoc/src/solutions");
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

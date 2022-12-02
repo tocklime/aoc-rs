@@ -55,6 +55,9 @@ pub enum InputFetchFailure {
     SomethingElse(String),
 }
 
+fn user_agent() -> &'static str {
+    "https://github.com/tocklime/aoc-rs"
+}
 impl Opts {
     #[must_use]
     pub fn for_test() -> Self {
@@ -116,6 +119,7 @@ impl Opts {
                         "https://adventofcode.com/{}/day/{}/input",
                         year, day
                     ))
+                    .set("User-Agent", user_agent())
                     .set(
                         "cookie",
                         &format!(
