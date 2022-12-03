@@ -27,7 +27,11 @@ impl FromStr for ScoreSet {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let ns: NumSet<u64> = s.chars().map(score).map(|x| x as u8).collect();
+        let ns: NumSet<u64> = s
+            .chars()
+            .map(score)
+            .map(|x| u8::try_from(x).unwrap())
+            .collect();
         Ok(ScoreSet(ns))
     }
 }
