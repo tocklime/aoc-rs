@@ -13,12 +13,12 @@ ttgJtRGJQctTZtZT
 CrZsJsPPZsGzwwsLwLmpwMDw
 ";
 
-fn score(c: char) -> usize {
-    (if c.is_ascii_lowercase() {
+fn score(c: char) -> u8 {
+    if c.is_ascii_lowercase() {
         1 + (c as u8) - b'a'
     } else {
         27 + (c as u8) - b'A'
-    }) as usize
+    }
 }
 
 struct ScoreSet(NumSet<u64>);
@@ -27,12 +27,7 @@ impl FromStr for ScoreSet {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let ns: NumSet<u64> = s
-            .chars()
-            .map(score)
-            .map(|x| u8::try_from(x).unwrap())
-            .collect();
-        Ok(ScoreSet(ns))
+        Ok(ScoreSet(s.chars().map(score).collect()))
     }
 }
 impl ScoreSet {
