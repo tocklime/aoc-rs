@@ -1,4 +1,4 @@
-use std::ops::{BitOr, Sub};
+use std::ops::{BitAnd, BitOr, Sub};
 
 use num::PrimInt;
 
@@ -61,6 +61,13 @@ impl<T: PrimInt> BitOr for NumSet<T> {
 
     fn bitor(self, rhs: Self) -> Self::Output {
         NumSet { n: self.n | rhs.n }
+    }
+}
+impl<T: PrimInt> BitAnd for NumSet<T> {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        NumSet { n: self.n & rhs.n }
     }
 }
 impl<T: PrimInt> Sub for NumSet<T> {
