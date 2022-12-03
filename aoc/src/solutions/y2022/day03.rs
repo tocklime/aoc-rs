@@ -14,11 +14,8 @@ CrZsJsPPZsGzwwsLwLmpwMDw
 ";
 
 fn score(c: char) -> u8 {
-    if c.is_ascii_lowercase() {
-        1 + (c as u8) - b'a'
-    } else {
-        27 + (c as u8) - b'A'
-    }
+    let cu8 = c as u8;
+    (27 + cu8 - b'A') - ((b'a' - b'A' + 26) * u8::from(cu8 & 0b10_0000 > 0))
 }
 
 struct ScoreSet(NumSet<u64>);
@@ -43,8 +40,7 @@ fn p1(input: &str) -> usize {
     input
         .lines()
         .map(|l| {
-            let len = l.len();
-            let (a, b) = l.split_at(len / 2);
+            let (a, b) = l.split_at(l.len() / 2);
             let a_set = ScoreSet::from_str(a).unwrap();
             let b_set = ScoreSet::from_str(b).unwrap();
             a_set.intersection(&b_set).single_score()
