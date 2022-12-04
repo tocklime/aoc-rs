@@ -7,18 +7,6 @@ aoc_main!(2019 day 22, part1 [p1] => 6526, part2 [p2] => 79_855_812_422_607);
 
 type T = ReducedInt<u128, Montgomery<u128, u128>>;
 
-pub fn p1(input: &str) -> usize {
-    const DECK_SIZE: u32 = 10007_u32;
-    let (offset, increment) = handle_deck(input, DECK_SIZE.into());
-    let mut deck = vec![0; DECK_SIZE as usize];
-    let mut cur_val = offset;
-    for i in 0..DECK_SIZE {
-        deck[i as usize] = cur_val.residue();
-        cur_val = cur_val + increment;
-    }
-    deck.iter().enumerate().find(|x| x.1 == &2019).unwrap().0
-}
-
 pub fn handle_deck(input: &str, deck_size: u128) -> (T, T) {
     let mut offset = MontgomeryInt::new(0, &deck_size);
     let mut increment = offset.convert(1);
@@ -53,14 +41,25 @@ pub fn handle_deck(input: &str, deck_size: u128) -> (T, T) {
     (offset, increment)
 }
 
+pub fn p1(input: &str) -> u32 {
+    const DECK_SIZE: u32 = 10007_u32;
+    const CARD: u128 = 2019;
+    let (offset, increment) = handle_deck(input, DECK_SIZE.into());
+    let mut cur_val = offset;
+    (1..DECK_SIZE)
+        .find(|_| {
+            cur_val = cur_val + increment;
+            cur_val.residue() == CARD
+        })
+        .unwrap()
+}
+
 pub fn p2(input: &str) -> u128 {
     const DECK_SIZE: u128 = 119_315_717_514_047_u128;
     const SHUFFLE_COUNT: u128 = 101_741_582_076_661_u128;
-    let card = 2020;
-    let (offset, increment) = handle_deck(input, DECK_SIZE);
-    let final_increment = increment.pow(SHUFFLE_COUNT);
-    let num = final_increment - 1;
-    let denom = (increment - 1).inv();
-    let final_offset = num * offset * denom;
-    (final_offset + final_increment * card).residue()
+    const CARD: u128 = 2020;
+    let (offset_one, increment_one) = handle_deck(input, DECK_SIZE);
+    let increment_final = increment_one.pow(SHUFFLE_COUNT);
+    let offset_final = (increment_final - 1) * offset_one * (increment_one - 1).inv();
+    (offset_final + increment_final * CARD).residue()
 }
