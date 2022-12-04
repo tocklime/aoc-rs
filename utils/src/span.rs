@@ -103,11 +103,13 @@ impl<T: Eq + Ord + Copy> Span<T> {
             self.end.cmp(&other.start),
         ) {
             (Ordering::Equal, Ordering::Equal, _, _) => CollisionType::Equal,
-            (Ordering::Less, Ordering::Greater, _, _) => CollisionType::StrictlyBigger(
-                Span::new(self.start, other.start),
-                Span::new(other.start, other.end),
-                Span::new(other.end, self.end),
-            ),
+            (Ordering::Less | Ordering::Equal, Ordering::Greater | Ordering::Equal, _, _) => {
+                CollisionType::StrictlyBigger(
+                    Span::new(self.start, other.start),
+                    Span::new(other.start, other.end),
+                    Span::new(other.end, self.end),
+                )
+            }
             (_, _, Ordering::Greater | Ordering::Equal, _) => {
                 CollisionType::After(self.union(other))
             }
