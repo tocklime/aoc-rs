@@ -72,7 +72,7 @@
     part1: !Observed '11846773891'
     part2: !Observed '80393059'
   25:
-    part1: !Observed '8997277'
+    part1: !Checked '8997277'
     part2: Unknown
 2016:
   1:
@@ -452,7 +452,7 @@
     part1: !Observed '434'
     part2: !Observed '3955'
   25:
-    part1: !Observed '11328376'
+    part1: !Checked '11328376'
     part2: Unknown
 2021:
   1:

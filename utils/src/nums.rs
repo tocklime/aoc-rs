@@ -260,30 +260,6 @@ where
     }
 }
 
-pub fn mod_inv_prime_modulus<T>(base: T, modulus: T) -> T
-where
-    T: Num + Copy + Shr<Output = T> + From<u8> + PartialOrd,
-{
-    mod_pow(base, modulus - 2.into(), modulus)
-}
-
-#[must_use]
-pub fn try_mod_inv<T, TI>(base: T, modulus: T) -> Option<T>
-where
-    T: Debug,
-    TI: Debug,
-    TI: TryFrom<T> + num::Integer + Clone,
-    T: TryFrom<TI> + Rem<T, Output = T> + Copy,
-{
-    let bi: TI = base.try_into().ok()?;
-    let mi: TI = modulus.try_into().ok()?;
-    let x = bi.extended_gcd(&mi);
-    if x.gcd != TI::one() {
-        return None; //coprime.
-    }
-    Some((T::try_from(mi + x.x).ok()?) % modulus)
-}
-
 #[cfg(test)]
 mod tests {
     use proptest::prelude::*;
@@ -291,11 +267,6 @@ mod tests {
     use quickcheck_macros::quickcheck;
 
     use super::*;
-
-    #[test]
-    pub fn test_mod_inv() {
-        assert_eq!(try_mod_inv::<u64, i64>(11, 26), Some(19));
-    }
 
     #[test]
     pub fn test_mod_pow() {

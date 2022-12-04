@@ -1,29 +1,21 @@
 use aoc_harness::aoc_main;
+use num_modular::{ModularInteger, Montgomery, MontgomeryInt, ReducedInt};
+use num_traits::{pow::Pow, Inv};
 use std::convert::TryInto;
-use utils::nums::{mod_add, mod_mul, mod_pow, try_mod_inv};
 
 aoc_main!(2019 day 22, part1 [p1] => 6526, part2 [p2] => 79_855_812_422_607);
 
-pub fn p1(input: &str) -> usize {
-    let card_count = 10007_u32;
-    let (offset, increment) = handle_deck(input, card_count.try_into().unwrap());
-    let mut deck = vec![0; card_count as usize];
-    let mut cur_val = offset;
-    for i in 0..card_count {
-        deck[i as usize] = cur_val % 10007;
-        cur_val += increment
-    }
-    deck.iter().enumerate().find(|x| x.1 == &2019).unwrap().0
-}
+type NT = u64;
+type T = ReducedInt<NT, Montgomery<NT, NT>>;
 
-pub fn handle_deck(input: &str, deck_size: u128) -> (u128, u128) {
-    let mut offset = 0_u128;
-    let mut increment = 1_u128;
+pub fn handle_deck(input: &str, deck_size: NT) -> (T, T) {
+    let mut offset = MontgomeryInt::new(0, &deck_size);
+    let mut increment = offset.convert(1);
     for l in input.trim().lines() {
         //println!("Deck now {:?} {:?}   {}", offset, increment, l);
         if l.trim().starts_with("deal into new stack") {
-            increment = mod_mul(&increment, &(deck_size - 1), deck_size);
-            offset = mod_add(&increment, &offset, deck_size);
+            increment = increment * (deck_size - 1);
+            offset = offset + increment;
         } else if l.trim().starts_with("cut") {
             let n = l
                 .split(' ')
@@ -31,23 +23,18 @@ pub fn handle_deck(input: &str, deck_size: u128) -> (u128, u128) {
                 .unwrap()
                 .parse::<i128>()
                 .expect("int for cut");
-            let as_u = n
+            let as_u: NT = n
                 .rem_euclid(deck_size.try_into().unwrap())
                 .try_into()
                 .unwrap();
-            offset = mod_add(&offset, &mod_mul(&increment, &as_u, deck_size), deck_size);
+            offset = offset + (increment * as_u);
         } else if l.trim().starts_with("deal with increment") {
-            let n = l
-                .split(' ')
-                .nth(3)
-                .unwrap()
-                .parse::<u128>()
-                .expect("int for deal");
-            increment = mod_mul(
-                &increment,
-                &try_mod_inv::<u128, i128>(n, deck_size).unwrap(),
-                deck_size,
+            let n = l.split(' ').nth(3).unwrap().parse::<NT>().expect(
+                "int for 
+                deal",
             );
+            let n = increment.convert(n);
+            increment = increment * n.inv();
         } else {
             panic!("Unknown instr: {}", l);
         }
@@ -55,18 +42,25 @@ pub fn handle_deck(input: &str, deck_size: u128) -> (u128, u128) {
     (offset, increment)
 }
 
-pub fn p2(input: &str) -> u128 {
-    let deck_size = 119_315_717_514_047_u128;
-    let shuffle_count = 101_741_582_076_661_u128;
-    let card = 2020;
-    let (offset, increment) = handle_deck(input, deck_size);
-    let final_increment = mod_pow(increment, shuffle_count, deck_size);
-    let num = final_increment - 1;
-    let denom = try_mod_inv::<u128, i128>(increment - 1, deck_size).unwrap();
-    let final_offset = mod_mul(&mod_mul(&offset, &num, deck_size), &denom, deck_size);
-    mod_add(
-        &final_offset,
-        &mod_mul(&final_increment, &card, deck_size),
-        deck_size,
-    )
+pub fn p1(input: &str) -> u32 {
+    const DECK_SIZE: u32 = 10007_u32;
+    const CARD: NT = 2019;
+    let (offset, increment) = handle_deck(input, DECK_SIZE.into());
+    let mut cur_val = offset;
+    (1..DECK_SIZE)
+        .find(|_| {
+            cur_val = cur_val + increment;
+            cur_val.residue() == CARD
+        })
+        .unwrap()
+}
+
+pub fn p2(input: &str) -> NT {
+    const DECK_SIZE: NT = 119_315_717_514_047;
+    const SHUFFLE_COUNT: NT = 101_741_582_076_661;
+    const CARD: NT = 2020;
+    let (offset_one, increment_one) = handle_deck(input, DECK_SIZE);
+    let increment_final = increment_one.pow(SHUFFLE_COUNT);
+    let offset_final = (increment_final - 1) * offset_one * (increment_one - 1).inv();
+    (offset_final + increment_final * CARD).residue()
 }
