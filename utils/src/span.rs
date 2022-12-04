@@ -2,7 +2,7 @@ use num::Num;
 use parse_display::{Display, FromStr};
 use std::{
     cmp::{max, min, Ordering},
-    ops::Range,
+    ops::{Range, RangeBounds},
 };
 
 #[derive(Display, FromStr, PartialEq, Debug, Eq, Clone, Copy, Hash)]
@@ -41,6 +41,14 @@ impl<T: Eq + Ord + Copy> Span<T> {
     pub fn new(start: T, end: T) -> Self {
         assert!(start <= end);
         Self { start, end }
+    }
+    pub fn new_from_range(range: impl RangeBounds<T>) -> Self {
+        match (range.start_bound(), range.end_bound()) {
+            (std::ops::Bound::Included(start), std::ops::Bound::Excluded(end)) => {
+                Self::new(*start, *end)
+            }
+            _ => panic!("Range -> Span must be inclusive at start, exclusive at end"),
+        }
     }
     pub fn intersection(&self, other: &Self) -> Option<Self> {
         let start = max(self.start, other.start);
@@ -138,67 +146,79 @@ impl<T: Eq + Ord + Copy> Span<T> {
 
 #[cfg(test)]
 pub mod test {
+    use std::ops::Range;
+
     use super::*;
+    fn do_coll(a: Range<usize>, b: Range<usize>) -> CollisionType<usize> {
+        Span::new_from_range(a).collide_with(&Span::new_from_range(b))
+    }
     #[test]
-    fn test_collisions() {
-        let mut me = Span::new(10, 20);
-        let other = Span::new(30, 40);
+    fn test_before() {
         assert_eq!(
-            me.collide_with(&other),
+            do_coll(10..20, 30..40),
             CollisionType::Before(Span::new(10, 40))
         );
-        me.end = 30;
         assert_eq!(
-            me.collide_with(&other),
+            do_coll(10..30, 30..40),
             CollisionType::Before(Span::new(10, 40))
         );
-        me.end = 35;
+    }
+    #[test]
+    fn test_after() {
         assert_eq!(
-            me.collide_with(&other),
-            CollisionType::OverlapsStart(Span::new(10, 30), Span::new(30, 35), Span::new(35, 40))
-        );
-        me.end = 40;
-        assert_eq!(
-            me.collide_with(&other),
-            CollisionType::OverlapsStart(Span::new(10, 30), Span::new(30, 40), Span::new(40, 40))
-        );
-        me.end = 45;
-        assert_eq!(
-            me.collide_with(&other),
-            CollisionType::StrictlyBigger(Span::new(10, 30), Span::new(30, 40), Span::new(40, 45))
-        );
-        me.start = 30;
-        assert_eq!(
-            me.collide_with(&other),
-            CollisionType::OverlapsEnd(Span::new(30, 30), Span::new(30, 40), Span::new(40, 45))
-        );
-        me.start = 35;
-        assert_eq!(
-            me.collide_with(&other),
-            CollisionType::OverlapsEnd(Span::new(30, 35), Span::new(35, 40), Span::new(40, 45))
-        );
-        me.start = 40;
-        assert_eq!(
-            me.collide_with(&other),
+            do_coll(41..45, 30..40),
             CollisionType::After(Span::new(30, 45))
         );
-        me.start = 30;
-        me.end = 40;
-        assert_eq!(me.collide_with(&other), CollisionType::Equal);
-        me.end = 39;
         assert_eq!(
-            me.collide_with(&other),
-            CollisionType::StrictlySmaller(Span::new(30, 30), Span::new(30, 39), Span::new(39, 40),)
+            do_coll(40..45, 30..40),
+            CollisionType::After(Span::new(30, 45))
         );
-        me.start = 31;
-        me.end = 40;
+    }
+    #[test]
+    fn test_overlap_start() {
         assert_eq!(
-            me.collide_with(&other),
+            do_coll(10..31, 30..40),
+            CollisionType::OverlapsStart(Span::new(10, 30), Span::new(30, 31), Span::new(31, 40))
+        );
+    }
+    #[test]
+    fn test_overlap_end() {
+        assert_eq!(
+            do_coll(35..45, 30..40),
+            CollisionType::OverlapsEnd(Span::new(30, 35), Span::new(35, 40), Span::new(40, 45))
+        );
+    }
+    #[test]
+    fn test_strictly_bigger() {
+        assert_eq!(
+            do_coll(10..40, 30..40),
+            CollisionType::StrictlyBigger(Span::new(10, 30), Span::new(30, 40), Span::new(40, 40))
+        );
+        assert_eq!(
+            do_coll(10..45, 30..40),
+            CollisionType::StrictlyBigger(Span::new(10, 30), Span::new(30, 40), Span::new(40, 45))
+        );
+        assert_eq!(
+            do_coll(30..45, 30..40),
+            CollisionType::StrictlyBigger(Span::new(30, 30), Span::new(30, 40), Span::new(40, 45))
+        );
+    }
+    #[test]
+    fn test_equal() {
+        assert_eq!(do_coll(30..40, 30..40), CollisionType::Equal);
+    }
+    #[test]
+    fn test_strictly_smaller() {
+        assert_eq!(
+            do_coll(30..39, 30..40),
+            CollisionType::StrictlySmaller(Span::new(30, 30), Span::new(30, 39), Span::new(39, 40))
+        );
+        assert_eq!(
+            do_coll(31..40, 30..40),
             CollisionType::StrictlySmaller(Span::new(30, 31), Span::new(31, 40), Span::new(40, 40),)
         );
-        me.end = 39;
         assert_eq!(
-            me.collide_with(&other),
+            do_coll(31..39, 30..40),
             CollisionType::StrictlySmaller(Span::new(30, 31), Span::new(31, 39), Span::new(39, 40),)
         );
     }
