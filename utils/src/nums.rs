@@ -69,16 +69,23 @@ where
     if modulus == T::one() {
         return T::zero();
     }
-    let mut result = T::one();
-    base = base % modulus;
-    while exp > T::zero() {
-        if exp % 2.into() == T::one() {
-            result = result * base % modulus;
+    if exp == T::zero() {
+        T::one()
+    } else {
+        let mut result = T::one();
+        base = base % modulus;
+        loop {
+            if exp % 2.into() == T::one() {
+                result = result * base % modulus;
+            }
+            exp = exp >> T::one();
+            if exp == T::zero() {
+                break;
+            }
+            base = base * base % modulus;
         }
-        exp = exp >> T::one();
-        base = base * base % modulus;
+        result
     }
-    result
 }
 
 pub fn add_i_mod<T: Num + Signed + TryInto<usize>>(u: usize, i: &T, modulo: usize) -> usize {
@@ -253,9 +260,74 @@ where
     }
 }
 
-pub fn mod_inv<T>(base: T, modulus: T) -> T
+pub fn mod_inv_prime_modulus<T>(base: T, modulus: T) -> T
 where
     T: Num + Copy + Shr<Output = T> + From<u8> + PartialOrd,
 {
     mod_pow(base, modulus - 2.into(), modulus)
+}
+
+#[must_use]
+pub fn try_mod_inv<T, TI>(base: T, modulus: T) -> Option<T>
+where
+    T: Debug,
+    TI: Debug,
+    TI: TryFrom<T> + num::Integer + Clone,
+    T: TryFrom<TI> + Rem<T, Output = T> + Copy,
+{
+    let bi: TI = base.try_into().ok()?;
+    let mi: TI = modulus.try_into().ok()?;
+    let x = bi.extended_gcd(&mi);
+    if x.gcd != TI::one() {
+        return None; //coprime.
+    }
+    Some((T::try_from(mi + x.x).ok()?) % modulus)
+}
+
+#[cfg(test)]
+mod tests {
+    use proptest::prelude::*;
+    use quickcheck::TestResult;
+    use quickcheck_macros::quickcheck;
+
+    use super::*;
+
+    #[test]
+    pub fn test_mod_inv() {
+        assert_eq!(try_mod_inv::<u64, i64>(11, 26), Some(19));
+    }
+
+    #[test]
+    pub fn test_mod_pow() {
+        //2^5 = 32.
+        for m in 1..100 {
+            assert_eq!(mod_pow(2, 5, m), 32 % m);
+        }
+
+        assert_eq!(mod_pow(6, 25, 20), 16);
+        assert_eq!(mod_pow(2, 64, 2), 0);
+        assert_eq!(mod_pow(23895, 15, 14189), 344);
+        assert_eq!(
+            mod_pow(6_547_890_621_u128, 4_532_415_u128, 76_543_278_906_u128),
+            1_039_609_179_u128
+        );
+    }
+    #[quickcheck]
+    fn mod_pow_works_for_checkable_values(a: u64, b: u32, m: u64) -> TestResult {
+        if m == 0 || a.checked_pow(b).is_none() {
+            return TestResult::discard();
+        }
+        eprintln!("{} ^ {} % {} == {}", a, b, m, a.pow(b) % m);
+        TestResult::from_bool(mod_pow(a, b.into(), m) == a.pow(b) % m)
+    }
+    proptest! {
+        #[test]
+        fn mod_pow_proptest(a in 0u64..100u64, b in 0u32..32u32, m in 1u64..100u64) {
+            eprintln!("{} ^ {} % {}...",a,b,m);
+            if m > 0 && a.checked_pow(b).is_some() {
+                eprintln!("{} ^ {} % {} == {}",a,b,m,a.pow(b) % m);
+                prop_assert_eq!(mod_pow(a, b.into(), m) , a.pow(b) % m);
+            }
+        }
+    }
 }

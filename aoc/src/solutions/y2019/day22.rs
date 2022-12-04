@@ -1,8 +1,8 @@
-use utils::nums::{mod_add, mod_inv, mod_mul, mod_pow};
 use aoc_harness::aoc_main;
 use std::convert::TryInto;
+use utils::nums::{mod_add, mod_mul, mod_pow, try_mod_inv};
 
-aoc_main!(2019 day 22, part1 [p1] => 6526, part2 [p2] => 79855812422607);
+aoc_main!(2019 day 22, part1 [p1] => 6526, part2 [p2] => 79_855_812_422_607);
 
 pub fn p1(input: &str) -> usize {
     let card_count = 10007_u32;
@@ -43,7 +43,11 @@ pub fn handle_deck(input: &str, deck_size: u128) -> (u128, u128) {
                 .unwrap()
                 .parse::<u128>()
                 .expect("int for deal");
-            increment = mod_mul(&increment, &mod_inv(n, deck_size), deck_size);
+            increment = mod_mul(
+                &increment,
+                &try_mod_inv::<u128, i128>(n, deck_size).unwrap(),
+                deck_size,
+            );
         } else {
             panic!("Unknown instr: {}", l);
         }
@@ -58,7 +62,7 @@ pub fn p2(input: &str) -> u128 {
     let (offset, increment) = handle_deck(input, deck_size);
     let final_increment = mod_pow(increment, shuffle_count, deck_size);
     let num = final_increment - 1;
-    let denom = mod_inv(increment - 1, deck_size);
+    let denom = try_mod_inv::<u128, i128>(increment - 1, deck_size).unwrap();
     let final_offset = mod_mul(&mod_mul(&offset, &num, deck_size), &denom, deck_size);
     mod_add(
         &final_offset,
