@@ -89,26 +89,12 @@ fn solve<const CARRY_MANY: bool>(input: &X) -> String {
         let len = stacks[c.from].len();
         let (from, to) = borrow_mut_twice(&mut stacks, c.from, c.to);
         let carry = from[len - c.count..].iter();
-        if !CARRY_MANY {
-            to.extend(carry.rev())
-        } else {
+        if CARRY_MANY {
             to.extend(carry);
+        } else {
+            to.extend(carry.rev());
         }
-        from.truncate(len-c.count);
+        from.truncate(len - c.count);
     }
     read_tops(&stacks)
 }
-
-// fn solve_both(input: &X) -> (String, String) {
-//     let mut stacks_p1 = input.stacks.clone();
-//     let mut stacks_p2 = input.stacks.clone();
-//     for c in &input.instructions {
-//         let len = stacks_p1[c.from].len();
-//         let carry = stacks_p1[c.from].split_off(len - c.count);
-//         stacks_p1[c.to].extend(carry.into_iter().rev());
-//         let len = stacks_p2[c.from].len();
-//         let carry = stacks_p2[c.from].split_off(len - c.count);
-//         stacks_p2[c.to].extend(carry);
-//     }
-//     (read_tops(&stacks_p1), read_tops(&stacks_p2))
-// }
