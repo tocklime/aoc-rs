@@ -1,7 +1,7 @@
-use std::str::FromStr;
+use std::{cmp::Ordering, str::FromStr};
 
 use aoc_harness::*;
-use nom::{bytes::complete::tag, character::complete, multi::separated_list1, sequence::tuple};
+use nom::{bytes::complete::tag, character::complete::u8, multi::separated_list1, sequence::tuple};
 
 aoc_main!(2022 day 5, generator whole_input_is::<X>, part1 [solve::<false>] => "GFTNRBZPF", part2 [solve::<true>] => "VRQWPDSGP", example both EG => ("CMZ","MCD"));
 
@@ -28,20 +28,15 @@ struct Command {
 }
 
 fn parse_line(input: &str) -> nom::IResult<&str, Command> {
-    let (input, (_, count, _, from, _, to)) = tuple((
-        tag("move "),
-        complete::u8,
-        tag(" from "),
-        complete::u8,
-        tag(" to "),
-        complete::u8,
-    ))(input)?;
+    let (input, (_, count, _, from, _, to)) =
+        tuple((tag("move "), u8, tag(" from "), u8, tag(" to "), u8))(input)?;
+    assert_ne!(from, to);
     Ok((
         input,
         Command {
-            count: count as usize,
-            from: (from - 1) as usize,
-            to: (to - 1) as usize,
+            count: count.into(),
+            from: (from - 1).into(),
+            to: (to - 1).into(),
         },
     ))
 }
@@ -74,16 +69,46 @@ impl FromStr for X {
 fn read_tops(stacks: &[Vec<char>]) -> String {
     stacks.iter().map(|x| x.last().unwrap()).collect()
 }
+fn borrow_mut_twice<T>(arr: &mut [T], a: usize, b: usize) -> (&mut T, &mut T) {
+    match a.cmp(&b) {
+        Ordering::Less => {
+            let (arr_a, arr_b) = arr.split_at_mut(b);
+            (&mut arr_a[a], &mut arr_b[0])
+        }
+        Ordering::Greater => {
+            let (arr_b, arr_a) = arr.split_at_mut(a);
+            (&mut arr_a[0], &mut arr_b[b])
+        }
+        Ordering::Equal => panic!("Can't borrow twice from the same index"),
+    }
+}
 
 fn solve<const CARRY_MANY: bool>(input: &X) -> String {
     let mut stacks = input.stacks.clone();
     for c in &input.instructions {
         let len = stacks[c.from].len();
-        let mut carry = stacks[c.from].split_off(len-c.count);
+        let (from, to) = borrow_mut_twice(&mut stacks, c.from, c.to);
+        let carry = from[len - c.count..].iter();
         if !CARRY_MANY {
-            carry.reverse();
+            to.extend(carry.rev())
+        } else {
+            to.extend(carry);
         }
-        stacks[c.to].extend(carry);
+        from.truncate(len-c.count);
     }
     read_tops(&stacks)
 }
+
+// fn solve_both(input: &X) -> (String, String) {
+//     let mut stacks_p1 = input.stacks.clone();
+//     let mut stacks_p2 = input.stacks.clone();
+//     for c in &input.instructions {
+//         let len = stacks_p1[c.from].len();
+//         let carry = stacks_p1[c.from].split_off(len - c.count);
+//         stacks_p1[c.to].extend(carry.into_iter().rev());
+//         let len = stacks_p2[c.from].len();
+//         let carry = stacks_p2[c.from].split_off(len - c.count);
+//         stacks_p2[c.to].extend(carry);
+//     }
+//     (read_tops(&stacks_p1), read_tops(&stacks_p2))
+// }
