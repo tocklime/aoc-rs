@@ -3,7 +3,7 @@ use std::str::FromStr;
 use aoc_harness::*;
 use nom::{bytes::complete::tag, character::complete, multi::separated_list1, sequence::tuple};
 
-aoc_main!(2022 day 5, generator whole_input_is::<X>, part1 [solve::<true>] => "GFTNRBZPF", part2 [solve::<false>] => "VRQWPDSGP", example both EG => ("CMZ","MCD"));
+aoc_main!(2022 day 5, generator whole_input_is::<X>, part1 [solve::<false>] => "GFTNRBZPF", part2 [solve::<true>] => "VRQWPDSGP", example both EG => ("CMZ","MCD"));
 
 const EG: &str = "    [D]    
 [N] [C]    
@@ -80,7 +80,7 @@ fn solve<const CARRY_MANY: bool>(input: &X) -> String {
     for c in &input.instructions {
         let len = stacks[c.from].len();
         let mut carry = stacks[c.from].split_off(len-c.count);
-        if CARRY_MANY {
+        if !CARRY_MANY {
             carry.reverse();
         }
         stacks[c.to].extend(carry);
