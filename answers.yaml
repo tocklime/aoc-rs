@@ -547,5 +547,5 @@
     part1: !Checked GFTNRBZPF
     part2: !Checked VRQWPDSGP
   6:
-    part1: !Observed '1544'
-    part2: !Observed '2145'
+    part1: !Checked '1544'
+    part2: !Checked '2145'

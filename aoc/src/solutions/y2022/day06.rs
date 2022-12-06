@@ -1,26 +1,22 @@
-use std::collections::{VecDeque, HashSet};
-
-use itertools::*;
 use aoc_harness::*;
+use utils::numset::NumSet;
 
-aoc_main!(2022 day 6, part1 [p1], part2 [p2], example both EG => (7,19));
+aoc_main!(2022 day 6, part1 [solve::<4>] => 1544, part2 [solve::<14>] => 2145, example both EG => (7,19));
 
-const EG : &str = "mjqjpqmgbljsphdztnvjfqwrcgsmlb";
+const EG: &str = "mjqjpqmgbljsphdztnvjfqwrcgsmlb";
 
-fn p1(input: &str) -> usize {
-    input.chars().tuple_windows().enumerate().find(|(ix, (a,b,c,d))| {
-        a != b && a != c && a != d && b != c && b != d && c != d
-    }).unwrap().0 + 4 
-}
-
-fn p2(input: &str) -> usize {
-    for ix in 0..(input.len() - 14) {
-        let set : HashSet<char> = input.chars().skip(ix).take(14).collect();
-        if set.len() == 14 {
-            dbg!(set);
-            return ix + 14
+fn solve<const WINDOW_SIZE: usize>(input: &str) -> usize {
+    let bytes = input.as_bytes();
+    for ix in 0..(bytes.len() - WINDOW_SIZE) {
+        let mut set = NumSet::<u32>::new();
+        for c in &bytes[ix..ix + WINDOW_SIZE] {
+            if !set.insert(*c - b'a') {
+                break;
+            }
+        }
+        if (set.len() as usize) == WINDOW_SIZE {
+            return ix + WINDOW_SIZE;
         }
     }
     0
 }
-
