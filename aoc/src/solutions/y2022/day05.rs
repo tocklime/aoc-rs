@@ -49,7 +49,7 @@ impl FromStr for X {
         let (_, instructions) =
             separated_list1(tag("\n"), parse_line)(instrs).map_err(|e| e.to_string())?;
 
-        let w = map.lines().map(|x| x.len()).max().unwrap();
+        let w = map.lines().map(str::len).max().unwrap();
         let stack_count = (w + 1) / 4;
         let mut stacks = vec![vec![]; stack_count];
         for l in map.lines().rev().skip(1) {
