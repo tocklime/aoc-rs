@@ -2,9 +2,8 @@ use aoc_harness::*;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
-    character::complete,
+    character::complete::u32,
     combinator::{map, value},
-    multi::many1,
     sequence::{preceded, terminated, tuple},
     IResult,
 };
@@ -55,7 +54,7 @@ fn parse_output(input: &str) -> IResult<&str, Output> {
     alt((
         preceded(tag("dir "), map(take_until("\n"), Output::Dir)),
         map(
-            tuple((complete::u32, tag(" "), take_until("\n"))),
+            tuple((u32, tag(" "), take_until("\n"))),
             |(size, _, name)| Output::File(size, name),
         ),
     ))(input)
@@ -71,10 +70,13 @@ fn parse_command(input: &str) -> IResult<&str, Command> {
     ))(input)
 }
 fn parse_line(input: &str) -> IResult<&str, Line> {
-    alt((
+    terminated(
+        alt((
         map(parse_command, Line::Command),
         map(parse_output, Line::Output),
-    ))(input)
+    )),
+    tag("\n"))
+    (input)
 }
 
 #[derive(Debug, Default)]
@@ -102,10 +104,11 @@ impl Dir {
 }
 
 fn solve(input: &str) -> (u32, u32) {
-    let (rest, val) = many1(terminated(parse_line, tag("\n")))(input).unwrap();
-    assert_eq!(rest, "");
+    let mut rest = input;
     let mut dir_stack : Vec<Dir> = vec![Default::default()];
-    for l in &val[1..] {
+    while !rest.is_empty() {
+        let (input, l) = parse_line(rest).unwrap();
+        rest = input;
         match l {
             Line::Command(Command::CdUp) => {
                 //combine dir into parent.
@@ -123,6 +126,7 @@ fn solve(input: &str) -> (u32, u32) {
             }
         }
     }
+
     while dir_stack.len() > 1 {
         let ch = dir_stack.pop().unwrap();
         dir_stack.last_mut().unwrap().dirs.push(ch);
