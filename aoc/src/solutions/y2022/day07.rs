@@ -8,7 +8,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 7, both [solve], example both EG => (95437, 24_933_642));
+aoc_main!(2022 day 7, both [solve] => (1_644_735, 1_300_850), example both EG => (95437, 24_933_642));
 
 const EG: &str = "$ cd /
 $ ls
@@ -105,23 +105,19 @@ fn solve(input: &str) -> (u32, u32) {
         dir_stack.last_mut().unwrap().dirs.push(ch);
     }
     let top = dir_stack.pop().unwrap();
-    let part1 = top
-        .all_sizes()
-        .into_iter()
-        .filter(|&x| x < 100_000)
-        .sum::<u32>();
+    let all_sizes = top.all_sizes();
+    let part1 = all_sizes.iter().filter(|&&x| x < 100_000).sum::<u32>();
     let total = 70_000_000;
     let required_free = 30_000_000;
     let max_used = total - required_free;
     let current = top.size();
     let required_to_free = current - max_used;
     //want the smallest dir > required_to_free.
-    let part2 = top
-        .all_sizes()
-        .into_iter()
-        .filter(|&x| x >= required_to_free)
+    let part2 = all_sizes
+        .iter()
+        .filter(|&&x| x >= required_to_free)
         .min()
         .unwrap();
 
-    (part1, part2)
+    (part1, *part2)
 }
