@@ -16,6 +16,18 @@ impl<T1, T2> AnswerType for (T1, T2) {
         Some(self)
     }
 }
+impl<T, E: std::fmt::Debug> AnswerType for Result<T, E> {
+    type Output = T;
+    fn to_option(self) -> Option<Self::Output> {
+        match self {
+            Ok(t) => Some(t),
+            Err(e) => {
+                println!("{:?}", e);
+                None
+            }
+        }
+    }
+}
 
 macro_rules! impl_answer_type {
     ($($t:ident) *) => {

@@ -27,9 +27,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhoo"
+version = "0.1.0"
+source = "git+https://github.com/tranzystorek-io/anyhoo#fd69283c420f14fb3d329587a5fbad7f924e2bcd"
+dependencies = [
+ "anyhoo-macro",
+ "anyhow",
+]
+
+[[package]]
+name = "anyhoo-macro"
+version = "0.1.0"
+source = "git+https://github.com/tranzystorek-io/anyhoo#fd69283c420f14fb3d329587a5fbad7f924e2bcd"
+dependencies = [
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "anyhow"
+version = "1.0.66"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "216261ddc8289130e551ddcd5ce8a064710c0d064a4d2895c67151c92b5443f6"
+
+[[package]]
 name = "aoc"
 version = "0.1.0"
 dependencies = [
+ "anyhoo",
  "aoc_harness",
  "automod",
  "bitintr",
@@ -100,6 +125,7 @@ dependencies = [
 name = "aoc_latest"
 version = "0.1.0"
 dependencies = [
+ "anyhoo",
  "aoc_harness",
  "automod",
  "bitintr",
