@@ -1,5 +1,3 @@
-use std::{cell::RefCell, rc::Rc};
-
 use aoc_harness::*;
 use nom::{
     branch::alt,
@@ -11,7 +9,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 7, both [p1], example both EG => (95437, 24933642));
+aoc_main!(2022 day 7, both [solve], example both EG => (95437, 24933642));
 
 const EG: &str = "$ cd /
 $ ls
@@ -80,64 +78,58 @@ fn parse_line(input: &str) -> IResult<&str, Line> {
 }
 
 #[derive(Debug, Default)]
-struct Dir<'a> {
+struct Dir {
     files: u32,
-    dirs: Vec<Rc<RefCell<Dir<'a>>>>,
+    dirs: Vec<Dir>,
 }
-impl<'a> Dir<'a> {
+impl Dir {
     fn size(&self) -> u32 {
         self.files
             + self
                 .dirs
                 .iter()
-                .map(|v| v.borrow().size())
+                .map(|v| v.size())
                 .sum::<u32>()
     }
     fn all_sizes(&self) -> Vec<u32> {
         let mut ans = Vec::new();
         ans.push(self.size());
         for d in &self.dirs {
-            ans.extend(d.borrow().all_sizes());
+            ans.extend(d.all_sizes());
         }
         ans
     }
 }
 
-fn p1(input: &str) -> (u32, u32) {
+fn solve(input: &str) -> (u32, u32) {
     let (rest, val) = many1(terminated(parse_line, tag("\n")))(input).unwrap();
     assert_eq!(rest, "");
-    let mut dir_stack : Vec<Rc<RefCell<Dir>>> = vec![Default::default()];
+    let mut dir_stack : Vec<Dir> = vec![Default::default()];
     for l in &val[1..] {
         match l {
             Line::Command(Command::CdUp) => {
                 //combine dir into parent.
                 let ch = dir_stack.pop().unwrap();
-                let mut b = dir_stack.last().unwrap().borrow_mut();
-                b.dirs.push(ch);
+                dir_stack.last_mut().unwrap().dirs.push(ch);
             }
             Line::Command(Command::Ls) => (),
             Line::Command(Command::CdDown(_)) => {
-                let b = dir_stack.last().unwrap().borrow_mut();
-                let new = Rc::new(RefCell::new(Dir::default()));
-                drop(b);
-                dir_stack.push(new);
+                dir_stack.push(Default::default());
             }
             Line::Output(Output::Dir(_)) => (),
             Line::Output(Output::File(size, _)) => {
-                let mut b = dir_stack.last().unwrap().borrow_mut();
+                let b = dir_stack.last_mut().unwrap();
                 b.files += size;
             }
         }
     }
     while dir_stack.len() > 1 {
         let ch = dir_stack.pop().unwrap();
-        let mut b = dir_stack.last().unwrap().borrow_mut();
-        b.dirs.push(ch);
+        dir_stack.last_mut().unwrap().dirs.push(ch);
     }
     // dbg!(&dir_stack.get(0));
     let top = dir_stack.pop().unwrap();
     let part1 = top
-        .borrow()
         .all_sizes()
         .into_iter()
         .filter(|&x| x < 100000)
@@ -145,11 +137,10 @@ fn p1(input: &str) -> (u32, u32) {
     let total = 70000000;
     let required_free = 30000000;
     let max_used = total - required_free;
-    let current = top.borrow().size();
+    let current = top.size();
     let required_to_free = current - max_used;
     //want the smallest dir > required_to_free.
     let part2 = top
-        .borrow()
         .all_sizes()
         .into_iter()
         .filter(|&x| x >= required_to_free)
