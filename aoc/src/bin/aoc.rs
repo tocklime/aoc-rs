@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, time::Duration};
 
-use aoc_harness::{aoc_all_main, dayresult::DayResult, dayresult::ExecutionTime, Opts};
+use aoc_harness::{aoc_all_main, dayresult::DayResult, Opts};
 use clap::Parser;
 type Day = ((i32, u8), fn(&mut DayResult, &mut Opts));
 
@@ -21,23 +21,25 @@ pub fn main() {
     let args = Args::parse();
     let all = make_all();
     let mut opts = aoc_harness::Opts::default();
-    let mut results: BTreeMap<(i32, u8), DayResult> = BTreeMap::new();
+    let mut results: BTreeMap<(i32, u8), Vec<DayResult>> = BTreeMap::new();
     for ((year, day), f) in all {
         if (args.year.is_none() || args.year == Some(year))
             && (args.day.is_none() || args.day == Some(day))
         {
-            let dr = results
+            let mut dr = DayResult::new(year, day);
+            f(&mut dr, &mut opts);
+            results
                 .entry((year, day))
-                .or_insert_with(|| DayResult::new(year, day));
-            f(dr, &mut opts);
+                .or_insert_with(Vec::new)
+                .push(dr);
         }
     }
     let mut total_time = Duration::ZERO;
     let mut time_per_year: BTreeMap<i32, Duration> = BTreeMap::new();
-    for v in results.values() {
-        let d = v.total_time();
+    for ((y, _), v) in &results {
+        let d = v.iter().map(DayResult::total_time).min().unwrap();
         total_time += d;
-        *time_per_year.entry(v.year).or_default() += d;
+        *time_per_year.entry(*y).or_default() += d;
     }
 
     for (y, d) in &time_per_year {
