@@ -2,7 +2,7 @@ use aoc_harness::*;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
-    character::complete::u32,
+    character::complete::{newline, u32},
     combinator::{map, value},
     sequence::{preceded, terminated, tuple},
     IResult,
@@ -54,7 +54,7 @@ fn parse_line(input: &str) -> IResult<&str, Line> {
                 |(size, _, name)| Line::File(size, name),
             ),
         )),
-        tag("\n"),
+        newline,
     )(input)
 }
 
