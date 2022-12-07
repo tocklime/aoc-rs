@@ -102,9 +102,9 @@ pub struct OcrString {
     inner: String,
 }
 impl aoc_harness::answertype::AnswerType for OcrString {
-    type Output = Self;
+    type Output = String;
     fn to_option(self) -> Option<Self::Output> {
-        Some(self)
+        Some(self.ocr())
     }
 }
 impl From<String> for OcrString {

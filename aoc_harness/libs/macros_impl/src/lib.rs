@@ -253,17 +253,20 @@ impl AocMainInput {
             } else {
                 inner.extend(quote! {
                     let (t, a) = opts.time_fn(|| #f(&generated));
-                    let a = aoc_harness::answertype::AnswerType::to_option(a);
+                    let a = match aoc_harness::answertype::AnswerType::to_option(a) {
+                        Some(x) => x,
+                        None => panic!("{} failed to produce an answer", &full_name)
+                    };
                 });
                 match part.part_num {
                     PartNum::Part1 => {
-                        inner.extend(quote! { results.record_p1(a.clone(),t);});
+                        inner.extend(quote! { results.record_p1(Some(a.clone()),t);});
                     }
                     PartNum::Part2 => {
-                        inner.extend(quote! { results.record_p2(a.clone(),t);});
+                        inner.extend(quote! { results.record_p2(Some(a.clone()),t);});
                     }
                     PartNum::Both => {
-                        inner.extend(quote! { results.record_both(a.clone(),t);});
+                        inner.extend(quote! { results.record_both(Some(a.clone()),t);});
                     }
                 }
                 if !do_ans_check || is_single_solution {
@@ -277,7 +280,7 @@ impl AocMainInput {
                 }
                 if do_ans_check {
                     inner.extend(quote! {
-                        opts.assert_eq(&a,&Some(expected));
+                         opts.assert_eq(&a, &expected);
                     });
                 }
             }
@@ -297,13 +300,19 @@ impl AocMainInput {
             quote! {
                 let found = #func(&#g(#input));
                 let as_opt = aoc_harness::answertype::AnswerType::to_option(found);
-                assert_eq!(as_opt, Some(#expected), "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func));
+                match as_opt {
+                    Some(x) => { assert_eq!(x, #expected, "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func)); }
+                    None => { assert!(false, "Example failure: {} example {} with fn {} failed", #part_num, #eg_num, stringify!(#func)); }
+                };
             }
         } else {
             quote! {
                 let found = #func(#input);
                 let as_opt = aoc_harness::answertype::AnswerType::to_option(found);
-                assert_eq!(as_opt, Some(#expected), "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func));
+                match as_opt {
+                    Some(x) => { assert_eq!(x, #expected, "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func)); }
+                    None => { assert!(false, "Example failure: {} example {} with fn {} failed", #part_num, #eg_num, stringify!(#func)); }
+                };
             }
         }
     }
