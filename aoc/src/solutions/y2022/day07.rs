@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use aoc_harness::*;
 use nom::{
@@ -82,7 +82,7 @@ fn parse_line(input: &str) -> IResult<&str, Line> {
 #[derive(Debug, Default)]
 struct Dir<'a> {
     files: u32,
-    dirs: HashMap<&'a str, Rc<RefCell<Dir<'a>>>>,
+    dirs: Vec<Rc<RefCell<Dir<'a>>>>,
 }
 impl<'a> Dir<'a> {
     fn size(&self) -> u32 {
@@ -90,13 +90,13 @@ impl<'a> Dir<'a> {
             + self
                 .dirs
                 .iter()
-                .map(|(_, v)| v.borrow().size())
+                .map(|v| v.borrow().size())
                 .sum::<u32>()
     }
     fn all_sizes(&self) -> Vec<u32> {
         let mut ans = Vec::new();
         ans.push(self.size());
-        for d in self.dirs.values() {
+        for d in &self.dirs {
             ans.extend(d.borrow().all_sizes());
         }
         ans
@@ -106,30 +106,36 @@ impl<'a> Dir<'a> {
 fn p1(input: &str) -> (u32, u32) {
     let (rest, val) = many1(terminated(parse_line, tag("\n")))(input).unwrap();
     assert_eq!(rest, "");
-    let top = Rc::new(RefCell::new(Dir::default()));
-    let mut dir_stack = vec![Rc::clone(&top)];
+    let mut dir_stack : Vec<Rc<RefCell<Dir>>> = vec![Default::default()];
     for l in &val[1..] {
         match l {
             Line::Command(Command::CdUp) => {
-                dir_stack.pop();
+                //combine dir into parent.
+                let ch = dir_stack.pop().unwrap();
+                let mut b = dir_stack.last().unwrap().borrow_mut();
+                b.dirs.push(ch);
             }
             Line::Command(Command::Ls) => (),
-            Line::Command(Command::CdDown(n)) => {
-                let b = dir_stack.last().unwrap().borrow();
-                let target = Rc::clone(b.dirs.get(n).unwrap());
+            Line::Command(Command::CdDown(_)) => {
+                let b = dir_stack.last().unwrap().borrow_mut();
+                let new = Rc::new(RefCell::new(Dir::default()));
                 drop(b);
-                dir_stack.push(target);
+                dir_stack.push(new);
             }
-            Line::Output(Output::Dir(n)) => {
-                let mut b = dir_stack.last().unwrap().borrow_mut();
-                b.dirs.insert(n, Rc::new(RefCell::new(Dir::default())));
-            }
+            Line::Output(Output::Dir(_)) => (),
             Line::Output(Output::File(size, _)) => {
                 let mut b = dir_stack.last().unwrap().borrow_mut();
                 b.files += size;
             }
         }
     }
+    while dir_stack.len() > 1 {
+        let ch = dir_stack.pop().unwrap();
+        let mut b = dir_stack.last().unwrap().borrow_mut();
+        b.dirs.push(ch);
+    }
+    // dbg!(&dir_stack.get(0));
+    let top = dir_stack.pop().unwrap();
     let part1 = top
         .borrow()
         .all_sizes()
