@@ -28,10 +28,7 @@ pub fn main() {
         {
             let mut dr = DayResult::new(year, day);
             f(&mut dr, &mut opts);
-            results
-                .entry((year, day))
-                .or_insert_with(Vec::new)
-                .push(dr);
+            results.entry((year, day)).or_insert_with(Vec::new).push(dr);
         }
     }
     let mut total_time = Duration::ZERO;
