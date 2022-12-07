@@ -131,7 +131,6 @@ fn solve(input: &str) -> (u32, u32) {
         let ch = dir_stack.pop().unwrap();
         dir_stack.last_mut().unwrap().dirs.push(ch);
     }
-    // dbg!(&dir_stack.get(0));
     let top = dir_stack.pop().unwrap();
     let part1 = top
         .all_sizes()
