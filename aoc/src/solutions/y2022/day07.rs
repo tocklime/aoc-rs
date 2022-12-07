@@ -4,10 +4,10 @@ use aoc_harness::*;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
-    character::complete::{self, alpha1},
+    character::complete,
     combinator::{map, value},
-    multi::{many1, separated_list1},
-    sequence::{preceded, tuple},
+    multi::many1,
+    sequence::{preceded, terminated, tuple},
     IResult,
 };
 
@@ -62,7 +62,7 @@ fn parse_output(input: &str) -> IResult<&str, Output> {
         ),
     ))(input)
 }
-fn parse_command<'a>(input: &'a str) -> IResult<&'a str, Command<'a>> {
+fn parse_command(input: &str) -> IResult<&str, Command> {
     let (input, _) = tag("$ ")(input)?;
     alt((
         value(Command::CdUp, tag("cd ..")),
@@ -86,20 +86,26 @@ struct Dir<'a> {
 }
 impl<'a> Dir<'a> {
     fn size(&self) -> u32 {
-        self.files + self.dirs.iter().map(|(k,v)| v.borrow().size()).sum::<u32>()
+        self.files
+            + self
+                .dirs
+                .iter()
+                .map(|(_, v)| v.borrow().size())
+                .sum::<u32>()
     }
     fn all_sizes(&self) -> Vec<u32> {
         let mut ans = Vec::new();
         ans.push(self.size());
-        for (_, d) in &self.dirs {
+        for d in self.dirs.values() {
             ans.extend(d.borrow().all_sizes());
         }
         ans
     }
 }
 
-fn p1(input: &str) -> (u32,u32) {
-    let (rest, val) = separated_list1(tag("\n"), parse_line)(input).unwrap();
+fn p1(input: &str) -> (u32, u32) {
+    let (rest, val) = many1(terminated(parse_line, tag("\n")))(input).unwrap();
+    assert_eq!(rest, "");
     let top = Rc::new(RefCell::new(Dir::default()));
     let mut dir_stack = vec![Rc::clone(&top)];
     for l in &val[1..] {
@@ -124,15 +130,25 @@ fn p1(input: &str) -> (u32,u32) {
             }
         }
     }
-    let part1 = top.borrow().all_sizes().into_iter().filter(|&x| x < 100000).sum::<u32>();
+    let part1 = top
+        .borrow()
+        .all_sizes()
+        .into_iter()
+        .filter(|&x| x < 100000)
+        .sum::<u32>();
     let total = 70000000;
     let required_free = 30000000;
     let max_used = total - required_free;
     let current = top.borrow().size();
     let required_to_free = current - max_used;
     //want the smallest dir > required_to_free.
-    let part2 = top.borrow().all_sizes().into_iter().filter(|&x| x >= required_to_free).min().unwrap();
-    
+    let part2 = top
+        .borrow()
+        .all_sizes()
+        .into_iter()
+        .filter(|&x| x >= required_to_free)
+        .min()
+        .unwrap();
 
     (part1, part2)
 }
