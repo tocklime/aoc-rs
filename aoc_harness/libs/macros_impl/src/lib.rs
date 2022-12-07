@@ -400,7 +400,7 @@ impl AocMainInput {
                 mod autotests {
                     #[test]
                     fn full_solution() {
-                        let mut results = aoc_harness::dayresult::DayResult::new(#year,#day,file!());
+                        let mut results = aoc_harness::dayresult::DayResult::new(#year,#day);
                         super::run_with_opts(&mut results, &mut aoc_harness::Opts::for_test());
                     }
                     #[test]
@@ -419,7 +419,7 @@ impl AocMainInput {
                 pub fn run_main() -> aoc_harness::dayresult::DayResult {
                     let mut opts = aoc_harness::Opts::parse();
                     check_examples();
-                    let mut results = aoc_harness::dayresult::DayResult::new(#year,#day,file!());
+                    let mut results = aoc_harness::dayresult::DayResult::new(#year,#day);
                     for _ in 0..opts.repeats {
                         run_with_opts(&mut results, &mut opts);
                     }

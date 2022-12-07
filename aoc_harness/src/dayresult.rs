@@ -12,7 +12,6 @@ pub enum ExecutionTime {
 pub struct DayResult {
     pub year: i32,
     pub day: u8,
-    name: &'static str,
     pub generator_time: Option<Duration>,
     pub solve_time: ExecutionTime,
     pub part1_ans: Option<String>,
@@ -23,11 +22,10 @@ pub struct DayResult {
 
 impl DayResult {
     #[must_use]
-    pub fn new(year: i32, day: u8, name: &'static str) -> Self {
+    pub fn new(year: i32, day: u8) -> Self {
         Self {
             year,
             day,
-            name,
             generator_time: None,
             solve_time: ExecutionTime::NoneRecorded,
             part1_ans: None,
@@ -58,7 +56,7 @@ impl DayResult {
         )
     }
     fn desc(&self) -> String {
-        format!("Year {} day {:02} {}", self.year, self.day, self.name)
+        format!("Year {} day {:02}", self.year, self.day)
     }
     pub fn record_generator(&mut self, t: Duration) {
         match &self.generator_time {

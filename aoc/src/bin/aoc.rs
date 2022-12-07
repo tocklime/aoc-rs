@@ -20,31 +20,24 @@ pub fn main() {
     dotenv::dotenv().ok();
     let args = Args::parse();
     let all = make_all();
-    let mut times = Vec::new();
     let mut opts = aoc_harness::Opts::default();
-    let mut total_time = Duration::ZERO;
-    let mut time_per_year: BTreeMap<i32, Duration> = BTreeMap::new();
+    let mut results: BTreeMap<(i32, u8), DayResult> = BTreeMap::new();
     for ((year, day), f) in all {
         if (args.year.is_none() || args.year == Some(year))
             && (args.day.is_none() || args.day == Some(day))
         {
-            let mut dr = DayResult::new(year, day, "Name");
-            f(&mut dr, &mut opts);
-            let t = {
-                let this = &dr;
-                this.generator_time.unwrap_or(Duration::ZERO)
-                    + match this.solve_time {
-                        ExecutionTime::Both(d)
-                        | ExecutionTime::Part1(d)
-                        | ExecutionTime::Part2(d) => d,
-                        ExecutionTime::NoneRecorded => Duration::ZERO,
-                        ExecutionTime::Separate(a, b) => a + b,
-                    }
-            };
-            total_time += t;
-            *time_per_year.entry(year).or_default() += t;
-            times.push(dr);
+            let dr = results
+                .entry((year, day))
+                .or_insert_with(|| DayResult::new(year, day));
+            f(dr, &mut opts);
         }
+    }
+    let mut total_time = Duration::ZERO;
+    let mut time_per_year: BTreeMap<i32, Duration> = BTreeMap::new();
+    for v in results.values() {
+        let d = v.total_time();
+        total_time += d;
+        *time_per_year.entry(v.year).or_default() += d;
     }
 
     for (y, d) in &time_per_year {
