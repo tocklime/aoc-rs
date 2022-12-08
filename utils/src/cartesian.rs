@@ -58,6 +58,10 @@ pub enum Dir {
 
 impl Dir {
     #[must_use]
+    pub fn all_dirs() -> [Self; 4] {
+        [Dir::Up, Dir::Down, Dir::Left, Dir::Right]
+    }
+    #[must_use]
     pub fn try_from_x(udlr: &str, c: char) -> Option<Self> {
         udlr.find(c)
             .map(|ix| [Self::Up, Self::Down, Self::Left, Self::Right][ix])

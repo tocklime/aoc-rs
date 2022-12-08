@@ -1,5 +1,6 @@
 use std::{
     fmt::{Display, Write},
+    iter,
     ops::{Index, IndexMut},
 };
 
@@ -160,6 +161,32 @@ impl<T> Grid2d<T> {
         .into_iter()
         .filter(move |&x| x.0 < s.0 && x.1 < s.1)
     }
+
+    /// Returns all values in the grid by taking steps of `relative` from `start`.
+    /// Includes the value at `start`.
+    pub fn values_in_direction(&self, start: Coord, relative: ICoord) -> impl Iterator<Item = &T> {
+        let mut pos: ICoord = (start.0 as isize, start.1 as isize);
+        iter::from_fn(move || {
+            let next = self.get_i(pos);
+            pos.0 += relative.0;
+            pos.1 += relative.1;
+            next
+        })
+    }
+    #[must_use]
+    pub fn relative_lookup(&self, p: Coord, relative: ICoord) -> Option<&T> {
+        let y = if relative.0 > 0 {
+            p.0.wrapping_add(relative.0 as usize)
+        } else {
+            p.0.wrapping_sub((-relative.0) as usize)
+        };
+        let x = if relative.1 > 0 {
+            p.1.wrapping_add(relative.1 as usize)
+        } else {
+            p.1.wrapping_sub((-relative.1) as usize)
+        };
+        self.get((y, x))
+    }
     #[must_use]
     pub fn wraparound_relative_lookup(&self, p: Coord, relative: ICoord) -> &T {
         let d = self.dim();
@@ -212,5 +239,49 @@ impl<T> Grid2d<T> {
             data,
             size: (rows, stride.unwrap()),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    pub fn values_in_direction_test() {
+        const GRID: &str = "012
+345
+678";
+        let g = Grid2d::from_str(GRID, |c| c);
+        assert_eq!(
+            g.values_in_direction((1, 1), (1, 0)).copied().collect_vec(),
+            ['4', '7']
+        );
+        assert_eq!(
+            g.values_in_direction((1, 1), (-1, 0))
+                .copied()
+                .collect_vec(),
+            ['4', '1']
+        );
+        assert_eq!(
+            g.values_in_direction((2, 0), (-1, 0))
+                .copied()
+                .collect_vec(),
+            ['6', '3', '0']
+        );
+        assert_eq!(
+            g.values_in_direction((0, 2), (-1, 0))
+                .copied()
+                .collect_vec(),
+            ['2']
+        );
+        assert_eq!(
+            g.values_in_direction((0, 2), (0, -1))
+                .copied()
+                .collect_vec(),
+            ['2', '1', '0']
+        );
+        assert_eq!(
+            g.values_in_direction((0, 0), (0, 1)).copied().collect_vec(),
+            ['0', '1', '2']
+        );
     }
 }
