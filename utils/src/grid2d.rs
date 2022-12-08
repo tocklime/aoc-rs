@@ -87,11 +87,12 @@ impl<T> Grid2d<T> {
             None
         }
     }
+    pub fn to_u(p: ICoord) -> Option<Coord> {
+        Some((p.0.try_into().ok()?, p.1.try_into().ok()?))
+    }
     #[must_use]
     pub fn get_i(&self, p: ICoord) -> Option<&T> {
-        let y: usize = p.0.try_into().ok()?;
-        let x: usize = p.1.try_into().ok()?;
-        self.get((y, x))
+        Self::to_u(p).and_then(|p| self.get(p))
     }
     #[must_use]
     pub fn dim(&self) -> Coord {
@@ -164,14 +165,24 @@ impl<T> Grid2d<T> {
 
     /// Returns all values in the grid by taking steps of `relative` from `start`.
     /// Includes the value at `start`.
-    pub fn values_in_direction(&self, start: Coord, relative: ICoord) -> impl Iterator<Item = &T> {
+    pub fn values_in_direction(
+        &self,
+        start: Coord,
+        relative: ICoord,
+    ) -> impl Iterator<Item = (Coord, &T)> {
         let mut pos: ICoord = (start.0 as isize, start.1 as isize);
         iter::from_fn(move || {
-            let next = self.get_i(pos);
+            let here = Self::to_u(pos)?;
             pos.0 += relative.0;
             pos.1 += relative.1;
-            next
+            let next = self.get(here);
+            next.map(|p| (here, p))
         })
+    }
+    #[must_use]
+    pub fn get_row(&self, y: usize) -> &[T] {
+        let w = self.size.1;
+        &self.data[y * w..(y + 1) * w]
     }
     #[must_use]
     pub fn relative_lookup(&self, p: Coord, relative: ICoord) -> Option<&T> {
