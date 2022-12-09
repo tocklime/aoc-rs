@@ -1,12 +1,11 @@
-use std::{
-    cmp::Ordering,
-    collections::{HashMap, HashSet},
-};
+use std::collections::HashSet;
 
 use aoc_harness::*;
-use utils::cartesian::{render_char_map_w, Dir, Point};
+use utils::{
+    cartesian::{Dir, Point},
+};
 
-aoc_main!(2022 day 9, part1 [p1::<2>], part2 [p1::<10>], example part1 EG => 13, example part2 EG2 => 36);
+aoc_main!(2022 day 9, part1 [solve::<2>] => 6357, part2 [solve::<10>] => 2627, both [both], example both EG => (13,1), example both EG2 => (88, 36));
 
 const EG: &str = "R 4
 U 4
@@ -26,44 +25,47 @@ D 10
 L 25
 U 20
 ";
-fn step_knot(head: &Point<isize>, tail: &Point<isize>) -> Point<isize>{
-    let diff = *head - *tail;
-    let mut tail = *tail;
+fn step_knot(head:Point<isize>, mut tail: Point<isize>) -> Point::<isize> {
+    let diff = head - tail;
     if diff.x.abs() > 1 || diff.y.abs() > 1 {
-        tail = match head.x.cmp(&tail.x) {
-            Ordering::Equal => tail,
-            Ordering::Less =>  tail.step(Dir::Left),
-            Ordering::Greater =>  tail.step(Dir::Right),
-        };
-        tail = match head.y.cmp(&tail.y) {
-            Ordering::Equal => tail,
-            Ordering::Less =>  tail.step(Dir::Down),
-            Ordering::Greater =>  tail.step(Dir::Up),
-        };
+        //take a (possibly diagonal) step toward head.
+        tail += Dir::Right * diff.x.signum() + Dir::Up * diff.y.signum();
     }
     tail
 }
-fn p1<const SIZE: usize>(input: &str) -> usize {
-    // let mut head = Point::<isize>::new(0, 0);
-    // let mut tail = Point::<isize>::new(0, 0);
+fn solve<const SIZE: usize>(input: &str) -> usize {
     let mut visited = HashSet::new();
-    let mut map = HashMap::new();
-    let mut rope = [Point::<isize>::new(0,0); SIZE];
+    let mut rope = [Point::<isize>::new(0, 0); SIZE];
     for l in input.lines() {
-        let (dir, count) = l.split_once(' ').unwrap();
-        let count: usize = count.parse().unwrap();
+        let count = l[2..].parse().unwrap();
+        let dir = Dir::from_x("UDLR", l.chars().next().unwrap());
         for _ in 0..count {
-            rope[0] = rope[0].follow_x("UDLR", dir.chars().next().unwrap());
+            rope[0] = rope[0].step(dir);
             for ix in 1..SIZE {
-                rope[ix] = step_knot(&rope[ix-1], &rope[ix]);
+                rope[ix] = step_knot(rope[ix-1], rope[ix]);
             }
-            map.insert(rope[SIZE-1], '#');
-            visited.insert(rope[SIZE-1]);
-            // map.insert(head, 'H');
-            // map.insert(tail, 'T');
-            // println!("{}", render_char_map_w(&map, 1, ".", true));
+            visited.insert(rope[SIZE - 1]);
         }
-        println!("{} {:?}", l, rope);
     }
     visited.len()
+}
+
+fn both(input: &str) -> (usize, usize) {
+    let mut p1 = HashSet::new();
+    let mut p2 = HashSet::new();
+    const SIZE: usize = 10;
+    let mut rope = [Point::<isize>::new(0, 0); SIZE];
+    for l in input.lines() {
+        let count = l[2..].parse().unwrap();
+        let dir = Dir::from_x("UDLR", l.chars().next().unwrap());
+        for _ in 0..count {
+            rope[0] = rope[0].step(dir);
+            for ix in 1..10 {
+                rope[ix] = step_knot(rope[ix-1], rope[ix]);
+            }
+            p1.insert(rope[1]);
+            p2.insert(rope[SIZE - 1]);
+        }
+    }
+    (p1.len(), p2.len())
 }

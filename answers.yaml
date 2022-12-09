@@ -556,5 +556,5 @@
     part1: !Checked '1835'
     part2: !Checked '263670'
   9:
-    part1: !Observed '6357'
-    part2: !Observed '2627'
+    part1: !Checked '6357'
+    part2: !Checked '2627'

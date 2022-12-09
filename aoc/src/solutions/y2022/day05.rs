@@ -1,7 +1,8 @@
-use std::{cmp::Ordering, str::FromStr};
+use std::str::FromStr;
 
 use aoc_harness::*;
 use nom::{bytes::complete::tag, character::complete::u8, multi::separated_list1, sequence::tuple};
+use utils::iter::borrow_mut_twice;
 
 aoc_main!(2022 day 5, generator whole_input_is::<X>, part1 [solve::<false>] => "GFTNRBZPF", part2 [solve::<true>] => "VRQWPDSGP", example both EG => ("CMZ","MCD"));
 
@@ -68,19 +69,6 @@ impl FromStr for X {
 }
 fn read_tops(stacks: &[Vec<char>]) -> String {
     stacks.iter().map(|x| x.last().unwrap()).collect()
-}
-fn borrow_mut_twice<T>(arr: &mut [T], a: usize, b: usize) -> (&mut T, &mut T) {
-    match a.cmp(&b) {
-        Ordering::Less => {
-            let (arr_a, arr_b) = arr.split_at_mut(b);
-            (&mut arr_a[a], &mut arr_b[0])
-        }
-        Ordering::Greater => {
-            let (arr_b, arr_a) = arr.split_at_mut(a);
-            (&mut arr_a[0], &mut arr_b[b])
-        }
-        Ordering::Equal => panic!("Can't borrow twice from the same index"),
-    }
 }
 
 fn solve<const CARRY_MANY: bool>(input: &X) -> String {
