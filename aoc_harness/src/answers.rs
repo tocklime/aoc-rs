@@ -31,6 +31,7 @@ pub type AnswerYear = BTreeMap<u8, Answer>;
 #[derive(Debug)]
 pub struct AnswerAll {
     data: BTreeMap<i32, AnswerYear>,
+    save_on_drop: bool,
 }
 impl AnswerAll {
     #[must_use]
@@ -48,12 +49,16 @@ impl AnswerAll {
             },
             Err(_) => BTreeMap::new(),
         };
-        Self { data }
+        Self {
+            data,
+            save_on_drop: true,
+        }
     }
     #[must_use]
     pub fn blank() -> Self {
         Self {
             data: BTreeMap::new(),
+            save_on_drop: false,
         }
     }
     pub fn record_dayresult(&mut self, dr: &DayResult) -> Result<(), String> {
@@ -92,13 +97,15 @@ impl Default for AnswerAll {
 }
 impl Drop for AnswerAll {
     fn drop(&mut self) {
-        let f = std::fs::File::options()
-            .write(true)
-            .create(true)
-            .open("answers.new.yaml")
-            .expect("could not open answers.new.yaml");
-        serde_yaml::to_writer(f, &self.data).expect("Failed serializing answers.new.yaml");
-        std::fs::rename("answers.new.yaml", "answers.yaml")
-            .expect("Failed to move answers.new.yaml to answers.yaml");
+        if self.save_on_drop {
+            let f = std::fs::File::options()
+                .write(true)
+                .create(true)
+                .open("answers.new.yaml")
+                .expect("could not open answers.new.yaml");
+            serde_yaml::to_writer(f, &self.data).expect("Failed serializing answers.new.yaml");
+            std::fs::rename("answers.new.yaml", "answers.yaml")
+                .expect("Failed to move answers.new.yaml to answers.yaml");
+        }
     }
 }

@@ -263,35 +263,39 @@ mod test {
 678";
         let g = Grid2d::from_str(GRID, |c| c);
         assert_eq!(
-            g.values_in_direction((1, 1), (1, 0)).copied().collect_vec(),
+            g.values_in_direction((1, 1), (1, 0))
+                .map(|x| *x.1)
+                .collect_vec(),
             ['4', '7']
         );
         assert_eq!(
             g.values_in_direction((1, 1), (-1, 0))
-                .copied()
+                .map(|x| *x.1)
                 .collect_vec(),
             ['4', '1']
         );
         assert_eq!(
             g.values_in_direction((2, 0), (-1, 0))
-                .copied()
+                .map(|x| *x.1)
                 .collect_vec(),
             ['6', '3', '0']
         );
         assert_eq!(
             g.values_in_direction((0, 2), (-1, 0))
-                .copied()
+                .map(|x| *x.1)
                 .collect_vec(),
             ['2']
         );
         assert_eq!(
             g.values_in_direction((0, 2), (0, -1))
-                .copied()
+                .map(|x| *x.1)
                 .collect_vec(),
             ['2', '1', '0']
         );
         assert_eq!(
-            g.values_in_direction((0, 0), (0, 1)).copied().collect_vec(),
+            g.values_in_direction((0, 0), (0, 1))
+                .map(|x| *x.1)
+                .collect_vec(),
             ['0', '1', '2']
         );
     }
