@@ -43,21 +43,21 @@ pub fn slice_get_mut_two<T>(slice: &mut [T], index0: usize, index1: usize) -> (&
     assert_ne!(index0, index1);
     assert!(index0 < slice.len());
     assert!(index1 < slice.len());
-    slice_get_mut_two_unchecked(slice, index0, index1)
+    // SAFETY: guarantee that the indices are never the same. So it is safe to
+    // have two mutable references into the Vec. We'll double check that the
+    // indices are within the bounds.
+    unsafe { slice_get_mut_two_unchecked(slice, index0, index1) }
 }
 
-pub fn slice_get_mut_two_unchecked<T>(
+/// # Safety
+/// index0 and index1 must be < slice.len(), and must not be equal to each other.
+pub unsafe fn slice_get_mut_two_unchecked<T>(
     slice: &mut [T],
     index0: usize,
     index1: usize,
 ) -> (&mut T, &mut T) {
-    // SAFETY: guarantee that the indices are never the same. So it is safe to
-    // have two mutable references into the Vec. We'll double check that the
-    // indices are within the bounds.
-    unsafe {
-        let ptr = slice.as_mut_ptr();
-        let one = &mut *ptr.add(index0);
-        let two = &mut *ptr.add(index1);
-        (one, two)
-    }
+    let ptr = slice.as_mut_ptr();
+    let one = &mut *ptr.add(index0);
+    let two = &mut *ptr.add(index1);
+    (one, two)
 }
