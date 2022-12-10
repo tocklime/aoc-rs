@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, time::Duration};
 
-use aoc_harness::{aoc_all_main, dayresult::DayResult, Opts};
+use aoc_harness::{aoc_all_main, dayresult::DayResult, Opts, Itertools};
 use clap::Parser;
 type Day = ((i32, u8), fn(&mut DayResult, &mut Opts));
 
@@ -21,28 +21,30 @@ pub fn main() {
     let args = Args::parse();
     let all = make_all();
     let mut opts = aoc_harness::Opts::default();
-    let mut results: BTreeMap<(i32, u8), Vec<DayResult>> = BTreeMap::new();
+    let mut results: BTreeMap<i32, BTreeMap<u8, Vec<DayResult>>> = BTreeMap::new();
     for ((year, day), f) in all {
         if (args.year.is_none() || args.year == Some(year))
             && (args.day.is_none() || args.day == Some(day))
         {
             let mut dr = DayResult::new(year, day);
             f(&mut dr, &mut opts);
-            results.entry((year, day)).or_insert_with(Vec::new).push(dr);
+            results.entry(year).or_default().entry(day).or_default().push(dr);
         }
     }
-    let mut total_time = Duration::ZERO;
-    let mut time_per_year: BTreeMap<i32, Duration> = BTreeMap::new();
-    for ((y, _), v) in &results {
-        let d = v.iter().map(DayResult::total_time).min().unwrap();
-        total_time += d;
-        *time_per_year.entry(*y).or_default() += d;
-    }
 
-    for (y, d) in &time_per_year {
-        println!("Time for year {}: {}", y, aoc_harness::render_duration(*d));
+    let mut total_time = Duration::ZERO;
+    for (&y, day_map) in &results {
+        let best_times_by_day = 
+         day_map.values()
+            .map(|d| d.iter().map(|dr| dr.total_time()).min().unwrap())
+            .filter(|&d| d > Duration::ZERO)
+            .collect_vec();
+        let days_str = best_times_by_day.iter().copied().map(aoc_harness::render_duration).join(" ");
+        let this_year_time = best_times_by_day.iter().sum();
+        total_time += this_year_time;
+        println!("Time for year {}: {} [{}]", y, aoc_harness::render_duration(this_year_time), days_str);
     }
-    if time_per_year.len() > 1 {
+    if results.len() > 1 {
         println!("Total time: {}", aoc_harness::render_duration(total_time));
     }
 }

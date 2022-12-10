@@ -7,6 +7,7 @@ pub mod dayresult;
 use std::{env, path::PathBuf, str::FromStr, time::Instant};
 
 use answers::AnswerAll;
+use answertype::AnswerType;
 pub use aoc_harness_macros::*;
 use chrono::TimeZone;
 use clap::{arg, Parser};
@@ -53,6 +54,33 @@ pub enum InputFetchFailure {
     Unauthorized,
     HttpNotFound,
     SomethingElse(String),
+}
+
+/// This is used in macro code to hint to the compiler that the expected results
+/// in the aoc_main! macro have the same type as the return type of a function.
+/// but we also need to unwrap Result or Options, using the AnswerType.
+pub fn type_hint_value_has_same_type_as_func_return<Value, Func, FuncIn, FuncOut, TAns>(
+    _val: &Value,
+    _func: &Func,
+) where
+    Func: Fn(FuncIn) -> FuncOut,
+    FuncOut: AnswerType<Output = TAns>,
+    TAns: PartialEq<Value>,
+{
+}
+/// This is used in macro code to hint to the compiler that the expected result pairs
+/// in the aoc_main! macro have the same type as the return type of a function.
+/// but we also need to unwrap Result or Options, using the AnswerType.
+pub fn type_hint_pair_has_values_in_func_return<V1, V2, Func, FuncIn, FuncOut, Ans1, Ans2>(
+    _v1: &V1,
+    _v2: &V2,
+    _func: &Func,
+) where
+    Func: Fn(FuncIn) -> FuncOut,
+    FuncOut: AnswerType<Output = (Ans1, Ans2)>,
+    Ans1: PartialEq<V1>,
+    Ans2: PartialEq<V2>,
+{
 }
 
 fn user_agent() -> &'static str {

@@ -1,9 +1,9 @@
 use aoc_harness::*;
-use utils::grid2d::Grid2d;
+use utils::{grid2d::Grid2d, ocr::OcrString};
 
-aoc_main!(2022 day 10, part1 [p1], part2 [p2], example part1 EG => 13140);
+aoc_main!(2022 day 10, part1 [p1], part2 [p2], example both EG => (13140, "????????"), both [both]);
 
-const EG : &str = "addx 15
+const EG: &str = "addx 15
 addx -11
 addx 6
 addx -3
@@ -151,63 +151,68 @@ noop
 noop
 ";
 
-fn p1(input: &str) -> i32 {
-    // let mut time = 0;
+fn handle_input<F>(input: &str, f: &mut F)
+where
+    F: FnMut(i32),
+{
     let mut x = 1;
-    // let mut ip = 0;
-    let mut x_over_time = vec![1];
     for l in input.lines() {
         match &l[0..4] {
             "noop" => {
-                x_over_time.push(x);
+                f(x);
             }
             "addx" => {
-                let val : i32 = l[5..].parse().unwrap();
-                x_over_time.push(x);
-        println!("At end of cycle {}, x is {}", x_over_time.len(), x);
-                x += val;
-                x_over_time.push(x);
+                f(x);
+                x += l[5..].parse::<i32>().unwrap();
+                f(x);
             }
-            _ => panic!("{}", l)
+            _ => panic!("{}", l),
         }
-        println!("At end of cycle {}, x is {}", x_over_time.len(), x);
-        assert_eq!(x_over_time[x_over_time.len()-1], x);
     }
-    dbg!(x_over_time[220]);
-    [20,60,100,140,180,220].map(|ix| dbg!((ix as i32) * dbg!(x_over_time[ix-1]))).into_iter().sum()
 }
 
-fn p2(input: &str) -> String {
-    let mut x = 1;
-    let mut x_over_time = vec![1];
-    for l in input.lines() {
-        match &l[0..4] {
-            "noop" => {
-                x_over_time.push(x);
-            }
-            "addx" => {
-                let val : i32 = l[5..].parse().unwrap();
-                x_over_time.push(x);
-        println!("At end of cycle {}, x is {}", x_over_time.len(), x);
-                x += val;
-                x_over_time.push(x);
-            }
-            _ => panic!("{}", l)
+fn p1(input: &str) -> i32 {
+    let mut time = 0;
+    let mut ans: i32 = 0;
+    let mut record = |val: i32| {
+        time += 1;
+        if ((time) % 40) == 20 {
+            ans += (time) * val;
         }
-        println!("At end of cycle {}, x is {}", x_over_time.len(), x);
-        assert_eq!(x_over_time[x_over_time.len()-1], x);
-    }
+    };
+    record(1);
+    handle_input(input, &mut record);
+    ans
+}
 
-    let mut screen = Grid2d::from_elem((6,40), '.');
-    for (t, x) in x_over_time.iter().enumerate() {
-        let ti = (t%40) as i32;
-        if (x-ti).abs() < 2 {
-            println!("# at time {}, x is {}", t, x);
-            screen[(t/40, t%40)] = '#';
-        } else {
-            println!(". at time {}, x is {}", t, x);
+fn p2(input: &str) -> OcrString {
+    let mut screen = Grid2d::from_elem((6, 40), ' ');
+    let mut time = 0;
+    let mut record = |val: i32| {
+        if (time % 40 - val).abs() < 2 {
+            screen[(time as usize)] = '#';
         }
-    }
-    println!("{}", screen);
-    screen.to_string()
+        time += 1;
+    };
+    record(1);
+    handle_input(input, &mut record);
+    OcrString::from(screen.to_string())
+}
+
+fn both(input: &str) -> (i32, OcrString) {
+    let mut screen = Grid2d::from_elem((6, 40), ' ');
+    let mut time = 0;
+    let mut ans: i32 = 0;
+    let mut record = |val: i32| {
+        if (time % 40 - val).abs() < 2 {
+            screen[(time as usize)] = '#';
+        }
+        time += 1;
+        if ((time) % 40) == 20 {
+            ans += (time) * val;
+        }
+    };
+    record(1);
+    handle_input(input, &mut record);
+    (ans, OcrString::from(screen.to_string()))
 }

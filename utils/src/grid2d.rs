@@ -37,6 +37,18 @@ impl<T: Copy> Grid2d<T> {
         Self { data, size }
     }
 }
+impl<T> Index<usize> for Grid2d<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
+    }
+}
+impl<T> IndexMut<usize> for Grid2d<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.data[index]
+    }
+}
 impl<T> Index<Coord> for Grid2d<T> {
     type Output = T;
 

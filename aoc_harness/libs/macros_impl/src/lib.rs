@@ -4,11 +4,13 @@ use quote::quote;
 
 use proc_macro2::TokenStream;
 use syn::bracketed;
+use syn::parenthesized;
 use syn::parse::Parse;
 use syn::parse::ParseStream;
 use syn::parse_quote;
 use syn::punctuated::Punctuated;
 use syn::Expr;
+use syn::ExprLit;
 use syn::LitInt;
 use syn::Result;
 use syn::Token;
@@ -31,6 +33,12 @@ enum PartNum {
     Part2,
     Both,
 }
+enum ExpectedResult {
+    None,
+    Single(Expr),
+    Double(Expr, Expr),
+}
+
 impl Display for PartNum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -62,7 +70,7 @@ impl Parse for PartNum {
 struct ExamplePart {
     part_num: PartNum,
     str_input: Expr,
-    expected_ans: Expr,
+    ans: ExpectedResult,
 }
 impl Parse for ExamplePart {
     fn parse(input: ParseStream) -> Result<Self> {
@@ -70,11 +78,21 @@ impl Parse for ExamplePart {
         let part_num: PartNum = input.parse()?;
         let str_input: Expr = input.parse()?;
         let _goes_to = input.parse::<Token![=>]>()?;
-        let expected_ans: Expr = input.parse()?;
+        let ans = match part_num {
+            PartNum::Part1 | PartNum::Part2 => ExpectedResult::Single(input.parse()?),
+            PartNum::Both => {
+                let content;
+                let _parens = parenthesized!(content in input);
+                let a = content.parse::<Expr>()?;
+                let _comma = content.parse::<Token![,]>()?;
+                let b = content.parse::<Expr>()?;
+                ExpectedResult::Double(a, b)
+            }
+        };
         Ok(Self {
             part_num,
             str_input,
-            expected_ans,
+            ans,
         })
     }
 }
@@ -103,7 +121,7 @@ impl Parse for GeneratorPart {
 struct SolutionPart {
     part_num: PartNum,
     fns: Vec<Expr>,
-    ans: Option<Expr>,
+    ans: ExpectedResult,
 }
 impl Parse for SolutionPart {
     fn parse(input: ParseStream) -> Result<Self> {
@@ -111,9 +129,20 @@ impl Parse for SolutionPart {
         let part_num = input.parse()?;
         let _brackets = bracketed!(content in input);
         let functions: Punctuated<Expr, Token![,]> = content.parse_terminated(Expr::parse)?;
-        let ans = match input.parse::<Token![=>]>() {
-            Ok(_) => Some(input.parse::<Expr>()?),
-            Err(_) => None,
+        let ans = if input.parse::<Token![=>]>().is_ok() {
+            match part_num {
+                PartNum::Part1 | PartNum::Part2 => ExpectedResult::Single(input.parse::<Expr>()?),
+                PartNum::Both => {
+                    let content;
+                    let _parens = parenthesized!(content in input);
+                    let a = content.parse::<Expr>()?;
+                    let _comma = content.parse::<Token![,]>()?;
+                    let b = content.parse::<Expr>()?;
+                    ExpectedResult::Double(a, b)
+                }
+            }
+        } else {
+            ExpectedResult::None
         };
         Ok(Self {
             part_num,
@@ -218,28 +247,57 @@ impl AocMainInput {
         let mut inner = TokenStream::new();
         let part_num = format!("{}", part.part_num);
         let is_single_solution = part.fns.len() == 1;
-        let do_ans_check = match part.ans.as_ref() {
-            None => false,
-            Some(a) => {
+        let mut do_ans_check = true;
+        match (part.part_num, &part.ans) {
+            (_, ExpectedResult::None) => {
+                do_ans_check = false;
+            }
+            (PartNum::Both, ExpectedResult::Single(_)) => {
+                unreachable!("both example with only one solution??")
+            }
+            (PartNum::Both, ExpectedResult::Double(p1, p2)) => {
                 inner.extend(quote! {
-                    let expected = #a;
+                    let expected_p1 = #p1;
+                    let expected_p2 = #p2;
                 });
+                if let Some(f) = &part.fns.get(0) {
+                    inner.extend(quote!{
+                        ::aoc_harness::type_hint_pair_has_values_in_func_return(&expected_p1, &expected_p2, &#f);
+                    });
+                }
+                if !is_single_solution {
+                    inner.extend(quote! {
+                        opts.log(||format!("{} {} expected result: {:?}",desc,PartNum::Part1, expected_p1));
+                        opts.log(||format!("{} {} expected result: {:?}",desc,PartNum::Part2, expected_p2));
+                    });
+                }
+                inner.extend(quote! {
+                    results.expect_p1(expected_p1);
+                    results.expect_p2(expected_p2);
+                });
+            }
+            (_, ExpectedResult::Double(_, _)) => {
+                unreachable!("single example with double solution??")
+            }
+            (p, ExpectedResult::Single(exp)) => {
+                inner.extend(quote! { let expected = #exp; });
+                if let Some(f) = &part.fns.get(0) {
+                    inner.extend(quote!{
+                        ::aoc_harness::type_hint_value_has_same_type_as_func_return(&expected, &#f);
+                    });
+                }
                 if !is_single_solution {
                     inner.extend(quote! {
                         opts.log(||format!("{} {} expected result: {:?}",desc,#part_num, expected));
                     });
                 }
-                match part.part_num {
-                    PartNum::Part1 => inner.extend(quote! { results.expect_p1(expected);}),
-                    PartNum::Part2 => inner.extend(quote! { results.expect_p2(expected);}),
-                    PartNum::Both => inner.extend(quote! {
-                        results.expect_p1(expected.0);
-                        results.expect_p2(expected.1);
-                    }),
+                match p {
+                    PartNum::Part1 => inner.extend(quote! { results.expect_p1(expected); }),
+                    PartNum::Part2 => inner.extend(quote! { results.expect_p2(expected); }),
+                    PartNum::Both => unreachable!(),
                 }
-                true
             }
-        };
+        }
 
         for f in &part.fns {
             inner.extend(quote! {
@@ -278,15 +336,11 @@ impl AocMainInput {
                         opts.log(||format!("{} solved in {}",&full_name, aoc_harness::render_duration(t)));
                     });
                 }
-                if do_ans_check {
-                    inner.extend(quote! {
-                         opts.assert_eq(&a, &expected);
-                    });
-                }
             }
         }
         inner
     }
+
     #[must_use]
     pub fn example(
         &self,
@@ -295,66 +349,127 @@ impl AocMainInput {
         expected: &Expr,
         input: &Expr,
         func: &Expr,
+        func_select_result: Option<&ExprLit>,
     ) -> TokenStream {
+        let mut ans = TokenStream::new();
         if let Some(g) = self.gen.as_ref().map(|x| &x.gen_fn) {
-            quote! {
-                let found = #func(&#g(#input));
-                let as_opt = aoc_harness::answertype::AnswerType::to_option(found);
-                match as_opt {
-                    Some(x) => { assert_eq!(x, #expected, "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func)); }
-                    None => { assert!(false, "Example failure: {} example {} with fn {} failed", #part_num, #eg_num, stringify!(#func)); }
-                };
-            }
+            ans.extend(quote! { let found = #func(&#g(#input)); });
         } else {
-            quote! {
-                let found = #func(#input);
-                let as_opt = aoc_harness::answertype::AnswerType::to_option(found);
-                match as_opt {
-                    Some(x) => { assert_eq!(x, #expected, "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func)); }
-                    None => { assert!(false, "Example failure: {} example {} with fn {} failed", #part_num, #eg_num, stringify!(#func)); }
-                };
-            }
+            ans.extend(quote! { let found = #func(#input); });
         }
+        ans.extend(quote! {
+            let as_opt = aoc_harness::answertype::AnswerType::to_option(found);
+        });
+        if let Some(e) = func_select_result {
+            ans.extend(quote! {
+                let as_opt = as_opt.map(|v| v.#e);
+            });
+        }
+        ans.extend(quote!{
+            match as_opt {
+                Some(x) => { assert_eq!(x, #expected, "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func)); }
+                None => { assert!(false, "Example failure: {} example {} with fn {} failed", #part_num, #eg_num, stringify!(#func)); }
+            };
+        });
+        ans
     }
     #[must_use]
     pub fn examples(&self) -> TokenStream {
         let mut out = TokenStream::new();
         for (e, eg_num) in self.examples.iter().zip(1..) {
             let part_num = format!("{}", e.part_num);
-            let ans = &e.expected_ans;
-            if e.part_num == PartNum::Both {
-                let p1_ans = parse_quote! { #ans.0 };
-                let p2_ans = parse_quote! { #ans.1 };
-                for s in &self.solutions {
-                    for f in &s.fns {
-                        match s.part_num {
-                            PartNum::Part1 => out.extend(self.example(
-                                &part_num,
-                                eg_num,
-                                &p1_ans,
-                                &e.str_input,
-                                f,
-                            )),
-                            PartNum::Part2 => out.extend(self.example(
-                                &part_num,
-                                eg_num,
-                                &p2_ans,
-                                &e.str_input,
-                                f,
-                            )),
-                            PartNum::Both => {
-                                out.extend(self.example(&part_num, eg_num, ans, &e.str_input, f));
+            match (e.part_num, &e.ans) {
+                (_, ExpectedResult::None) => {}
+                (PartNum::Both, ExpectedResult::Single(_)) => {
+                    unreachable!("both eg with single answer")
+                }
+                (PartNum::Both, ExpectedResult::Double(a, b)) => {
+                    for s in &self.solutions {
+                        for f in &s.fns {
+                            match s.part_num {
+                                PartNum::Part1 => out.extend(self.example(
+                                    &part_num,
+                                    eg_num,
+                                    a,
+                                    &e.str_input,
+                                    f,
+                                    None,
+                                )),
+                                PartNum::Part2 => out.extend(self.example(
+                                    &part_num,
+                                    eg_num,
+                                    b,
+                                    &e.str_input,
+                                    f,
+                                    None,
+                                )),
+                                PartNum::Both => {
+                                    let get_p1: ExprLit = parse_quote!(0);
+                                    let get_p2: ExprLit = parse_quote!(1);
+                                    out.extend(self.example(
+                                        "both/part1",
+                                        eg_num,
+                                        a,
+                                        &e.str_input,
+                                        f,
+                                        Some(&get_p1),
+                                    ));
+                                    out.extend(self.example(
+                                        "both/part2",
+                                        eg_num,
+                                        b,
+                                        &e.str_input,
+                                        f,
+                                        Some(&get_p2),
+                                    ));
+                                }
                             }
                         }
                     }
                 }
-            } else {
-                for s in &self.solutions {
-                    if s.part_num == PartNum::Both {
-                        unimplemented!("Please give both-style examples for both-style solutions");
-                    } else if s.part_num == e.part_num {
-                        for f in &s.fns {
-                            out.extend(self.example(&part_num, eg_num, ans, &e.str_input, f));
+                (_, ExpectedResult::Double(_, _)) => {
+                    unreachable!("single eg with double answer")
+                }
+                (_, ExpectedResult::Single(expected)) => {
+                    for s in &self.solutions {
+                        match s.part_num {
+                            PartNum::Part1 | PartNum::Part2 => {
+                                if e.part_num == s.part_num {
+                                    for f in &s.fns {
+                                        out.extend(self.example(
+                                            &part_num,
+                                            eg_num,
+                                            expected,
+                                            &e.str_input,
+                                            f,
+                                            None,
+                                        ));
+                                    }
+                                }
+                            }
+                            PartNum::Both => {
+                                for f in &s.fns {
+                                    let get_p1: ExprLit = parse_quote!(0);
+                                    let get_p2: ExprLit = parse_quote!(1);
+
+                                    out.extend(self.example(
+                                        "both/part1",
+                                        eg_num,
+                                        expected,
+                                        &e.str_input,
+                                        f,
+                                        Some(&get_p1),
+                                    ));
+                                    out.extend(self.example(
+                                        "both/part2",
+                                        eg_num,
+                                        expected,
+                                        &e.str_input,
+                                        f,
+                                        Some(&get_p2),
+                                    ));
+                                }
+                            }
                         }
                     }
                 }

@@ -5,7 +5,6 @@ use itertools::iterate;
 use num::pow;
 use std::collections::HashSet;
 use std::convert::TryInto;
-use std::hash::BuildHasher;
 
 aoc_main!(2019 day 24, generator gen, part1 [p1] => 32_509_983, part2 [p2m,p2c] => 2012);
 
@@ -17,9 +16,8 @@ pub fn gen(input: &str) -> HashSet<Point> {
         .collect()
 }
 
-pub fn p1<S>(input: &HashSet<Point, S>) -> usize
+pub fn p1(input: &HashSet<Point>) -> usize
 where
-    S: BuildHasher + Default + Clone,
 {
     let mut seen = HashSet::new();
     iterate(input.clone(), |g| automata_step(g, flat_neighbours, lives))
@@ -28,7 +26,7 @@ where
         .unwrap()
 }
 
-pub fn p2m<S: BuildHasher + Default>(input: &HashSet<Point, S>) -> usize {
+pub fn p2m(input: &HashSet<Point>) -> usize {
     let mut g: HashSet<(Point, i32)> = input.iter().map(|a| (*a, 0)).collect();
     for _ in 0..200 {
         automata_step_mut(&mut g, recur_neighbours, lives);
@@ -36,7 +34,7 @@ pub fn p2m<S: BuildHasher + Default>(input: &HashSet<Point, S>) -> usize {
     g.len()
 }
 
-pub fn p2c<S: BuildHasher + Default>(input: &HashSet<Point, S>) -> usize {
+pub fn p2c(input: &HashSet<Point>) -> usize {
     let mut g: HashSet<(Point, i32)> = input.iter().map(|a| (*a, 0)).collect();
     for _ in 0..200 {
         g = automata_step(&g, recur_neighbours, lives);
@@ -88,9 +86,7 @@ pub fn d24p2() {
     assert_eq!(recur_neighbours((Point(0, 0), 0)).len(), 4);
 }
 
-pub fn biodiversity<S>(g: &HashSet<Point, S>) -> usize
-where
-    S: BuildHasher,
+pub fn biodiversity(g: &HashSet<Point>) -> usize
 {
     g.iter()
         .map(|&p| pow(2, (p.0 + p.1 * 5).try_into().unwrap()))
