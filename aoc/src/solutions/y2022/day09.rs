@@ -106,15 +106,11 @@ fn both(input: &str) -> (usize, usize) {
                 .unwrap_or(SIZE);
             if move_count >= 1 {
                 let p = rope[1] - bb.bottom_left;
-                if p1_grid.insert((p.y as usize, p.x as usize), true) {
-                    p1 += 1;
-                }
+                p1 += usize::from(p1_grid.insert((p.y as usize, p.x as usize), true));
             }
             if move_count >= SIZE - 1 {
                 let p = rope[SIZE - 1] - bb.bottom_left;
-                if p2_grid.insert((p.y as usize, p.x as usize), true) {
-                    p2 += 1;
-                }
+                p2 += usize::from(p2_grid.insert((p.y as usize, p.x as usize), true));
             }
         }
     }
