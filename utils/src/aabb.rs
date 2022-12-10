@@ -124,3 +124,18 @@ where
         i.fold(b, |b, n| b.extend(*n))
     }
 }
+
+impl<'a, T> FromIterator<Point<T>> for Aabb<T>
+where
+    T: 'a + Num + Copy + TryInto<usize> + Ord + WrappingSub,
+    RangeInclusive<T>: std::iter::Iterator<Item = T>,
+{
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = Point<T>>,
+    {
+        let mut i = iter.into_iter();
+        let b = Self::new(i.next().expect("Non empty iterator"));
+        i.fold(b, |b, n| b.extend(n))
+    }
+}

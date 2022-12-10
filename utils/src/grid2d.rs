@@ -79,6 +79,17 @@ impl<T: Copy> Grid2d<T> {
         self.data.extend((self.data.len()..need_len).map(|_| new_t));
     }
 }
+impl<T: PartialEq<T>> Grid2d<T> {
+    pub fn insert(&mut self, p: Coord, val: T) -> bool {
+        let x = &mut self[p];
+        if *x != val {
+            *x = val;
+            true
+        } else {
+            false
+        }
+    }
+}
 impl<T> Grid2d<T> {
     pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, T> {
         self.data.iter_mut()
