@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, time::Duration};
 
-use aoc_harness::{aoc_all_main, dayresult::DayResult, Opts, Itertools};
+use aoc_harness::{aoc_all_main, dayresult::DayResult, Itertools, Opts};
 use clap::Parser;
 type Day = ((i32, u8), fn(&mut DayResult, &mut Opts));
 
@@ -28,21 +28,35 @@ pub fn main() {
         {
             let mut dr = DayResult::new(year, day);
             f(&mut dr, &mut opts);
-            results.entry(year).or_default().entry(day).or_default().push(dr);
+            results
+                .entry(year)
+                .or_default()
+                .entry(day)
+                .or_default()
+                .push(dr);
         }
     }
 
     let mut total_time = Duration::ZERO;
     for (&y, day_map) in &results {
-        let best_times_by_day = 
-         day_map.values()
+        let best_times_by_day = day_map
+            .values()
             .map(|d| d.iter().map(|dr| dr.total_time()).min().unwrap())
             .filter(|&d| d > Duration::ZERO)
             .collect_vec();
-        let days_str = best_times_by_day.iter().copied().map(aoc_harness::render_duration).join(" ");
+        let days_str = best_times_by_day
+            .iter()
+            .copied()
+            .map(aoc_harness::render_duration)
+            .join(" ");
         let this_year_time = best_times_by_day.iter().sum();
         total_time += this_year_time;
-        println!("Time for year {}: {} [{}]", y, aoc_harness::render_duration(this_year_time), days_str);
+        println!(
+            "Time for year {}: {} [{}]",
+            y,
+            aoc_harness::render_duration(this_year_time),
+            days_str
+        );
     }
     if results.len() > 1 {
         println!("Total time: {}", aoc_harness::render_duration(total_time));

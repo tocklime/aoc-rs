@@ -282,7 +282,7 @@ impl AocMainInput {
             (p, ExpectedResult::Single(exp)) => {
                 inner.extend(quote! { let expected = #exp; });
                 if let Some(f) = &part.fns.get(0) {
-                    inner.extend(quote!{
+                    inner.extend(quote! {
                         ::aoc_harness::type_hint_value_has_same_type_as_func_return(&expected, &#f);
                     });
                 }

@@ -92,7 +92,7 @@ fn user_agent() -> &'static str {
     "https://github.com/tocklime/aoc-rs"
 }
 impl Opts {
-    const TARGET_DUR : Duration = Duration::from_millis(50);
+    const TARGET_DUR: Duration = Duration::from_millis(50);
 
     #[must_use]
     pub fn for_test() -> Self {
@@ -201,11 +201,11 @@ impl Opts {
             clippy::cast_precision_loss
         )] //it's only for reporting the time.
         if !self.bypass && dur < Self::TARGET_DUR {
-            let bench = benchmarking::bench_function_with_duration(
-                Self::TARGET_DUR,
-                move |measurer| measurer.measure(&f),
-            )
-            .unwrap();
+            let bench =
+                benchmarking::bench_function_with_duration(Self::TARGET_DUR, move |measurer| {
+                    measurer.measure(&f)
+                })
+                .unwrap();
             let overall = bench.elapsed().as_secs_f64();
             //took less than 5ms. How many could we do in 5ms?
             // let min_time = (0..10).map(|_| {
