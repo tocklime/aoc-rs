@@ -57,7 +57,6 @@ pub enum Dir {
 }
 
 impl Dir {
-    #[must_use]
     pub fn all_dirs() -> [Self; 4] {
         [Dir::Up, Dir::Down, Dir::Left, Dir::Right]
     }
