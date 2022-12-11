@@ -44,7 +44,11 @@ pub fn main() {
             .map(|d| d.iter().map(|dr| dr.total_time()).min().unwrap())
             .filter(|&d| d > Duration::ZERO)
             .collect_vec();
-        let (scale, suffix) = best_times_by_day.iter().map(|&d| aoc_harness::appropriate_scale(d)).min().unwrap();
+        let (scale, suffix) = best_times_by_day
+            .iter()
+            .map(|&d| aoc_harness::appropriate_scale(d))
+            .min()
+            .unwrap();
         let days_str = best_times_by_day
             .iter()
             .map(|d| format!("{:.3}", scale as f64 * d.as_secs_f64()))

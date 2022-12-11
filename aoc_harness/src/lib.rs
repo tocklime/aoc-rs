@@ -230,7 +230,7 @@ pub fn appropriate_scale(d: std::time::Duration) -> (u64, &'static str) {
     let mut scale = 1;
     for u in units {
         if (scale as f64 * value) > 1.0 {
-            return (scale, u)
+            return (scale, u);
         }
         scale *= 1000;
     }
