@@ -224,17 +224,23 @@ impl Opts {
     }
 }
 
+pub fn appropriate_scale(d: std::time::Duration) -> (u64, &'static str) {
+    let value = d.as_secs_f64();
+    let units = ["s", "ms", "\u{3bc}s", "ns"];
+    let mut scale = 1;
+    for u in units {
+        if (scale as f64 * value) > 1.0 {
+            return (scale, u)
+        }
+        scale *= 1000;
+    }
+    (1000000000, "ns")
+}
+
 #[must_use]
 pub fn render_duration(d: std::time::Duration) -> String {
-    let mut value = d.as_secs_f64();
-    let units = ["s", "ms", "\u{3bc}s", "ns"];
-    for u in units {
-        if value > 1.0 {
-            return format!("{:.3}{}", value, u);
-        }
-        value *= 1000.0;
-    }
-    "<1ns".to_string()
+    let (scale, suffix) = appropriate_scale(d);
+    format!("{:.3}{}", scale as f64 * d.as_secs_f64(), suffix)
 }
 
 #[must_use]

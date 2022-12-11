@@ -44,18 +44,19 @@ pub fn main() {
             .map(|d| d.iter().map(|dr| dr.total_time()).min().unwrap())
             .filter(|&d| d > Duration::ZERO)
             .collect_vec();
+        let (scale, suffix) = best_times_by_day.iter().map(|&d| aoc_harness::appropriate_scale(d)).min().unwrap();
         let days_str = best_times_by_day
             .iter()
-            .copied()
-            .map(aoc_harness::render_duration)
+            .map(|d| format!("{:.3}", scale as f64 * d.as_secs_f64()))
             .join(" ");
         let this_year_time = best_times_by_day.iter().sum();
         total_time += this_year_time;
         println!(
-            "Time for year {}: {} [{}]",
+            "Time for year {}: {} [{}] {}",
             y,
             aoc_harness::render_duration(this_year_time),
-            days_str
+            days_str,
+            suffix
         );
     }
     if results.len() > 1 {
