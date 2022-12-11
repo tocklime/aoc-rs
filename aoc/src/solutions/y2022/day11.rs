@@ -1,8 +1,8 @@
-use std::mem;
+use std::{cmp::Reverse, collections::VecDeque};
 
 use aoc_harness::*;
 
-aoc_main!(2022 day 11, part1 [p1::<3, 20>] => 110885, part2 [p1::<1, 10000>] => 25272176808, example both EG => (10605, 2713310158));
+aoc_main!(2022 day 11, generator gen, part1 [p1::<3, 20>] => 110885, part2 [p1::<1, 10000>] => 25272176808, example both EG => (10605, 2713310158));
 
 const EG: &str = "Monkey 0:
   Starting items: 79, 98
@@ -33,49 +33,45 @@ Monkey 3:
     If false: throw to monkey 1
 ";
 
+#[derive(Debug,Clone)]
+enum Operation {
+    AddI(usize),
+    MulI(usize),
+    Double,
+    Square
+}
+#[derive(Debug,Clone)]
 struct Monkey {
-    held: Vec<usize>,
-    alter: Box<dyn Fn(usize) -> usize>,
+    held: VecDeque<usize>,
+    alter: Operation,
     test_div: usize,
     true_target: usize,
     false_target: usize,
-    inspection_count: usize,
 }
 
-impl std::fmt::Debug for Monkey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Monkey")
-            .field("held", &self.held)
-            .field("test_div", &self.test_div)
-            .field("true_target", &self.true_target)
-            .field("false_target", &self.false_target)
-            .field("inspection_count", &self.inspection_count)
-            .finish()
-    }
-}
 
-fn p1<const DIV: usize, const ROUNDS: usize>(input: &str) -> usize {
+fn gen(input: &str) -> Vec<Monkey> {
     let mut monkeys = Vec::new();
-    for (m_ix, m_input) in input.split("\n\n").enumerate() {
+    for m_input in input.split("\n\n") {
         let mut l = m_input.lines().skip(1);
         let held = l.next().unwrap()["  Starting items: ".len()..]
             .split(", ")
             .map(|i| i.parse().unwrap())
             .collect();
-        let alter: Box<dyn Fn(usize) -> usize> = match l.next().unwrap()
+        let alter = match l.next().unwrap()
             ["  Operation: new = old ".len()..]
             .split_once(' ')
             .unwrap()
         {
-            ("+", "old") => Box::new(|i| i + i),
+            ("+", "old") => Operation::Double,
             ("+", x) => {
                 let x: usize = x.parse().unwrap();
-                Box::new(move |i| i + x)
+                Operation::AddI(x)
             }
-            ("*", "old") => Box::new(|i| i * i),
+            ("*", "old") => Operation::Square,
             ("*", x) => {
                 let x: usize = x.parse().unwrap();
-                Box::new(move |i| x * i)
+                Operation::MulI(x)
             }
             (a, b) => panic!("{} {}??", a, b),
         };
@@ -94,35 +90,39 @@ fn p1<const DIV: usize, const ROUNDS: usize>(input: &str) -> usize {
             test_div,
             true_target,
             false_target,
-            inspection_count: 0,
         });
     }
+    monkeys
+}
+
+fn p1<const DIV: usize, const ROUNDS: usize>(input: &[Monkey]) -> usize {
+    let mut monkeys : Vec<Monkey> = input.to_vec();
+    let mut inspection_counts = vec![0; monkeys.len()];
     let big_modulo : usize = monkeys.iter().map(|m| m.test_div).product();
     for _round in 0..ROUNDS {
         for m_ix in 0..monkeys.len() {
-            let mut monkey_held = Vec::new();
-            mem::swap(&mut monkeys[m_ix].held, &mut monkey_held);
-            monkeys[m_ix].inspection_count += monkey_held.len();
-            for i in monkey_held.into_iter() {
-                let new_i = (*monkeys[m_ix].alter)(i) / DIV % big_modulo;
-                let new_t = if new_i % monkeys[m_ix].test_div == 0 {
-                    monkeys[m_ix].true_target
+            inspection_counts[m_ix] += monkeys[m_ix].held.len();
+            while let Some(i) = monkeys[m_ix].held.pop_front() {
+                let me = &mut monkeys[m_ix];
+                let new_i = match me.alter {
+                    Operation::AddI(x) => i + x,
+                    Operation::MulI(x) => i * x,
+                    Operation::Double => 2 * i,
+                    Operation::Square => i * i,
+                } / DIV % big_modulo;
+                let new_t = if new_i % me.test_div == 0 {
+                    me.true_target
                 } else {
-                    monkeys[m_ix].false_target
+                    me.false_target
                 };
-                // println!(
-                //     "Monkey {} changes {} to {} and throws to {}",
-                //     m_ix, i, new_i, new_t
-                // );
-                monkeys[new_t].held.push(new_i);
+                monkeys[new_t].held.push_back(new_i);
             }
-            // dbg!(&monkeys);
         }
     }
-    let counts: Vec<usize> = monkeys
+    inspection_counts
         .into_iter()
-        .map(|m| m.inspection_count)
-        .sorted()
-        .collect();
-    counts[counts.len() - 1] * counts[counts.len() - 2]
+        .map(Reverse)
+        .k_smallest(2)
+        .map(|x| x.0)
+        .product()
 }
