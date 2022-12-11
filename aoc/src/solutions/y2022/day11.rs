@@ -88,7 +88,7 @@ fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
         held,
         alter,
         test_div,
-        targets: [false_target, true_target]
+        targets: [false_target, true_target],
     };
     Ok((input, monkey))
 }
@@ -111,13 +111,16 @@ fn solve<const DIV: u64, const ROUNDS: usize>(input: &[Monkey]) -> usize {
             for ix in 0..item_count {
                 let me = &monkeys[m_ix];
                 let worry = me.held[ix];
-                let new_worry = match me.alter {
+                let mut new_worry = match me.alter {
                     Operation::AddI(x) => worry + x,
                     Operation::MulI(x) => worry * x,
                     Operation::Double => 2 * worry,
                     Operation::Square => worry * worry,
-                } / DIV
-                    % big_modulo;
+                };
+                new_worry /= DIV;
+                if new_worry > big_modulo {
+                    new_worry %= big_modulo;
+                }
                 let new_t = me.targets[usize::from(new_worry % me.test_div == 0)];
                 monkeys[new_t].held.push(new_worry);
             }
