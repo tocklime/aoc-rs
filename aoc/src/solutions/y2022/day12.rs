@@ -46,12 +46,11 @@ where
     bfs::bfs(
         &start,
         |p: &(usize, usize)| {
-                grid
-                .neighbours(*p)
+            grid.neighbours(*p)
                 .filter(|n| step_condition(grid[*p], grid[*n]))
                 .collect::<Vec<_>>()
         },
-        |p| success(*p, grid[*p])
+        |p| success(*p, grid[*p]),
     )
     .unwrap()
     .len()
@@ -59,9 +58,19 @@ where
 }
 
 fn p1(input: &X) -> usize {
-    solve(&input.grid, input.s_location, |p,n| p + 1 >= n, |p,_| p == input.e_location)
+    solve(
+        &input.grid,
+        input.s_location,
+        |p, n| p + 1 >= n,
+        |p, _| p == input.e_location,
+    )
 }
 
 fn p2(input: &X) -> usize {
-    solve(&input.grid, input.e_location, |p, n| n +1 >= p, |_, c| c == b'a')
+    solve(
+        &input.grid,
+        input.e_location,
+        |p, n| n + 1 >= p,
+        |_, c| c == b'a',
+    )
 }
