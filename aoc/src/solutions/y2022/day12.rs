@@ -1,5 +1,4 @@
 use aoc_harness::*;
-use pathfinding::directed::bfs;
 use utils::grid2d::{Coord, Grid2d};
 
 aoc_main!(2022 day 12, generator gen, part1 [p1] => 412, part2 [p2] => 402, example both EG => (31,29));
@@ -38,39 +37,39 @@ fn gen(input: &str) -> X {
     }
 }
 
-fn solve<FS, FC>(grid: &Grid2d<u8>, start: Coord, step_condition: FC, success: FS) -> usize
-where
-    FC: Fn(u8, u8) -> bool,
-    FS: Fn(Coord, u8) -> bool,
-{
-    bfs::bfs(
-        &start,
+fn p1(input: &X) -> usize {
+    pathfinding::directed::astar::astar(
+        &input.e_location,
         |p: &(usize, usize)| {
-            grid.neighbours(*p)
-                .filter(|n| step_condition(grid[*p], grid[*n]))
+            input
+                .grid
+                .neighbours(*p)
+                .filter(|n| input.grid[*n] + 1 >= input.grid[*p])
+                .map(|p| (p, 1))
                 .collect::<Vec<_>>()
         },
-        |p| success(*p, grid[*p]),
+        |&(y, x): &Coord| {
+            usize::abs_diff(y, input.s_location.0) + usize::abs_diff(x, input.s_location.1)
+        },
+        |&p| p == input.s_location,
+    )
+    .unwrap()
+    .1
+}
+
+fn p2(input: &X) -> usize {
+    pathfinding::directed::bfs::bfs(
+        &input.e_location,
+        |p: &(usize, usize)| {
+            input
+                .grid
+                .neighbours(*p)
+                .filter(|n| input.grid[*n] + 1 >= input.grid[*p])
+                .collect::<Vec<_>>()
+        },
+        |p| input.grid[*p] == b'a',
     )
     .unwrap()
     .len()
         - 1
-}
-
-fn p1(input: &X) -> usize {
-    solve(
-        &input.grid,
-        input.s_location,
-        |p, n| p + 1 >= n,
-        |p, _| p == input.e_location,
-    )
-}
-
-fn p2(input: &X) -> usize {
-    solve(
-        &input.grid,
-        input.e_location,
-        |p, n| n + 1 >= p,
-        |_, c| c == b'a',
-    )
 }
