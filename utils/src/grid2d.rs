@@ -274,6 +274,29 @@ impl<T> Grid2d<T> {
             size: (rows, stride.unwrap()),
         }
     }
+    pub fn from_str_with_index<F>(input: &str, mut conv: F) -> Self
+    where
+        F: FnMut(Coord, char) -> T,
+    {
+        let mut stride = None;
+        let mut data = Vec::with_capacity(input.len());
+        let mut rows = 0;
+        for (row, l) in input.lines().enumerate() {
+            match (stride, l.len()) {
+                (None, l) => stride = Some(l),
+                (Some(a), b) if a != b => panic!("Not equal line lengths"),
+                _ => {}
+            }
+            for (col, c) in l.chars().enumerate() {
+                data.push(conv((row, col), c));
+            }
+            rows += 1;
+        }
+        Self {
+            data,
+            size: (rows, stride.unwrap()),
+        }
+    }
 }
 
 #[cfg(test)]

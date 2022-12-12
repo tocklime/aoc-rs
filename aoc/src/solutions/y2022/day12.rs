@@ -1,72 +1,67 @@
-use std::rc::Rc;
-
 use aoc_harness::*;
-use pathfinding::directed::dijkstra;
-use utils::grid2d::Grid2d;
+use pathfinding::directed::bfs;
+use utils::grid2d::{Coord, Grid2d};
 
-aoc_main!(2022 day 12, part1 [p1] => 412, part2 [p2] => 402, example both EG => (31,29));
+aoc_main!(2022 day 12, generator gen, part1 [p1] => 412, part2 [p2] => 402, example both EG => (31,29));
 
-const EG : &str = "Sabqponm
+const EG: &str = "Sabqponm
 abcryxxl
 accszExk
 acctuvwj
 abdefghi
 ";
-
-fn p1(input: &str) -> usize {
-    let mut grid = Grid2d::from_str(input, |c| c as u8);
-    println!("{}", grid);
-    let start_pos = grid.indexed_iter().find(|&(_, &c) | c == b'S').unwrap().0;
-    let end_pos = grid.indexed_iter().find(|&(_, &c)| c == b'E').unwrap().0;
-    grid[start_pos] = b'a';
-    grid[end_pos] = b'z';
-    dbg!(start_pos, end_pos);
-    let grid_ref = Rc::new(grid);
-    let gr2 = Rc::clone(&grid_ref);
-    let neighbours = |p: &(usize,usize)| {
-        let ans = gr2.neighbours(*p).filter_map(|n| {
-            let my_height = &gr2[*p];
-            let new_height = &gr2[n];
-            if *my_height + 1 >= *new_height {
-                Some((n,1))
-            } else {
-                None
-            }
-        }).collect::<Vec<_>>();
-        ans
-    };
-    let a = dijkstra::dijkstra(&start_pos, neighbours,
-        |p| *p == end_pos);
-    a.unwrap().1
+struct X {
+    grid: Grid2d<u8>,
+    s_location: (usize, usize),
+    e_location: (usize, usize),
+}
+fn gen(input: &str) -> X {
+    let mut s_location = (0, 0);
+    let mut e_location = (0, 0);
+    let s = &mut s_location;
+    let e = &mut e_location;
+    let grid = Grid2d::from_str_with_index(input, move |coord, c| match c {
+        'S' => {
+            *s = coord;
+            b'a'
+        }
+        'E' => {
+            *e = coord;
+            b'z'
+        }
+        c => c as u8,
+    });
+    X {
+        grid,
+        s_location,
+        e_location,
+    }
 }
 
-fn shortest_from(start_pos: (usize,usize), end_pos: (usize,usize), grid: &Grid2d<u8>) -> Option<usize> {
-    let grid_ref = Rc::new(grid);
-    let gr2 = Rc::clone(&grid_ref);
-    let neighbours = |p: &(usize,usize)| {
-        let ans = gr2.neighbours(*p).filter_map(|n| {
-            let my_height = &gr2[*p];
-            let new_height = &gr2[n];
-            if *my_height + 1 >= *new_height {
-                Some((n,1))
-            } else {
-                None
-            }
-        }).collect::<Vec<_>>();
-        ans
-    };
-    let a = dijkstra::dijkstra(&start_pos, neighbours,
-        |p| *p == end_pos);
-    Some(a?.1)
+fn solve<FS, FC>(grid: &Grid2d<u8>, start: Coord, step_condition: FC, success: FS) -> usize
+where
+    FC: Fn(u8, u8) -> bool,
+    FS: Fn(Coord, u8) -> bool,
+{
+    bfs::bfs(
+        &start,
+        |p: &(usize, usize)| {
+                grid
+                .neighbours(*p)
+                .filter(|n| step_condition(grid[*p], grid[*n]))
+                .collect::<Vec<_>>()
+        },
+        |p| success(*p, grid[*p])
+    )
+    .unwrap()
+    .len()
+        - 1
 }
-fn p2(input: &str) -> usize {
-    let mut grid = Grid2d::from_str(input, |c| c as u8);
-    println!("{}", grid);
-    let start_pos = grid.indexed_iter().find(|&(_, &c) | c == b'S').unwrap().0;
-    let end_pos = grid.indexed_iter().find(|&(_, &c) | c == b'E').unwrap().0;
-    grid[start_pos] = b'a';
-    grid[end_pos] = b'z';
-    let all_start_pos = grid.indexed_iter().filter(|&(_, &c) | c == b'a');
-    all_start_pos.filter_map(|x| shortest_from(x.0, end_pos, &grid)).min().unwrap()
 
+fn p1(input: &X) -> usize {
+    solve(&input.grid, input.s_location, |p,n| p + 1 >= n, |p,_| p == input.e_location)
+}
+
+fn p2(input: &X) -> usize {
+    solve(&input.grid, input.e_location, |p, n| n +1 >= p, |_, c| c == b'a')
 }
