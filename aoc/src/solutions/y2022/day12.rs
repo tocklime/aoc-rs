@@ -1,7 +1,7 @@
 use aoc_harness::*;
 use utils::grid2d::{Coord, Grid2d};
 
-aoc_main!(2022 day 12, generator gen, part1 [p1] => 412, part2 [p2] => 402, example both EG => (31,29));
+aoc_main!(2022 day 12, generator gen, part1 [p1_astar, p1_bfs] => 412, part2 [p2] => 402, example both EG => (31,29));
 
 const EG: &str = "Sabqponm
 abcryxxl
@@ -13,6 +13,14 @@ struct X {
     grid: Grid2d<u8>,
     s_location: (usize, usize),
     e_location: (usize, usize),
+}
+impl X {
+    fn neighbours(&self, p: &Coord) -> Vec<Coord> {
+        self.grid
+            .neighbours(*p)
+            .filter(|n| self.grid[*n] + 1 >= self.grid[*p])
+            .collect::<Vec<_>>()
+    }
 }
 fn gen(input: &str) -> X {
     let mut s_location = (0, 0);
@@ -37,17 +45,10 @@ fn gen(input: &str) -> X {
     }
 }
 
-fn p1(input: &X) -> usize {
+fn p1_astar(input: &X) -> usize {
     pathfinding::directed::astar::astar(
         &input.e_location,
-        |p: &(usize, usize)| {
-            input
-                .grid
-                .neighbours(*p)
-                .filter(|n| input.grid[*n] + 1 >= input.grid[*p])
-                .map(|p| (p, 1))
-                .collect::<Vec<_>>()
-        },
+        |p| input.neighbours(p).into_iter().map(|x| (x, 1)),
         |&(y, x): &Coord| {
             usize::abs_diff(y, input.s_location.0) + usize::abs_diff(x, input.s_location.1)
         },
@@ -56,17 +57,21 @@ fn p1(input: &X) -> usize {
     .unwrap()
     .1
 }
+fn p1_bfs(input: &X) -> usize {
+    pathfinding::directed::bfs::bfs(
+        &input.e_location,
+        |p| input.neighbours(p),
+        |&p| p == input.s_location,
+    )
+    .unwrap()
+    .len()
+        - 1
+}
 
 fn p2(input: &X) -> usize {
     pathfinding::directed::bfs::bfs(
         &input.e_location,
-        |p: &(usize, usize)| {
-            input
-                .grid
-                .neighbours(*p)
-                .filter(|n| input.grid[*n] + 1 >= input.grid[*p])
-                .collect::<Vec<_>>()
-        },
+        |p| input.neighbours(p),
         |p| input.grid[*p] == b'a',
     )
     .unwrap()
