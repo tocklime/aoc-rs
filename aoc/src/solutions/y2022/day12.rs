@@ -15,11 +15,11 @@ struct X {
     e_location: (usize, usize),
 }
 impl X {
-    fn neighbours(&self, p: &Coord) -> Vec<Coord> {
+    fn neighbours(&self, p: &Coord) -> impl IntoIterator<Item = Coord> + '_ {
+        let p = *p;
         self.grid
-            .neighbours(*p)
-            .filter(|n| self.grid[*n] + 1 >= self.grid[*p])
-            .collect::<Vec<_>>()
+            .neighbours(p)
+            .filter(move|n| self.grid[*n] + 1 >= self.grid[p])
     }
 }
 fn gen(input: &str) -> X {

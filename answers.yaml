@@ -567,3 +567,6 @@
   12:
     part1: !Checked '412'
     part2: !Checked '402'
+  13:
+    part1: !Observed '5625'
+    part2: !Observed '23111'
