@@ -54,20 +54,14 @@ fn parse_list(input: &str) -> IResult<&str, Packet> {
     ))(input)
 }
 
-impl Ord for Packet {
-    fn cmp(&self, other: &Self) -> Ordering {
-        match (self, other) {
-            (Packet::Single(l), Packet::Single(r)) => l.cmp(r),
-            (Packet::List(l), Packet::List(r)) => l.cmp(r),
-            (Packet::List(l), Packet::Single(r)) => l[..].cmp(&[Packet::Single(*r)][..]),
-            (Packet::Single(l), Packet::List(r)) => [Packet::Single(*l)][..].cmp(r),
-        }
-    }
-}
-
 impl PartialOrd for Packet {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+        match (self, other) {
+            (Packet::Single(l), Packet::Single(r)) => l.partial_cmp(r),
+            (Packet::List(l), Packet::List(r)) => l.partial_cmp(r),
+            (Packet::List(l), Packet::Single(r)) => l[..].partial_cmp(&[Packet::Single(*r)][..]),
+            (Packet::Single(l), Packet::List(r)) => [Packet::Single(*l)][..].partial_cmp(r),
+        }
     }
 }
 
