@@ -4,7 +4,7 @@ use aoc_harness::*;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{newline, self},
+    character::complete::{newline, u8},
     combinator::{all_consuming, map},
     multi::{separated_list0, separated_list1},
     sequence::{delimited, terminated},
@@ -46,7 +46,7 @@ enum Packet {
 
 fn parse_list(input: &str) -> IResult<&str, Packet> {
     alt((
-        map(complete::u8, Packet::Single),
+        map(u8, Packet::Single),
         map(
             delimited(tag("["), separated_list0(tag(","), parse_list), tag("]")),
             Packet::List,
@@ -89,13 +89,17 @@ fn p1(input: &[Vec<Packet>]) -> usize {
         .sum()
 }
 fn p2(input: &[Vec<Packet>]) -> usize {
-    let mut l = input.iter().flatten().collect::<Vec<_>>();
-    let a = parse_list("[[2]]").unwrap().1;
-    let b = parse_list("[[6]]").unwrap().1;
-    l.push(&a);
-    l.push(&b);
-    l.sort_unstable();
-    let div1 = l.iter().position(|&l| l == &a).unwrap();
-    let div2 = l.iter().position(|&l| l == &b).unwrap();
-    (1 + div1) * (1 + div2)
+    let a: Packet = Packet::List(vec![Packet::List(vec![Packet::Single(2)])]);
+    let b: Packet = Packet::List(vec![Packet::List(vec![Packet::Single(6)])]);
+    let mut a_pos = 1;
+    let mut b_pos = 2; //a is also before b.
+    for p in input.iter().flatten() {
+        if p < &a {
+            a_pos += 1;
+            b_pos += 1;
+        } else if p < &b {
+            b_pos += 1;
+        }
+    }
+    a_pos * b_pos
 }
