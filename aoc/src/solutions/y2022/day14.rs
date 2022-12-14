@@ -39,36 +39,53 @@ fn gen(input: &str) -> Grid2d<char> {
 
 fn next_sand(
     grid: &Grid2d<char>,
-    fill_point: Point<usize>,
+    path: &mut Vec<Point<usize>>,
     stop_on_bottom: bool,
 ) -> Option<Point<usize>> {
-    let mut pos = fill_point;
-    if grid[fill_point] != '.' {
-        //fill point blocked!
-        return None;
-    }
-    loop {
-        if pos.y + 1 >= grid.dim().0 {
+    while let Some(&p) = path.last() {
+        if grid[p] != '.' {
+            //fill point blocked!
+            path.pop();
+            continue;
+        }
+        if p.y + 1 >= grid.dim().0 {
             //this is the bottom. stop here.
             if stop_on_bottom {
-                return Some(pos);
+                return Some(p);
             } else {
                 return None;
             }
         }
-        let next = pos.up();
+        let next = p.up();
         match [next, next.left(), next.right()]
             .into_iter()
             .find(|p| grid[*p] == '.')
         {
-            Some(p) => pos = p,
-            None => return Some(pos),
+            Some(p) => {
+                path.push(p);
+            }
+            None => {
+                path.pop();
+                return Some(p);
+            }
         }
     }
+    None
+}
+#[allow(dead_code)]
+fn draw_grid(grid: &Grid2d<char>, mem: &[Point<usize>]) {
+    let mut mine = grid.clone();
+    for p in mem {
+        mine[*p] = '~';
+    }
+    let bb = mine.find_bb(|c| c != &'.');
+    println!("{}", mine.render_section_with(bb, |c| c.to_string()));
 }
 
 fn solve<const STOP_ON_BOTTOM: bool>(input: &Grid2d<char>) -> usize {
     let mut grid = input.clone();
     let fill_point = Point::new(500, 0);
-    std::iter::from_fn(|| next_sand(&grid, fill_point, STOP_ON_BOTTOM).map(|p| grid[p] = 'o')).count()
+    let mut memory = vec![fill_point];
+
+    std::iter::from_fn(|| next_sand(&grid, &mut memory, STOP_ON_BOTTOM).map(|p| grid[p] = 'o')).count()
 }
