@@ -7,7 +7,7 @@ use std::{
 use itertools::Itertools;
 use num::Integer;
 
-use crate::nums::add_i_mod;
+use crate::{aabb::Aabb, cartesian::Point, nums::add_i_mod};
 
 #[derive(Debug, Clone)]
 pub struct Grid2d<T> {
@@ -35,6 +35,18 @@ impl<T: Copy> Grid2d<T> {
             }
         }
         Self { data, size }
+    }
+}
+impl<T> Index<Point<usize>> for Grid2d<T> {
+    type Output = T;
+
+    fn index(&self, index: Point<usize>) -> &Self::Output {
+        &self[(index.y, index.x)]
+    }
+}
+impl<T> IndexMut<Point<usize>> for Grid2d<T> {
+    fn index_mut(&mut self, index: Point<usize>) -> &mut Self::Output {
+        &mut self[(index.y, index.x)]
     }
 }
 impl<T> Index<usize> for Grid2d<T> {
@@ -248,6 +260,28 @@ impl<T> Grid2d<T> {
             if x == self.size.1 - 1 {
                 ans.push('\n');
             }
+        }
+        ans
+    }
+    pub fn find_bb<F>(&self, pred: F) -> Aabb<usize>
+    where
+        F: Fn(&T) -> bool,
+    {
+        self.indexed_iter()
+            .filter(|&(_, x)| pred(x))
+            .map(|((y, x), _)| Point::new(x, y))
+            .collect()
+    }
+    pub fn render_section_with<F>(&self, bb: Aabb<usize>, disp: F) -> String
+    where
+        F: Fn(&T) -> String,
+    {
+        let mut ans = String::with_capacity(bb.area());
+        for y in bb.bottom_left.y..=bb.top_right.y {
+            for x in bb.bottom_left.x..=bb.top_right.x {
+                ans.push_str(&disp(&self[(y, x)]));
+            }
+            ans.push('\n');
         }
         ans
     }
