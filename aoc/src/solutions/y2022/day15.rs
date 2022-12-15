@@ -12,9 +12,9 @@ use nom::{
     sequence::tuple,
     IResult,
 };
-use utils::{cartesian::Point, span::Span};
+use utils::{aabb::Aabb, cartesian::Point, span::Span};
 
-aoc_main!(2022 day 15, part1 [p1], part2 [p2], example both EG => (26, 56000011));
+aoc_main!(2022 day 15, part1 [p1] => 5607466, part2 [p2, dividing_quadrants] => 12543202766584, example both EG => (26, 56000011));
 
 const EG: &str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
 Sensor at x=9, y=16: closest beacon is at x=10, y=16
@@ -36,6 +36,39 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3
 struct Sensor {
     location: Point<i64>,
     closest_beacon: Point<i64>,
+    range: i64,
+}
+impl Sensor {
+    fn can_see(&self, point: Point<i64>) -> bool {
+        (self.location - point).manhattan() <= self.range
+    }
+    fn can_see_all(&self, bb: Aabb<i64>) -> bool {
+        bb.corners_inclusive().into_iter().all(|x| self.can_see(x))
+    }
+    fn shadow_y(&self, target: i64) -> Option<Span<i64>> {
+        let clear_range = self.range;
+        let delta = (self.location.y - target).abs();
+        let shadow_size = clear_range * 2 + 1 - 2 * delta;
+        if shadow_size > 0 {
+            let shadow_start = self.location.x - clear_range + delta;
+            let shadow = Span::new_from_range(shadow_start..shadow_start + shadow_size);
+            Some(shadow)
+        } else {
+            None
+        }
+    }
+    fn shadow_x(&self, target: i64) -> Option<Span<i64>> {
+        let clear_range = (self.closest_beacon - self.location).manhattan();
+        let delta = (self.location.x - target).abs();
+        let shadow_size = clear_range * 2 + 1 - 2 * delta;
+        if shadow_size > 0 {
+            let shadow_start = self.location.y - clear_range + delta;
+            let shadow = Span::new_from_range(shadow_start..shadow_start + shadow_size);
+            Some(shadow)
+        } else {
+            None
+        }
+    }
 }
 fn parse_sensor(input: &str) -> IResult<&str, Sensor> {
     let (input, (_, xa, _, ya, _, xb, _, yb, _)) = tuple((
@@ -49,11 +82,14 @@ fn parse_sensor(input: &str) -> IResult<&str, Sensor> {
         complete::i64,
         newline,
     ))(input)?;
+    let location = Point::new(xa, ya);
+    let closest_beacon = Point::new(xb, yb);
     Ok((
         input,
         Sensor {
-            location: Point::new(xa, ya),
-            closest_beacon: Point::new(xb, yb),
+            location,
+            closest_beacon,
+            range: (location - closest_beacon).manhattan(),
         },
     ))
 }
@@ -65,47 +101,20 @@ fn p1(input: &str) -> i64 {
     } else {
         2000000
     };
-    let mut shadows = BinaryHeap::new();
-    for l in &sensors {
-        let clear_range = (l.closest_beacon - l.location).manhattan();
-        //Sensor at x=9, y=16: closest beacon is at x=10, y=16
-
-        //how much of y=y does this one span?
-        //well, if it's /on/ y, then it's `clear_range * 2 + 1`.
-        //if it's a long way away, then it's 0.
-        //if it's one away from y, then it's clear_range * 2 + 1 - 2.
-        //the shadow we cast on y=10 is max(0, clear_range * 2 + 1 - distance to y * 2)
-        //centered on our x.
-        let y_delta = (l.location.y - target_y).abs();
-        let y_shadow_size = (clear_range * 2 + 1 - 2 * y_delta).max(0);
-        if y_shadow_size > 0 {
-            let y_shadow_start = l.location.x - clear_range + y_delta;
-            let shadow = Span::new_from_range(y_shadow_start..y_shadow_start + y_shadow_size);
-            shadows.push(Reverse(shadow));
-        }
-    }
+    let mut shadows: BinaryHeap<_> = sensors
+        .iter()
+        .filter_map(|x| x.shadow_y(target_y).map(Reverse))
+        .collect();
     let mut count = 0;
-    let mut cur_span = None;
+    let mut cur_span = shadows.pop().unwrap().0;
 
     while let Some(Reverse(s)) = shadows.pop() {
-        match cur_span {
-            None => {
-                cur_span = Some(s);
-            }
-            Some(c) => match c.collide_with(&s) {
-                utils::span::CollisionType::OverlapsEnd(_, _, _) => unreachable!(),
-                utils::span::CollisionType::Before(_) => {
-                    cur_span = Some(s);
-                    count += s.size();
-                }
-                utils::span::CollisionType::StrictlyBigger(_, _, _) => (),
-                utils::span::CollisionType::Equal => (),
-                utils::span::CollisionType::OverlapsStart(_, _, _) => {
-                    cur_span = Some(s.union(&c));
-                }
-                utils::span::CollisionType::StrictlySmaller(_, _, _) => unreachable!(),
-                utils::span::CollisionType::After(_) => unreachable!(),
-            },
+        if s.start > cur_span.end {
+            //gap!
+            cur_span = s;
+            count += s.size();
+        } else {
+            cur_span = s.union(&cur_span);
         }
     }
     let y_beacons: HashSet<Point<i64>> = sensors
@@ -113,98 +122,30 @@ fn p1(input: &str) -> i64 {
         .map(|l| l.closest_beacon)
         .filter(|l| l.y == target_y)
         .collect();
-    count += cur_span.unwrap().size();
+    count += cur_span.size();
     count - y_beacons.len() as i64
 }
 
-fn has_gap_x(sensors: &[Sensor], target_x: i64, full_size: i64) -> bool {
-    let mut shadows = BinaryHeap::new();
-    for l in sensors {
-        let clear_range = (l.closest_beacon - l.location).manhattan();
-        //Sensor at x=9, y=16: closest beacon is at x=10, y=16
+fn has_gap<F>(sensors: &[Sensor], full_size: i64, get_shadow: F) -> bool
+where
+    F: Fn(&Sensor) -> Option<Span<i64>>,
+{
+    let mut shadows: BinaryHeap<_> = sensors
+        .iter()
+        .filter_map(|x| get_shadow(x).map(Reverse))
+        .collect();
 
-        //how much of y=y does this one span?
-        //well, if it's /on/ y, then it's `clear_range * 2 + 1`.
-        //if it's a long way away, then it's 0.
-        //if it's one away from y, then it's clear_range * 2 + 1 - 2.
-        //the shadow we cast on y=10 is max(0, clear_range * 2 + 1 - distance to y * 2)
-        //centered on our x.
-        let x_delta = (l.location.x - target_x).abs();
-        let x_shadow_size = (clear_range * 2 + 1 - 2 * x_delta).max(0);
-        if x_shadow_size > 0 {
-            let x_shadow_start = l.location.y - clear_range + x_delta;
-            let shadow = Span::new_from_range(x_shadow_start..x_shadow_start + x_shadow_size);
-            shadows.push(Reverse(shadow));
-        }
-    }
     let mut cur_span = shadows.pop().unwrap().0;
-    if target_x == 3 {
-    }
-
     while let Some(Reverse(s)) = shadows.pop() {
-        match cur_span.collide_with(&s) {
-            utils::span::CollisionType::OverlapsEnd(_, _, _) => unreachable!(),
-            utils::span::CollisionType::Before(union) => {
-                if union.size() == (cur_span.size() + s.size()) {
-                    cur_span = union
-                } else {
-                    return true;
-                }
-            }
-            utils::span::CollisionType::StrictlyBigger(_, _, _) => (),
-            utils::span::CollisionType::Equal => (),
-            utils::span::CollisionType::OverlapsStart(_, _, _) => {
-                cur_span = s.union(&cur_span);
-            }
-            utils::span::CollisionType::StrictlySmaller(_, _, _) => {
-                cur_span = s.union(&cur_span);
-            }
-            utils::span::CollisionType::After(_) => unreachable!(),
+        if s.start > cur_span.end {
+            return true;
+        } else {
+            cur_span = cur_span.union(&s);
         }
     }
     cur_span.start > 0 || cur_span.end <= full_size
 }
-fn has_gap_y(sensors: &[Sensor], target_y: i64, full_size: i64) -> bool {
-    let mut shadows = BinaryHeap::new();
-    for l in sensors {
-        let clear_range = (l.closest_beacon - l.location).manhattan();
-        //Sensor at x=9, y=16: closest beacon is at x=10, y=16
 
-        //how much of y=y does this one span?
-        //well, if it's /on/ y, then it's `clear_range * 2 + 1`.
-        //if it's a long way away, then it's 0.
-        //if it's one away from y, then it's clear_range * 2 + 1 - 2.
-        //the shadow we cast on y=10 is max(0, clear_range * 2 + 1 - distance to y * 2)
-        //centered on our x.
-        let y_delta = (l.location.y - target_y).abs();
-        let y_shadow_size = (clear_range * 2 + 1 - 2 * y_delta).max(0);
-        if y_shadow_size > 0 {
-            let y_shadow_start = l.location.x - clear_range + y_delta;
-            let shadow = Span::new_from_range(y_shadow_start..y_shadow_start + y_shadow_size);
-            shadows.push(Reverse(shadow));
-        }
-    }
-    let mut cur_span = shadows.pop().unwrap().0;
-
-    while let Some(Reverse(s)) = shadows.pop() {
-        match cur_span.collide_with(&s) {
-            utils::span::CollisionType::OverlapsEnd(_, _, _) => unreachable!(),
-            utils::span::CollisionType::Before(_) => {
-                return true;
-            }
-            utils::span::CollisionType::StrictlyBigger(_, _, _) => (),
-            utils::span::CollisionType::Equal => (),
-            utils::span::CollisionType::OverlapsStart(_, _, _) => {
-                cur_span = s.union(&cur_span);
-            }
-            utils::span::CollisionType::StrictlySmaller(_, _, _) => {
-                cur_span = s.union(&cur_span);
-            }
-            utils::span::CollisionType::After(_) => unreachable!(),
-        }
-    }
-    cur_span.start > 0 || cur_span.end <= full_size
-}
 fn p2(input: &str) -> i64 {
     let (_, sensors) = all_consuming(many1(parse_sensor))(input).unwrap();
     let max_coord = if sensors[0].location.x == 2 {
@@ -212,7 +153,30 @@ fn p2(input: &str) -> i64 {
     } else {
         4000000
     };
-    let found_y = (0..=max_coord).find(|&y| has_gap_y(&sensors, y, max_coord));
-    let found_x = (0..=max_coord).find(|&x| has_gap_x(&sensors, x, max_coord));
+    let found_y = (0..=max_coord).find(|&y| has_gap(&sensors, max_coord, |p| p.shadow_y(y)));
+    let found_x = (0..=max_coord).find(|&x| has_gap(&sensors, max_coord, |p| p.shadow_x(x)));
     4000000 * found_x.unwrap() + found_y.unwrap()
+}
+
+fn dividing_quadrants(input: &str) -> i64 {
+    let (_, sensors) = all_consuming(many1(parse_sensor))(input).unwrap();
+    let max_coord = if sensors[0].location.x == 2 {
+        20
+    } else {
+        4000000
+    };
+    let bb: Aabb<i64> = [Point::new(0, 0), Point::new(max_coord, max_coord)]
+        .iter()
+        .collect();
+    let mut to_search = vec![bb];
+    while let Some(x) = to_search.pop() {
+        if sensors.iter().any(|s| s.can_see_all(x)) {
+            //covered by some sensor.
+        } else if x.area() == 1 {
+            return x.bottom_left.x * 4000000 + x.bottom_left.y;
+        } else if let Some(new) = x.quadrants() {
+            to_search.extend(new);
+        }
+    }
+    unreachable!()
 }
