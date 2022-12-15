@@ -6,7 +6,7 @@ use std::fmt::Debug;
 use std::iter::FromIterator;
 use std::ops::RangeInclusive;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[must_use]
 pub struct Aabb<T> {
     /// inclusive

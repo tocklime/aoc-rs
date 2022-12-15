@@ -14,7 +14,7 @@ use nom::{
 };
 use utils::{aabb::Aabb, cartesian::Point, span::Span};
 
-aoc_main!(2022 day 15, part1 [p1] => 5607466, part2 [p2, dividing_quadrants] => 12543202766584, example both EG => (26, 56000011));
+aoc_main!(2022 day 15, generator gen, part1 [p1] => 5607466, part2 [p2, dividing_quadrants] => 12543202766584, example both EG => (26, 56000011));
 
 const EG: &str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
 Sensor at x=9, y=16: closest beacon is at x=10, y=16
@@ -39,11 +39,12 @@ struct Sensor {
     range: i64,
 }
 impl Sensor {
-    fn can_see(&self, point: Point<i64>) -> bool {
-        (self.location - point).manhattan() <= self.range
-    }
     fn can_see_all(&self, bb: Aabb<i64>) -> bool {
-        bb.corners().into_iter().all(|x| self.can_see(x))
+        let furthest_x = ((bb.bottom_left.x - self.location.x).abs())
+            .max((bb.top_right.x - self.location.x).abs());
+        let furthest_y = ((bb.bottom_left.y - self.location.y).abs())
+            .max((bb.top_right.y - self.location.y).abs());
+        furthest_x + furthest_y <= self.range
     }
     fn shadow_y(&self, target: i64) -> Option<Span<i64>> {
         let clear_range = self.range;
@@ -93,9 +94,11 @@ fn parse_sensor(input: &str) -> IResult<&str, Sensor> {
         },
     ))
 }
+fn gen(input: &str) -> Vec<Sensor> {
+    all_consuming(many1(parse_sensor))(input).unwrap().1
+}
 
-fn p1(input: &str) -> i64 {
-    let (_, sensors) = all_consuming(many1(parse_sensor))(input).unwrap();
+fn p1(sensors: &[Sensor]) -> i64 {
     let target_y = if sensors[0].location.x == 2 {
         10
     } else {
@@ -146,8 +149,7 @@ where
     cur_span.start > 0 || cur_span.end <= full_size
 }
 
-fn p2(input: &str) -> i64 {
-    let (_, sensors) = all_consuming(many1(parse_sensor))(input).unwrap();
+fn p2(sensors: &[Sensor]) -> i64 {
     let max_coord = if sensors[0].location.x == 2 {
         20
     } else {
@@ -158,16 +160,13 @@ fn p2(input: &str) -> i64 {
     4000000 * found_x.unwrap() + found_y.unwrap()
 }
 
-fn dividing_quadrants(input: &str) -> i64 {
-    let (_, sensors) = all_consuming(many1(parse_sensor))(input).unwrap();
+fn dividing_quadrants(sensors: &[Sensor]) -> i64 {
     let max_coord = if sensors[0].location.x == 2 {
         20
     } else {
         4000000
     };
-    let bb: Aabb<i64> = [Point::new(0, 0), Point::new(max_coord, max_coord)]
-        .iter()
-        .collect();
+    let bb = Aabb::origin_and(Point::new(max_coord, max_coord));
     let mut to_search = vec![bb];
     while let Some(x) = to_search.pop() {
         if x.area() == 0 || sensors.iter().any(|s| s.can_see_all(x)) {

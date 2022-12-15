@@ -22,4 +22,4 @@ In recent years, I've committed as soon as I get the answer solved, then again a
 
 * day 11 - I want to try solving this where each Monkey runs on a separate thread.
 * day 14 - try solving by calculating the size of the giant sand pyramid - (num of rocks + sand shadows under the horizontal rows of rock)
-* day 15 - no time to tidy this one up. Need to come back to it.
+* day 15 - slowest day so far, by some way. Try and find a faster solution
