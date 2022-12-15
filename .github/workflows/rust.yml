@@ -1,4 +1,4 @@
-name: Rust
+name: Build and run all advent of code
 
 on:
   push:
