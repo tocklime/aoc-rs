@@ -14,7 +14,7 @@ use nom::{
 };
 use utils::{aabb::Aabb, cartesian::Point, span::Span};
 
-aoc_main!(2022 day 15, generator gen, part1 [p1] => 5607466, part2 [p2, dividing_quadrants] => 12543202766584, example both EG => (26, 56000011));
+aoc_main!(2022 day 15, generator gen, part1 [p1] => 5_607_466, part2 [scanning_axes, dividing_quadrants, analysing_edges] => 12_543_202_766_584, example both EG => (26, 56_000_011));
 
 const EG: &str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
 Sensor at x=9, y=16: closest beacon is at x=10, y=16
@@ -38,7 +38,13 @@ struct Sensor {
     closest_beacon: Point<i64>,
     range: i64,
 }
+const EG_MAX: i64 = 20;
+const REAL_MAX: i64 = 4_000_000;
+
 impl Sensor {
+    fn can_see(&self, p: Point<i64>) -> bool {
+        (self.location - p).manhattan() <= self.range
+    }
     fn can_see_all(&self, bb: Aabb<i64>) -> bool {
         let furthest_x = ((bb.bottom_left.x - self.location.x).abs())
             .max((bb.top_right.x - self.location.x).abs());
@@ -100,9 +106,9 @@ fn gen(input: &str) -> Vec<Sensor> {
 
 fn p1(sensors: &[Sensor]) -> i64 {
     let target_y = if sensors[0].location.x == 2 {
-        10
+        EG_MAX / 2
     } else {
-        2000000
+        REAL_MAX / 2
     };
     let mut shadows: BinaryHeap<_> = sensors
         .iter()
@@ -142,29 +148,28 @@ where
     while let Some(Reverse(s)) = shadows.pop() {
         if s.start > cur_span.end {
             return true;
-        } else {
-            cur_span = cur_span.union(&s);
         }
+        cur_span = cur_span.union(&s);
     }
     cur_span.start > 0 || cur_span.end <= full_size
 }
 
-fn p2(sensors: &[Sensor]) -> i64 {
+fn scanning_axes(sensors: &[Sensor]) -> i64 {
     let max_coord = if sensors[0].location.x == 2 {
-        20
+        EG_MAX
     } else {
-        4000000
+        REAL_MAX
     };
-    let found_y = (0..=max_coord).find(|&y| has_gap(&sensors, max_coord, |p| p.shadow_y(y)));
-    let found_x = (0..=max_coord).find(|&x| has_gap(&sensors, max_coord, |p| p.shadow_x(x)));
-    4000000 * found_x.unwrap() + found_y.unwrap()
+    let found_y = (0..=max_coord).find(|&y| has_gap(sensors, max_coord, |p| p.shadow_y(y)));
+    let found_x = (0..=max_coord).find(|&x| has_gap(sensors, max_coord, |p| p.shadow_x(x)));
+    REAL_MAX * found_x.unwrap() + found_y.unwrap()
 }
 
 fn dividing_quadrants(sensors: &[Sensor]) -> i64 {
     let max_coord = if sensors[0].location.x == 2 {
-        20
+        EG_MAX
     } else {
-        4000000
+        REAL_MAX
     };
     let bb = Aabb::origin_and(Point::new(max_coord, max_coord));
     let mut to_search = vec![bb];
@@ -172,11 +177,38 @@ fn dividing_quadrants(sensors: &[Sensor]) -> i64 {
         if x.area() == 0 || sensors.iter().any(|s| s.can_see_all(x)) {
             //zero sized or covered by some sensor.
         } else if x.area() == 1 {
-            return x.bottom_left.x * 4000000 + x.bottom_left.y;
+            return x.bottom_left.x * REAL_MAX + x.bottom_left.y;
         } else {
             let new = x.quadrants();
             to_search.extend(new);
         }
     }
     unreachable!()
+}
+
+fn analysing_edges(sensors: &[Sensor]) -> i64 {
+    //each sensor casts 2 / direction lines and 2 \ direction lines from the edges of the
+    //diamond of it's range.
+    //the unique uncovered square must be in the middle of an intersection of these.
+    let max_coord = if sensors[0].location.x == 2 {
+        EG_MAX
+    } else {
+        REAL_MAX
+    };
+    let mut pos_lines = Vec::new();
+    let mut neg_lines = Vec::new();
+    for s in sensors {
+        let left_point_of_candidate_line = s.location + Point::new(-(s.range + 1), 0);
+        pos_lines.push(left_point_of_candidate_line.y - left_point_of_candidate_line.x);
+        neg_lines.push(left_point_of_candidate_line.y + left_point_of_candidate_line.x);
+    }
+    //every pair of lines cross /somewhere/. Which ones cross in range?
+    let bb = Aabb::origin_and(Point::new(max_coord, max_coord));
+    let p = pos_lines
+        .into_iter()
+        .cartesian_product(neg_lines)
+        .map(|(p, n)| Point::new((n - p) / 2, (n + p) / 2))
+        .find(|crossing| bb.contains(crossing) && sensors.iter().all(|s| !s.can_see(*crossing)))
+        .unwrap();
+    p.x * REAL_MAX + p.y
 }
