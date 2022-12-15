@@ -23,13 +23,8 @@ jobs:
       id: retry
       if: steps.build.outcome=='failure'
       run: cargo build --release --verbose
-    - name: set status
-      run: |
-        if ${{ steps.build.outcome=='success' || steps.retry.outcome=='success' }}
-          echo fine
-        else
-          exit 1
-        fi
+    - name: Run for score
+      run: cargo run --release --bin aoc
   check:
     runs-on: ubuntu-latest
     steps:
@@ -46,21 +41,6 @@ jobs:
     - uses: Swatinem/rust-cache@v2
     - name: Run tests
       run: cargo test --lib --release
-  run_for_score:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: Swatinem/rust-cache@v2
-    - name: build
-      continue-on-error: true
-      id: build
-      run: cargo build --release
-    - name: build-retry
-      id: retry
-      if: steps.build.outcome=='failure'
-      run: cargo build --release --verbose
-    - name: Run for score
-      run: cargo run --release --bin aoc
 
 
 
