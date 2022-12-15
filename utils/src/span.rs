@@ -5,7 +5,7 @@ use std::{
     ops::{Range, RangeBounds},
 };
 
-#[derive(Display, FromStr, PartialEq, Debug, Eq, Clone, Copy, Hash)]
+#[derive(Display, FromStr, PartialEq, Debug, Eq, Clone, Copy, Hash, PartialOrd, Ord)]
 #[must_use]
 #[display("{start}..{end}")]
 pub struct Span<T> {
@@ -35,6 +35,9 @@ impl IntoIterator for Span<isize> {
 impl<T: Num + std::ops::AddAssign> Span<T> {
     pub fn make_upper_inclusive(&mut self) {
         self.end += T::one();
+    }
+    pub fn size(self) -> T {
+        self.end - self.start
     }
 }
 impl<T: Eq + Ord + Copy> Span<T> {
