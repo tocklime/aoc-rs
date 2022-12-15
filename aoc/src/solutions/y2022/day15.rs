@@ -1,6 +1,6 @@
 use std::{
     cmp::Reverse,
-    collections::{BinaryHeap, HashSet},
+    collections::{BTreeSet, BinaryHeap, HashSet},
 };
 
 use aoc_harness::*;
@@ -197,18 +197,32 @@ fn analysing_edges(sensors: &[Sensor]) -> i64 {
     } else {
         REAL_MAX
     };
-    let mut pos_lines = Vec::new();
-    let mut neg_lines = Vec::new();
+    //let's record the positive and negative lines we see on the top-left and bottom-left slopes.
+    let mut pos_lines = BTreeSet::new();
+    let mut neg_lines = BTreeSet::new();
     for s in sensors {
-        let left_point_of_candidate_line = s.location + Point::new(-(s.range + 1), 0);
-        pos_lines.push(left_point_of_candidate_line.y - left_point_of_candidate_line.x);
-        neg_lines.push(left_point_of_candidate_line.y + left_point_of_candidate_line.x);
+        let l = s.location - Point::new(s.range + 1, 0);
+        pos_lines.insert(l.y - l.x);
+        neg_lines.insert(l.y + l.x);
     }
-    //every pair of lines cross /somewhere/. Which ones cross in range?
+    //now lets see if any of the top-right and bottom-right edges are coincident.
+    let mut double_pos_lines = Vec::new();
+    let mut double_neg_lines = Vec::new();
+    for s in sensors {
+        let r = s.location + Point::new(s.range + 1, 0);
+        if pos_lines.contains(&(r.y - r.x)) {
+            double_pos_lines.push(r.y - r.x);
+        }
+        if neg_lines.contains(&(r.y + r.x)) {
+            double_neg_lines.push(r.y + r.x);
+        }
+    }
+
+    //every quadruplet of lines cross /somewhere/. Which ones cross in range?
     let bb = Aabb::origin_and(Point::new(max_coord, max_coord));
-    let p = pos_lines
+    let p = double_pos_lines
         .into_iter()
-        .cartesian_product(neg_lines)
+        .cartesian_product(double_neg_lines)
         .map(|(p, n)| Point::new((n - p) / 2, (n + p) / 2))
         .find(|crossing| bb.contains(crossing) && sensors.iter().all(|s| !s.can_see(*crossing)))
         .unwrap();
