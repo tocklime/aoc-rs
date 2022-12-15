@@ -10,28 +10,26 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  all:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: Swatinem/rust-cache@v2
-    - name: Build
-      run: cargo build --release
-    - name: Run tests
-      run: cargo test --lib --release
-    - name: Check clippy
-      run: cargo clippy
-    - name: Run for score
-      run: cargo run --release --bin aoc
-    - name: Check formatting
-      run: cargo fmt --all -- --check
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
-    - name: Build
+    - name: build
+      continue-on-error: true
+      id: build
       run: cargo build --release
+    - name: build-retry
+      id: retry
+      if: steps.build.outcome=='failure'
+      run: cargo build --release --verbose
+    - name: set status
+      run: |
+        if ${{ steps.build.outcome=='success' || steps.retry.outcome=='success' }}
+          echo fine
+        else
+          exit 1
+        fi
   check:
     runs-on: ubuntu-latest
     steps:
@@ -53,6 +51,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
+    - name: build
+      continue-on-error: true
+      id: build
+      run: cargo build --release
+    - name: build-retry
+      id: retry
+      if: steps.build.outcome=='failure'
+      run: cargo build --release --verbose
     - name: Run for score
       run: cargo run --release --bin aoc
 
