@@ -188,8 +188,10 @@ fn dividing_quadrants(sensors: &[Sensor]) -> i64 {
 
 fn analysing_edges(sensors: &[Sensor]) -> i64 {
     //each sensor casts 2 / direction lines and 2 \ direction lines from the edges of the
-    //diamond of it's range.
+    //diamond of its range.
     //the unique uncovered square must be in the middle of an intersection of these.
+    //we assume that the uncovered square is not on the edge of the world, and so only need to
+    //consider 1 of the 2 in each pair of parallel lines.
     let max_coord = if sensors[0].location.x == 2 {
         EG_MAX
     } else {
