@@ -10,10 +10,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  all:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -27,4 +25,33 @@ jobs:
       run: cargo run --release --bin aoc
     - name: Check formatting
       run: cargo fmt --all -- --check
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+    - name: Build
+      run: cargo build --release
+  check:
+    runs-on: ubuntu-latest
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+    - name: Check clippy
+      run: cargo clippy
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+  test:
+    runs-on: ubuntu-latest
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+    - name: Run tests
+      run: cargo test --lib --release
+  run_for_score:
+    runs-on: ubuntu-latest
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+    - name: Run for score
+      run: cargo run --release --bin aoc
+
+
 

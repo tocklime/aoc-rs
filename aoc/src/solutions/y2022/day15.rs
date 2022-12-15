@@ -38,8 +38,10 @@ struct Sensor {
     closest_beacon: Point<i64>,
     range: i64,
 }
-const EG_MAX: i64 = 20;
-const REAL_MAX: i64 = 4_000_000;
+struct X {
+    sensors: Vec<Sensor>,
+    max_coord: i64,
+}
 
 impl Sensor {
     fn can_see(&self, p: Point<i64>) -> bool {
@@ -58,18 +60,6 @@ impl Sensor {
         let shadow_size = clear_range * 2 + 1 - 2 * delta;
         if shadow_size > 0 {
             let shadow_start = self.location.x - clear_range + delta;
-            let shadow = Span::new_from_range(shadow_start..shadow_start + shadow_size);
-            Some(shadow)
-        } else {
-            None
-        }
-    }
-    fn shadow_x(&self, target: i64) -> Option<Span<i64>> {
-        let clear_range = (self.closest_beacon - self.location).manhattan();
-        let delta = (self.location.x - target).abs();
-        let shadow_size = clear_range * 2 + 1 - 2 * delta;
-        if shadow_size > 0 {
-            let shadow_start = self.location.y - clear_range + delta;
             let shadow = Span::new_from_range(shadow_start..shadow_start + shadow_size);
             Some(shadow)
         } else {
@@ -100,17 +90,21 @@ fn parse_sensor(input: &str) -> IResult<&str, Sensor> {
         },
     ))
 }
-fn gen(input: &str) -> Vec<Sensor> {
-    all_consuming(many1(parse_sensor))(input).unwrap().1
+fn gen(input: &str) -> X {
+    let sensors = all_consuming(many1(parse_sensor))(input).unwrap().1;
+    X {
+        sensors,
+        max_coord: if input == EG { 20 } else { 4_000_000 },
+    }
+}
+fn tuning_frequency(p: Point<i64>) -> i64 {
+    p.x * 4_000_000 + p.y
 }
 
-fn p1(sensors: &[Sensor]) -> i64 {
-    let target_y = if sensors[0].location.x == 2 {
-        EG_MAX / 2
-    } else {
-        REAL_MAX / 2
-    };
-    let mut shadows: BinaryHeap<_> = sensors
+fn p1(input: &X) -> i64 {
+    let target_y = input.max_coord / 2;
+    let mut shadows: BinaryHeap<_> = input
+        .sensors
         .iter()
         .filter_map(|x| x.shadow_y(target_y).map(Reverse))
         .collect();
@@ -126,7 +120,8 @@ fn p1(sensors: &[Sensor]) -> i64 {
             cur_span = s.union(&cur_span);
         }
     }
-    let y_beacons: HashSet<Point<i64>> = sensors
+    let y_beacons: HashSet<Point<i64>> = input
+        .sensors
         .iter()
         .map(|l| l.closest_beacon)
         .filter(|l| l.y == target_y)
@@ -154,30 +149,25 @@ where
     cur_span.start > 0 || cur_span.end <= full_size
 }
 
-fn scanning_axes(sensors: &[Sensor]) -> i64 {
-    let max_coord = if sensors[0].location.x == 2 {
-        EG_MAX
-    } else {
-        REAL_MAX
-    };
-    let found_y = (0..=max_coord).find(|&y| has_gap(sensors, max_coord, |p| p.shadow_y(y)));
-    let found_x = (0..=max_coord).find(|&x| has_gap(sensors, max_coord, |p| p.shadow_x(x)));
-    REAL_MAX * found_x.unwrap() + found_y.unwrap()
+fn scanning_axes(input: &X) -> i64 {
+    let found_y = (0..=input.max_coord)
+        .find(|&y| has_gap(&input.sensors, input.max_coord, |p| p.shadow_y(y)))
+        .unwrap();
+    //now we know the y coordinate, find the x.
+    let found_x = (0..=input.max_coord)
+        .find(|&x| !input.sensors.iter().any(|s| s.can_see(Point::new(x, found_y))))
+        .unwrap();
+    tuning_frequency(Point::new(found_x, found_y))
 }
 
-fn dividing_quadrants(sensors: &[Sensor]) -> i64 {
-    let max_coord = if sensors[0].location.x == 2 {
-        EG_MAX
-    } else {
-        REAL_MAX
-    };
-    let bb = Aabb::origin_and(Point::new(max_coord, max_coord));
+fn dividing_quadrants(input: &X) -> i64 {
+    let bb = Aabb::origin_and(Point::new(input.max_coord, input.max_coord));
     let mut to_search = vec![bb];
     while let Some(x) = to_search.pop() {
-        if x.area() == 0 || sensors.iter().any(|s| s.can_see_all(x)) {
+        if x.area() == 0 || input.sensors.iter().any(|s| s.can_see_all(x)) {
             //zero sized or covered by some sensor.
         } else if x.area() == 1 {
-            return x.bottom_left.x * REAL_MAX + x.bottom_left.y;
+            return tuning_frequency(x.bottom_left);
         } else {
             let new = x.quadrants();
             to_search.extend(new);
@@ -186,21 +176,16 @@ fn dividing_quadrants(sensors: &[Sensor]) -> i64 {
     unreachable!()
 }
 
-fn analysing_edges(sensors: &[Sensor]) -> i64 {
+fn analysing_edges(input: &X) -> i64 {
     //each sensor casts 2 / direction lines and 2 \ direction lines from the edges of the
     //diamond of its range.
     //the unique uncovered square must be in the middle of an intersection of these.
     //we assume that the uncovered square is not on the edge of the world, and so only need to
     //consider 1 of the 2 in each pair of parallel lines.
-    let max_coord = if sensors[0].location.x == 2 {
-        EG_MAX
-    } else {
-        REAL_MAX
-    };
     //let's record the positive and negative lines we see on the top-left and bottom-left slopes.
     let mut pos_lines = BTreeSet::new();
     let mut neg_lines = BTreeSet::new();
-    for s in sensors {
+    for s in &input.sensors {
         let l = s.location - Point::new(s.range + 1, 0);
         pos_lines.insert(l.y - l.x);
         neg_lines.insert(l.y + l.x);
@@ -208,7 +193,7 @@ fn analysing_edges(sensors: &[Sensor]) -> i64 {
     //now lets see if any of the top-right and bottom-right edges are coincident.
     let mut double_pos_lines = Vec::new();
     let mut double_neg_lines = Vec::new();
-    for s in sensors {
+    for s in &input.sensors {
         let r = s.location + Point::new(s.range + 1, 0);
         if pos_lines.contains(&(r.y - r.x)) {
             double_pos_lines.push(r.y - r.x);
@@ -219,12 +204,12 @@ fn analysing_edges(sensors: &[Sensor]) -> i64 {
     }
 
     //every quadruplet of lines cross /somewhere/. Which ones cross in range?
-    let bb = Aabb::origin_and(Point::new(max_coord, max_coord));
+    let bb = Aabb::origin_and(Point::new(input.max_coord, input.max_coord));
     let p = double_pos_lines
         .into_iter()
         .cartesian_product(double_neg_lines)
         .map(|(p, n)| Point::new((n - p) / 2, (n + p) / 2))
-        .find(|crossing| bb.contains(crossing) && sensors.iter().all(|s| !s.can_see(*crossing)))
+        .find(|x| bb.contains(x) && input.sensors.iter().all(|s| !s.can_see(*x)))
         .unwrap();
-    p.x * REAL_MAX + p.y
+    tuning_frequency(p)
 }
