@@ -34,6 +34,7 @@ jobs:
       run: cargo build --release
   check:
     runs-on: ubuntu-latest
+    steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
     - name: Check clippy
@@ -42,12 +43,14 @@ jobs:
       run: cargo fmt --all -- --check
   test:
     runs-on: ubuntu-latest
+    steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
     - name: Run tests
       run: cargo test --lib --release
   run_for_score:
     runs-on: ubuntu-latest
+    steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
     - name: Run for score
