@@ -9,7 +9,9 @@ use std::ops::RangeInclusive;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[must_use]
 pub struct Aabb<T> {
+    /// inclusive
     pub bottom_left: Point<T>,
+    /// inclusive
     pub top_right: Point<T>,
 }
 
@@ -33,41 +35,33 @@ where
     pub fn area(&self) -> usize {
         self.width() * self.height()
     }
-    pub fn corners_inclusive(&self) -> [Point<T>; 4] {
-        let tr = self.top_right - Point::new(T::one(), T::one());
-        [
-            self.bottom_left,
-            tr,
-            Point::new(self.bottom_left.x, tr.y),
-            Point::new(tr.x, self.bottom_left.y),
-        ]
+    pub fn corners(&self) -> [Point<T>; 4] {
+        let tr = self.top_right;
+        let bl = self.bottom_left;
+        [bl, tr, Point::new(bl.x, tr.y), Point::new(tr.x, bl.y)]
     }
-    pub fn quadrants(&self) -> Option<[Self; 4]> {
+    pub fn quadrants(&self) -> [Aabb<T>; 4] {
         let mid_point = self.center();
-        if mid_point == self.bottom_left {
-            None
-        } else {
-            Some([
-                // 12
-                // 34
-                Self {
-                    bottom_left: Point::new(self.bottom_left.x, mid_point.y),
-                    top_right: Point::new(mid_point.x, self.top_right.y),
-                },
-                Self {
-                    bottom_left: mid_point,
-                    top_right: self.top_right,
-                },
-                Self {
-                    bottom_left: self.bottom_left,
-                    top_right: mid_point,
-                },
-                Self {
-                    bottom_left: Point::new(mid_point.x, self.bottom_left.y),
-                    top_right: Point::new(self.top_right.x, mid_point.y),
-                },
-            ])
-        }
+        [
+            // 34
+            // 12
+            Self {
+                bottom_left: self.bottom_left,
+                top_right: mid_point,
+            },
+            Self {
+                bottom_left: Point::new(mid_point.x + T::one(), self.bottom_left.y),
+                top_right: Point::new(self.top_right.x, mid_point.y),
+            },
+            Self {
+                bottom_left: Point::new(self.bottom_left.x, mid_point.y + T::one()),
+                top_right: Point::new(mid_point.x, self.top_right.y),
+            },
+            Self {
+                bottom_left: mid_point + Point::new(T::one(), T::one()),
+                top_right: self.top_right,
+            },
+        ]
     }
 
     pub fn center(&self) -> Point<T> {
@@ -140,10 +134,10 @@ where
         }
     }
     pub fn width(&self) -> usize {
-        Self::t_as_usize(self.top_right.x - self.bottom_left.x)
+        Self::t_as_usize(T::one() + self.top_right.x - self.bottom_left.x)
     }
     pub fn height(&self) -> usize {
-        Self::t_as_usize(self.top_right.y - self.bottom_left.y)
+        Self::t_as_usize(T::one() + self.top_right.y - self.bottom_left.y)
     }
 }
 impl<'a, T> FromIterator<&'a Point<T>> for Aabb<T>

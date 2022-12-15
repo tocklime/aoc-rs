@@ -43,7 +43,7 @@ impl Sensor {
         (self.location - point).manhattan() <= self.range
     }
     fn can_see_all(&self, bb: Aabb<i64>) -> bool {
-        bb.corners_inclusive().into_iter().all(|x| self.can_see(x))
+        bb.corners().into_iter().all(|x| self.can_see(x))
     }
     fn shadow_y(&self, target: i64) -> Option<Span<i64>> {
         let clear_range = self.range;
@@ -170,11 +170,12 @@ fn dividing_quadrants(input: &str) -> i64 {
         .collect();
     let mut to_search = vec![bb];
     while let Some(x) = to_search.pop() {
-        if sensors.iter().any(|s| s.can_see_all(x)) {
-            //covered by some sensor.
+        if x.area() == 0 || sensors.iter().any(|s| s.can_see_all(x)) {
+            //zero sized or covered by some sensor.
         } else if x.area() == 1 {
             return x.bottom_left.x * 4000000 + x.bottom_left.y;
-        } else if let Some(new) = x.quadrants() {
+        } else {
+            let new = x.quadrants();
             to_search.extend(new);
         }
     }
