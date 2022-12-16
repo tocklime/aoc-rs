@@ -2,10 +2,13 @@ use std::{collections::HashMap, str::FromStr};
 
 use aoc_harness::*;
 use nom::{
-    bytes::{complete::tag, streaming::take},
+    bytes::{
+        complete::{tag, take_until},
+        streaming::take,
+    },
     character::complete::{self, newline},
-    combinator::{all_consuming, opt},
-    multi::{many1, separated_list1},
+    combinator::all_consuming,
+    multi::{many1, many_m_n, separated_list1},
     sequence::{terminated, tuple},
     IResult,
 };
@@ -32,19 +35,14 @@ struct Valve {
     rate: u32,
     connections: Vec<String>,
 }
+//Valve JJ has flow rate=21; tunnel leads to valve II
 fn parse_line(input: &str) -> IResult<&str, Valve> {
-    let (input, (_, name, _, rate, _, _, _, _, _, _, _, connections)) = tuple((
+    let (input, (_, name, _, rate, _, connections)) = tuple((
         tag("Valve "),
         take(2_usize),
         tag(" has flow rate="),
         complete::u32,
-        tag("; tunnel"),
-        opt(tag("s")),
-        tag(" lead"),
-        opt(tag("s")),
-        tag(" to valve"),
-        opt(tag("s")),
-        tag(" "),
+        many_m_n(5, 5, tuple((take_until(" "), tag(" ")))),
         separated_list1(tag(", "), take(2_usize)),
     ))(input)?;
     Ok((
@@ -62,7 +60,7 @@ struct X {
     valves: Vec<Valve>,
     map: HashMap<String, u8>,
     good_moves: HashMap<String, HashMap<String, u32>>,
-    max_flow: u32
+    max_flow: u32,
 }
 impl FromStr for X {
     type Err = ();
@@ -101,7 +99,10 @@ impl FromStr for X {
         good_moves.insert("AA".to_string(), p);
         for &start in &targets {
             let min_path = pathfinding::directed::dijkstra::dijkstra_all(&start, |&l| {
-                valves[map[l] as usize].connections.iter().map(|t| (&t[..], 1))
+                valves[map[l] as usize]
+                    .connections
+                    .iter()
+                    .map(|t| (&t[..], 1))
             });
             let p = min_path
                 .into_iter()
@@ -165,7 +166,6 @@ impl X {
                 }
             }
         }
-        dbg!(new_dp.len());
         new_dp
     }
 }
