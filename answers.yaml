@@ -577,5 +577,5 @@
     part1: !Checked '5607466'
     part2: !Checked '12543202766584'
   16:
-    part1: !Observed '1728'
-    part2: Unknown
+    part1: !Checked '1728'
+    part2: !Checked '2304'
