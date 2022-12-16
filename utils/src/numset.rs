@@ -3,9 +3,16 @@ use std::ops::{BitAnd, BitOr, Sub};
 use num::PrimInt;
 
 use crate::nums::NumBitExt;
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub struct NumSet<T: PrimInt> {
     n: T,
+}
+
+impl<T: PrimInt + std::fmt::Debug> std::fmt::Debug for NumSet<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let vals : Vec<u8> = self.iter().collect();
+        f.debug_struct("NumSet").field("n", &self.n).field("elements", &vals).finish()
+    }
 }
 impl<T: PrimInt + Into<usize>> From<NumSet<T>> for usize {
     fn from(n: NumSet<T>) -> Self {
@@ -34,6 +41,11 @@ impl<T: PrimInt> NumSet<T> {
         let was_in = self.n.get_bit(n);
         self.n.set_bit(n, true);
         !was_in
+    }
+    pub fn with(&self, n: u8) -> Self {
+        let mut a = *self;
+        a.insert(n);
+        a
     }
     #[must_use]
     pub fn is_subset(&self, other: &NumSet<T>) -> bool {
