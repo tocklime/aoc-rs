@@ -10,8 +10,11 @@ pub struct NumSet<T: PrimInt> {
 
 impl<T: PrimInt + std::fmt::Debug> std::fmt::Debug for NumSet<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let vals : Vec<u8> = self.iter().collect();
-        f.debug_struct("NumSet").field("n", &self.n).field("elements", &vals).finish()
+        let vals: Vec<u8> = self.iter().collect();
+        f.debug_struct("NumSet")
+            .field("n", &self.n)
+            .field("elements", &vals)
+            .finish()
     }
 }
 impl<T: PrimInt + Into<usize>> From<NumSet<T>> for usize {
