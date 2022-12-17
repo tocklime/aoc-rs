@@ -1,5 +1,3 @@
-use std::{cmp::max, collections::HashMap};
-
 use aoc_harness::*;
 use utils::{grid2d::Grid2d, numset::NumSet};
 
@@ -17,13 +15,16 @@ const ROCKS: [&str; 5] = [
 fn place_rock(
     grid: &mut Vec<NumSet<u8>>,
     r: &[NumSet<u8>],
-    winds: &mut impl Iterator<Item = char>,
-) -> usize {
+    winds: &mut impl Iterator<Item = (usize, char)>,
+) -> (usize, usize) {
     let mut height = grid.len() + 3;
     let mut left = 2;
+    let mut wind_ix;
     // draw(grid, r, left, height);
     loop {
-        let go_left = winds.next().unwrap() == '<';
+        let n = winds.next().unwrap();
+        wind_ix = n.0;
+        let go_left = n.1 == '<';
         if !go_left || left > 0 {
             let new_left = if go_left { left - 1 } else { left + 1 };
             if !would_collide(grid, r, new_left, height) {
@@ -39,7 +40,7 @@ fn place_rock(
         }
         height = new_height;
     }
-    set_piece(grid, r, left, height)
+    (wind_ix, set_piece(grid, r, left, height))
 }
 fn set_piece(grid: &mut Vec<NumSet<u8>>, r: &[NumSet<u8>], left: usize, height: usize) -> usize {
     let new_rows = (height + r.len()).saturating_sub(grid.len());
@@ -77,8 +78,8 @@ fn draw_grid(grid: &[NumSet<u8>]) {
 }
 #[allow(dead_code)]
 fn draw(grid: &[NumSet<u8>], falling_rock: &Vec<NumSet<u8>>, left: usize, height: usize) {
-    let h = height + falling_rock.len();
-    let mut d = Grid2d::from_elem((max(grid.len(), h), 7), '.');
+    let h = grid.len().max(height + falling_rock.len());
+    let mut d = Grid2d::from_elem((h, 7), '.');
     for (ix, l) in grid.iter().enumerate() {
         for set_bit in l.iter() {
             d[(h - ix, set_bit as usize)] = '#';
@@ -114,41 +115,46 @@ fn get_rocks() -> Vec<Vec<NumSet<u8>>> {
 }
 fn solve<const ROCK_COUNT: usize>(input: &str) -> usize {
     let mut grid = Vec::new();
-    let mut iter = input.trim().chars().cycle();
+    let mut iter = input.trim().chars().enumerate().cycle();
     let rock_conv = get_rocks();
 
     let mut height_deltas = Vec::new();
-    let mut cycle_finder = HashMap::new();
+    let mut seen_before: Vec<Option<usize>> = vec![None; input.trim().len()];
 
+    let mut consecutive_matches = 0;
     for ix in 0.. {
         let rock = &rock_conv[ix % rock_conv.len()];
-        let new_h_delta = place_rock(&mut grid, rock, &mut iter);
+        let (last_wind_ix, new_h_delta) = place_rock(&mut grid, rock, &mut iter);
         height_deltas.push(new_h_delta);
         if ix + 1 == ROCK_COUNT {
             return grid.len();
         }
-        const MATCH_SIZE : usize = 20;
+        const MATCH_SIZE: usize = 20;
         if ix > MATCH_SIZE && (ix % rock_conv.len() == 0) {
-            let last_few = height_deltas[height_deltas.len()-MATCH_SIZE..].to_vec();
-            let first_sig_ix = cycle_finder.entry(last_few).or_insert(ix);
-
-            if ix > *first_sig_ix {
-                let cycle_len = ix - *first_sig_ix;
-                let dropped_rocks = ix + 1;
-                let left_to_drop = ROCK_COUNT - dropped_rocks;
-                let cycle = &height_deltas[height_deltas.len() - cycle_len..];
-                let height_per_cycle: usize = cycle.iter().sum();
-                let complete_cycles_to_do = left_to_drop / cycle_len;
-                let extra_bits = left_to_drop % cycle_len;
-                let height_on_the_end = cycle.iter().take(extra_bits).sum::<usize>();
-                return grid.len() + complete_cycles_to_do * height_per_cycle + height_on_the_end;
+            let position = &mut seen_before[last_wind_ix];
+            match *position {
+                None => {
+                    consecutive_matches = 0;
+                    *position = Some(ix);
+                }
+                Some(first_ix) => {
+                    consecutive_matches += 1;
+                    if consecutive_matches > 1 {
+                        let cycle_len = ix - first_ix;
+                        let dropped_rocks = ix + 1;
+                        let left_to_drop = ROCK_COUNT - dropped_rocks;
+                        let cycle = &height_deltas[height_deltas.len() - cycle_len..];
+                        let height_per_cycle: usize = cycle.iter().sum();
+                        let complete_cycles_to_do = left_to_drop / cycle_len;
+                        let extra_bits = left_to_drop % cycle_len;
+                        let height_on_the_end = cycle.iter().take(extra_bits).sum::<usize>();
+                        return grid.len()
+                            + complete_cycles_to_do * height_per_cycle
+                            + height_on_the_end;
+                    }
+                }
             }
         }
     }
-    // draw_grid(&grid);
-    //need to find a repetition sequence. there's one in example starting around ix 26 and 79.
-    //so, delta height per input cycle is 53.
-    //what is delta rock count?
-
     unreachable!()
 }
