@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      submodules: true
     - uses: Swatinem/rust-cache@v2
     - name: build
       continue-on-error: true
