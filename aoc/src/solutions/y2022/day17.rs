@@ -46,20 +46,17 @@ fn set_piece(grid: &mut Vec<NumSet<u8>>, r: &[NumSet<u8>], left: usize, height: 
     let new_rows = (height + r.len()).saturating_sub(grid.len());
     grid.extend((0..new_rows).map(|_| NumSet::new()));
     for (ix, l) in r.iter().enumerate() {
-        for set_bit in l.iter() {
-            let c = (height + ix, left as u8 + set_bit);
-            assert!(c.1 < 7);
-            assert!(grid[c.0].insert(c.1));
-        }
+        grid[height + ix] |= *l << left as u32;
     }
     new_rows
 }
 fn would_collide(grid: &[NumSet<u8>], r: &[NumSet<u8>], left: usize, height: usize) -> bool {
     r.iter().enumerate().any(|(ix, l)| {
-        let shifted = l.inner() << left as u32;
-        shifted >= (1 << 7) || grid
+        let shifted = *l << left as u32;
+        shifted.contains(7)
+            || grid
                 .get(height + ix)
-                .map(|n| (n.inner() & shifted) > 0)
+                .map(|&n| !(n & shifted).is_empty())
                 .unwrap_or(false)
     })
 }

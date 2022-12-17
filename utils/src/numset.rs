@@ -1,4 +1,4 @@
-use std::ops::{BitAnd, BitOr, Sub};
+use std::ops::{BitAnd, BitOr, Sub, BitOrAssign, Shl};
 
 use num::PrimInt;
 
@@ -69,6 +69,18 @@ impl<T: PrimInt> NumSet<T> {
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.n == T::zero()
+    }
+}
+impl<S, T: PrimInt + Shl<S, Output = T>> Shl<S> for NumSet<T> {
+    type Output = Self;
+
+    fn shl(self, rhs: S) -> Self::Output {
+        Self { n : self.n << rhs}
+    }
+}
+impl<T: PrimInt + BitOrAssign> BitOrAssign for NumSet<T> {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.n |= rhs.n;
     }
 }
 impl<T: PrimInt> BitOr for NumSet<T> {
