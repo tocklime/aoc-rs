@@ -1,9 +1,9 @@
-use std::cmp::max;
+use std::{cmp::max, collections::HashMap};
 
 use aoc_harness::*;
 use utils::{grid2d::Grid2d, numset::NumSet};
 
-aoc_main!(2022 day 17, part1 [p1::<2022>] => 3085, part2 [p1::<1000000000000>] => 1535483870924, example both EG => (3068,1514285714288));
+aoc_main!(2022 day 17, part1 [solve::<2022>] => 3085, part2 [solve::<1000000000000>] => 1535483870924, example both EG => (3068,1514285714288));
 
 const EG: &str = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>";
 const ROCKS: [&str; 5] = [
@@ -95,21 +95,6 @@ fn draw(grid: &[NumSet<u8>], falling_rock: &Vec<NumSet<u8>>, left: usize, height
     }
     println!("{}", d);
 }
-
-fn find_cycle_on_end<T: PartialEq>(list: &[T]) -> Option<usize> {
-    let match_size = 20;
-
-    if list.len() > match_size + 1 {
-        for ix1 in 0..list.len() - match_size - 1 {
-            let sec1 = &list[ix1..=ix1 + match_size];
-            let sec2 = &list[list.len() - match_size - 1..];
-            if sec1 == sec2 {
-                return Some((list.len() - match_size - 1) - ix1);
-            }
-        }
-    }
-    None
-}
 fn get_rocks() -> Vec<Vec<NumSet<u8>>> {
     ROCKS
         .iter()
@@ -127,27 +112,28 @@ fn get_rocks() -> Vec<Vec<NumSet<u8>>> {
         })
         .collect()
 }
-fn p1<const ROCK_COUNT: usize>(input: &str) -> usize {
+fn solve<const ROCK_COUNT: usize>(input: &str) -> usize {
     let mut grid = Vec::new();
     let mut iter = input.trim().chars().cycle();
     let rock_conv = get_rocks();
 
     let mut height_deltas = Vec::new();
+    let mut cycle_finder = HashMap::new();
 
-    for (ix, r) in rock_conv.iter().cycle().enumerate() {
-        let new_h_delta = place_rock(&mut grid, r, &mut iter);
+    for ix in 0.. {
+        let rock = &rock_conv[ix % rock_conv.len()];
+        let new_h_delta = place_rock(&mut grid, rock, &mut iter);
         height_deltas.push(new_h_delta);
         if ix + 1 == ROCK_COUNT {
             return grid.len();
         }
-        if ix > 100 {
-            if let Some(cycle_len) = find_cycle_on_end(&height_deltas) {
-                // println!(
-                //     "After {} rocks, height is {}, and delta is {}",
-                //     ix,
-                //     grid.len(),
-                //     cycle_len
-                // );
+        const MATCH_SIZE : usize = 20;
+        if ix > MATCH_SIZE && (ix % rock_conv.len() == 0) {
+            let last_few = height_deltas[height_deltas.len()-MATCH_SIZE..].to_vec();
+            let first_sig_ix = cycle_finder.entry(last_few).or_insert(ix);
+
+            if ix > *first_sig_ix {
+                let cycle_len = ix - *first_sig_ix;
                 let dropped_rocks = ix + 1;
                 let left_to_drop = ROCK_COUNT - dropped_rocks;
                 let cycle = &height_deltas[height_deltas.len() - cycle_len..];
