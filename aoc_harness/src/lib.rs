@@ -131,7 +131,7 @@ impl Opts {
             None => {
                 //try in cache dir first.
                 let p = PathBuf::from(format!(
-                    "{}input/{}/day{:02}.txt",
+                    "{}aoc-inputs/{}/day{:02}.txt",
                     std::env::var("CARGO_WORKSPACE_DIR").unwrap_or_else(|_| String::new()),
                     year,
                     day
