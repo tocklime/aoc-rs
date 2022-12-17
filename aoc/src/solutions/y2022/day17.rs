@@ -55,15 +55,13 @@ fn set_piece(grid: &mut Vec<NumSet<u8>>, r: &[NumSet<u8>], left: usize, height: 
     new_rows
 }
 fn would_collide(grid: &[NumSet<u8>], r: &[NumSet<u8>], left: usize, height: usize) -> bool {
-    for (ix, l) in r.iter().enumerate() {
-        for set_bit in l.iter() {
-            let c = (height + ix, left as u8 + set_bit);
-            if c.1 > 6 || grid.get(c.0).map(|n| n.contains(c.1)).unwrap_or(false) {
-                return true;
-            }
-        }
-    }
-    false
+    r.iter().enumerate().any(|(ix, l)| {
+        let shifted = l.inner() << left as u32;
+        shifted >= (1 << 7) || grid
+                .get(height + ix)
+                .map(|n| (n.inner() & shifted) > 0)
+                .unwrap_or(false)
+    })
 }
 #[allow(dead_code)]
 fn draw_grid(grid: &[NumSet<u8>]) {
