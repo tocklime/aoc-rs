@@ -16,6 +16,7 @@ jobs:
     - uses: actions/checkout@v3
       with: 
         submodules: true
+        token: ${{ secrets.INPUTS_PAT }}
     - uses: Swatinem/rust-cache@v2
     - name: build
       continue-on-error: true
