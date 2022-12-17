@@ -1,4 +1,4 @@
-use std::ops::{BitAnd, BitOr, Sub, BitOrAssign, Shl};
+use std::ops::{BitAnd, BitOr, BitOrAssign, Shl, Sub};
 
 use num::PrimInt;
 
@@ -75,7 +75,7 @@ impl<S, T: PrimInt + Shl<S, Output = T>> Shl<S> for NumSet<T> {
     type Output = Self;
 
     fn shl(self, rhs: S) -> Self::Output {
-        Self { n : self.n << rhs}
+        Self { n: self.n << rhs }
     }
 }
 impl<T: PrimInt + BitOrAssign> BitOrAssign for NumSet<T> {
