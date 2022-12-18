@@ -97,7 +97,7 @@ where
     })
 }
 
-#[derive(Default, PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(Default, PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub struct VecLookup<T>(Vec<Option<T>>);
 
 impl<T> VecLookup<T> {
@@ -112,12 +112,35 @@ impl<T> VecLookup<T> {
     pub fn get(&self, key: usize) -> Option<&T> {
         self.0.get(key).and_then(|x| x.as_ref())
     }
+    pub fn get_mut(&mut self, key: usize) -> Option<&mut T> {
+        self.0.get_mut(key).and_then(|x| match x {
+            Some(r) => Some(r),
+            None => None,
+        })
+    }
+    pub fn contains_key(&self, key: usize) -> bool {
+        self.get(key).is_some()
+    }
+    pub fn iter(&self) -> impl Iterator<Item = (usize, &T)> {
+        VecLookupIter(self, 0)
+    }
+    pub fn values(&self) -> impl Iterator<Item = &T> {
+        self.iter().map(|(_k, v)| v)
+    }
+}
+impl<'a, T> VecLookup<T> {
+    pub fn entry(&'a mut self, key: usize) -> VecLookupEntry<'a, T> {
+        if self.contains_key(key) {
+            return VecLookupEntry::Occupied(key, self.get_mut(key).unwrap());
+        }
+        VecLookupEntry::Vacant(key, self)
+    }
 }
 pub struct VecLookupIter<'a, T>(&'a VecLookup<T>, usize);
 impl<'a, T> IntoIterator for &'a VecLookup<T> {
     type Item = (usize, &'a T);
 
-    type IntoIter = VecLookupIter<'a,T>;
+    type IntoIter = VecLookupIter<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
         VecLookupIter(self, 0)
@@ -127,13 +150,13 @@ impl<'a, T> Iterator for VecLookupIter<'a, T> {
     type Item = (usize, &'a T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        while self.1 < self.0.0.len() {
+        while self.1 < self.0 .0.len() {
             let here = self.1;
             self.1 += 1;
-            match &self.0.0[here] {
+            match &self.0 .0[here] {
                 None => (),
                 Some(x) => {
-                    return Some((here,x));
+                    return Some((here, x));
                 }
             }
         }
@@ -149,10 +172,26 @@ impl<T: Default> FromIterator<(usize, T)> for VecLookup<T> {
         a
     }
 }
-impl<T> Index<usize> for VecLookup<T>{
+impl<T> Index<usize> for VecLookup<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
         self.0[index].as_ref().unwrap()
+    }
+}
+
+pub enum VecLookupEntry<'a, T: 'a> {
+    Occupied(usize, &'a mut T),
+    Vacant(usize, &'a mut VecLookup<T>),
+}
+impl<'a, T: Default> VecLookupEntry<'a, T> {
+    pub fn or_default(self) -> &'a mut T {
+        match self {
+            VecLookupEntry::Occupied(_, r) => r,
+            VecLookupEntry::Vacant(k, v) => {
+                v.insert(k, T::default());
+                v.get_mut(k).unwrap()
+            }
+        }
     }
 }

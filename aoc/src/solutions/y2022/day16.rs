@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, str::FromStr, cmp::Reverse};
 
 use aoc_harness::*;
 use nom::{
@@ -12,7 +12,7 @@ use nom::{
     sequence::{terminated, tuple},
     IResult,
 };
-use utils::{numset::NumSet, collections::VecLookup};
+use utils::{collections::VecLookup, numset::NumSet};
 
 aoc_main!(2022 day 16, both [p2a] => (1728, 2304), example both EG => (1651,1707));
 
@@ -58,21 +58,17 @@ fn parse_line(input: &str) -> IResult<&str, Valve> {
 
 struct X {
     valves: Vec<Valve>,
-    good_moves: VecLookup<VecLookup<u32>>,
+    connections: VecLookup<VecLookup<u32>>,
     max_flow: u32,
-    aa_id: u8,
 }
 impl FromStr for X {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (_, mut valves) = all_consuming(many1(terminated(parse_line, newline)))(s).unwrap();
-        let mut aa_id = 0;
+        valves.sort_by_key(|v| (v.name != "AA", Reverse(v.rate)));
         for (ix, v) in valves.iter_mut().enumerate() {
             v.id = ix as u8;
-            if v.name == "AA" {
-                aa_id = ix as u8;
-            }
         }
         let map: HashMap<String, u8> = valves.iter().map(|v| (v.name.clone(), v.id)).collect();
 
@@ -83,8 +79,8 @@ impl FromStr for X {
             .filter(|v| v.rate > 0)
             .map(|x| x.id)
             .collect_vec();
-        let mut good_moves: VecLookup<VecLookup<u32>> = VecLookup::default();
-        let min_path = pathfinding::directed::dijkstra::dijkstra_all(&aa_id, |&l| {
+        let mut connections: VecLookup<VecLookup<u32>> = VecLookup::default();
+        let min_path = pathfinding::directed::dijkstra::dijkstra_all(&0, |&l| {
             valves[l as usize]
                 .connections
                 .iter()
@@ -100,7 +96,7 @@ impl FromStr for X {
                 }
             })
             .collect();
-        good_moves.insert(aa_id as usize, p);
+        connections.insert(0, p);
         for &start in &targets {
             let min_path = pathfinding::directed::dijkstra::dijkstra_all(&start, |&l| {
                 valves[l as usize]
@@ -118,19 +114,18 @@ impl FromStr for X {
                     }
                 })
                 .collect();
-            good_moves.insert(start as usize, p);
+            connections.insert(start as usize, p);
         }
         let max_flow = valves.iter().map(|x| x.rate).sum();
         Ok(Self {
             valves,
-            good_moves,
+            connections,
             max_flow,
-            aa_id
         })
     }
 }
 //DpType maps location -> cooldown_remaining -> Open valves -> flow.
-type DpType<'a> = HashMap<(u8, u32, NumSet<u64>), u32>;
+type DpType<'a> = VecLookup<HashMap<(u32, NumSet<u64>), u32>>;
 impl X {
     fn get_flow_for_minute(&self, open: NumSet<u64>) -> u32 {
         open.iter()
@@ -139,35 +134,40 @@ impl X {
     }
 
     fn do_time_step<'a, 'b>(&'a self, old_dp: &'b DpType<'a>) -> DpType<'a> {
-        let mut new_dp: DpType = HashMap::new();
+        let mut new_dp: DpType = Default::default();
 
         macro_rules! update {
             ($loc:expr, $cooldown:expr, $oldflow:expr, $oldopen:expr, $newopen:expr) => {
-                let e = new_dp.entry(($loc, $cooldown, $newopen)).or_default();
                 let flow = self.get_flow_for_minute($oldopen) + $oldflow;
+                let e = new_dp
+                    .entry($loc)
+                    .or_default()
+                    .entry(($cooldown, $newopen))
+                    .or_default();
                 if flow > *e {
                     *e = flow;
                 }
             };
         }
 
-        for (&(loc, cooldown, open), &old_flow) in old_dp {
-            //what can we do from here?
-            if cooldown > 0 {
-                //only wait for cooldown (travel time).
-                update!(loc, cooldown - 1, old_flow, open, open);
-            } else if self.get_flow_for_minute(open) == self.max_flow {
-                //if everything is open, then stand still.
-                update!(loc, 0, old_flow, open, open);
-            } else {
-                //can we open?
-                let id = loc;
-                if !open.contains(id) && self.valves[id as usize].rate > 0 {
-                    update!(loc, 0, old_flow, open, open.with(id));
-                }
-                //move.
-                for (target, &cost) in &self.good_moves[loc as usize] {
-                    update!(target as u8, cost - 1, old_flow, open, open);
+        for (loc, stuff) in old_dp {
+            for (&(cooldown, open), &old_flow) in stuff {
+                //what can we do from here?
+                if cooldown > 0 {
+                    //only wait for cooldown (travel time).
+                    update!(loc, cooldown - 1, old_flow, open, open);
+                } else if self.get_flow_for_minute(open) == self.max_flow {
+                    //if everything is open, then stand still.
+                    update!(loc, 0, old_flow, open, open);
+                } else {
+                    //can we open?
+                    if !open.contains(loc as u8) && self.valves[loc].rate > 0 {
+                        update!(loc, 0, old_flow, open, open.with(loc as u8));
+                    }
+                    //move.
+                    for (target, &cost) in &self.connections[loc] {
+                        update!(target, cost - 1, old_flow, open, open);
+                    }
                 }
             }
         }
@@ -177,18 +177,22 @@ impl X {
 
 fn p2a(input: &str) -> (u32, u32) {
     let input: X = input.parse().unwrap();
-    let mut dp: DpType = HashMap::new();
-    dp.insert((input.aa_id, 0, NumSet::new()), 0);
+    let mut dp: DpType = Default::default();
+    dp.entry(0)
+        .or_default()
+        .insert((0, NumSet::new()), 0);
     let dp26 = (1..=26).fold(dp, |old_dp, _| input.do_time_step(&old_dp));
     let dp30 = (27..=30).fold(dp26.clone(), |old_dp, _| input.do_time_step(&old_dp));
 
-    let p1 = *dp30.values().max().unwrap();
+    let p1 = *dp30.values().flat_map(|x| x.values()).max().unwrap();
     let mut p2 = 0;
     let mut bests = HashMap::new();
-    for (k, v) in dp26 {
-        let e = bests.entry(k.2).or_default();
-        if v > *e {
-            *e = v;
+    for hash in dp26.values() {
+        for (&(_, b), &v) in hash {
+            let e = bests.entry(b).or_default();
+            if v > *e {
+                *e = v;
+            }
         }
     }
     for (a, b) in bests.iter().cartesian_product(bests.iter()) {
