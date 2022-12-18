@@ -116,12 +116,11 @@ fn fixed_arrays(input: &str) -> (usize, usize) {
     (p1, p2)
 }
 fn p1(input: &str) -> usize {
-    let occupied = make_hashset(input);
-    occupied
+    make_hashset(input)
         .iter()
         .map(|c| {
             neighbours(c)
-                .filter(|n| n.is_none() || !occupied.contains(&n.unwrap()))
+                .filter(|n| n.is_none() || !make_hashset(input).contains(&n.unwrap()))
                 .count()
         })
         .sum()
@@ -134,13 +133,18 @@ fn p2(input: &str) -> usize {
         occupied.insert(ns);
     }
     let mut ans = 0;
-    let open: HashSet<(usize, usize, usize)> =
-        pathfinding::directed::bfs::bfs_reach((0, 0, 0), |p| {
-            neighbours(p).flatten().filter(|n| !occupied.contains(n))
-        })
-        .collect();
-    for c in &occupied {
-        for n in neighbours(c) {
+    let mut fringe = vec![(0,0,0)];
+    let mut open = HashSet::new();
+    while let Some(p) = fringe.pop() {
+        for n in neighbours(&p).flatten() {
+            if !occupied.contains(&n) && open.insert(n) {
+                fringe.push(n);
+            }
+        }
+
+    }
+    for c in occupied {
+        for n in neighbours(&c) {
             ans += match n {
                 Some(n) => usize::from(open.contains(&n)),
                 None => 1,
