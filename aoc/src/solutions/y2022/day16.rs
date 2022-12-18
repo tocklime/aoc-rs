@@ -58,17 +58,22 @@ fn parse_line(input: &str) -> IResult<&str, Valve> {
 
 struct X {
     valves: Vec<Valve>,
-    map: HashMap<String, u8>,
-    good_moves: HashMap<String, HashMap<String, u32>>,
+    // map: HashMap<String, u8>,
+    good_moves: HashMap<u8, HashMap<u8, u32>>,
     max_flow: u32,
+    aa_id: u8,
 }
 impl FromStr for X {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (_, mut valves) = all_consuming(many1(terminated(parse_line, newline)))(s).unwrap();
+        let mut aa_id = 0;
         for (ix, v) in valves.iter_mut().enumerate() {
             v.id = ix as u8;
+            if v.name == "AA" {
+                aa_id = ix as u8;
+            }
         }
         let map: HashMap<String, u8> = valves.iter().map(|v| (v.name.clone(), v.id)).collect();
 
@@ -77,55 +82,55 @@ impl FromStr for X {
         let targets = valves
             .iter()
             .filter(|v| v.rate > 0)
-            .map(|x| &x.name[..])
+            .map(|x| x.id)
             .collect_vec();
-        let mut good_moves: HashMap<String, HashMap<String, u32>> = HashMap::new();
-        let min_path = pathfinding::directed::dijkstra::dijkstra_all(&"AA", |l| {
-            valves[map[*l] as usize]
+        let mut good_moves: HashMap<u8, HashMap<u8, u32>> = HashMap::new();
+        let min_path = pathfinding::directed::dijkstra::dijkstra_all(&aa_id, |&l| {
+            valves[l as usize]
                 .connections
                 .iter()
-                .map(|t| (&t[..], 1))
+                .map(|t| (map[&t[..]], 1))
         });
         let p = min_path
             .into_iter()
             .filter_map(|(t, (_, cost))| {
                 if targets.contains(&t) {
-                    Some((t.to_string(), cost))
+                    Some((t, cost))
                 } else {
                     None
                 }
             })
             .collect();
-        good_moves.insert("AA".to_string(), p);
+        good_moves.insert(aa_id, p);
         for &start in &targets {
             let min_path = pathfinding::directed::dijkstra::dijkstra_all(&start, |&l| {
-                valves[map[l] as usize]
+                valves[l as usize]
                     .connections
                     .iter()
-                    .map(|t| (&t[..], 1))
+                    .map(|t| (map[&t[..]], 1))
             });
             let p = min_path
                 .into_iter()
                 .filter_map(|(t, (_, cost))| {
                     if targets.contains(&t) {
-                        Some((t.to_string(), cost))
+                        Some((t, cost))
                     } else {
                         None
                     }
                 })
                 .collect();
-            good_moves.insert(start.to_string(), p);
+            good_moves.insert(start, p);
         }
         let max_flow = valves.iter().map(|x| x.rate).sum();
         Ok(Self {
             valves,
-            map,
             good_moves,
             max_flow,
+            aa_id
         })
     }
 }
-type DpType<'a> = HashMap<(&'a str, u32, NumSet<u64>), u32>;
+type DpType<'a> = HashMap<(u8, u32, NumSet<u64>), u32>;
 impl X {
     fn get_flow_for_minute(&self, open: NumSet<u64>) -> u32 {
         open.iter()
@@ -156,13 +161,13 @@ impl X {
                 update!(loc, 0, old_flow, open, open);
             } else {
                 //can we open?
-                let id = self.map[loc];
+                let id = loc;
                 if !open.contains(id) && self.valves[id as usize].rate > 0 {
                     update!(loc, 0, old_flow, open, open.with(id));
                 }
                 //move.
-                for (target, &cost) in &self.good_moves[loc] {
-                    update!(target, cost - 1, old_flow, open, open);
+                for (target, &cost) in &self.good_moves[&loc] {
+                    update!(*target, cost - 1, old_flow, open, open);
                 }
             }
         }
@@ -173,7 +178,7 @@ impl X {
 fn p2a(input: &str) -> (u32, u32) {
     let input: X = input.parse().unwrap();
     let mut dp: DpType = HashMap::new();
-    dp.insert(("AA", 0, NumSet::new()), 0);
+    dp.insert((input.aa_id, 0, NumSet::new()), 0);
     let dp26 = (1..=26).fold(dp, |old_dp, _| input.do_time_step(&old_dp));
     let dp30 = (27..=30).fold(dp26.clone(), |old_dp, _| input.do_time_step(&old_dp));
 
