@@ -11,8 +11,8 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 18, both [fixed_arrays] => (3432,2042), 
-    // part1 [p1] => 3432, part2 [p2] => 2042, 
+aoc_main!(2022 day 18, both [fixed_arrays] => (3432,2042),
+    part1 [p1] => 3432, part2 [p2] => 2042,
     example both EG0 => (10,10), example both EG => (64,58));
 
 const EG0: &str = "1,1,1\n2,1,1";
@@ -104,13 +104,13 @@ fn fixed_arrays(input: &str) -> (usize, usize) {
     let p1 = count_neighbours(&points, &world, Air);
 
     //bfs from origin to find all open air
-    let a = pathfinding::directed::bfs::bfs_reach((0, 0, 0), |p| {
-        neighbours(p)
-            .flatten()
-            .filter(|x| world.get(*x).unwrap_or(&Lava) != &Lava)
-    }).collect_vec();
-    for p in a {
-        world[p] = OpenAir;
+    let mut fringe = vec![(0,0,0)];
+    while let Some(p) = fringe.pop() {
+        for n in neighbours(&p).flatten() {
+            if let Some(p) = world.get_mut(n) {
+                if Air == *p { *p = OpenAir; fringe.push(n); }
+            }
+        }
     }
     let p2 = count_neighbours(&points, &world, OpenAir);
     (p1, p2)
