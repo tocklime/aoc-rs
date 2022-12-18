@@ -95,7 +95,7 @@ impl DayResult {
     }
     pub fn record_p1<T: Display>(&mut self, ans: Option<T>, time: Duration) {
         if let Err(x) = Self::record_ans(1, &mut self.part1_ans, ans) {
-            panic!("{} {}", self.desc(), x);
+            eprintln!("{} {}", self.desc(), x);
         }
         match &mut self.solve_time {
             ExecutionTime::NoneRecorded => self.solve_time = ExecutionTime::Part1(time),
@@ -108,7 +108,7 @@ impl DayResult {
     }
     pub fn record_p2<T: Display>(&mut self, ans: Option<T>, time: Duration) {
         if let Err(x) = Self::record_ans(2, &mut self.part2_ans, ans) {
-            panic!("{} {}", self.desc(), x);
+            eprintln!("{} {}", self.desc(), x);
         }
         match &mut self.solve_time {
             ExecutionTime::NoneRecorded => self.solve_time = ExecutionTime::Part2(time),
@@ -125,10 +125,10 @@ impl DayResult {
             None => (None, None),
         };
         if let Err(x) = Self::record_ans(1, &mut self.part1_ans, p1) {
-            panic!("{} {}", self.desc(), x);
+            eprintln!("{} {}", self.desc(), x);
         }
         if let Err(x) = Self::record_ans(2, &mut self.part2_ans, p2) {
-            panic!("{} {}", self.desc(), x);
+            eprintln!("{} {}", self.desc(), x);
         }
         match &mut self.solve_time {
             ExecutionTime::Both(b) => {

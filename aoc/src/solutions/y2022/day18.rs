@@ -1,9 +1,19 @@
+use ndarray::prelude::*;
 use std::collections::HashSet;
 
 use aoc_harness::*;
-use nom::{bytes::complete::tag, character::complete, multi::separated_list1, IResult};
+use nom::{
+    bytes::complete::tag,
+    character::complete::{self, newline},
+    combinator::{all_consuming, map, opt},
+    multi::many1,
+    sequence::{terminated, tuple},
+    IResult,
+};
 
-aoc_main!(2022 day 18, part1 [p1] => 3432, part2 [p2] => 2042, example both EG0 => (10,10), example both EG => (64,58));
+aoc_main!(2022 day 18, both [fixed_arrays] => (3432,2042), 
+    // part1 [p1] => 3432, part2 [p2] => 2042, 
+    example both EG0 => (10,10), example both EG => (64,58));
 
 const EG0: &str = "1,1,1\n2,1,1";
 const EG: &str = "2,2,2
@@ -21,30 +31,99 @@ const EG: &str = "2,2,2
 2,3,5
 ";
 
-fn parse_line(input: &str) -> IResult<&str, Vec<i32>> {
-    separated_list1(tag(","), complete::i32)(input)
+fn parse_line(input: &str) -> IResult<&str, (usize, usize, usize)> {
+    tuple((
+        terminated(map(complete::u32, |x| x as usize), tag(",")),
+        terminated(map(complete::u32, |x| x as usize), tag(",")),
+        terminated(map(complete::u32, |x| x as usize), opt(newline)),
+    ))(input)
 }
-fn neighbours(c: &[i32]) -> impl Iterator<Item = Vec<i32>> {
-    let (x, y, z) = (c[0], c[1], c[2]);
-    vec![
-        vec![x, y, z - 1],
-        vec![x, y, z + 1],
-        vec![x, y - 1, z],
-        vec![x, y + 1, z],
-        vec![x - 1, y, z],
-        vec![x + 1, y, z],
+const WORLD_SIZE: usize = 21;
+fn neighbours(c: &(usize, usize, usize)) -> impl Iterator<Item = Option<(usize, usize, usize)>> {
+    let &(x, y, z) = c;
+    [
+        z.checked_sub(1).map(|nz| (x, y, nz)),
+        if z + 1 < WORLD_SIZE {
+            Some((x, y, z + 1))
+        } else {
+            None
+        },
+        y.checked_sub(1).map(|ny| (x, ny, z)),
+        if y + 1 < WORLD_SIZE {
+            Some((x, y + 1, z))
+        } else {
+            None
+        },
+        x.checked_sub(1).map(|nx| (nx, y, z)),
+        if x + 1 < WORLD_SIZE {
+            Some((x + 1, y, z))
+        } else {
+            None
+        },
     ]
     .into_iter()
 }
-fn p1(input: &str) -> usize {
-    let mut occupied = HashSet::new();
-    for l in input.lines() {
-        let (_, ns) = parse_line(l).unwrap();
-        occupied.insert(ns);
+fn make_hashset(input: &str) -> HashSet<(usize, usize, usize)> {
+    all_consuming(many1(parse_line))(input)
+        .unwrap()
+        .1
+        .into_iter()
+        .collect()
+}
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
+enum Space {
+    Air,
+    Lava,
+    OpenAir,
+}
+use Space::*;
+
+fn count_neighbours(
+    points: &[(usize, usize, usize)],
+    world: &Array3<Space>,
+    target: Space,
+) -> usize {
+    points
+        .iter()
+        .map(|c| {
+            neighbours(c)
+                .filter(|n| match n {
+                    Some(n) => world[*n] == target,
+                    None => true,
+                })
+                .count()
+        })
+        .sum()
+}
+fn fixed_arrays(input: &str) -> (usize, usize) {
+    let points = all_consuming(many1(parse_line))(input).unwrap().1;
+    let mut world = Array3::from_elem((WORLD_SIZE, WORLD_SIZE, WORLD_SIZE), Air);
+    for p in &points {
+        world[*p] = Lava;
     }
+    let p1 = count_neighbours(&points, &world, Air);
+
+    //bfs from origin to find all open air
+    let a = pathfinding::directed::bfs::bfs_reach((0, 0, 0), |p| {
+        neighbours(p)
+            .flatten()
+            .filter(|x| world.get(*x).unwrap_or(&Lava) != &Lava)
+    }).collect_vec();
+    for p in a {
+        world[p] = OpenAir;
+    }
+    let p2 = count_neighbours(&points, &world, OpenAir);
+    (p1, p2)
+}
+fn p1(input: &str) -> usize {
+    let occupied = make_hashset(input);
     occupied
         .iter()
-        .map(|c| neighbours(c).filter(|n| !occupied.contains(n)).count())
+        .map(|c| {
+            neighbours(c)
+                .filter(|n| n.is_none() || !occupied.contains(&n.unwrap()))
+                .count()
+        })
         .sum()
 }
 
@@ -55,27 +134,16 @@ fn p2(input: &str) -> usize {
         occupied.insert(ns);
     }
     let mut ans = 0;
-    let mut not_blocked = HashSet::new();
-    not_blocked.insert(vec![0, 0, 0]);
+    let open: HashSet<(usize, usize, usize)> =
+        pathfinding::directed::bfs::bfs_reach((0, 0, 0), |p| {
+            neighbours(p).flatten().filter(|n| !occupied.contains(n))
+        })
+        .collect();
     for c in &occupied {
         for n in neighbours(c) {
-            //can n escape? lets assume the origin is outside.
-            //find a path to it.
-            if occupied.contains(&n) {
-                continue;
-            }
-            if not_blocked.contains(&n) {
-                ans += 1;
-            } else {
-                let x = pathfinding::directed::bfs::bfs(
-                    &n,
-                    |n| neighbours(n).filter(|o| !occupied.contains(o)),
-                    |x| not_blocked.contains(x),
-                );
-                if let Some(p) = x {
-                    not_blocked.extend(p);
-                    ans += 1;
-                } 
+            ans += match n {
+                Some(n) => usize::from(open.contains(&n)),
+                None => 1,
             }
         }
     }
