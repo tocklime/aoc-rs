@@ -12,7 +12,7 @@ use nom::{
     sequence::{terminated, tuple},
     IResult,
 };
-use utils::numset::NumSet;
+use utils::{numset::NumSet, collections::VecLookup};
 
 aoc_main!(2022 day 16, both [p2a] => (1728, 2304), example both EG => (1651,1707));
 
@@ -58,8 +58,7 @@ fn parse_line(input: &str) -> IResult<&str, Valve> {
 
 struct X {
     valves: Vec<Valve>,
-    // map: HashMap<String, u8>,
-    good_moves: HashMap<u8, HashMap<u8, u32>>,
+    good_moves: VecLookup<VecLookup<u32>>,
     max_flow: u32,
     aa_id: u8,
 }
@@ -84,7 +83,7 @@ impl FromStr for X {
             .filter(|v| v.rate > 0)
             .map(|x| x.id)
             .collect_vec();
-        let mut good_moves: HashMap<u8, HashMap<u8, u32>> = HashMap::new();
+        let mut good_moves: VecLookup<VecLookup<u32>> = VecLookup::default();
         let min_path = pathfinding::directed::dijkstra::dijkstra_all(&aa_id, |&l| {
             valves[l as usize]
                 .connections
@@ -95,13 +94,13 @@ impl FromStr for X {
             .into_iter()
             .filter_map(|(t, (_, cost))| {
                 if targets.contains(&t) {
-                    Some((t, cost))
+                    Some((t as usize, cost))
                 } else {
                     None
                 }
             })
             .collect();
-        good_moves.insert(aa_id, p);
+        good_moves.insert(aa_id as usize, p);
         for &start in &targets {
             let min_path = pathfinding::directed::dijkstra::dijkstra_all(&start, |&l| {
                 valves[l as usize]
@@ -113,13 +112,13 @@ impl FromStr for X {
                 .into_iter()
                 .filter_map(|(t, (_, cost))| {
                     if targets.contains(&t) {
-                        Some((t, cost))
+                        Some((t as usize, cost))
                     } else {
                         None
                     }
                 })
                 .collect();
-            good_moves.insert(start, p);
+            good_moves.insert(start as usize, p);
         }
         let max_flow = valves.iter().map(|x| x.rate).sum();
         Ok(Self {
@@ -130,6 +129,7 @@ impl FromStr for X {
         })
     }
 }
+//DpType maps location -> cooldown_remaining -> Open valves -> flow.
 type DpType<'a> = HashMap<(u8, u32, NumSet<u64>), u32>;
 impl X {
     fn get_flow_for_minute(&self, open: NumSet<u64>) -> u32 {
@@ -166,8 +166,8 @@ impl X {
                     update!(loc, 0, old_flow, open, open.with(id));
                 }
                 //move.
-                for (target, &cost) in &self.good_moves[&loc] {
-                    update!(*target, cost - 1, old_flow, open, open);
+                for (target, &cost) in &self.good_moves[loc as usize] {
+                    update!(target as u8, cost - 1, old_flow, open, open);
                 }
             }
         }

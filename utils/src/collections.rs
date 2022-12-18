@@ -1,5 +1,5 @@
 use std::hash::Hash;
-use std::ops::AddAssign;
+use std::ops::{AddAssign, Index};
 use std::{
     collections::{HashMap, HashSet},
     ops::Add,
@@ -95,4 +95,64 @@ where
             (min.min(c), max.max(c), sum + *c)
         })
     })
+}
+
+#[derive(Default, PartialEq, Eq, PartialOrd, Ord, Debug)]
+pub struct VecLookup<T>(Vec<Option<T>>);
+
+impl<T> VecLookup<T> {
+    pub fn ensure_size(&mut self, size: usize) {
+        let short = size.saturating_sub(self.0.len());
+        self.0.extend((0..short).map(|_| None));
+    }
+    pub fn insert(&mut self, key: usize, value: T) {
+        self.ensure_size(key + 1);
+        self.0[key] = Some(value);
+    }
+    pub fn get(&self, key: usize) -> Option<&T> {
+        self.0.get(key).and_then(|x| x.as_ref())
+    }
+}
+pub struct VecLookupIter<'a, T>(&'a VecLookup<T>, usize);
+impl<'a, T> IntoIterator for &'a VecLookup<T> {
+    type Item = (usize, &'a T);
+
+    type IntoIter = VecLookupIter<'a,T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        VecLookupIter(self, 0)
+    }
+}
+impl<'a, T> Iterator for VecLookupIter<'a, T> {
+    type Item = (usize, &'a T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        while self.1 < self.0.0.len() {
+            let here = self.1;
+            self.1 += 1;
+            match &self.0.0[here] {
+                None => (),
+                Some(x) => {
+                    return Some((here,x));
+                }
+            }
+        }
+        None //out of items in array.
+    }
+}
+impl<T: Default> FromIterator<(usize, T)> for VecLookup<T> {
+    fn from_iter<TI: IntoIterator<Item = (usize, T)>>(iter: TI) -> Self {
+        let mut a = Self::default();
+        for (ix, t) in iter {
+            a.insert(ix, t);
+        }
+        a
+    }
+}
+impl<T> Index<usize> for VecLookup<T>{
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        self.0[index].as_ref().unwrap()
+    }
 }
