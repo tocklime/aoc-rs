@@ -155,19 +155,10 @@ impl Blueprint {
     }
 
     fn most_geodes_in(&self, time_left: u32) -> u32 {
-        let mut cache = HashMap::new();
         let mut best_known = 0;
-        self.try_most_geodes_in(State::start_state(time_left), &mut best_known, &mut cache)
+        self.try_most_geodes_in(State::start_state(time_left), &mut best_known)
     }
-    fn try_most_geodes_in(
-        &self,
-        state: State,
-        best_known: &mut u32,
-        cache: &mut HashMap<State, u32>,
-    ) -> u32 {
-        if let Some(x) = cache.get(&state) {
-            return *x;
-        }
+    fn try_most_geodes_in(&self, state: State, best_known: &mut u32) -> u32 {
         let ans = if state.geode_heuristic() < *best_known {
             0
         } else {
@@ -177,7 +168,7 @@ impl Blueprint {
                 //     .collect::<Vec<_>>();
                 // let results = results
                 //     .into_iter()
-                .map(|s| self.try_most_geodes_in(s, best_known, cache))
+                .map(|s| self.try_most_geodes_in(s, best_known))
                 .max();
 
             match results {
@@ -194,7 +185,6 @@ impl Blueprint {
                 }
             }
         };
-        cache.insert(state, ans);
         if ans > *best_known {
             *best_known = ans;
         }
