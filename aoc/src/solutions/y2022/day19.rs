@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeMap, BTreeSet, HashMap},
+    collections::{BTreeMap, HashMap},
     hash::Hash,
 };
 
@@ -14,7 +14,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 19, part2 [p2] => 3510, part1 [p1] => 1199, example part1 EG => 33);
+aoc_main!(2022 day 19, part1 [p1] => 1199, part2 [p2] => 3510, example part1 EG => 33);
 
 const EG: &str = "Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
 Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian.
@@ -27,12 +27,14 @@ enum Resource {
     Obsidian,
     Geode,
 }
+use num::Integer;
 use Resource::*;
 
 #[derive(Debug)]
 struct Blueprint {
     id: u32,
     costs: HashMap<Resource, HashMap<Resource, u32>>,
+    maximum_demand: BTreeMap<Resource, u32>,
 }
 fn parse_resource(input: &str) -> IResult<&str, Resource> {
     alt((
@@ -58,11 +60,20 @@ fn parse_blueprint(input: &str) -> IResult<&str, Blueprint> {
     let (input, id) = delimited(tag("Blueprint "), complete::u32, tag(": "))(input)?;
     let (input, costs) = separated_list1(tag(". "), parse_cost)(input)?;
     let (input, _) = tag(".")(input)?;
+    let mut maximum_demand = BTreeMap::new();
+    maximum_demand.insert(Geode, u32::MAX);
+    for (_, cs) in &costs {
+        for (&c, &val) in cs {
+            let x: &mut u32 = maximum_demand.entry(c).or_default();
+            *x = (*x).max(val);
+        }
+    }
     Ok((
         input,
         Blueprint {
             id,
             costs: costs.into_iter().collect(),
+            maximum_demand,
         },
     ))
 }
@@ -70,7 +81,6 @@ fn parse_blueprint(input: &str) -> IResult<&str, Blueprint> {
 struct State {
     robots: BTreeMap<Resource, u32>,
     resources: BTreeMap<Resource, u32>,
-    must_not_build: BTreeSet<Resource>,
     time_left: u32,
 }
 
@@ -79,88 +89,116 @@ impl State {
         Self {
             robots: [(Ore, 1)].into_iter().collect(),
             resources: Default::default(),
-            must_not_build: Default::default(),
             time_left: t,
         }
+    }
+    fn geode_heuristic(&self) -> u32 {
+        //if we built a geode robot for every remaining turn, how many geodes would we get?
+        let geodes_now = self.resources.get(&Geode).copied().unwrap_or_default();
+        if self.time_left == 0 {
+            return geodes_now;
+        }
+        let geode_robots = self.robots.get(&Geode).copied().unwrap_or_default();
+        let existing_robot_production = geode_robots * self.time_left;
+        let time_left = self.time_left;
+        let new_robot_production = (time_left * (time_left - 1)) / 2;
+        geodes_now + existing_robot_production + new_robot_production
     }
 }
 
 impl Blueprint {
-    fn try_build(&self, state: &State, r: Resource) -> Option<BTreeMap<Resource, u32>> {
-        let mut ans = state.resources.clone();
-        for (r, c) in &self.costs[&r] {
-            let r = ans.get_mut(r)?;
-            *r = r.checked_sub(*c)?;
-        }
-        Some(ans)
-    }
-    fn do_time(&self, state: &State, new_robot: Option<Resource>) -> Option<State> {
+    fn wait(&self, state: &State, time: u32) -> State {
         let mut new_state = state.clone();
-        new_state.time_left -= 1;
-        if new_robot != Some(Geode) && self.try_build(state, Geode).is_some() {
+        //harvest resources!
+        for (&r, &count) in &state.robots {
+            *new_state.resources.entry(r).or_default() += time * count;
+        }
+        new_state.time_left -= time;
+        new_state
+    }
+    fn try_build(&self, state: &State, robot: Resource) -> Option<State> {
+        let mut time_to_enough_resource = 0;
+        //no point in building more robots than we can possibly use in one turn!
+        let max_need = self.maximum_demand[&robot];
+        if state.robots.get(&robot).copied().unwrap_or_default() >= max_need {
             return None;
         }
-        if let Some(r) = new_robot {
-            if state.must_not_build.contains(&r) {
+        for (c, amount) in &self.costs[&robot] {
+            let have_now = state.resources.get(c).copied().unwrap_or_default();
+            if *amount < have_now {
+                continue;
+            }
+            let need = amount - have_now;
+            let rate = *state.robots.get(c)?;
+            //in X turns I have X * rate more.
+            //what is smallest int s.t. X*rate >= need.
+            if rate == 0 {
+                //we can't build this yet.
                 return None;
             }
-            if r != Geode {
-                let max_cost = self
-                    .costs
-                    .values()
-                    .map(|x| *x.get(&r).unwrap_or(&0))
-                    .max()
-                    .unwrap();
-                if state.robots.get(&r).unwrap_or(&0) >= &max_cost {
-                    return None;
-                }
-            }
-            new_state.resources = self.try_build(state, r)?;
-            *new_state.robots.entry(r).or_default() += 1;
-            new_state.must_not_build.clear();
-        } else {
-            //I chose not to build. I must not build things I can currently afford next time!
-            let chose_not_to_build = [Ore, Clay, Obsidian, Geode]
-                .into_iter()
-                .filter(|r| self.try_build(state, *r).is_some());
-            new_state.must_not_build.extend(chose_not_to_build);
+            let (d, m) = need.div_mod_floor(&rate);
+            time_to_enough_resource = time_to_enough_resource.max(d + u32::from(m > 0));
         }
-
-        for (r, count) in &state.robots {
-            *new_state.resources.entry(*r).or_default() += *count;
+        //need to wait time_to_done steps, then 1 more step while I build the new robot.
+        let wait_time = time_to_enough_resource + 1;
+        if wait_time > state.time_left {
+            return None;
         }
+        let mut new_state = self.wait(state, wait_time);
+        //produce 1 robot!
+        for (&r, &count) in &self.costs[&robot] {
+            // dbg!(state, robot, &new_state, r, count, wait_time, self);
+            *new_state.resources.entry(r).or_default() -= count;
+        }
+        *new_state.robots.entry(robot).or_default() += 1;
         Some(new_state)
     }
 
     fn most_geodes_in(&self, time_left: u32) -> u32 {
         let mut cache = HashMap::new();
-        self.try_most_geodes_in(State::start_state(time_left), &mut cache)
+        let mut best_known = 0;
+        self.try_most_geodes_in(State::start_state(time_left), &mut best_known, &mut cache)
     }
-    fn try_most_geodes_in(&self, state: State, cache: &mut HashMap<State, u32>) -> u32 {
+    fn try_most_geodes_in(
+        &self,
+        state: State,
+        best_known: &mut u32,
+        cache: &mut HashMap<State, u32>,
+    ) -> u32 {
         if let Some(x) = cache.get(&state) {
             return *x;
         }
-        if state.time_left == 0 {
-            let ans = *state.resources.get(&Geode).unwrap_or(&0);
-            cache.insert(state, ans);
-            return ans;
-        }
-        let mut answers = Vec::new();
-        //choose! what can I build?
-        answers.extend(
-            [None, Some(Geode), Some(Obsidian), Some(Clay), Some(Ore)]
+        let ans = if state.geode_heuristic() < *best_known {
+            0
+        } else {
+            let results = [Geode, Obsidian, Clay, Ore]
                 .iter()
-                .filter_map(|r| {
-                    let new_s = self.do_time(&state, *r)?;
-                    // println!("Building {:?} goes {:?} to {:?}", r, &state, &new_s);
-                    let best = self.try_most_geodes_in(new_s, cache);
-                    Some((r, best))
-                }),
-        );
-        //what was the best option?
-        let (_res, geodes) = answers.into_iter().max_by_key(|(_, b)| *b).unwrap();
-        cache.insert(state.clone(), geodes);
-        geodes
+                .flat_map(|r| self.try_build(&state, *r))
+                //     .collect::<Vec<_>>();
+                // let results = results
+                //     .into_iter()
+                .map(|s| self.try_most_geodes_in(s, best_known, cache))
+                .max();
+
+            match results {
+                Some(x) => x,
+                None => {
+                    //nothing worth building, ever again. just wait
+                    let final_state = self.wait(&state, state.time_left);
+                    let geodes = final_state
+                        .resources
+                        .get(&Geode)
+                        .copied()
+                        .unwrap_or_default();
+                    geodes
+                }
+            }
+        };
+        cache.insert(state, ans);
+        if ans > *best_known {
+            *best_known = ans;
+        }
+        ans
     }
 }
 
@@ -170,14 +208,10 @@ fn p1(input: &str) -> u32 {
 }
 
 fn p2(input: &str) -> u32 {
-    let (_, mut blueprints) = separated_list1(newline, parse_blueprint)(input).unwrap();
-    blueprints.truncate(3);
+    let (_, blueprints) = separated_list1(newline, parse_blueprint)(input).unwrap();
     blueprints
         .iter()
-        .map(|b| {
-            let a = b.most_geodes_in(32);
-            dbg!(b.id, a, a * b.id);
-            a
-        })
+        .take(3)
+        .map(|b| b.most_geodes_in(32))
         .product()
 }
