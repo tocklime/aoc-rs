@@ -133,69 +133,61 @@ impl Blueprint {
         new_state
     }
     fn try_build(&self, state: &State, robot: Resource) -> Option<State> {
-        let mut time_to_enough_resource = 0;
         //no point in building more robots than we can possibly use in one turn!
-        let max_need = self.maximum_demand[robot];
-        if state.robots[robot] >= max_need {
+        if state.robots[robot] >= self.maximum_demand[robot] {
             return None;
         }
+        let mut time_to_enough_resource = 0;
         for c in 0..RESOURCE_COUNT {
-            // for (c, amount) in &self.costs[robot] {
             let amount = self.costs[robot][c];
             let have_now = state.resources[c];
-            if amount <= have_now {
-                continue;
-            }
-            let need = amount - have_now;
+            let need = match amount.checked_sub(have_now) {
+                None | Some(0) => continue,
+                Some(n) => n,
+            };
             let rate = state.robots[c];
-            //in X turns I have X * rate more.
-            //what is smallest int s.t. X*rate >= need.
             if rate == 0 {
                 //we can't build this yet.
                 return None;
             }
+            //in X turns I have X * rate more.
+            //what is smallest int s.t. X*rate >= need.
             let (d, m) = (need / rate, need % rate);
             time_to_enough_resource = time_to_enough_resource.max(d + u32::from(m > 0));
         }
         //need to wait time_to_done steps, then 1 more step while I build the new robot.
         let wait_time = time_to_enough_resource + 1;
-        if wait_time > state.time_left {
+        if wait_time >= state.time_left {
             return None;
         }
         let mut new_state = self.wait(state, wait_time);
         //produce 1 robot!
         for r in 0..RESOURCE_COUNT {
-            let count = self.costs[robot][r];
-            // dbg!(state, robot, &new_state, r, count, wait_time, self);
-            new_state.resources[r] -= count;
+            new_state.resources[r] -= self.costs[robot][r];
         }
         new_state.robots[robot] += 1;
         Some(new_state)
     }
 
     fn most_geodes_in(&self, time_left: u32) -> u32 {
-        self.try_most_geodes_in(State::start_state(time_left))
-    }
-    fn try_most_geodes_in(&self, state: State) -> u32 {
         let mut best_known = 0;
-        let mut stack = vec![state];
+        let mut stack = vec![State::start_state(time_left)];
         while let Some(state) = stack.pop() {
-            if state.geode_heuristic() < best_known {
+            if state.geode_heuristic() <= best_known {
                 continue;
             }
+            let stack_before = stack.len();
             let next_states = [GEODE, OBSIDIAN, CLAY, ORE]
                 .iter()
-                .flat_map(|r| self.try_build(&state, *r))
-                .collect::<Vec<_>>();
-            if next_states.is_empty() {
+                .flat_map(|r| self.try_build(&state, *r));
+            stack.extend(next_states);
+            if stack.len() == stack_before {
                 //nothing worth building, ever again. just wait
                 let final_state = self.wait(&state, state.time_left);
                 let ans = final_state.resources[GEODE];
                 if ans > best_known {
                     best_known = ans;
                 }
-            } else {
-                stack.extend(next_states);
             }
         }
         best_known
