@@ -11,7 +11,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 21, part1 [p1], part2 [p2], example both EG => (152,301));
+aoc_main!(2022 day 21, part1 [p1] => 194058098264286, part2 [p2] => 3592056845086, example both EG => (152,301));
 
 const EG: &str = "root: pppw + sjmn
 dbpl: 5
@@ -31,97 +31,102 @@ hmdt: 32
 ";
 #[derive(Debug)]
 enum Action<'a> {
-    Lit(i64),
+    Lit(u64),
     Op(char, &'a str, &'a str),
 }
-fn parse_action<'a>(input: &'a str) -> IResult<&'a str, Action<'a>> {
+struct Monkeys<'a>(HashMap<&'a str, Action<'a>>);
+
+impl<'a> Monkeys<'a> {
+    fn from_str(s: &'a str) -> Self {
+        let (_, lines) = separated_list1(
+            newline,
+            separated_pair(take(4_usize), tag(": "), parse_action),
+        )(s)
+        .unwrap();
+        Self(lines.into_iter().collect())
+    }
+    fn eval_p1(&self, start: &str) -> u64 {
+        match &self.0[start] {
+            Action::Lit(x) => *x,
+            Action::Op('+', a, b) => self.eval_p1(a) + self.eval_p1(b),
+            Action::Op('*', a, b) => self.eval_p1(a) * self.eval_p1(b),
+            Action::Op('-', a, b) => self.eval_p1(a) - self.eval_p1(b),
+            Action::Op('/', a, b) => self.eval_p1(a) / self.eval_p1(b),
+            _ => panic!(),
+        }
+    }
+    fn eval_p2(&self, start: &str) -> Option<u64> {
+        if start == "humn" {
+            None
+        } else {
+            Some(match &self.0[start] {
+                Action::Lit(x) => *x,
+                Action::Op('+', a, b) => self.eval_p2(a)? + self.eval_p2(b)?,
+                Action::Op('*', a, b) => self.eval_p2(a)? * self.eval_p2(b)?,
+                Action::Op('-', a, b) => self.eval_p2(a)? - self.eval_p2(b)?,
+                Action::Op('/', a, b) => self.eval_p2(a)? / self.eval_p2(b)?,
+                _ => panic!(),
+            })
+        }
+    }
+    fn solve_humn(&self, start: &str, target: u64) -> u64 {
+        if start == "humn" {
+            target
+        } else {
+            match &self.0[start] {
+                Action::Op(op, a, b) => {
+                    let a_val = self.eval_p2(a);
+                    let b_val = self.eval_p2(b);
+                    match (a_val, b_val) {
+                        (Some(a_val), None) => {
+                            //target = a_val - XXXX
+                            let target_sub = match op {
+                                '+' => target - a_val,
+                                '-' => a_val - target,
+                                '*' => target / a_val,
+                                '/' => a_val / target,
+                                _ => panic!(),
+                            };
+                            self.solve_humn(b, target_sub)
+                        }
+                        (None, Some(b_val)) => {
+                            //target = XXXX - b_val
+                            let target_sub = match op {
+                                '+' => target - b_val,
+                                '-' => b_val + target,
+                                '*' => target / b_val,
+                                '/' => b_val * target,
+                                _ => panic!(),
+                            };
+                            self.solve_humn(a, target_sub)
+                        }
+                        _ => panic!(),
+                    }
+                }
+                Action::Lit(_) => panic!(),
+            }
+        }
+    }
+}
+fn parse_action(input: &str) -> IResult<&str, Action> {
     alt((
-        map(complete::i64, Action::Lit),
+        map(complete::u64, Action::Lit),
         map(
             tuple((take(4_usize), tag(" "), anychar, tag(" "), take(4_usize))),
             |(a, _, o, _, b)| Action::Op(o, a, b),
         ),
     ))(input)
 }
-fn eval(map: &HashMap<&str, Action>, start: &str) -> i64 {
-    match map.get(start) {
-        Some(Action::Lit(x)) => *x,
-        Some(Action::Op('+', a, b)) => eval(map, a) + eval(map, b),
-        Some(Action::Op('*', a, b)) => eval(map, a) * eval(map, b),
-        Some(Action::Op('-', a, b)) => eval(map, a) - eval(map, b),
-        Some(Action::Op('/', a, b)) => eval(map, a) / eval(map, b),
-        _ => panic!(),
-    }
+fn p1(input: &str) -> u64 {
+    Monkeys::from_str(input).eval_p1("root")
 }
-fn eval2(map: &HashMap<&str, Action>, start: &str) -> Option<i64> {
-    if start == "humn" {
-        None
+fn p2(input: &str) -> u64 {
+    let monkeys = Monkeys::from_str(input);
+    let Action::Op(_, l, r) = monkeys.0["root"] else {panic!()};
+    let (a, b) = (monkeys.eval_p2(l), monkeys.eval_p2(r));
+    if let Some(a) = a {
+        monkeys.solve_humn(r, a)
     } else {
-        Some(match map.get(start) {
-            Some(Action::Lit(x)) => *x,
-            Some(Action::Op('+', a, b)) => eval2(map, a)? + eval2(map, b)?,
-            Some(Action::Op('*', a, b)) => eval2(map, a)? * eval2(map, b)?,
-            Some(Action::Op('-', a, b)) => eval2(map, a)? - eval2(map, b)?,
-            Some(Action::Op('/', a, b)) => eval2(map, a)? / eval2(map, b)?,
-            _ => panic!(),
-        })
-    }
-}
-fn p1(input: &str) -> i64 {
-    let (_, lines) = separated_list1(
-        newline,
-        separated_pair(take(4_usize), tag(": "), parse_action),
-    )(input)
-    .unwrap();
-    let map: HashMap<&str, Action> = lines.into_iter().collect();
-    eval(&map, "root")
-}
-fn figure_num_to_make(map: &HashMap<&str, Action>, who: &str, target: i64) -> i64 {
-    println!("Need to make {} say {}...", who, target);
-    if who == "humn" {
-        target
-    } else {
-        match map.get(who) {
-            Some(Action::Lit(x)) => *x,
-            Some(Action::Op(op, a, b)) => {
-                println!("  their op is {} {} {}", a, op, b);
-                let a_val = eval2(map, a);
-                let b_val = eval2(map, b);
-                println!("  a_val is {:?}, b_val is {:?}", a_val, b_val);
-                let val = [a_val, b_val].iter().find_map(|x| *x).unwrap();
-                let target_sub = match (a_val.is_some(), op) {
-                    (_, '+') => target - val,
-                    (false, '-') => target + val,
-                    (true, '-') => val - target,
-                    (_, '*') => target / val,
-                    (false, '/') => target * val,
-                    (true, '/') => val / target,
-                    _ => panic!(),
-                };
-                println!("  target is {}", target_sub);
-                if a_val.is_none() {
-                    figure_num_to_make(map, a, target_sub)
-                } else {
-                    figure_num_to_make(map, b, target_sub)
-                }
-            }
-            _ => panic!(),
-        }
-    }
-}
-fn p2(input: &str) -> i64 {
-    let (_, lines) = separated_list1(
-        newline,
-        separated_pair(take(4_usize), tag(": "), parse_action),
-    )(input)
-    .unwrap();
-    let map: HashMap<&str, Action> = lines.into_iter().collect();
-    let Action::Op(_, l, r) = map["root"] else {panic!()};
-    let (a, b) = (eval2(&map, l), eval2(&map, r));
-    dbg!(a, b);
-    if a.is_none() {
-        figure_num_to_make(&map, l, b.unwrap())
-    } else {
-        figure_num_to_make(&map, r, a.unwrap())
+        monkeys.solve_humn(l, b.unwrap())
     }
 }
