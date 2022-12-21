@@ -113,8 +113,8 @@ impl FromStr for X {
         })
     }
 }
-//// DpType maps location -> cooldown_remaining -> Open valves (numset) -> flow.
-//DpType maps open valves -> location -> cooldown_remaining -> Open valves (numset) -> flow.
+//DpType maps open valves -> location -> cooldown_remaining -> flow.
+//sizes:           65535     15          10?
 type DpType<'a> = VecLookup<VecLookup<VecLookup<u32>>>;
 impl X {
     fn get_flow_for_minute(&self, open: NumSet<u64>) -> u32 {
@@ -161,7 +161,9 @@ impl X {
                         }
                         //move.
                         for (target, &cost) in &self.connections[loc] {
-                            update!(target, cost - 1, old_flow, open, open);
+                            if !open.contains(target as u8) {
+                                update!(target, cost - 1, old_flow, open, open);
+                            }
                         }
                     }
                 }
