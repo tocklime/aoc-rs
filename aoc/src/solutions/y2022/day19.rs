@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use aoc_harness::*;
 use nom::{
     branch::alt,
@@ -24,12 +22,24 @@ const GEODE: usize = 3;
 const RESOURCE_COUNT: usize = 4;
 type Resource = usize;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct ResourceCount([u32; RESOURCE_COUNT]);
 
 impl ResourceCount {
     const fn new() -> Self {
         ResourceCount([0; RESOURCE_COUNT])
+    }
+}
+impl std::ops::Deref for ResourceCount {
+    type Target = [u32; RESOURCE_COUNT];
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl std::ops::DerefMut for ResourceCount {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 #[derive(Debug)]
@@ -56,7 +66,7 @@ fn parse_cost(input: &str) -> IResult<&str, (Resource, ResourceCount)> {
     )(input)?;
     let mut costs = ResourceCount::new();
     for (count, res) in cost_vec {
-        costs.0[res] = count;
+        costs[res] = count;
     }
     Ok((input, (output, costs)))
 }
@@ -66,9 +76,9 @@ fn parse_blueprint(input: &str) -> IResult<&str, Blueprint> {
     let (input, _) = tag(".")(input)?;
     let mut maximum_demand = ResourceCount::new();
     for res in 0..GEODE {
-        maximum_demand.0[res] = costs_vec.iter().map(|x| x.1 .0[res]).max().unwrap();
+        maximum_demand[res] = costs_vec.iter().map(|x| x.1[res]).max().unwrap();
     }
-    maximum_demand.0[GEODE] = u32::MAX;
+    maximum_demand[GEODE] = u32::MAX;
     let mut costs = [ResourceCount::new(); RESOURCE_COUNT];
     for (res, cost) in costs_vec {
         costs[res] = cost;
@@ -84,26 +94,26 @@ fn parse_blueprint(input: &str) -> IResult<&str, Blueprint> {
 }
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Clone)]
 struct State {
-    robots: BTreeMap<Resource, u32>,
-    resources: BTreeMap<Resource, u32>,
+    robots: ResourceCount,
+    resources: ResourceCount,
     time_left: u32,
 }
 
 impl State {
     fn start_state(t: u32) -> Self {
         Self {
-            robots: [(ORE, 1)].into_iter().collect(),
-            resources: Default::default(),
+            robots: ResourceCount([1, 0, 0, 0]),
+            resources: ResourceCount([0, 0, 0, 0]),
             time_left: t,
         }
     }
     fn geode_heuristic(&self) -> u32 {
         //if we built a geode robot for every remaining turn, how many geodes would we get?
-        let geodes_now = self.resources.get(&GEODE).copied().unwrap_or_default();
+        let geodes_now = self.resources[GEODE];
         if self.time_left == 0 {
             return geodes_now;
         }
-        let geode_robots = self.robots.get(&GEODE).copied().unwrap_or_default();
+        let geode_robots = self.robots[GEODE];
         let existing_robot_production = geode_robots * self.time_left;
         let time_left = self.time_left;
         let new_robot_production = (time_left * (time_left - 1)) / 2;
@@ -115,8 +125,9 @@ impl Blueprint {
     fn wait(&self, state: &State, time: u32) -> State {
         let mut new_state = state.clone();
         //harvest resources!
-        for (&r, &count) in &state.robots {
-            *new_state.resources.entry(r).or_default() += time * count;
+        for r in 0..RESOURCE_COUNT {
+            // for (&r, &count) in &state.robots {
+            new_state.resources[r] += time * state.robots[r];
         }
         new_state.time_left -= time;
         new_state
@@ -124,19 +135,19 @@ impl Blueprint {
     fn try_build(&self, state: &State, robot: Resource) -> Option<State> {
         let mut time_to_enough_resource = 0;
         //no point in building more robots than we can possibly use in one turn!
-        let max_need = self.maximum_demand.0[robot];
-        if state.robots.get(&robot).copied().unwrap_or_default() >= max_need {
+        let max_need = self.maximum_demand[robot];
+        if state.robots[robot] >= max_need {
             return None;
         }
         for c in 0..RESOURCE_COUNT {
             // for (c, amount) in &self.costs[robot] {
-            let amount = self.costs[robot].0[c];
-            let have_now = state.resources.get(&c).copied().unwrap_or_default();
+            let amount = self.costs[robot][c];
+            let have_now = state.resources[c];
             if amount <= have_now {
                 continue;
             }
             let need = amount - have_now;
-            let rate = *state.robots.get(&c)?;
+            let rate = state.robots[c];
             //in X turns I have X * rate more.
             //what is smallest int s.t. X*rate >= need.
             if rate == 0 {
@@ -154,11 +165,11 @@ impl Blueprint {
         let mut new_state = self.wait(state, wait_time);
         //produce 1 robot!
         for r in 0..RESOURCE_COUNT {
-            let count = self.costs[robot].0[r];
+            let count = self.costs[robot][r];
             // dbg!(state, robot, &new_state, r, count, wait_time, self);
-            *new_state.resources.entry(r).or_default() -= count;
+            new_state.resources[r] -= count;
         }
-        *new_state.robots.entry(robot).or_default() += 1;
+        new_state.robots[robot] += 1;
         Some(new_state)
     }
 
@@ -173,9 +184,6 @@ impl Blueprint {
             let results = [GEODE, OBSIDIAN, CLAY, ORE]
                 .iter()
                 .flat_map(|r| self.try_build(&state, *r))
-                //     .collect::<Vec<_>>();
-                // let results = results
-                //     .into_iter()
                 .map(|s| self.try_most_geodes_in(s, best_known))
                 .max();
 
@@ -184,12 +192,7 @@ impl Blueprint {
                 None => {
                     //nothing worth building, ever again. just wait
                     let final_state = self.wait(&state, state.time_left);
-                    let geodes = final_state
-                        .resources
-                        .get(&GEODE)
-                        .copied()
-                        .unwrap_or_default();
-                    geodes
+                    final_state.resources[GEODE]
                 }
             }
         };
