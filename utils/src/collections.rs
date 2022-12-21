@@ -101,6 +101,9 @@ where
 pub struct VecLookup<T>(Vec<Option<T>>);
 
 impl<T> VecLookup<T> {
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self(Vec::with_capacity(capacity))
+    }
     pub fn ensure_size(&mut self, size: usize) {
         let short = size.saturating_sub(self.0.len());
         self.0.extend((0..short).map(|_| None));

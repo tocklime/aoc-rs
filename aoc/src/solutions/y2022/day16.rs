@@ -14,7 +14,7 @@ use nom::{
 };
 use utils::{collections::VecLookup, numset::NumSet};
 
-aoc_main!(2022 day 16, both [p2a] => (1728, 2304), example both EG => (1651,1707));
+aoc_main!(2022 day 16, generator whole_input_is::<X>, both [p2a] => (1728, 2304), example both EG => (1651,1707));
 
 const EG: &str = "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
 Valve BB has flow rate=13; tunnels lead to valves CC, AA
@@ -56,9 +56,10 @@ fn parse_line(input: &str) -> IResult<&str, Valve> {
     ))
 }
 
+#[derive(Debug)]
 struct X {
     valves: Vec<Valve>,
-    connections: VecLookup<VecLookup<u32>>,
+    connections: VecLookup<VecLookup<usize>>,
     max_flow: u32,
 }
 impl FromStr for X {
@@ -79,12 +80,12 @@ impl FromStr for X {
             .filter(|v| v.rate > 0)
             .map(|x| x.id)
             .collect_vec();
-        let mut connections: VecLookup<VecLookup<u32>> = VecLookup::default();
+        let mut connections: VecLookup<VecLookup<usize>> = VecLookup::default();
         let min_path = pathfinding::directed::dijkstra::dijkstra_all(&0, |&l| {
             valves[l as usize]
                 .connections
                 .iter()
-                .map(|t| (map[&t[..]], 1))
+                .map(|t| (map[&t[..]], 1_usize))
         });
         let p = min_path
             .into_iter()
@@ -112,8 +113,9 @@ impl FromStr for X {
         })
     }
 }
-//DpType maps location -> cooldown_remaining -> Open valves -> flow.
-type DpType<'a> = VecLookup<HashMap<u32, HashMap<NumSet<u64>, u32>>>;
+//// DpType maps location -> cooldown_remaining -> Open valves (numset) -> flow.
+//DpType maps open valves -> location -> cooldown_remaining -> Open valves (numset) -> flow.
+type DpType<'a> = VecLookup<VecLookup<VecLookup<u32>>>;
 impl X {
     fn get_flow_for_minute(&self, open: NumSet<u64>) -> u32 {
         open.iter()
@@ -126,13 +128,14 @@ impl X {
 
         macro_rules! update {
             ($loc:expr, $cooldown:expr, $oldflow:expr, $oldopen:expr, $newopen:expr) => {
+                let newopen_usize = $newopen.inner() as usize;
                 let flow = self.get_flow_for_minute($oldopen) + $oldflow;
                 let e = new_dp
+                    .entry(newopen_usize)
+                    .or_default()
                     .entry($loc)
                     .or_default()
                     .entry($cooldown)
-                    .or_default()
-                    .entry($newopen)
                     .or_default();
                 if flow > *e {
                     *e = flow;
@@ -140,9 +143,10 @@ impl X {
             };
         }
 
-        for (loc, stuff) in old_dp {
-            for (&cooldown, stuff) in stuff {
-                for (&open, &old_flow) in stuff {
+        for (open, stuff) in old_dp {
+            for (loc, stuff) in stuff {
+                for (cooldown, &old_flow) in stuff {
+                    let open = NumSet::from(open as u64);
                     //what can we do from here?
                     if cooldown > 0 {
                         //only wait for cooldown (travel time).
@@ -167,38 +171,30 @@ impl X {
     }
 }
 
-fn p2a(input: &str) -> (u32, u32) {
-    let input: X = input.parse().unwrap();
-    let mut dp: DpType = Default::default();
-    dp.entry(0)
-        .or_default()
-        .entry(0)
-        .or_default()
-        .insert(NumSet::new(), 0);
+fn p2a(input: &X) -> (u32, u32) {
+    let mut dp: DpType = VecLookup::with_capacity(65535);
+    dp.entry(0).or_default().entry(0).or_default().insert(0, 0);
     let dp26 = (1..=26).fold(dp, |old_dp, _| input.do_time_step(&old_dp));
-    let dp30 = (27..=30).fold(dp26.clone(), |old_dp, _| input.do_time_step(&old_dp));
+
+    let bests: Vec<(usize, u32)> = dp26
+        .iter()
+        .map(|(b, x)| (b, *x.values().flat_map(|x| x.values()).max().unwrap()))
+        .collect();
+
+    let p2 = bests
+        .iter()
+        .cartesian_product(bests.iter())
+        .filter_map(|((a, b), (c, d))| (*a & *c == 0).then_some(b + d))
+        .max()
+        .unwrap();
+
+    let dp30 = (27..=30).fold(dp26, |old_dp, _| input.do_time_step(&old_dp));
 
     let p1 = *dp30
         .values()
-        .flat_map(|x| x.values().flat_map(|y| y.values()))
+        .flat_map(|x| x.values())
+        .flat_map(|y| y.values())
         .max()
         .unwrap();
-    let mut p2 = 0;
-    let mut bests = HashMap::new();
-    for hash in dp26.values() {
-        for hash2 in hash.values() {
-            for (&b, &v) in hash2 {
-                let e = bests.entry(b).or_default();
-                if v > *e {
-                    *e = v;
-                }
-            }
-        }
-    }
-    for (a, b) in bests.iter().cartesian_product(bests.iter()) {
-        if *a.0 & *b.0 == NumSet::new() && a.1 + b.1 > p2 {
-            p2 = a.1 + b.1;
-        }
-    }
     (p1, p2)
 }
