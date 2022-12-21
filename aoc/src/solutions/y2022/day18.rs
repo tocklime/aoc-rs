@@ -43,23 +43,11 @@ fn neighbours(c: &(usize, usize, usize)) -> impl Iterator<Item = Option<(usize, 
     let &(x, y, z) = c;
     [
         z.checked_sub(1).map(|nz| (x, y, nz)),
-        if z + 1 < WORLD_SIZE {
-            Some((x, y, z + 1))
-        } else {
-            None
-        },
+        (z + 1 < WORLD_SIZE).then_some((x, y, z + 1)),
         y.checked_sub(1).map(|ny| (x, ny, z)),
-        if y + 1 < WORLD_SIZE {
-            Some((x, y + 1, z))
-        } else {
-            None
-        },
+        (y + 1 < WORLD_SIZE).then_some((x, y + 1, z)),
         x.checked_sub(1).map(|nx| (nx, y, z)),
-        if x + 1 < WORLD_SIZE {
-            Some((x + 1, y, z))
-        } else {
-            None
-        },
+        (x + 1 < WORLD_SIZE).then_some((x + 1, y, z)),
     ]
     .into_iter()
 }
@@ -104,11 +92,14 @@ fn fixed_arrays(input: &str) -> (usize, usize) {
     let p1 = count_neighbours(&points, &world, Air);
 
     //bfs from origin to find all open air
-    let mut fringe = vec![(0,0,0)];
+    let mut fringe = vec![(0, 0, 0)];
     while let Some(p) = fringe.pop() {
         for n in neighbours(&p).flatten() {
             if let Some(p) = world.get_mut(n) {
-                if Air == *p { *p = OpenAir; fringe.push(n); }
+                if Air == *p {
+                    *p = OpenAir;
+                    fringe.push(n);
+                }
             }
         }
     }
@@ -133,7 +124,7 @@ fn p2(input: &str) -> usize {
         occupied.insert(ns);
     }
     let mut ans = 0;
-    let mut fringe = vec![(0,0,0)];
+    let mut fringe = vec![(0, 0, 0)];
     let mut open = HashSet::new();
     while let Some(p) = fringe.pop() {
         for n in neighbours(&p).flatten() {
@@ -141,7 +132,6 @@ fn p2(input: &str) -> usize {
                 fringe.push(n);
             }
         }
-
     }
     for c in occupied {
         for n in neighbours(&c) {

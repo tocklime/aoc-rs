@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr, cmp::Reverse};
+use std::{cmp::Reverse, collections::HashMap, str::FromStr};
 
 use aoc_harness::*;
 use nom::{
@@ -88,13 +88,7 @@ impl FromStr for X {
         });
         let p = min_path
             .into_iter()
-            .filter_map(|(t, (_, cost))| {
-                if targets.contains(&t) {
-                    Some((t as usize, cost))
-                } else {
-                    None
-                }
-            })
+            .filter_map(|(t, (_, cost))| targets.contains(&t).then_some((t as usize, cost)))
             .collect();
         connections.insert(0, p);
         for &start in &targets {
@@ -106,13 +100,7 @@ impl FromStr for X {
             });
             let p = min_path
                 .into_iter()
-                .filter_map(|(t, (_, cost))| {
-                    if targets.contains(&t) {
-                        Some((t as usize, cost))
-                    } else {
-                        None
-                    }
-                })
+                .filter_map(|(t, (_, cost))| targets.contains(&t).then_some((t as usize, cost)))
                 .collect();
             connections.insert(start as usize, p);
         }
@@ -125,7 +113,7 @@ impl FromStr for X {
     }
 }
 //DpType maps location -> cooldown_remaining -> Open valves -> flow.
-type DpType<'a> = VecLookup<HashMap<(u32, NumSet<u64>), u32>>;
+type DpType<'a> = VecLookup<HashMap<u32, HashMap<NumSet<u64>, u32>>>;
 impl X {
     fn get_flow_for_minute(&self, open: NumSet<u64>) -> u32 {
         open.iter()
@@ -142,7 +130,9 @@ impl X {
                 let e = new_dp
                     .entry($loc)
                     .or_default()
-                    .entry(($cooldown, $newopen))
+                    .entry($cooldown)
+                    .or_default()
+                    .entry($newopen)
                     .or_default();
                 if flow > *e {
                     *e = flow;
@@ -151,22 +141,24 @@ impl X {
         }
 
         for (loc, stuff) in old_dp {
-            for (&(cooldown, open), &old_flow) in stuff {
-                //what can we do from here?
-                if cooldown > 0 {
-                    //only wait for cooldown (travel time).
-                    update!(loc, cooldown - 1, old_flow, open, open);
-                } else if self.get_flow_for_minute(open) == self.max_flow {
-                    //if everything is open, then stand still.
-                    update!(loc, 0, old_flow, open, open);
-                } else {
-                    //can we open?
-                    if !open.contains(loc as u8) && self.valves[loc].rate > 0 {
-                        update!(loc, 0, old_flow, open, open.with(loc as u8));
-                    }
-                    //move.
-                    for (target, &cost) in &self.connections[loc] {
-                        update!(target, cost - 1, old_flow, open, open);
+            for (&cooldown, stuff) in stuff {
+                for (&open, &old_flow) in stuff {
+                    //what can we do from here?
+                    if cooldown > 0 {
+                        //only wait for cooldown (travel time).
+                        update!(loc, cooldown - 1, old_flow, open, open);
+                    } else if self.get_flow_for_minute(open) == self.max_flow {
+                        //if everything is open, then stand still.
+                        update!(loc, 0, old_flow, open, open);
+                    } else {
+                        //can we open?
+                        if !open.contains(loc as u8) && self.valves[loc].rate > 0 {
+                            update!(loc, 0, old_flow, open, open.with(loc as u8));
+                        }
+                        //move.
+                        for (target, &cost) in &self.connections[loc] {
+                            update!(target, cost - 1, old_flow, open, open);
+                        }
                     }
                 }
             }
@@ -180,18 +172,26 @@ fn p2a(input: &str) -> (u32, u32) {
     let mut dp: DpType = Default::default();
     dp.entry(0)
         .or_default()
-        .insert((0, NumSet::new()), 0);
+        .entry(0)
+        .or_default()
+        .insert(NumSet::new(), 0);
     let dp26 = (1..=26).fold(dp, |old_dp, _| input.do_time_step(&old_dp));
     let dp30 = (27..=30).fold(dp26.clone(), |old_dp, _| input.do_time_step(&old_dp));
 
-    let p1 = *dp30.values().flat_map(|x| x.values()).max().unwrap();
+    let p1 = *dp30
+        .values()
+        .flat_map(|x| x.values().flat_map(|y| y.values()))
+        .max()
+        .unwrap();
     let mut p2 = 0;
     let mut bests = HashMap::new();
     for hash in dp26.values() {
-        for (&(_, b), &v) in hash {
-            let e = bests.entry(b).or_default();
-            if v > *e {
-                *e = v;
+        for hash2 in hash.values() {
+            for (&b, &v) in hash2 {
+                let e = bests.entry(b).or_default();
+                if v > *e {
+                    *e = v;
+                }
             }
         }
     }
