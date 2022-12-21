@@ -45,39 +45,28 @@ impl<'a> Monkeys<'a> {
         .unwrap();
         Self(lines.into_iter().collect())
     }
-    fn eval_p1(&self, start: &str) -> u64 {
-        match &self.0[start] {
-            Action::Lit(x) => *x,
-            Action::Op('+', a, b) => self.eval_p1(a) + self.eval_p1(b),
-            Action::Op('*', a, b) => self.eval_p1(a) * self.eval_p1(b),
-            Action::Op('-', a, b) => self.eval_p1(a) - self.eval_p1(b),
-            Action::Op('/', a, b) => self.eval_p1(a) / self.eval_p1(b),
-            _ => panic!(),
-        }
-    }
-    fn eval_p2(&self, start: &str) -> Option<u64> {
-        if start == "humn" {
+    fn eval<const NO_HUMN: bool>(&self, start: &str) -> Option<u64> {
+        if NO_HUMN && start == "humn" {
             None
         } else {
             Some(match &self.0[start] {
                 Action::Lit(x) => *x,
-                Action::Op('+', a, b) => self.eval_p2(a)? + self.eval_p2(b)?,
-                Action::Op('*', a, b) => self.eval_p2(a)? * self.eval_p2(b)?,
-                Action::Op('-', a, b) => self.eval_p2(a)? - self.eval_p2(b)?,
-                Action::Op('/', a, b) => self.eval_p2(a)? / self.eval_p2(b)?,
+                Action::Op('+', a, b) => self.eval::<NO_HUMN>(a)? + self.eval::<NO_HUMN>(b)?,
+                Action::Op('*', a, b) => self.eval::<NO_HUMN>(a)? * self.eval::<NO_HUMN>(b)?,
+                Action::Op('-', a, b) => self.eval::<NO_HUMN>(a)? - self.eval::<NO_HUMN>(b)?,
+                Action::Op('/', a, b) => self.eval::<NO_HUMN>(a)? / self.eval::<NO_HUMN>(b)?,
                 _ => panic!(),
             })
         }
     }
+
     fn solve_humn(&self, start: &str, target: u64) -> u64 {
         if start == "humn" {
             target
         } else {
             match &self.0[start] {
                 Action::Op(op, a, b) => {
-                    let a_val = self.eval_p2(a);
-                    let b_val = self.eval_p2(b);
-                    match (a_val, b_val) {
+                    match (self.eval::<true>(a), self.eval::<true>(b)) {
                         (Some(a_val), None) => {
                             //target = a_val - XXXX
                             let target_sub = match op {
@@ -118,15 +107,14 @@ fn parse_action(input: &str) -> IResult<&str, Action> {
     ))(input)
 }
 fn p1(input: &str) -> u64 {
-    Monkeys::from_str(input).eval_p1("root")
+    Monkeys::from_str(input).eval::<false>("root").unwrap()
 }
 fn p2(input: &str) -> u64 {
     let monkeys = Monkeys::from_str(input);
     let Action::Op(_, l, r) = monkeys.0["root"] else {panic!()};
-    let (a, b) = (monkeys.eval_p2(l), monkeys.eval_p2(r));
-    if let Some(a) = a {
-        monkeys.solve_humn(r, a)
-    } else {
-        monkeys.solve_humn(l, b.unwrap())
+    match (monkeys.eval::<true>(l), monkeys.eval::<true>(r)) {
+        (None, Some(b)) => monkeys.solve_humn(l, b),
+        (Some(a), None) => monkeys.solve_humn(r, a),
+        _ => panic!(),
     }
 }
