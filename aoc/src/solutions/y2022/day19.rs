@@ -174,32 +174,31 @@ impl Blueprint {
     }
 
     fn most_geodes_in(&self, time_left: u32) -> u32 {
-        let mut best_known = 0;
-        self.try_most_geodes_in(State::start_state(time_left), &mut best_known)
+        self.try_most_geodes_in(State::start_state(time_left))
     }
-    fn try_most_geodes_in(&self, state: State, best_known: &mut u32) -> u32 {
-        let ans = if state.geode_heuristic() < *best_known {
-            0
-        } else {
-            let results = [GEODE, OBSIDIAN, CLAY, ORE]
+    fn try_most_geodes_in(&self, state: State) -> u32 {
+        let mut best_known = 0;
+        let mut stack = vec![state];
+        while let Some(state) = stack.pop() {
+            if state.geode_heuristic() < best_known {
+                continue;
+            }
+            let next_states = [GEODE, OBSIDIAN, CLAY, ORE]
                 .iter()
                 .flat_map(|r| self.try_build(&state, *r))
-                .map(|s| self.try_most_geodes_in(s, best_known))
-                .max();
-
-            match results {
-                Some(x) => x,
-                None => {
-                    //nothing worth building, ever again. just wait
-                    let final_state = self.wait(&state, state.time_left);
-                    final_state.resources[GEODE]
+                .collect::<Vec<_>>();
+            if next_states.is_empty() {
+                //nothing worth building, ever again. just wait
+                let final_state = self.wait(&state, state.time_left);
+                let ans = final_state.resources[GEODE];
+                if ans > best_known {
+                    best_known = ans;
                 }
+            } else {
+                stack.extend(next_states);
             }
-        };
-        if ans > *best_known {
-            *best_known = ans;
         }
-        ans
+        best_known
     }
 }
 
