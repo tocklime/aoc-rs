@@ -198,7 +198,7 @@ fn transfer_edge_prob(p: Point<u32>, dir: Dir) -> (Point<u32>, Dir, Option<usize
         Dir::Right => {
             let fb = p.y % S;
             let fb1 = fb + 1;
-            match dbg!(p.y / S) {
+            match p.y / S {
                 0 => (Point::new(2 * S - fb1, S), Dir::Up, None), //up on (1,1)
                 1 => (Point::new(3 * S - 1, 4 * S - fb1), Dir::Left, None), //left on (2,3)
                 2 => (Point::new(3 * S - fb1, 3 * S), Dir::Up, None), // up on (2,3)
@@ -207,16 +207,16 @@ fn transfer_edge_prob(p: Point<u32>, dir: Dir) -> (Point<u32>, Dir, Option<usize
             }
         }
     };
-    println!(
-        "transport {:?} {:?} -> {:?} ({},{}) -> ({},{})",
-        p,
-        dir,
-        a,
-        p.x / S,
-        p.y / S,
-        a.0.x / S,
-        a.0.y / S
-    );
+    // println!(
+    //     "transport {:?} {:?} -> {:?} ({},{}) -> ({},{})",
+    //     p,
+    //     dir,
+    //     a,
+    //     p.x / S,
+    //     p.y / S,
+    //     a.0.x / S,
+    //     a.0.y / S
+    // );
     a
 }
 fn transfer_edge_eg(p: Point<u32>, dir: Dir) -> (Point<u32>, Dir, Option<usize>) {
@@ -274,7 +274,7 @@ fn transfer_edge_eg(p: Point<u32>, dir: Dir) -> (Point<u32>, Dir, Option<usize>)
         }
         Dir::Right => {
             let fb = p.y % S;
-            match dbg!(p.y / S) {
+            match p.y / S {
                 0 => (Point::new(3 * S - 1, 3 * S - (fb + 1)), Dir::Left, None), //Left on 1
                 1 => (Point::new(3 * S + fb, S - 1), Dir::Down, None),           //Down on 6
                 2 => (Point::new(4 * S - 1, S - (fb + 1)), Dir::Up, None),       //Left on 6
@@ -282,7 +282,7 @@ fn transfer_edge_eg(p: Point<u32>, dir: Dir) -> (Point<u32>, Dir, Option<usize>)
             }
         }
     };
-    println!("transport {:?} {:?} -> {:?}", p, dir, a);
+    // println!("transport {:?} {:?} -> {:?}", p, dir, a);
     a
 }
 fn p2(input: &str) -> u32 {
@@ -296,7 +296,7 @@ fn p2(input: &str) -> u32 {
         map.remove(&s);
     }
 
-    println!("{}", cartesian::render_char_map_w(&map, 1, " ", true));
+    // println!("{}", cartesian::render_char_map_w(&map, 1, " ", true));
     let is_eg = input == EG;
     if !is_eg {
         let offset = 10;
@@ -307,7 +307,7 @@ fn p2(input: &str) -> u32 {
                 if map.get(&up).is_none() {
                     continue;
                 }
-                dbg!(up.step(Dir::Up), map.get(&up), map.get(&up.step(Dir::Up)));
+                // dbg!(up.step(Dir::Up), map.get(&up), map.get(&up.step(Dir::Up)));
                 if map.get(&up.step(Dir::Up)).is_none() {
                     let xfer = transfer_edge_prob(up, Dir::Up);
                     let back = transfer_edge_prob(xfer.0, xfer.1.turn_about());
@@ -320,7 +320,7 @@ fn p2(input: &str) -> u32 {
 
     let mut log = map.clone();
     let bb: Aabb<u32> = map.keys().collect();
-    dbg!(bb);
+    // dbg!(bb);
     let (_, instrs) = many1(instr)(instrs).unwrap();
     // println!("{}", cartesian::render_char_map_w(&map, 1, " ", true));
     let first_x = board.chars().position(|c| c == '.').unwrap();
@@ -385,8 +385,8 @@ fn p2(input: &str) -> u32 {
     // dbg!(position, dir);
     // println!("{}", cartesian::render_char_map_w(&log, 1, " ", true));
 
-    1000 * dbg!((bb.height() as u32 - position.y))
-        + 4 * dbg!((position.x + 1))
+    1000 * (bb.height() as u32 - position.y)
+        + 4 * (position.x + 1)
         + match dir {
             Dir::Up => 3,
             Dir::Down => 1,
