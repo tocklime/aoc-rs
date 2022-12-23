@@ -1,12 +1,12 @@
-use std::{
-    collections::{HashMap, HashSet},
-    ops::RangeBounds,
-};
+use std::collections::{HashMap, HashSet};
 
 use aoc_harness::*;
-use utils::cartesian::{self, point_map_bounding_box, render_char_map_w, render_set_w, Point};
+use utils::{
+    aabb::Aabb,
+    cartesian::{as_point_map, Point},
+};
 
-aoc_main!(2022 day 23, part1 [p1] => 3990, part2 [p2] => 1057, example part1 EG0 => 25, example both EG => (110,20));
+aoc_main!(2022 day 23, generator gen, part1 [p1] => 3990, part2 [p2] => 1057, example both EG0 => (25,4), example both EG => (110,20));
 
 const EG: &str = "....#..
 ..###.#
@@ -25,111 +25,69 @@ const EG0: &str = ".....
 .....
 ";
 
-struct Elf {
-    id: usize,
-    next_choice: u8,
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Default)]
+enum Solo<T> {
+    #[default]
+    None,
+    One(T),
+    Many,
+}
+impl<T> Solo<T> {
+    fn push(&mut self, t: T) {
+        *self = match self {
+            Solo::None => Solo::One(t),
+            _ => Solo::Many,
+        };
+    }
 }
 
-fn step_world(world: &mut HashMap<Point<i64>, u64>, round_num: usize) -> usize {
-    let mut proposals: HashMap<Point<i64>, Vec<(Point<i64>, u64)>> = HashMap::new();
-    let choices = [0, 1, 2, 3]
-        .into_iter()
-        .cycle()
-        .skip(round_num % 4)
-        .take(4)
-        .collect_vec();
-    for (loc, elf_id) in world.iter() {
+fn step_world(world: &mut HashSet<Point<i64>>, round_num: usize) -> usize {
+    let mut proposals: HashMap<Point<i64>, Solo<Point<i64>>> = HashMap::new();
+    const CHOICES: [[usize; 3]; 4] = [[7, 0, 1], [3, 4, 5], [5, 6, 7], [1, 2, 3]];
+    for loc in world.iter() {
         //clockwise from up.
-        let n_map = loc
-            .neighbours_with_diagonals()
-            .map(|p| world.contains_key(&p));
-        if n_map.iter().any(|x| *x) {
-            let choice = choices.iter().find_map(|c| {
-                match c {
-                    0 =>
-                    //up
-                    {
-                        [loc.up(), loc.up().left(), loc.up().right()]
-                            .into_iter()
-                            .all(|x| !world.contains_key(&x))
-                            .then_some(loc.up())
-                    }
-                    1 =>
-                    //down
-                    {
-                        [loc.down(), loc.down().left(), loc.down().right()]
-                            .into_iter()
-                            .all(|x| !world.contains_key(&x))
-                            .then_some(loc.down())
-                    }
-                    2 =>
-                    //left
-                    {
-                        [loc.left(), loc.left().up(), loc.left().down()]
-                            .into_iter()
-                            .all(|x| !world.contains_key(&x))
-                            .then_some(loc.left())
-                    }
-                    3 =>
-                    //right
-                    {
-                        [loc.right(), loc.right().up(), loc.right().down()]
-                            .into_iter()
-                            .all(|x| !world.contains_key(&x))
-                            .then_some(loc.right())
-                    }
-                    _ => panic!(),
-                }
+        let neighbours = loc.neighbours_with_diagonals();
+        let n_map = loc.neighbours_with_diagonals().map(|p| world.get(&p));
+        // 701
+        // 6#2
+        // 543
+        if n_map.iter().any(|x| x.is_some()) {
+            let choice = (0..4).find_map(|ix| {
+                let ch = &CHOICES[(ix + round_num) % 4];
+                ch.iter()
+                    .all(|x| n_map[*x].is_none())
+                    .then_some(neighbours[ch[1]])
             });
             if let Some(choice) = choice {
-                proposals.entry(choice).or_default().push((*loc, *elf_id));
+                proposals.entry(choice).or_default().push(*loc);
             }
         }
     }
     let mut moves = 0;
     for (p, list) in proposals {
-        if list.len() == 1 {
+        if let Solo::One(from) = list {
             moves += 1;
-            let (from, elf) = list[0];
             world.remove(&from);
-            world.insert(p, elf);
+            world.insert(p);
         }
     }
     moves
 }
-fn p1(input: &str) -> usize {
-    let world = cartesian::as_point_map::<i64>(input, true);
-    let mut world = world
-        .iter()
-        .enumerate()
-        .filter_map(|(id, (p, c))| (c == &'#').then_some((*p, id as u64)))
-        .collect();
-    for r in 0..10 {
-        let x = step_world(&mut world, r);
-        let w: HashSet<Point<i64>> = world.keys().copied().collect();
-        println!(
-            "{} ({}):\n{}\n\n",
-            r + 1,
-            x,
-            render_set_w(&w, '#', '.', true)
-        );
-    }
-    let bb = point_map_bounding_box(&world);
+
+fn gen(input: &str) -> HashSet<Point<i64>> {
+    as_point_map::<i64>(input, true)
+        .into_iter()
+        .filter_map(|(p, c)| (c == '#').then_some(p))
+        .collect()
+}
+fn p1(input: &HashSet<Point<i64>>) -> usize {
+    let mut world = input.clone();
+    let _: usize = (0..10).map(|r| step_world(&mut world, r)).sum();
+    let bb: Aabb<i64> = world.iter().collect();
     bb.area() - world.len()
 }
 
-fn p2(input: &str) -> usize {
-    let world = cartesian::as_point_map::<i64>(input, true);
-    let mut world = world
-        .iter()
-        .enumerate()
-        .filter_map(|(id, (p, c))| (c == &'#').then_some((*p, id as u64)))
-        .collect();
-    (0..)
-        .find(|r| {
-            let x = step_world(&mut world, *r);
-            x == 0
-        })
-        .unwrap()
-        + 1
+fn p2(input: &HashSet<Point<i64>>) -> usize {
+    let mut world = input.clone();
+    (0..).find(|r| step_world(&mut world, *r) == 0).unwrap() + 1
 }
