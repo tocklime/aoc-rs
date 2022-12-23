@@ -36,4 +36,4 @@ num-traits = "0.2.15"
 num-modular = "0.5.1"
 
 anyhoo = { git = "https://github.com/tranzystorek-io/anyhoo", features = ["reexport"] }
-fxhash = "0.2.1"
+rustc-hash = "1.1.0"

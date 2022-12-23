@@ -1,6 +1,5 @@
-use std::collections::{HashMap, HashSet};
-
 use aoc_harness::*;
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use utils::{
     aabb::Aabb,
     cartesian::{as_point_map, Point},
@@ -25,29 +24,8 @@ const EG0: &str = ".....
 .....
 ";
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Default)]
-enum Solo<T> {
-    #[default]
-    None,
-    One(T),
-    Many,
-}
-impl<T> Solo<T> {
-    fn push(&mut self, t: T) {
-        *self = match self {
-            Solo::None => Solo::One(t),
-            _ => Solo::Many,
-        };
-    }
-}
-
-// type MyMap = HashMap<Point<i64>, Solo<Point<i64>>>;
-// type MySet = HashSet<Point<i64>>;
-type MyMap = fxhash::FxHashMap<Point<i64>, Solo<Point<i64>>>;
-type MySet = fxhash::FxHashSet<Point<i64>>;
-
-fn step_world(world: &mut MySet, round_num: usize) -> usize {
-    let mut proposals: MyMap = MyMap::default();
+fn step_world(world: &mut HashSet<Point<i64>>, round_num: usize) -> usize {
+    let mut proposals: HashMap<Point<i64>, Option<Point<i64>>> = Default::default();
     //we get neighbours from `neighbours_with_diagonals clockwise from up.
     // 701
     // 6#2
@@ -64,13 +42,16 @@ fn step_world(world: &mut MySet, round_num: usize) -> usize {
                     .then_some(neighbours[ch[1]])
             });
             if let Some(choice) = choice {
-                proposals.entry(choice).or_default().push(*loc);
+                proposals
+                    .entry(choice)
+                    .and_modify(|x| *x = None)
+                    .or_insert(Some(*loc));
             }
         }
     }
     let mut moves = 0;
     for (p, list) in proposals {
-        if let Solo::One(from) = list {
+        if let Some(from) = list {
             moves += 1;
             world.remove(&from);
             world.insert(p);
@@ -79,20 +60,20 @@ fn step_world(world: &mut MySet, round_num: usize) -> usize {
     moves
 }
 
-fn gen(input: &str) -> MySet {
+fn gen(input: &str) -> HashSet<Point<i64>> {
     as_point_map::<i64>(input, true)
         .into_iter()
         .filter_map(|(p, c)| (c == '#').then_some(p))
         .collect()
 }
-fn p1(input: &MySet) -> usize {
+fn p1(input: &HashSet<Point<i64>>) -> usize {
     let mut world = input.clone();
-    let _: usize = (0..10).map(|r| step_world(&mut world, r)).sum();
+    (0..10).for_each(|r| _ = step_world(&mut world, r));
     let bb: Aabb<i64> = world.iter().collect();
     bb.area() - world.len()
 }
 
-fn p2(input: &MySet) -> usize {
+fn p2(input: &HashSet<Point<i64>>) -> usize {
     let mut world = input.clone();
     (0..).find(|r| step_world(&mut world, *r) == 0).unwrap() + 1
 }
