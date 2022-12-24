@@ -17,7 +17,13 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.INPUTS_PAT }}
-      - uses: ./.github/workflows/rust_setup.yaml
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          components: rustfmt, clippy
+          toolchain: stable
+      - uses: Swatinem/rust-cache@v2
       - name: build
         continue-on-error: true
         id: build
@@ -32,6 +38,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          components: rustfmt, clippy
+          toolchain: stable
       - uses: Swatinem/rust-cache@v2
       - name: Check clippy
         run: cargo clippy
@@ -44,6 +56,12 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.INPUTS_PAT }}
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          components: rustfmt, clippy
+          toolchain: stable
       - uses: Swatinem/rust-cache@v2
       - name: Run tests
         run: cargo test --lib --release
@@ -51,6 +69,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          components: rustfmt, clippy
+          toolchain: stable
       - uses: Swatinem/rust-cache@v2
       - run: rustup component add clippy
       - uses: actions-rs/clippy-check@v1
