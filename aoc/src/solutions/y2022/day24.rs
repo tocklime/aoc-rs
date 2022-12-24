@@ -20,7 +20,7 @@ const EG: &str = "#.######
 struct World {
     start: Point<i32>,
     target: Point<i32>,
-    blizzards: HashMap<Dir, HashMap<i32, Vec<i32>>>,
+    blizzards: HashMap<Dir, HashMap<i32, Vec<bool>>>,
 }
 
 impl World {
@@ -47,9 +47,8 @@ impl World {
         let blizzs = bliz_locs.map(|(d, fixed, p)| {
             self.blizzards[&d]
                 .get(&fixed)
-                .into_iter()
-                .flatten()
-                .any(|v| *v == p)
+                .map(|x| x[p as usize])
+                .unwrap_or(false)
         });
         match blizzs {
             [false, false, false, false] => '.',
@@ -102,13 +101,21 @@ fn p2(input: &str) -> (i32, i32) {
     let bb: Aabb<i32> = world.keys().collect();
     let start = Point::new(1, bb.top_right.y);
     let target = Point::new(bb.top_right.x - 1, 0);
-    let mut blizzards: HashMap<Dir, HashMap<i32, Vec<i32>>> = Default::default();
+    let mut blizzards: HashMap<Dir, HashMap<i32, Vec<bool>>> = Default::default();
     for (point, char) in world.into_iter() {
         if let Some(d) = Dir::try_from_x("^v<>", char) {
             let a = blizzards.entry(d).or_default();
             match d {
-                Dir::Up | Dir::Down => a.entry(point.x).or_default().push(point.y),
-                Dir::Left | Dir::Right => a.entry(point.y).or_default().push(point.x),
+                Dir::Up | Dir::Down => {
+                    a.entry(point.x)
+                        .or_insert_with(|| vec![false; bb.top_right.y as usize])
+                        [point.y as usize] = true
+                }
+                Dir::Left | Dir::Right => {
+                    a.entry(point.y)
+                        .or_insert_with(|| vec![false; bb.top_right.x as usize])
+                        [point.x as usize] = true
+                }
             }
         }
     }
