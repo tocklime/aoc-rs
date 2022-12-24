@@ -22,6 +22,7 @@ jobs:
         with:
           override: true
           components: rustfmt, clippy
+          toolchain: stable
       - uses: Swatinem/rust-cache@v2
       - name: build
         continue-on-error: true
