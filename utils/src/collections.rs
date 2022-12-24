@@ -197,4 +197,16 @@ impl<'a, T: Default> VecLookupEntry<'a, T> {
             }
         }
     }
+    pub fn or_insert_with<F>(self, f: F) -> &'a mut T
+    where
+        F: FnOnce() -> T,
+    {
+        match self {
+            VecLookupEntry::Occupied(_, r) => r,
+            VecLookupEntry::Vacant(k, v) => {
+                v.insert(k, f());
+                v.get_mut(k).unwrap()
+            }
+        }
+    }
 }
