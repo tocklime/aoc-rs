@@ -2,9 +2,9 @@ name: Build and run all advent of code
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 env:
   CARGO_TERM_COLOR: always
@@ -13,40 +13,45 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-      with: 
-        submodules: true
-        token: ${{ secrets.INPUTS_PAT }}
-    - uses: Swatinem/rust-cache@v2
-    - name: build
-      continue-on-error: true
-      id: build
-      run: cargo build --release
-    - name: build-retry
-      id: retry
-      if: steps.build.outcome=='failure'
-      run: cargo build --release --verbose
-    - name: Run for score
-      run: cargo run --release --bin aoc
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          token: ${{ secrets.INPUTS_PAT }}
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: build
+        continue-on-error: true
+        id: build
+        run: cargo build --release
+      - name: build-retry
+        id: retry
+        if: steps.build.outcome=='failure'
+        run: cargo build --release --verbose
+      - name: Run for score
+        run: cargo run --release --bin aoc
   check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: Swatinem/rust-cache@v2
-    - name: Check clippy
-      run: cargo clippy
-    - name: Check formatting
-      run: cargo fmt --all -- --check
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+      - name: Check clippy
+        run: cargo clippy
+      - name: Check formatting
+        run: cargo fmt --all -- --check
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-      with: 
-        submodules: true
-        token: ${{ secrets.INPUTS_PAT }}
-    - uses: Swatinem/rust-cache@v2
-    - name: Run tests
-      run: cargo test --lib --release
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          token: ${{ secrets.INPUTS_PAT }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Run tests
+        run: cargo test --lib --release
   clippy_check:
     runs-on: ubuntu-latest
     steps:
