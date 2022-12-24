@@ -33,7 +33,7 @@ impl AocAllMainInput {
         let path = PathBuf::from(dir)
             .canonicalize()
             .expect("cannot find directory");
-        let mut files: Vec<_> = WalkDir::new(&path)
+        let mut files: Vec<_> = WalkDir::new(path)
             .into_iter()
             .filter_map(Result::ok)
             .filter_map(|x| {

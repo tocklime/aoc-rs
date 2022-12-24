@@ -27,7 +27,7 @@ impl FindLatestInput {
         let filename_part = filename_part_q.trim_matches('"');
         let dir = dir_q.trim_matches('"');
         let path = PathBuf::from(dir).canonicalize().unwrap();
-        let newest = WalkDir::new(&path)
+        let newest = WalkDir::new(path)
             .into_iter()
             .filter_map(Result::ok)
             .filter(|x| {

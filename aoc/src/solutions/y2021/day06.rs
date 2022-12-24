@@ -56,6 +56,6 @@ fn matrices<const GENERATIONS: usize>(input: &[usize]) -> usize {
     //   │  20 210  37 120  84  45 126  11 126 │
     //   └                                     ┘
     let ans = mat_pow * counts;
-    ans.iter().map(|x| *x as usize).sum()
+    ans.iter().copied().sum()
 }
 const EG: &str = "3,4,3,1,2";

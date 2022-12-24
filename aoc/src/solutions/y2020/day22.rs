@@ -23,7 +23,10 @@ impl Game {
         if self.hands[0].is_empty() || self.hands[1].is_empty() {
             None
         } else {
-            Some((self.hands[0].pop_front().unwrap(), self.hands[1].pop_front().unwrap()))
+            Some((
+                self.hands[0].pop_front().unwrap(),
+                self.hands[1].pop_front().unwrap(),
+            ))
         }
     }
     #[inline]
@@ -63,7 +66,7 @@ impl Game {
     }
     fn basic_game(&mut self) -> Player {
         while let Some(cards) = self.draw_cards() {
-            let winner = if cards.0 > cards.1 { 0 } else { 1 };
+            let winner = u8::from(cards.0 <= cards.1);
             self.replace_cards(winner, cards);
         }
         self.winner().unwrap()
@@ -85,15 +88,15 @@ impl Game {
             }
             turn += 1;
             if let Some(cs) = self.draw_cards() {
-                let winner = if (cs.0 as usize) <= self.hands[0].len() && (cs.1 as usize) <= self.hands[1].len() {
+                let winner = if (cs.0 as usize) <= self.hands[0].len()
+                    && (cs.1 as usize) <= self.hands[1].len()
+                {
                     let mut sub_game = self.clone();
                     sub_game.hands[0].truncate(cs.0.into());
                     sub_game.hands[1].truncate(cs.1.into());
                     sub_game.recursive_game(game_count, check_every)
-                } else if cs.0 > cs.1 {
-                    0
                 } else {
-                    1
+                    u8::from(cs.0 <= cs.1)
                 };
                 self.replace_cards(winner, cs);
             } else {

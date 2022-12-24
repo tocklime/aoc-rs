@@ -163,7 +163,18 @@ fn p1(input: &str) -> u32 {
 
 fn transfer_edge_prob(p: Point<u32>, dir: Dir) -> (Point<u32>, Dir, Option<usize>) {
     const S: u32 = 50;
-    let a = match dir {
+
+    // println!(
+    //     "transport {:?} {:?} -> {:?} ({},{}) -> ({},{})",
+    //     p,
+    //     dir,
+    //     a,
+    //     p.x / S,
+    //     p.y / S,
+    //     a.0.x / S,
+    //     a.0.y / S
+    // );
+    match dir {
         Dir::Up => {
             let fl = p.x % S;
             let fl1 = fl + 1;
@@ -206,18 +217,7 @@ fn transfer_edge_prob(p: Point<u32>, dir: Dir) -> (Point<u32>, Dir, Option<usize
                 _ => panic!(),
             }
         }
-    };
-    // println!(
-    //     "transport {:?} {:?} -> {:?} ({},{}) -> ({},{})",
-    //     p,
-    //     dir,
-    //     a,
-    //     p.x / S,
-    //     p.y / S,
-    //     a.0.x / S,
-    //     a.0.y / S
-    // );
-    a
+    }
 }
 fn transfer_edge_eg(p: Point<u32>, dir: Dir) -> (Point<u32>, Dir, Option<usize>) {
     //            mnop
@@ -237,7 +237,7 @@ fn transfer_edge_eg(p: Point<u32>, dir: Dir) -> (Point<u32>, Dir, Option<usize>)
     //            ||||||||
     //            efghijkl
     const S: u32 = 4;
-    let a = match dir {
+    match dir {
         Dir::Up =>
         //up from 1, 3, 2 or 6.
         {
@@ -281,9 +281,7 @@ fn transfer_edge_eg(p: Point<u32>, dir: Dir) -> (Point<u32>, Dir, Option<usize>)
                 _ => panic!(),
             }
         }
-    };
-    // println!("transport {:?} {:?} -> {:?}", p, dir, a);
-    a
+    }
 }
 fn p2(input: &str) -> u32 {
     let (board, instrs) = input.trim_end().split_once("\n\n").unwrap();
@@ -300,10 +298,10 @@ fn p2(input: &str) -> u32 {
     let is_eg = input == EG;
     if !is_eg {
         let offset = 10;
-        let S = 50;
+        let s = 50;
         for x in 0..3 {
             for y in 0..4 {
-                let up = Point::new(x * S + offset, S * (y + 1) - 1);
+                let up = Point::new(x * s + offset, s * (y + 1) - 1);
                 if map.get(&up).is_none() {
                     continue;
                 }
