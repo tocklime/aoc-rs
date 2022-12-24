@@ -1,13 +1,12 @@
 use std::collections::{HashMap, HashSet};
 
 use aoc_harness::*;
-use pathfinding::directed::dijkstra;
 use utils::{
     aabb::Aabb,
     cartesian::{self, Dir, Point},
 };
 
-aoc_main!(2022 day 24, part1 [p1], part2 [p2], example both EG => (18,54));
+aoc_main!(2022 day 24, both [p2] => (373,997), example both EG => (18,54));
 
 const EG: &str = "#.######
 #>>.<^<#
@@ -34,7 +33,6 @@ impl World {
         if p.x == 0 || p.x > self.target.x || p.y == 0 || p.y >= self.start.y {
             return '#';
         }
-        // dbg!(&self.blizzards[&Dir::Left], mod_w);
         let blizzards = [
             self.blizzards[&Dir::Left]
                 .iter()
@@ -65,6 +63,7 @@ impl World {
                 .unwrap(),
         }
     }
+    #[allow(dead_code)]
     fn render_world_at(&self, t: i32) -> String {
         let mut a = String::new();
         for y in (0..=self.start.y).rev() {
@@ -94,7 +93,7 @@ impl World {
     }
 }
 
-fn p1(input: &str) -> usize {
+fn p2(input: &str) -> (i32, i32) {
     let world = cartesian::as_point_map(input, true);
     let bb: Aabb<i32> = world.keys().collect();
     let start = Point::new(1, bb.top_right.y);
@@ -110,53 +109,9 @@ fn p1(input: &str) -> usize {
         target,
         blizzards,
     };
-    // dbg!(&world);
-    // dbg!(world.space_at(world.start.down(), 1));
-    // println!("{}", world.render_world_at(1));
-    // todo!();
-    let x = pathfinding::directed::astar::astar(
-        &(0, world.start),
-        |&(t, p)| {
-            let my_t = t;
-            let world = &world;
-            p.neighbours_and_self()
-                .into_iter()
-                .filter(move |p| world.space_at(*p, my_t + 1) == '.')
-                .map(move |p| ((t + 1, p), 1))
-        },
-        |(_, p)| (*p - world.target).manhattan(),
-        |(_, p)| *p == world.target,
-    );
-
-    x.unwrap().1 as usize
-}
-
-fn p2(input: &str) -> usize {
-    let world = cartesian::as_point_map(input, true);
-    let bb: Aabb<i32> = world.keys().collect();
-    let start = Point::new(1, bb.top_right.y);
-    let target = Point::new(bb.top_right.x - 1, 0);
-    let mut blizzards: HashMap<Dir, HashSet<Point<i32>>> = Default::default();
-    for (point, char) in world.into_iter() {
-        if let Some(d) = Dir::try_from_x("^v<>", char) {
-            blizzards.entry(d).or_default().insert(point);
-        }
-    }
-    let world = World {
-        start,
-        target,
-        blizzards,
-    };
-    // dbg!(&world);
-    // dbg!(world.space_at(world.start.down(), 1));
-    // println!("{}", world.render_world_at(1));
-    // todo!();
     let there = world.shortest(0, world.start, world.target);
-    dbg!(there);
     let back = world.shortest(there, world.target, world.start);
-    dbg!(back);
     let there_again = world.shortest(back, world.start, world.target);
-    dbg!(there_again);
 
-    there_again as usize
+    (there, there_again)
 }
