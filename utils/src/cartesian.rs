@@ -193,6 +193,12 @@ impl<T: Num + WrappingAdd + WrappingSub> Point<T> {
     {
         [self.up(), self.down(), self.left(), self.right()]
     }
+    pub fn neighbours_and_self(&self) -> [Self; 5]
+    where
+        T: Copy,
+    {
+        [self.down(), self.left(), *self, self.right(), self.up()]
+    }
     pub fn neighbours_and_self_with_diagonals_in_order(&self) -> [Self; 9]
     where
         T: Copy,

@@ -600,3 +600,6 @@
   23:
     part1: !Checked '3990'
     part2: !Checked '1057'
+  24:
+    part1: !Observed '373'
+    part2: !Observed '997'
