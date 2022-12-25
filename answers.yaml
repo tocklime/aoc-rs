@@ -603,3 +603,6 @@
   24:
     part1: !Checked '373'
     part2: !Checked '997'
+  25:
+    part1: !Checked 2=0--0---11--01=-100
+    part2: Unknown
