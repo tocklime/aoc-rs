@@ -56,6 +56,7 @@ version = "0.1.0"
 dependencies = [
  "anyhoo",
  "aoc_harness",
+ "associative_positional_list",
  "automod",
  "bitintr",
  "bitvec",
@@ -129,6 +130,7 @@ version = "0.1.0"
 dependencies = [
  "anyhoo",
  "aoc_harness",
+ "associative_positional_list",
  "automod",
  "bitintr",
  "bitvec",
@@ -169,6 +171,11 @@ checksum = "cab112f0a86d568ea0e627cc1d6be74a1e9cd55214684db5561995f6dad897c6"
 dependencies = [
  "num-traits",
 ]
+
+[[package]]
+name = "associative_positional_list"
+version = "0.1.1"
+source = "git+https://github.com/jwhitham/associative_positional_list#4050fa8daa402c5966037470a72620c44cdc98f0"
 
 [[package]]
 name = "autocfg"

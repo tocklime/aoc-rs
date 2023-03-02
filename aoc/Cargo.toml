@@ -36,4 +36,5 @@ num-traits = "0.2.15"
 num-modular = "0.5.1"
 
 anyhoo = { git = "https://github.com/tranzystorek-io/anyhoo", features = ["reexport"] }
+associative_positional_list = { git = "https://github.com/jwhitham/associative_positional_list"}
 rustc-hash = "1.1.0"
