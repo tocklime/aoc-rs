@@ -77,7 +77,7 @@ jobs:
           toolchain: stable
       - uses: Swatinem/rust-cache@v2
       - run: rustup component add clippy
-      - uses: actions-rs/clippy-check@v1
+      - uses: clechasseur/rs-clippy-check@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
