@@ -8,6 +8,5 @@ edition = "2021"
 [dependencies]
 proc-macro2 = "1.0.32"
 quote = "1.0.10"
-syn = "1.0.81"
-itertools = "0.10.1"
+syn = "2"
 walkdir = "2"

@@ -22,7 +22,7 @@ workspace = false
 [tasks.this_year]
 description = "compile and run all solutions"
 command = "cargo"
-args = ["run", "--release", "-p", "aoc", "--", "-y2022"]
+args = ["run", "--release", "-p", "aoc", "--", "-y2023"]
 workspace = false
 
 [env]

@@ -6,11 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-itertools = "0.10.1"
+itertools = "0.12"
 ureq = "2.3.1"
 aoc_harness_macros = { path = "libs/macros"}
 serde = {version = "1", features = ["derive"]}
 serde_yaml = "0.9.14"
 clap = { version = "4.0.26", features = ["derive"]}
 chrono = "0.4.23"
-benchmarking = { git = "https://github.com/tocklime/benchmarking"}
+benchmarking = "0.4"

@@ -190,7 +190,7 @@ fn p2(input: &str) -> OcrString {
     let mut time = 0;
     let mut record = |val: i32| {
         if (time % 40 - val).abs() < 2 {
-            screen[(time as usize)] = '#';
+            screen[time as usize] = '#';
         }
         time += 1;
     };
@@ -205,7 +205,7 @@ fn both(input: &str) -> (i32, OcrString) {
     let mut ans: i32 = 0;
     let mut record = |val: i32| {
         if (time % 40 - val).abs() < 2 {
-            screen[(time as usize)] = '#';
+            screen[time as usize] = '#';
         }
         time += 1;
         if ((time) % 40) == 20 {

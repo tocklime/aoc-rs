@@ -122,7 +122,7 @@
     part2: !Observed '3903937'
   16:
     part1: !Observed '10010010110011010'
-    part2: !Observed 01010100101011100
+    part2: !Observed '01010100101011100'
   17:
     part1: !Observed DRLRDDURDR
     part2: !Observed '500'

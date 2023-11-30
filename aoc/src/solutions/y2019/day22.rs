@@ -1,12 +1,11 @@
 use aoc_harness::aoc_main;
 use num_modular::{ModularInteger, Montgomery, MontgomeryInt, ReducedInt};
-use num_traits::{pow::Pow, Inv};
 use std::convert::TryInto;
 
 aoc_main!(2019 day 22, part1 [p1] => 6526, part2 [p2] => 79_855_812_422_607);
 
 type NT = u64;
-type T = ReducedInt<NT, Montgomery<NT, NT>>;
+type T = ReducedInt<NT, Montgomery<NT>>;
 
 pub fn handle_deck(input: &str, deck_size: NT) -> (T, T) {
     let mut offset = MontgomeryInt::new(0, &deck_size);
@@ -34,7 +33,7 @@ pub fn handle_deck(input: &str, deck_size: NT) -> (T, T) {
                 deal",
             );
             let n = increment.convert(n);
-            increment = increment * n.inv();
+            increment = increment * n.inv().unwrap();
         } else {
             panic!("Unknown instr: {}", l);
         }
@@ -60,7 +59,7 @@ pub fn p2(input: &str) -> NT {
     const SHUFFLE_COUNT: NT = 101_741_582_076_661;
     const CARD: NT = 2020;
     let (offset_one, increment_one) = handle_deck(input, DECK_SIZE);
-    let increment_final = increment_one.pow(SHUFFLE_COUNT);
-    let offset_final = (increment_final - 1) * offset_one * (increment_one - 1).inv();
+    let increment_final = increment_one.pow(&SHUFFLE_COUNT);
+    let offset_final = (increment_final - 1) * offset_one * (increment_one - 1).inv().unwrap();
     (offset_final + increment_final * CARD).residue()
 }

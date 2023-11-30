@@ -50,7 +50,7 @@ impl FromStr for Day14 {
         let line1 = x.next().unwrap();
         let mut start = [0; PAIR_COUNT];
         for (a, b) in line1.chars().map(|x| lookup[&x]).tuple_windows() {
-            start[(a * CHAR_COUNT + b)] += 1;
+            start[a * CHAR_COUNT + b] += 1;
         }
         let mut rules = [(0, 0); PAIR_COUNT];
         for l in x.next().unwrap().lines() {

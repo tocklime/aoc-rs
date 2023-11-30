@@ -128,7 +128,7 @@ impl Parse for SolutionPart {
         let content;
         let part_num = input.parse()?;
         let _brackets = bracketed!(content in input);
-        let functions: Punctuated<Expr, Token![,]> = content.parse_terminated(Expr::parse)?;
+        let functions: Punctuated<Expr, Token![,]> = content.parse_terminated(Expr::parse, Token![,])?;
         let ans = if input.parse::<Token![=>]>().is_ok() {
             match part_num {
                 PartNum::Part1 | PartNum::Part2 => ExpectedResult::Single(input.parse::<Expr>()?),
@@ -199,9 +199,10 @@ pub struct AocMainInput {
     bench: bool,
     examples: Vec<ExamplePart>,
 }
+
 impl Parse for AocMainInput {
     fn parse(input: ParseStream) -> Result<Self> {
-        let punct: Punctuated<Parts, Token![,]> = input.parse_terminated(Parts::parse)?;
+        let punct: Punctuated<Parts, Token![,]> = input.parse_terminated(Parts::parse, Token![,])?;
         let mut day = None;
         let mut gen = None;
         let mut solutions = Vec::new();
@@ -242,6 +243,7 @@ impl Parse for AocMainInput {
         })
     }
 }
+
 impl AocMainInput {
     fn add_solution(&self, part: &SolutionPart) -> TokenStream {
         let mut inner = TokenStream::new();

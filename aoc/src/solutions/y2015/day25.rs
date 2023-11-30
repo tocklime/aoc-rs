@@ -3,7 +3,6 @@ use aoc_harness::aoc_main;
 aoc_main!(2015 day 25, part1 [p1] => 8_997_277);
 use itertools::Itertools;
 use num_modular::{ModularInteger, VanillaInt};
-use num_traits::Pow;
 use regex::Regex;
 
 fn grid_ordinal(row: u64, col: u64) -> u64 {
@@ -18,6 +17,7 @@ fn p1(input: &str) -> u64 {
         .map(|x| x[0].parse::<u64>().unwrap())
         .collect_vec();
 
-    (VanillaInt::new(252_533_u64, &33_554_393).pow(grid_ordinal(data[0], data[1]) - 1) * 20_151_125)
+    let ord = grid_ordinal(data[0], data[1]) - 1;
+    (VanillaInt::new(252_533_u64, &33_554_393).pow(&ord) * 20_151_125)
         .residue()
 }

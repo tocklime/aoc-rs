@@ -12,11 +12,11 @@ fn solve(input: &[usize]) -> (usize, usize) {
     let mut counts = [0; 9];
     input.iter().for_each(|&x| counts[x] += 1);
     for d in 0..80 {
-        counts[(d + 7) % 9] += counts[(d % 9)];
+        counts[(d + 7) % 9] += counts[d % 9];
     }
     let p1 = counts.iter().sum();
     for d in 80..256 {
-        counts[(d + 7) % 9] += counts[(d % 9)];
+        counts[(d + 7) % 9] += counts[d % 9];
     }
     (p1, counts.iter().sum())
 }
