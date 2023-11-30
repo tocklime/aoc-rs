@@ -14,3 +14,6 @@ serde_yaml = "0.9.14"
 clap = { version = "4.0.26", features = ["derive"]}
 chrono = "0.4.23"
 benchmarking = "0.4"
+
+[lints]
+workspace = true
