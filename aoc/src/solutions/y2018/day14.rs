@@ -8,7 +8,7 @@ fn gen(input: &str) -> usize {
 
 fn p1(input: &usize) -> String {
     let mut d = vec![3, 7];
-    let mut pos = vec![0, 1];
+    let mut pos = [0, 1];
 
     while d.len() < *input + 10 {
         let sum = d[pos[0]] + d[pos[1]];

@@ -51,9 +51,9 @@ fn solve_with_apl<const ITER: usize, const MUL: i64>(input: &str) -> i64 {
     }
     for _ in 0..ITER {
         //in order of original index...
-        for ix in 0..len {
+        for (ix, val) in numbers.iter().enumerate() {
             let curpos = d.find(&ix).unwrap();
-            let value = numbers[ix] * MUL;
+            let value = val * MUL;
             let len_now = len - 1;
             let newpos = (((len_now + curpos) as i64) + value).rem_euclid(len_now as i64);
             d.remove(curpos);

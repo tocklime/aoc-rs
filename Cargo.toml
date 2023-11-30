@@ -6,6 +6,10 @@ members = [
     "aoc",
     "aoc_latest"
 ]
+
+[workspace.lints.clippy]
+items_after_test_module = "allow"
+
 [profile.release]
 debug = true
 overflow-checks = true

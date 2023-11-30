@@ -19,8 +19,8 @@ type DistMap<'a> = HashMap<&'a str, HashMap<&'a str, u32>>;
 fn gen(input: &str) -> DistMap {
     let mut dist_map: DistMap = HashMap::new();
     for s in input.trim().lines().map(|x| Step::parse(x).unwrap()) {
-        dist_map.entry(s.from).or_insert_with(HashMap::new).insert(s.to, s.distance);
-        dist_map.entry(s.to).or_insert_with(HashMap::new).insert(s.from, s.distance);
+        dist_map.entry(s.from).or_default().insert(s.to, s.distance);
+        dist_map.entry(s.to).or_default().insert(s.from, s.distance);
     }
     dist_map
 }

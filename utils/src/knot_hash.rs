@@ -1,4 +1,5 @@
 use std::{convert::Infallible, str::FromStr};
+use std::fmt::Write;
 
 #[derive(Debug)]
 #[must_use]
@@ -32,7 +33,7 @@ impl KnotHash {
     }
     #[must_use]
     pub fn dense_hash(&self) -> String {
-        self.dense().map(|x| format!("{:x}", x)).collect()
+        self.dense().fold(String::new(),|mut acc, x| {let _ = write!(acc, "{x:x}"); acc })
     }
     fn dense(&self) -> impl Iterator<Item = u8> + '_ {
         self.data

@@ -67,8 +67,8 @@ pub fn explore(input: &str) -> HashMap<Point, char> {
     let position = Point(0, 0);
     let mut known_map: HashMap<Point, char> = [(position, START)].iter().cloned().collect();
     let mut save_points: Vec<(Point, Computer<i32>)> = vec![(position, c)];
-    while !save_points.is_empty() {
-        let (position, c) = save_points.pop().unwrap();
+    while let Some((position, c)) = save_points.pop() {
+        
         //scan around in directions we don't know.
         let mut dirs: Vec<(Point, Computer)> = Dir::all()
             .iter()

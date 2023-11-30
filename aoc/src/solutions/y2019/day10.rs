@@ -58,7 +58,7 @@ pub fn p2(input: &AsteroidSet, station: Point, nth: usize) -> isize {
         .fold(HashMap::new(), |mut hm, &p| {
             let o = p - station;
             hm.entry(o.simplest_direction())
-                .or_insert_with(BinaryHeap::new)
+                .or_default()
                 .push(Reverse((o.size_squared(), p)));
             hm
         });

@@ -22,7 +22,7 @@ fn gen(input: &str) -> HashMap<&str, HashMap<&str, i32>> {
     let lines = input.lines().map(|l| Line::parse(l).unwrap()).collect_vec();
     let mut info: HashMap<&str, HashMap<&str, i32>> = HashMap::new();
     for l in lines {
-        info.entry(l.subject).or_insert_with(HashMap::new).insert(
+        info.entry(l.subject).or_default().insert(
             l.object,
             if l.direction == "gain" {
                 l.value

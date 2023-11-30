@@ -134,7 +134,7 @@ fn assign_targets<'a>(
 }
 
 fn run(immune: &[AttackGroup], infection: &[AttackGroup], boost: u32) -> (u32, u32) {
-    let teams = vec![immune, infection];
+    let teams = [immune, infection];
     for i in immune {
         i.size.set(i.full_size);
     }

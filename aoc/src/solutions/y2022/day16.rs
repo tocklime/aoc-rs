@@ -123,7 +123,7 @@ impl X {
             .sum::<u32>()
     }
 
-    fn do_time_step<'a, 'b>(&'a self, old_dp: &'b DpType<'a>) -> DpType<'a> {
+    fn do_time_step<'a>(&'a self, old_dp: &DpType<'a>) -> DpType<'a> {
         let mut new_dp: DpType = Default::default();
 
         macro_rules! update {

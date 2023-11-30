@@ -48,13 +48,13 @@ fn process(input: &[Line]) -> HashMap<GiveTarget, Vec<usize>> {
     while !to_handle.is_empty() {
         let item = to_handle.pop_front().unwrap();
         match item {
-            Line::Input { bot, value } => known_handlings.entry(GiveTarget::Bot(*bot)).or_insert_with(Vec::new).push(*value),
+            Line::Input { bot, value } => known_handlings.entry(GiveTarget::Bot(*bot)).or_default().push(*value),
             Line::Give { bot, low, high } => {
                 match known_handlings.get(&GiveTarget::Bot(*bot)) {
                     Some(v) if v.len() >= 2 => {
                         let (&lo, &hi) = v.iter().minmax().into_option().unwrap();
-                        known_handlings.entry(*low).or_insert_with(Vec::new).push(lo);
-                        known_handlings.entry(*high).or_insert_with(Vec::new).push(hi);
+                        known_handlings.entry(*low).or_default().push(lo);
+                        known_handlings.entry(*high).or_default().push(hi);
                     }
                     _ => {
                         //don't know yet, put it back.

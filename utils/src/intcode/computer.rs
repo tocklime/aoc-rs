@@ -234,7 +234,7 @@ where
             return;
         }
         self.ips_since_last_mem_edit.clear();
-        *self.memory.entry(offset).or_insert_with(Default::default) = value;
+        *self.memory.entry(offset).or_default() = value;
     }
     pub fn inc_ip(&mut self, offset: isize) {
         self.instruction_pointer += offset;

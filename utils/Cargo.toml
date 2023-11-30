@@ -23,3 +23,6 @@ parse-display = "0.8"
 proptest = "1.0.0"
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
+
+[lints]
+workspace = true

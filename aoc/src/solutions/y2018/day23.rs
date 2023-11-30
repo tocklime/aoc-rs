@@ -104,11 +104,11 @@ fn p2(input: &str) -> N {
         if a.shares_space_with(b) {
             shares_space_with
                 .entry(a)
-                .or_insert_with(HashSet::new)
+                .or_default()
                 .insert(b);
             shares_space_with
                 .entry(b)
-                .or_insert_with(HashSet::new)
+                .or_default()
                 .insert(a);
         }
     }
@@ -168,7 +168,7 @@ impl Cube {
                 let new_lo: Vec<i64> = self
                     .lo
                     .iter()
-                    .zip(v.into_iter())
+                    .zip(v)
                     .map(|(l, d)| l + d * new_w)
                     .collect();
                 let new_hi = new_lo.iter().map(|x| x + new_w - 1).collect();

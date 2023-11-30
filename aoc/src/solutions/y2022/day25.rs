@@ -52,8 +52,8 @@ impl FromStr for Snafu {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         s.chars()
-            .fold(Ok(0), |acc, c| {
-                acc.and_then(|a| Ok(a * 5 + Self::char_value(c)?))
+            .try_fold(0, |acc, c| {
+                Ok(acc * 5 + Self::char_value(c)?)
             })
             .map(Snafu)
     }

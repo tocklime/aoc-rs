@@ -14,3 +14,4 @@ syn = "2"
 
 [dev-dependencies]
 dotenv = "0.15.0"
+clap = { version = "4.0.26", features = ["derive"]}
