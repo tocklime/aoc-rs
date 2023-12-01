@@ -38,16 +38,17 @@ fn find_from_pos(input: &str, pos: usize) -> Option<u32> {
 }
 
 fn p2(input: &str) -> u32 {
-    let mut total = 0;
-    for l in input.lines() {
-        let first = (0..l.len()).find_map(|i| find_from_pos(l, i)).unwrap();
-        let last = (0..l.len())
-            .rev()
-            .find_map(|i| find_from_pos(l, i))
-            .unwrap();
-        total += first * 10 + last;
-    }
-    total
+    input
+        .lines()
+        .map(|l| {
+            let first = (0..l.len()).find_map(|i| find_from_pos(l, i)).unwrap();
+            let last = (0..l.len())
+                .rev()
+                .find_map(|i| find_from_pos(l, i))
+                .unwrap();
+            first * 10 + last
+        })
+        .sum()
 }
 
 const EG2: &str = "two1nine
