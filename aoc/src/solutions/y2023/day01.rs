@@ -6,9 +6,9 @@ fn p1(input: &str) -> u32 {
     input
         .lines()
         .map(|l| {
-            let first = l.chars().find_map(|c| c.to_digit(10)).unwrap();
-            let last = l.chars().rev().find_map(|c| c.to_digit(10)).unwrap();
-            first * 10 + last
+            let a = l.chars().find_map(|c| c.to_digit(10)).unwrap();
+            let b = l.chars().rev().find_map(|c| c.to_digit(10)).unwrap();
+            a * 10 + b
         })
         .sum()
 }
@@ -18,7 +18,7 @@ pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet";
 
-fn find_from_pos(input: &str, pos: usize) -> Option<u32> {
+fn to_digit(input: &str, pos: usize) -> Option<u32> {
     let as_bytes = &input.as_bytes()[pos..];
     if let Some(d) = char::from(as_bytes[0]).to_digit(10) {
         return Some(d);
@@ -41,12 +41,9 @@ fn p2(input: &str) -> u32 {
     input
         .lines()
         .map(|l| {
-            let first = (0..l.len()).find_map(|i| find_from_pos(l, i)).unwrap();
-            let last = (0..l.len())
-                .rev()
-                .find_map(|i| find_from_pos(l, i))
-                .unwrap();
-            first * 10 + last
+            let a = (0..l.len()).find_map(|i| to_digit(l, i)).unwrap();
+            let b = (0..l.len()).rev().find_map(|i| to_digit(l, i)).unwrap();
+            a * 10 + b
         })
         .sum()
 }
