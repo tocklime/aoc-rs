@@ -606,3 +606,7 @@
   25:
     part1: !Checked 2=0--0---11--01=-100
     part2: Unknown
+2023:
+  1:
+    part1: !Checked '54877'
+    part2: !Checked '54100'
