@@ -610,3 +610,6 @@
   1:
     part1: !Checked '54877'
     part2: !Checked '54100'
+  2:
+    part1: !Observed '2771'
+    part2: !Observed '70924'
