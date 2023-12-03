@@ -17,7 +17,7 @@ pub struct Grid2d<T> {
 
 pub type Coord = (usize, usize);
 pub type ICoord = (isize, isize);
-impl<T:Copy> Grid2d<T> {
+impl<T: Copy> Grid2d<T> {
     pub fn from_elem(size: Coord, elem: T) -> Self {
         Self {
             data: vec![elem; size.0 * size.1],
