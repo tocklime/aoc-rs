@@ -1,71 +1,69 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use aoc_harness::*;
+use utils::{grid2d::Grid2d, aabb::Aabb, cartesian::Point};
 
-aoc_main!(2023 day 3, part1 [p1] => 527364, part2 [p2] => 79026871, example both EG => (4361, 467835));
+aoc_main!(2023 day 3, generator gen, part1 [p1] => 527364, part2 [p2] => 79026871, example both EG => (4361, 467835));
 
-#[derive(Copy, Clone, Debug)]
-enum State {
-    Blank,
-    InNum(usize),
+#[derive(Debug)]
+struct FoundNum {
+    value: u32,
+    row: usize,
+    col_start: usize,
+    col_end: usize,
 }
-fn p1(input: &str) -> u32 {
-    let mut sym_locs = HashSet::new();
-    for (row, l) in input.lines().enumerate() {
-        for (col, c) in l.char_indices() {
-            if c != '.' && !c.is_alphanumeric() {
-                sym_locs.insert((row, col));
-            }
+impl FoundNum {
+    fn search_box(&self) -> Aabb<usize> {
+        let bottom_left = Point::new(self.col_start.saturating_sub(1), self.row.saturating_sub(1));
+        let top_right = Point::new(self.col_end+1, self.row +1);
+        Aabb {
+            bottom_left, top_right
         }
     }
-    let mut part_nums = vec![];
-    for (row, l) in input.lines().enumerate() {
-        let mut state = State::Blank;
-        let mut curr_num = 0;
-        for (col, c) in l.char_indices() {
-            match (c.is_ascii_digit(), state) {
-                (true, State::Blank) => {
-                    //just started reading a num
-                    state = State::InNum(col);
-                    curr_num = c.to_digit(10).unwrap()
-                }
-                (true, State::InNum(_)) => {
-                    curr_num = curr_num * 10 + c.to_digit(10).unwrap();
-                }
-                (false, State::InNum(x)) => {
-                    let mut found_sym = false;
-                    for l in row.saturating_sub(1)..=row + 1 {
-                        for c in x.saturating_sub(1)..=col {
-                            if sym_locs.contains(&(l, c)) {
-                                found_sym = true;
-                            }
-                        }
-                    }
-                    if found_sym {
-                        part_nums.push(curr_num);
-                    }
-                    curr_num = 0;
-                    state = State::Blank
-                }
-                _ => {}
-            }
-        }
-        if let State::InNum(x) = state {
-            let col = l.len();
-            let mut found_sym = false;
-            for l in row.saturating_sub(1)..=row + 1 {
-                for c in x.saturating_sub(1)..=col {
-                    if sym_locs.contains(&(l, c)) {
-                        found_sym = true;
-                    }
+}
+
+fn gen(input: &str) -> Grid2d<char> {
+    Grid2d::from_str(input, |x| x)
+}
+
+fn find_numbers(g: &Grid2d<char>) -> impl Iterator<Item = FoundNum> + '_ {
+    let mut curr: Option<FoundNum> = None;
+    let width = g.dim().1 - 1;
+    g.indexed_iter()
+        //Find all the nums.
+        .filter_map(move |((row, col), c)| {
+            if let Some(d) = c.to_digit(10) {
+                if let Some(n) = curr.as_mut() {
+                    n.value = n.value * 10 + d;
+                    n.col_end = col;
+                } else {
+                    curr = Some(FoundNum {
+                        value: d,
+                        row,
+                        col_start: col,
+                        col_end: col,
+                    });
                 }
             }
-            if found_sym {
-                part_nums.push(curr_num);
+            if col == width || !c.is_ascii_digit() {
+                curr.take()
+            } else {
+                None
             }
-        }
-    }
-    part_nums.into_iter().sum()
+        })
+}
+
+fn p1(g: &Grid2d<char>) -> u32 {
+    find_numbers(g)
+        //filter to just those that are adjacent to symbols
+        .filter(|f| {
+            f.search_box().all_points().any(|p| {
+                g.get((p.y,p.x)).map(|s| s != &'.' && !s.is_ascii_digit()).unwrap_or_default()
+            })
+        })
+        //add them up.
+        .map(|x| x.value)
+        .sum()
 }
 
 const EG: &str = "467..114..
@@ -79,63 +77,21 @@ const EG: &str = "467..114..
 ...$.*....
 .664.598..";
 
-fn p2(input: &str) -> u32 {
-    let mut sym_locs = HashMap::new();
-    for (row, l) in input.lines().enumerate() {
-        for (col, c) in l.char_indices() {
-            if c == '*' {
-                sym_locs.insert((row, col), vec![]);
+fn p2(g: &Grid2d<char>) -> u32 {
+    let mut gears: HashMap<(usize, usize), Vec<u32>> = g
+        .indexed_iter()
+        .filter_map(|((row, col), c)| (c == &'*').then_some(((row, col), Vec::new())))
+        .collect();
+    for f in find_numbers(g) {
+        // Add into the gears object.
+        for p in f.search_box().all_points() {
+            if let Some(s) = gears.get_mut(&(p.y, p.x)) {
+                s.push(f.value);
             }
         }
     }
-    for (row, l) in input.lines().enumerate() {
-        let mut state = State::Blank;
-        let mut curr_num = 0;
-        for (col, c) in l.char_indices() {
-            match (c.is_ascii_digit(), state) {
-                (true, State::Blank) => {
-                    //just started reading a num
-                    state = State::InNum(col);
-                    curr_num = c.to_digit(10).unwrap()
-                }
-                (true, State::InNum(_)) => {
-                    curr_num = curr_num * 10 + c.to_digit(10).unwrap();
-                }
-                (false, State::InNum(x)) => {
-                    let mut found_sym = false;
-                    for l in row.saturating_sub(1)..=row + 1 {
-                        for c in x.saturating_sub(1)..=col {
-                            if let Some(x) = sym_locs.get_mut(&(l, c)) {
-                                x.push(curr_num);
-                            }
-                        }
-                    }
-                    curr_num = 0;
-                    state = State::Blank
-                }
-                _ => {}
-            }
-        }
-        if let State::InNum(x) = state {
-            let col = l.len();
-            for l in row.saturating_sub(1)..=row + 1 {
-                for c in x.saturating_sub(1)..=col {
-                    if let Some(x) = sym_locs.get_mut(&(l, c)) {
-                        x.push(curr_num);
-                    }
-                }
-            }
-        }
-    }
-    sym_locs
-        .iter()
-        .filter_map(|(loc, x)| {
-            assert!(x.len() <= 2);
-            if x.len() == 2 {
-                Some(x.iter().product::<u32>())
-            } else {
-                None
-            }
-        })
+    gears
+        .values()
+        .filter_map(|x| (x.len() == 2).then_some(x.iter().product::<u32>()))
         .sum()
 }
