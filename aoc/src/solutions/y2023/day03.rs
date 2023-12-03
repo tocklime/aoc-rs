@@ -69,20 +69,20 @@ fn p1(g: &Grid2d<char>) -> u32 {
 
 fn p2(g: &Grid2d<char>) -> u32 {
     let mut gears: Grid2d<Option<(u8, u32)>> = g.map(|_, val| (val == &'*').then_some((0, 1)));
+    let mut total = 0;
     for f in find_numbers(g) {
         // Add into the gears object.
         for p in f.search_box().perimeter() {
             if let Some(Some(s)) = gears.get_mut((p.y, p.x)) {
                 s.0 += 1;
                 s.1 *= f.value;
+                if s.0 == 2 {
+                    total += s.1;
+                }
             }
         }
     }
-    gears
-        .iter()
-        .filter_map(|x| x.as_ref())
-        .filter_map(|x| (x.0 == 2).then_some(x.1))
-        .sum()
+    total
 }
 
 const EG: &str = "467..114..
