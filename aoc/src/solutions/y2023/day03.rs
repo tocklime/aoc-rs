@@ -68,9 +68,7 @@ fn p1(g: &Grid2d<char>) -> u32 {
 }
 
 fn p2(g: &Grid2d<char>) -> u32 {
-    let mut gears : Grid2d<Option<(u8,u32)>> = g.map(|_, val| {
-        (val == &'*').then_some((0,1))
-    });
+    let mut gears: Grid2d<Option<(u8, u32)>> = g.map(|_, val| (val == &'*').then_some((0, 1)));
     for f in find_numbers(g) {
         // Add into the gears object.
         for p in f.search_box().perimeter() {
