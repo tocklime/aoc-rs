@@ -116,6 +116,17 @@ where
             (self.bottom_left.x..=self.top_right.x).map(move |x| Point::new(x, y))
         })
     }
+    /// All points around the edge of the Aabb.
+    pub fn perimeter(&self) -> impl Iterator<Item = Point<T>> + '_ {
+        let x_start = self.bottom_left.x;
+        let x_end = self.top_right.x;
+        (x_start..=x_end).map(|x| Point::new(x, self.bottom_left.y))
+        .chain(
+            (self.bottom_left.y+T::one()..=self.top_right.y-T::one()).flat_map(move|y| [Point::new(x_start, y), Point::new(x_end, y)])
+        ).chain(
+            (x_start..=x_end).map(|x| Point::new(x, self.top_right.y))
+        )
+    }
     pub fn vec_with<TO: Clone + Default>(&self, ft: impl Fn(Point<T>) -> TO) -> Vec<Vec<TO>> {
         let offset = self.bottom_left;
         let mut v = vec![vec![Default::default(); self.width()]; self.height()];

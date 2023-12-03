@@ -57,7 +57,7 @@ fn p1(g: &Grid2d<char>) -> u32 {
     find_numbers(g)
         //filter to just those that are adjacent to symbols
         .filter(|f| {
-            f.search_box().all_points().any(|p| {
+            f.search_box().perimeter().any(|p| {
                 g.get((p.y,p.x)).map(|s| s != &'.' && !s.is_ascii_digit()).unwrap_or_default()
             })
         })
@@ -84,7 +84,7 @@ fn p2(g: &Grid2d<char>) -> u32 {
         .collect();
     for f in find_numbers(g) {
         // Add into the gears object.
-        for p in f.search_box().all_points() {
+        for p in f.search_box().perimeter() {
             if let Some(s) = gears.get_mut(&(p.y, p.x)) {
                 s.push(f.value);
             }
