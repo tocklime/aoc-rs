@@ -17,13 +17,15 @@ pub struct Grid2d<T> {
 
 pub type Coord = (usize, usize);
 pub type ICoord = (isize, isize);
-impl<T: Copy> Grid2d<T> {
+impl<T:Copy> Grid2d<T> {
     pub fn from_elem(size: Coord, elem: T) -> Self {
         Self {
             data: vec![elem; size.0 * size.1],
             size,
         }
     }
+}
+impl<T> Grid2d<T> {
     pub fn from_fn<F>(size: Coord, mut f: F) -> Self
     where
         F: FnMut(Coord) -> T,
@@ -118,6 +120,14 @@ impl<T> Grid2d<T> {
     pub fn get(&self, p: Coord) -> Option<&T> {
         if p.0 < self.size.0 && p.1 < self.size.1 {
             Some(&self[p])
+        } else {
+            None
+        }
+    }
+    #[must_use]
+    pub fn get_mut(&mut self, p: Coord) -> Option<&mut T> {
+        if p.0 < self.size.0 && p.1 < self.size.1 {
+            Some(&mut self[p])
         } else {
             None
         }
@@ -330,6 +340,12 @@ impl<T> Grid2d<T> {
             data,
             size: (rows, stride.unwrap()),
         }
+    }
+    pub fn map<F, TO>(&self, mut f: F) -> Grid2d<TO>
+    where
+        F: FnMut(Coord, &T) -> TO,
+    {
+        Grid2d::from_fn(self.dim(), |p| f(p, &self[p]))
     }
 }
 

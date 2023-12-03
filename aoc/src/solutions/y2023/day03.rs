@@ -1,7 +1,5 @@
-use std::collections::HashMap;
-
 use aoc_harness::*;
-use utils::{grid2d::Grid2d, aabb::Aabb, cartesian::Point};
+use utils::{aabb::Aabb, cartesian::Point, grid2d::Grid2d};
 
 aoc_main!(2023 day 3, generator gen, part1 [p1] => 527364, part2 [p2] => 79026871, example both EG => (4361, 467835));
 
@@ -15,9 +13,10 @@ struct FoundNum {
 impl FoundNum {
     fn search_box(&self) -> Aabb<usize> {
         let bottom_left = Point::new(self.col_start.saturating_sub(1), self.row.saturating_sub(1));
-        let top_right = Point::new(self.col_end+1, self.row +1);
+        let top_right = Point::new(self.col_end + 1, self.row + 1);
         Aabb {
-            bottom_left, top_right
+            bottom_left,
+            top_right,
         }
     }
 }
@@ -58,11 +57,33 @@ fn p1(g: &Grid2d<char>) -> u32 {
         //filter to just those that are adjacent to symbols
         .filter(|f| {
             f.search_box().perimeter().any(|p| {
-                g.get((p.y,p.x)).map(|s| s != &'.' && !s.is_ascii_digit()).unwrap_or_default()
+                g.get((p.y, p.x))
+                    .map(|s| s != &'.' && !s.is_ascii_digit())
+                    .unwrap_or_default()
             })
         })
         //add them up.
         .map(|x| x.value)
+        .sum()
+}
+
+fn p2(g: &Grid2d<char>) -> u32 {
+    let mut gears : Grid2d<Option<(u8,u32)>> = g.map(|_, val| {
+        (val == &'*').then_some((0,1))
+    });
+    for f in find_numbers(g) {
+        // Add into the gears object.
+        for p in f.search_box().perimeter() {
+            if let Some(Some(s)) = gears.get_mut((p.y, p.x)) {
+                s.0 += 1;
+                s.1 *= f.value;
+            }
+        }
+    }
+    gears
+        .iter()
+        .filter_map(|x| x.as_ref())
+        .filter_map(|x| (x.0 == 2).then_some(x.1))
         .sum()
 }
 
@@ -76,22 +97,3 @@ const EG: &str = "467..114..
 ......755.
 ...$.*....
 .664.598..";
-
-fn p2(g: &Grid2d<char>) -> u32 {
-    let mut gears: HashMap<(usize, usize), Vec<u32>> = g
-        .indexed_iter()
-        .filter_map(|((row, col), c)| (c == &'*').then_some(((row, col), Vec::new())))
-        .collect();
-    for f in find_numbers(g) {
-        // Add into the gears object.
-        for p in f.search_box().perimeter() {
-            if let Some(s) = gears.get_mut(&(p.y, p.x)) {
-                s.push(f.value);
-            }
-        }
-    }
-    gears
-        .values()
-        .filter_map(|x| (x.len() == 2).then_some(x.iter().product::<u32>()))
-        .sum()
-}
