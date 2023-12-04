@@ -98,7 +98,7 @@ fn solve(input: &str) -> (i32, i32) {
     let start = Point::new(1, bb.top_right.y);
     let target = Point::new(bb.top_right.x - 1, 0);
     let mut blizzards: [VecLookup<Vec<bool>>; 4] = Default::default();
-    for (point, char) in world.into_iter() {
+    for (point, char) in world {
         if let Some(d) = Dir::try_from_x("^v<>", char) {
             let ix = match d {
                 Dir::Left => 0,

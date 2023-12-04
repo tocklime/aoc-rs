@@ -9,6 +9,15 @@ members = [
 
 [workspace.lints.clippy]
 items_after_test_module = "allow"
+semicolon_if_nothing_returned = "warn"
+explicit_iter_loop = "warn"
+explicit_into_iter_loop = "warn"
+cloned_instead_of_copied = "warn"
+# pedantic = "warn"
+cast_sign_loss = "allow"
+default_trait_access = "warn"
+items_after_statements = "warn"
+wildcard_imports = "allow"
 
 [profile.release]
 debug = true
