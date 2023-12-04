@@ -14,7 +14,7 @@ fn p1(input: &usize) -> String {
         let sum = d[pos[0]] + d[pos[1]];
         let mut digs = digits(sum).collect_vec();
         d.append(&mut digs);
-        for p in pos.iter_mut() {
+        for p in &mut pos {
             *p = (*p + 1 + d[*p]) % d.len();
         }
     }

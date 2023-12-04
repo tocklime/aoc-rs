@@ -47,7 +47,7 @@ impl std::fmt::Debug for X {
 
         for i in (0..self.room_depth).rev() {
             s += "\n  ";
-            for r in self.rooms.iter() {
+            for r in &self.rooms {
                 s += &format!("{} ", r.get(i).map(|&x| u8_to_char(x)).unwrap_or('.'));
             }
         }

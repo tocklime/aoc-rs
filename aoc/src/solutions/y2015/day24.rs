@@ -73,29 +73,27 @@ fn p2(input: &str) -> Option<usize> {
     let total: usize = weights.iter().sum();
     assert_eq!(total % 4, 0);
     let group_weight = total / 4;
-    (0..weights.len())
-        .filter_map(|size_1| {
-            weights
-                .iter()
-                .permutations(size_1)
-                .filter_map(|g| {
-                    if g.iter().copied().sum::<usize>() == group_weight {
-                        //weight is right, check g23 splittable.
-                        let rest = weights
-                            .iter()
-                            .copied()
-                            .filter(|n| !g.contains(&n))
-                            .collect_vec();
-                        if can_split_to_2(&rest, group_weight, group_weight) {
-                            Some(g.iter().copied().product::<usize>())
-                        } else {
-                            None
-                        }
+    (0..weights.len()).find_map(|size_1| {
+        weights
+            .iter()
+            .permutations(size_1)
+            .filter_map(|g| {
+                if g.iter().copied().sum::<usize>() == group_weight {
+                    //weight is right, check g23 splittable.
+                    let rest = weights
+                        .iter()
+                        .copied()
+                        .filter(|n| !g.contains(&n))
+                        .collect_vec();
+                    if can_split_to_2(&rest, group_weight, group_weight) {
+                        Some(g.iter().copied().product::<usize>())
                     } else {
                         None
                     }
-                })
-                .min()
-        })
-        .next()
+                } else {
+                    None
+                }
+            })
+            .min()
+    })
 }
