@@ -102,5 +102,5 @@ pub fn d24p1() {
 .#...
 ";
     let btm = gen(i);
-    assert_eq!(biodiversity(&btm), 2129920);
+    assert_eq!(biodiversity(&btm), 2_129_920);
 }

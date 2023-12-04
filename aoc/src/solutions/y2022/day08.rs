@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use aoc_harness::*;
 use utils::grid2d::Grid2d;
 
-aoc_main!(2022 day 8, generator gen, part1 [p1,p1a] => 1835, part2 [p2, p2a] => 263670, example both EG => (21,8));
+aoc_main!(2022 day 8, generator gen, part1 [p1,p1a] => 1835, part2 [p2, p2a] => 263_670, example both EG => (21,8));
 
 const EG: &str = "30373
 25512

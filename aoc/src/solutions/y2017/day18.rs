@@ -99,7 +99,7 @@ impl<'a> Duet<'a> {
 
     fn get_op(&self) -> Option<Op> {
         let as_u: Option<usize> = self.ip.try_into().ok();
-        as_u.and_then(|i| self.mem.get(i).cloned())
+        as_u.and_then(|i| self.mem.get(i).copied())
     }
     fn is_blocked(&self) -> bool {
         match self.get_op() {
@@ -162,13 +162,13 @@ fn p2(input: &str) -> i64 {
         while !a.is_blocked() {
             //a
             if let StepResult::Send(x) = a.step_2() {
-                b.input_queue.push_back(x)
+                b.input_queue.push_back(x);
             }
         }
         while !b.is_blocked() {
             if let StepResult::Send(x) = b.step_2() {
                 b_send_count += 1;
-                a.input_queue.push_back(x)
+                a.input_queue.push_back(x);
             }
         }
     }

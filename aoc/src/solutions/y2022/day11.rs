@@ -9,7 +9,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 11, generator gen, part1 [solve::<3, 20>] => 110885, part2 [solve::<1, 10000>] => 25272176808, example both EG => (10605, 2713310158));
+aoc_main!(2022 day 11, generator gen, part1 [solve::<3, 20>] => 110_885, part2 [solve::<1, 10000>] => 25_272_176_808, example both EG => (10605, 2_713_310_158));
 
 const EG: &str = "Monkey 0:
   Starting items: 79, 98

@@ -1,7 +1,7 @@
 use aoc_harness::*;
 use itertools::{iterate, unfold};
 
-aoc_main!(2019 day 1, generator input_generator, part1 [part1] => 3154112, part2 [unfolding,iteration] => 4728317,
+aoc_main!(2019 day 1, generator input_generator, part1 [part1] => 3_154_112, part2 [unfolding,iteration] => 4_728_317,
     example part1 "12" => 2,
     example part1 "14" => 2,
     example part1 "1969" => 654,

@@ -8,7 +8,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 20, part1 [solve::<1,1>, solve_with_apl::<1,1>] => 5962, part2 [solve::<10,811589153>, solve_with_apl::<10,811589153>] => 9862431387256, example both EG => (3,1623178306));
+aoc_main!(2022 day 20, part1 [solve::<1,1>, solve_with_apl::<1,1>] => 5962, part2 [solve::<10,811_589_153>, solve_with_apl::<10,811_589_153>] => 9_862_431_387_256, example both EG => (3,1_623_178_306));
 
 const EG: &str = "1
 2

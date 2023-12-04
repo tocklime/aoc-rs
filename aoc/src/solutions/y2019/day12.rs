@@ -4,7 +4,7 @@ use num::integer::lcm;
 use regex::Regex;
 use std::str::FromStr;
 
-aoc_main!(2019 day 12, generator gen, part1 [p1] => 7098, part2 [p2] => 400128139852752);
+aoc_main!(2019 day 12, generator gen, part1 [p1] => 7098, part2 [p2] => 400_128_139_852_752);
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct Moon {

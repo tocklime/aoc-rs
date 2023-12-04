@@ -1,7 +1,7 @@
-use aoc_harness::*;
+use aoc_harness::aoc_main;
 use utils::{grid2d::Grid2d, numset::NumSet};
 
-aoc_main!(2022 day 17, part1 [solve::<2022>] => 3085, part2 [solve::<1000000000000>] => 1535483870924, example both EG => (3068,1514285714288));
+aoc_main!(2022 day 17, part1 [solve::<2022>] => 3085, part2 [solve::<1_000_000_000_000>] => 1_535_483_870_924, example both EG => (3068,1_514_285_714_288));
 
 const EG: &str = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>";
 const ROCKS: [&str; 5] = [
@@ -56,8 +56,7 @@ fn would_collide(grid: &[NumSet<u8>], r: &[NumSet<u8>], left: usize, height: usi
         shifted.contains(7)
             || grid
                 .get(height + ix)
-                .map(|&n| !(n & shifted).is_empty())
-                .unwrap_or(false)
+                .is_some_and(|&n| !(n & shifted).is_empty())
     })
 }
 #[allow(dead_code)]

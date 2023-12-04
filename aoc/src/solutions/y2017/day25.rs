@@ -5,7 +5,7 @@ use std::collections::HashSet;
 
 fn p1(_input: &str) -> usize {
     let mut state = 'A';
-    let c = 12667664;
+    let c = 12_667_664;
     let mut pos = 0;
     let mut tape: HashSet<i64> = HashSet::new();
     for _ in 0..c {

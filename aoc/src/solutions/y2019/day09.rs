@@ -2,9 +2,9 @@ use aoc_harness::aoc_main;
 use std::str::FromStr;
 use utils::intcode::Computer;
 
-aoc_main!(2019 day 9, part1 [p1] => 4261108180, part2 [p2] => 77944,
-    example part1 E1 => 1219070632396864,
-    example part1 E2 => 1125899906842624
+aoc_main!(2019 day 9, part1 [p1] => 4_261_108_180, part2 [p2] => 77944,
+    example part1 E1 => 1_219_070_632_396_864,
+    example part1 E2 => 1_125_899_906_842_624
 );
 
 pub fn p1(input: &str) -> i64 {

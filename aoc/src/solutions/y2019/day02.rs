@@ -2,7 +2,7 @@ use aoc_harness::*;
 use std::str::FromStr;
 use utils::intcode::Computer;
 
-aoc_main!(2019 day 2, part1 [p1] => 7594646, part2[p2] => 3376);
+aoc_main!(2019 day 2, part1 [p1] => 7_594_646, part2[p2] => 3376);
 
 pub fn run_with_args(c: &mut Computer, noun: i32, verb: i32) -> i32 {
     c.abs_store(1, noun);

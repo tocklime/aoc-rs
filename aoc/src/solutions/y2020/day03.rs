@@ -1,6 +1,6 @@
 use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 3, generator gen, part1 [p1] => 242, part2 [p2] => 2265549792);
+aoc_main!(2020 day 3, generator gen, part1 [p1] => 242, part2 [p2] => 2_265_549_792);
 
 use utils::inputs::input_from_str_sep_by;
 

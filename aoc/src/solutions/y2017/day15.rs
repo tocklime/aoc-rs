@@ -20,7 +20,7 @@ impl Gen {
     }
     fn step(&mut self) -> u64 {
         loop {
-            self.curr = (self.curr * self.factor) % 2147483647; //2^31
+            self.curr = (self.curr * self.factor) % 2_147_483_647; //2^31
             if self.curr % self.require_mod == 0 {
                 break;
             }

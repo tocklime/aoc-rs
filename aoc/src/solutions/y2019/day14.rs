@@ -5,10 +5,10 @@ use utils::nums::unbounded_bin_search;
 use aoc_harness::aoc_main;
 use itertools::Itertools;
 
-aoc_main!(2019 day 14, part1 [p1] => 892207, part2 [p2] => 1935265,
+aoc_main!(2019 day 14, part1 [p1] => 892_207, part2 [p2] => 1_935_265,
 example part1 E1 => 31,
 example part1 E2 => 165,
-example both E3 => (13312, 82892753));
+example both E3 => (13312, 82_892_753));
 type RecipeBook<'a> = HashMap<&'a str, (usize, Vec<(usize, &'a str)>)>;
 
 pub fn split_pair<'a>(split: &str, input: &'a str) -> (&'a str, &'a str) {

@@ -2,7 +2,7 @@ use utils::points::as_point_map;
 use utils::prelude::*;
 use aoc_harness::aoc_main;
 
-aoc_main!(2019 day 17, part1 [p1] => 3608, part2 [p2] => 897426);
+aoc_main!(2019 day 17, part1 [p1] => 3608, part2 [p2] => 897_426);
 
 pub fn p1(input: &str) -> isize {
     let mut c: Computer = input.parse().unwrap();

@@ -3,7 +3,7 @@ use aoc_harness::aoc_main;
 use itertools::Itertools;
 use utils::intcode::Computer;
 
-aoc_main!(2019 day 19, part1 [p1] => 234, part2 [p2] => 9290812);
+aoc_main!(2019 day 19, part1 [p1] => 234, part2 [p2] => 9_290_812);
 
 pub fn calc(c: &Computer<isize>, p: Point) -> isize {
     let mut c = c.clone();

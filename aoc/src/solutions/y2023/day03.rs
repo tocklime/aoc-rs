@@ -1,7 +1,7 @@
 use aoc_harness::*;
 use utils::{aabb::Aabb, cartesian::Point, grid2d::Grid2d};
 
-aoc_main!(2023 day 3, generator gen, part1 [p1] => 527364, part2 [p2] => 79026871, example both EG => (4361, 467835));
+aoc_main!(2023 day 3, generator gen, part1 [p1] => 527_364, part2 [p2] => 79_026_871, example both EG => (4361, 467_835));
 
 #[derive(Debug)]
 struct FoundNum {
