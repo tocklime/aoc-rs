@@ -104,12 +104,12 @@ where
             let a = self.get_args(ip);
             match Op::try_from_mem_slice(&a) {
                 Some(o) => {
-                    output.push_str(&format!("{: >4}: {}\n", ip, o));
+                    output.push_str(&format!("{ip: >4}: {o}\n"));
                     ip += 1 + o.op.arg_count();
                 }
                 None => {
                     for i in &a {
-                        output.push_str(&format!("{: >4}: {}\n", ip, i));
+                        output.push_str(&format!("{ip: >4}: {i}\n"));
                         ip += 1;
                     }
                 }

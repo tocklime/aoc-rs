@@ -287,7 +287,7 @@ pub fn bb_tests() {
     let a = Aabb::new(Point(0, 0)).extend(Point(0, 10));
     let b = Aabb::new(Point(-3, 4)).extend(Point(8, 4));
     let i = a.intersect(b);
-    println!("{:?}", i);
+    println!("{i:?}");
     assert_eq!(i.bottom_left, Point(0, 4));
     assert_eq!(i.top_right, Point(0, 4));
 }

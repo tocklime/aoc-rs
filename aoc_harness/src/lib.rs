@@ -62,8 +62,8 @@ pub enum InputFetchFailure {
 }
 
 /// This is used in macro code to hint to the compiler that the expected results
-/// in the aoc_main! macro have the same type as the return type of a function.
-/// but we also need to unwrap Result or Options, using the AnswerType.
+/// in the `aoc_main`! macro have the same type as the return type of a function.
+/// but we also need to unwrap Result or Options, using the `AnswerType`.
 pub fn type_hint_value_has_same_type_as_func_return<Value, Func, FuncIn, FuncOut, TAns>(
     _val: &Value,
     _func: &Func,
@@ -74,8 +74,8 @@ pub fn type_hint_value_has_same_type_as_func_return<Value, Func, FuncIn, FuncOut
 {
 }
 /// This is used in macro code to hint to the compiler that the expected result pairs
-/// in the aoc_main! macro have the same type as the return type of a function.
-/// but we also need to unwrap Result or Options, using the AnswerType.
+/// in the `aoc_main!` macro have the same type as the return type of a function.
+/// but we also need to unwrap Result or Options, using the `AnswerType`.
 pub fn type_hint_pair_has_values_in_func_return<V1, V2, Func, FuncIn, FuncOut, Ans1, Ans2>(
     _v1: &V1,
     _v2: &V2,
@@ -118,12 +118,7 @@ impl Opts {
         if self.test_mode {
             assert_eq!(actual, expected);
         } else if actual != expected {
-            self.log(|| {
-                format!(
-                    "!!! Answer does not match expected: {:?} != {:?}",
-                    actual, expected
-                )
-            });
+            self.log(|| format!("!!! Answer does not match expected: {actual:?} != {expected:?}"));
         }
     }
     pub fn get_input(&self, year: i32, day: u8) -> Result<String, InputFetchFailure> {
@@ -150,34 +145,30 @@ impl Opts {
                     }
                     std::fs::create_dir_all(p.parent().unwrap())
                         .map_err(|_| InputFetchFailure::CantCreateDirectoryForYear)?;
-                    let i = ureq::get(&format!(
-                        "https://adventofcode.com/{}/day/{}/input",
-                        year, day
-                    ))
-                    .set("User-Agent", user_agent())
-                    .set(
-                        "cookie",
-                        &format!(
-                            "session={}",
-                            env::var("AOC_SESSION").expect("AOC_SESSION env var not set")
-                        ),
-                    )
-                    .call()
-                    .map_err(|e| match e {
-                        ureq::Error::Status(s, r) => match s {
-                            404 => InputFetchFailure::HttpNotFound,
-                            403 => InputFetchFailure::Unauthorized,
-                            _ => InputFetchFailure::SomethingElse(format!(
-                                "HTTP Error {} fetching input: {:?}",
-                                s, r
+                    let i = ureq::get(&format!("https://adventofcode.com/{year}/day/{day}/input"))
+                        .set("User-Agent", user_agent())
+                        .set(
+                            "cookie",
+                            &format!(
+                                "session={}",
+                                env::var("AOC_SESSION").expect("AOC_SESSION env var not set")
+                            ),
+                        )
+                        .call()
+                        .map_err(|e| match e {
+                            ureq::Error::Status(s, r) => match s {
+                                404 => InputFetchFailure::HttpNotFound,
+                                403 => InputFetchFailure::Unauthorized,
+                                _ => InputFetchFailure::SomethingElse(format!(
+                                    "HTTP Error {s} fetching input: {r:?}"
+                                )),
+                            },
+                            ureq::Error::Transport(t) => InputFetchFailure::SomethingElse(format!(
+                                "HTTP Transport error: {t}"
                             )),
-                        },
-                        ureq::Error::Transport(t) => {
-                            InputFetchFailure::SomethingElse(format!("HTTP Transport error: {}", t))
-                        }
-                    })?
-                    .into_string()
-                    .expect("Failed to convert HTTP response to string");
+                        })?
+                        .into_string()
+                        .expect("Failed to convert HTTP response to string");
                     std::fs::write(p, &i).map_err(|_| InputFetchFailure::CantWriteCachedFile)?;
                     Ok(i)
                 }
@@ -203,7 +194,7 @@ impl Opts {
         if !self.bypass && dur < Self::TARGET_DUR {
             let bench =
                 benchmarking::bench_function_with_duration(Self::TARGET_DUR, move |measurer| {
-                    measurer.measure(&f)
+                    measurer.measure(&f);
                 })
                 .unwrap();
             let overall = bench.elapsed().as_secs_f64();
@@ -224,23 +215,30 @@ impl Opts {
     }
 }
 
+#[must_use]
 pub fn appropriate_scale(d: std::time::Duration) -> (u64, &'static str) {
     let value = d.as_secs_f64();
     let units = ["s", "ms", "\u{3bc}s", "ns"];
     let mut scale = 1;
     for u in units {
+        #[allow(clippy::cast_precision_loss)]
         if (scale as f64 * value) > 1.0 {
             return (scale, u);
         }
-        scale *= 1000;
+        scale *= 1_000;
     }
-    (1000000000, "ns")
+    (1_000_000_000, "ns")
 }
 
 #[must_use]
 pub fn render_duration(d: std::time::Duration) -> String {
     let (scale, suffix) = appropriate_scale(d);
-    format!("{:.3}{}", scale as f64 * d.as_secs_f64(), suffix)
+    #[allow(clippy::cast_precision_loss)]
+    if suffix == "ns" {
+        format!("{}{}", scale as f64 * d.as_secs_f64(), suffix)
+    } else {
+        format!("{:.3}{}", scale as f64 * d.as_secs_f64(), suffix)
+    }
 }
 
 #[must_use]

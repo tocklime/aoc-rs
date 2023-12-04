@@ -95,7 +95,7 @@ impl Computer {
             Instr::Dec(r) => self.set_i(r, self.get(r) - 1),
             Instr::Jnz(v, x) => {
                 if self.get(v) != 0 {
-                    next_pc += self.get(x) - 1
+                    next_pc += self.get(x) - 1;
                 }
             }
             Instr::Tgl(v) => {

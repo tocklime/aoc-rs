@@ -443,7 +443,7 @@ where
             + &l.iter()
                 .flat_map(|&x| (0..width).map(move |_| x))
                 .map(|x| match x {
-                    Some(v) => format!("{}", v),
+                    Some(v) => format!("{v}"),
                     None => default.to_owned(),
                 })
                 .collect::<String>()

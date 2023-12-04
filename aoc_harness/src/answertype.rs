@@ -22,7 +22,7 @@ impl<T, E: std::fmt::Debug> AnswerType for Result<T, E> {
         match self {
             Ok(t) => Some(t),
             Err(e) => {
-                println!("{:?}", e);
+                println!("{e:?}");
                 None
             }
         }

@@ -67,7 +67,7 @@ impl AocAllMainInput {
         for (y, d, dir, file) in files {
             adds.extend(quote! {
                 ans.push(((#y, #d), aoc::solutions::#dir::#file::run_with_opts));
-            })
+            });
         }
         quote! {
             fn make_all() -> Vec<Day>{

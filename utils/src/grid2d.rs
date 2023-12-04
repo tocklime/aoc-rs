@@ -78,7 +78,7 @@ impl<T> IndexMut<Coord> for Grid2d<T> {
 impl<T: Display> Display for Grid2d<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for ((_, x), t) in self.indexed_iter() {
-            f.write_fmt(format_args!("{}", t))?;
+            f.write_fmt(format_args!("{t}"))?;
             if x == self.size.1 - 1 {
                 f.write_char('\n')?;
             }
@@ -132,7 +132,7 @@ impl<T> Grid2d<T> {
             None
         }
     }
-    pub fn to_u(p: ICoord) -> Option<Coord> {
+    #[must_use] pub fn to_u(p: ICoord) -> Option<Coord> {
         Some((p.0.try_into().ok()?, p.1.try_into().ok()?))
     }
     #[must_use]

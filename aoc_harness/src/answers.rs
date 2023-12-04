@@ -40,10 +40,7 @@ impl AnswerAll {
             Ok(f) => match serde_yaml::from_reader(f) {
                 Ok(r) => r,
                 Err(err) => {
-                    eprintln!(
-                        "Failed to parse existing answers.yaml, will overwrite: {}",
-                        err
-                    );
+                    eprintln!("Failed to parse existing answers.yaml, will overwrite: {err}");
                     BTreeMap::new()
                 }
             },
@@ -71,8 +68,7 @@ impl AnswerAll {
         if let (AnswerPart::Checked(f), Some(e)) = (&me.part1, &dr.part1_ans) {
             if f != e {
                 return Err(format!(
-                    "actual part 1 result {} doesn't match expected {}",
-                    e, f
+                    "actual part 1 result {e} doesn't match expected {f}"
                 ));
             }
         }
@@ -80,8 +76,7 @@ impl AnswerAll {
         if let (AnswerPart::Checked(f), Some(e)) = (&me.part2, &dr.part2_ans) {
             if f != e {
                 return Err(format!(
-                    "actual part 2 result {} doesn't match expected {}",
-                    e, f
+                    "actual part 2 result {e} doesn't match expected {f}"
                 ));
             }
         }

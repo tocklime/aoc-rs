@@ -41,7 +41,7 @@ pub fn main() {
     for (&y, day_map) in &results {
         let best_times_by_day = day_map
             .values()
-            .map(|d| d.iter().map(|dr| dr.total_time()).min().unwrap())
+            .map(|d| d.iter().map(aoc_harness::dayresult::DayResult::total_time).min().unwrap())
             .filter(|&d| d > Duration::ZERO)
             .collect_vec();
         let (scale, suffix) = best_times_by_day

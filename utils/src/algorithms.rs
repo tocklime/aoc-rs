@@ -46,7 +46,7 @@ where
     S: BuildHasher + Default,
 {
     let mut counts: HashMap<T, usize> = HashMap::new();
-    for &p in g.iter() {
+    for &p in g {
         for n in neighbours(p) {
             *counts.entry(n).or_default() += 1;
         }

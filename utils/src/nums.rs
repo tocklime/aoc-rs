@@ -237,7 +237,7 @@ where
     T: CheckedMul + Rem<Output = T> + Debug,
 {
     match a.checked_mul(b) {
-        None => panic!("mod_mul overflowed with {:?}x{:?}%{:?}", a, b, m),
+        None => panic!("mod_mul overflowed with {a:?}x{b:?}%{m:?}"),
         Some(ab) => ab % m,
     }
 }
@@ -246,7 +246,7 @@ where
     T: CheckedAdd + Rem<Output = T> + Debug,
 {
     match a.checked_add(b) {
-        None => panic!("mod_add overflowed with {:?}+{:?}%{:?}", a, b, m),
+        None => panic!("mod_add overflowed with {a:?}+{b:?}%{m:?}"),
         Some(ab) => ab % m,
     }
 }
@@ -255,7 +255,7 @@ where
     T: CheckedSub + Rem<Output = T> + Debug,
 {
     match a.checked_sub(b) {
-        None => panic!("mod_sub underflowed with {:?}-{:?}%{:?}", a, b, m),
+        None => panic!("mod_sub underflowed with {a:?}-{b:?}%{m:?}"),
         Some(ab) => ab % m,
     }
 }
@@ -294,7 +294,7 @@ mod tests {
     proptest! {
         #[test]
         fn mod_pow_proptest(a in 0u64..100u64, b in 0u32..32u32, m in 1u64..100u64) {
-            eprintln!("{} ^ {} % {}...",a,b,m);
+            eprintln!("{a} ^ {b} % {m}...");
             if m > 0 && a.checked_pow(b).is_some() {
                 eprintln!("{} ^ {} % {} == {}",a,b,m,a.pow(b) % m);
                 prop_assert_eq!(mod_pow(a, b.into(), m) , a.pow(b) % m);

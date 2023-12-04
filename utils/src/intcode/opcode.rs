@@ -29,7 +29,7 @@ impl fmt::Display for OpCode {
             Self::MoveRelativeBase => "Move Relative Base",
             Self::Halt => "Halt",
         };
-        write!(f, "{: <20}", s)
+        write!(f, "{s: <20}")
     }
 }
 

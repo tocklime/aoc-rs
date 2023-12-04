@@ -70,13 +70,12 @@ impl DayResult {
         ans: Option<T>,
     ) -> Result<(), String> {
         let ans = match ans {
-            Some(a) => format!("{}", a),
+            Some(a) => format!("{a}"),
             None => String::new(),
         };
         match slot {
             Some(s) if s != &ans => Err(format!(
-                "conflicting results for part {}: {} and {}",
-                part_num, s, ans
+                "conflicting results for part {part_num}: {s} and {ans}"
             )),
             None => {
                 *slot = Some(ans);
@@ -86,11 +85,11 @@ impl DayResult {
         }
     }
     pub fn expect_p1<T: Display>(&mut self, s: T) {
-        self.part1_ans = Some(format!("{}", s));
+        self.part1_ans = Some(format!("{s}"));
         self.part1_confirmed = true;
     }
     pub fn expect_p2<T: Display>(&mut self, s: T) {
-        self.part2_ans = Some(format!("{}", s));
+        self.part2_ans = Some(format!("{s}"));
         self.part2_confirmed = true;
     }
     pub fn record_p1<T: Display>(&mut self, ans: Option<T>, time: Duration) {
