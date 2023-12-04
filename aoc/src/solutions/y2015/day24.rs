@@ -44,15 +44,15 @@ fn p1(input: &str) -> Option<usize> {
                 .iter()
                 .permutations(size_1)
                 .filter_map(|g| {
-                    if g.iter().cloned().sum::<usize>() == group_weight {
+                    if g.iter().copied().sum::<usize>() == group_weight {
                         //weight is right, check g23 splittable.
                         let rest = weights
                             .iter()
-                            .cloned()
+                            .copied()
                             .filter(|n| !g.contains(&n))
                             .collect_vec();
                         if can_split_to(&rest, group_weight) {
-                            Some(g.iter().cloned().product::<usize>())
+                            Some(g.iter().copied().product::<usize>())
                         } else {
                             None
                         }
@@ -79,15 +79,15 @@ fn p2(input: &str) -> Option<usize> {
                 .iter()
                 .permutations(size_1)
                 .filter_map(|g| {
-                    if g.iter().cloned().sum::<usize>() == group_weight {
+                    if g.iter().copied().sum::<usize>() == group_weight {
                         //weight is right, check g23 splittable.
                         let rest = weights
                             .iter()
-                            .cloned()
+                            .copied()
                             .filter(|n| !g.contains(&n))
                             .collect_vec();
                         if can_split_to_2(&rest, group_weight, group_weight) {
-                            Some(g.iter().cloned().product::<usize>())
+                            Some(g.iter().copied().product::<usize>())
                         } else {
                             None
                         }

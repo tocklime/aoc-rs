@@ -19,7 +19,7 @@ pub fn input_generator(input: &str) -> Vec<i32> {
 }
 
 pub fn part1(input: &[i32]) -> i32 {
-    input.iter().cloned().map(rocket_fn).sum()
+    input.iter().copied().map(rocket_fn).sum()
 }
 
 pub fn unfolding(input: &[i32]) -> i32 {
@@ -39,7 +39,7 @@ pub fn unfolding(input: &[i32]) -> i32 {
 pub fn iteration(input: &[i32]) -> i32 {
     input
         .iter()
-        .cloned()
+        .copied()
         .flat_map(|x| iterate(x, |&y| rocket_fn(y)).skip(1).take_while(|&x| x > 0))
         .sum()
 }

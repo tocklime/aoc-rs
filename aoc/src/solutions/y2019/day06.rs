@@ -30,7 +30,7 @@ impl<'a> OrbitalMap<'a> {
     }
     pub fn get_depth(&'a self, obj: &'a str) -> usize {
         let mut dc = self.depth_cache.borrow_mut();
-        dc.get(obj).cloned().unwrap_or_else(|| {
+        dc.get(obj).copied().unwrap_or_else(|| {
             let chain = self.get_chain_to_root(obj);
             for (ix, i) in chain.iter().enumerate() {
                 if dc.contains_key(i) {

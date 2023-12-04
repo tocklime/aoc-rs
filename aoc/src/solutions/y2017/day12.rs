@@ -41,9 +41,9 @@ fn find_group(p: &Prob, member: usize) -> HashSet<usize> {
     let mut done: HashSet<usize> = HashSet::new();
     let mut group: HashSet<usize> = vec![member].into_iter().collect();
     while !group.is_empty() {
-        let next_fringe: HashSet<usize> = group.iter().flat_map(|i| &p[i]).cloned().collect();
+        let next_fringe: HashSet<usize> = group.iter().flat_map(|i| &p[i]).copied().collect();
         done.extend(&group);
-        group = next_fringe.difference(&done).cloned().collect();
+        group = next_fringe.difference(&done).copied().collect();
     }
     done
 }

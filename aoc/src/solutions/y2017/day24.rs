@@ -29,10 +29,10 @@ fn get_all_bridges(input: &str) -> HashMap<CostAndPartSeq, (CostAndPartSeq, usiz
         bits.iter()
             .filter_map(move |c| {
                 if c.a == *open_port {
-                    let left = bits.iter().filter(|&x| x != c).cloned().collect_vec();
+                    let left = bits.iter().filter(|&x| x != c).copied().collect_vec();
                     Some(((c.b, left), c.a + c.b))
                 } else if c.b == *open_port {
-                    let left = bits.iter().filter(|&x| x != c).cloned().collect_vec();
+                    let left = bits.iter().filter(|&x| x != c).copied().collect_vec();
                     Some(((c.a, left), c.a + c.b))
                 } else {
                     None

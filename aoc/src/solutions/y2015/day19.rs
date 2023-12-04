@@ -34,7 +34,7 @@ fn steps(s: &str, rules: &Vec<Rule>) -> HashSet<String> {
 fn p1(input: &str) -> usize {
     let lines = input.lines().collect_vec();
     let state = *lines.last().unwrap();
-    let rules: Vec<Rule> = lines[0..lines.len() - 2].iter().cloned().map(Rule::parse).collect_vec();
+    let rules: Vec<Rule> = lines[0..lines.len() - 2].iter().copied().map(Rule::parse).collect_vec();
     steps(state, &rules).len()
 }
 
@@ -55,7 +55,7 @@ fn steps_rev(s: &str, rules: &Vec<Rule>) -> HashSet<String> {
 fn p2(input: &str) -> usize {
     let lines = input.lines().collect_vec();
     let target = *lines.last().unwrap();
-    let rules: Vec<Rule> = lines[0..lines.len() - 2].iter().cloned().map(Rule::parse).collect_vec();
+    let rules: Vec<Rule> = lines[0..lines.len() - 2].iter().copied().map(Rule::parse).collect_vec();
     let path = astar(
         &target.to_owned(),
         |s| steps_rev(s, &rules).into_iter().map(|x| (x, 1)),

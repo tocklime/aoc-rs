@@ -83,7 +83,7 @@ impl<'a> Duet<'a> {
 
     fn get_op(&self) -> Option<Op> {
         let as_u: Option<usize> = self.ip.try_into().ok();
-        as_u.and_then(|i| self.mem.get(i).cloned())
+        as_u.and_then(|i| self.mem.get(i).copied())
     }
 }
 

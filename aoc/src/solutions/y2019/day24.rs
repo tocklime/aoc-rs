@@ -45,7 +45,7 @@ pub fn p2c(input: &HashSet<Point>) -> usize {
 pub fn flat_neighbours(p: Point) -> Vec<Point> {
     p.neighbours()
         .iter()
-        .cloned()
+        .copied()
         .filter(|p| p.0 >= 0 && p.1 >= 0 && p.0 < 5 && p.1 < 5)
         .collect()
 }

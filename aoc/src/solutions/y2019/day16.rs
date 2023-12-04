@@ -37,7 +37,7 @@ pub fn p2(input: &[usize]) -> usize {
         .cycle()
         .take(input.len() * 10000)
         .skip(offset)
-        .cloned()
+        .copied()
         .collect();
     for _ in 0..100 {
         let mut sum = input.iter().sum::<usize>();
@@ -57,7 +57,7 @@ pub fn p2_naive(input: &[usize]) -> usize {
         .iter()
         .cycle()
         .take(input.len() * 10_000)
-        .cloned()
+        .copied()
         .collect::<Vec<_>>();
     (0..100).for_each(|n| {
         println!("{n}");

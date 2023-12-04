@@ -10,7 +10,7 @@ pub fn go(input: &str, string_script: &str) -> Option<i32> {
         .get_output()
         .iter()
         .find(|&&x| x > 255)
-        .cloned()
+        .copied()
         .or_else(|| {
             println!("{}", c.output_as_string());
             None

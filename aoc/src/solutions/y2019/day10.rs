@@ -62,7 +62,7 @@ pub fn p2(input: &AsteroidSet, station: Point, nth: usize) -> isize {
                 .push(Reverse((o.size_squared(), p)));
             hm
         });
-    let mut dir_list: Vec<_> = map.keys().cloned().collect();
+    let mut dir_list: Vec<_> = map.keys().copied().collect();
     dir_list.sort_by(|&a, &b| {
         let a_pc = PolarCoord::from_point(a).rotate(FRAC_PI_2);
         let b_pc = PolarCoord::from_point(b).rotate(FRAC_PI_2);

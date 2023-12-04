@@ -75,7 +75,7 @@ pub fn solve<S: BuildHasher>(map: &HashMap<Point, char, S>, starts: &[Point]) ->
     let locations: Vec<Point> = map
         .iter()
         .filter_map(|(&k, &v)| if v.is_lowercase() { Some(k) } else { None })
-        .chain(starts.iter().cloned())
+        .chain(starts.iter().copied())
         .collect();
     let info: MapInfo = locations
         .iter()

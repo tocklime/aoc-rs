@@ -30,7 +30,7 @@ impl Comp {
     fn parse(input: &str) -> Self {
         Comp {
             ip: 0,
-            regs: [('a', 0), ('b', 0)].iter().cloned().collect(),
+            regs: [('a', 0), ('b', 0)].iter().copied().collect(),
             program: (0..).zip(input.lines().map(|x| Instr::parse(x).unwrap())).collect(),
         }
     }

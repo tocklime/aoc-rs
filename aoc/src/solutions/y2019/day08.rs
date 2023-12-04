@@ -59,7 +59,7 @@ pub fn p2_transpose(input: &str) -> OcrString {
     transpose_inplace(&mut pixels, &mut scratch, IM_SIZE, layer_count);
     pixels
         .chunks(layer_count)
-        .map(|l| l.iter().cloned().find(|&x| x != 'X').unwrap())
+        .map(|l| l.iter().copied().find(|&x| x != 'X').unwrap())
         .chunks(WIDTH)
         .into_iter()
         .map(|x| format!("\n{}", x.format("")))

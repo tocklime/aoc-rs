@@ -65,7 +65,7 @@ pub fn bfs_depth(
 pub fn explore(input: &str) -> HashMap<Point, char> {
     let c = input.parse::<Computer>().unwrap();
     let position = Point(0, 0);
-    let mut known_map: HashMap<Point, char> = [(position, START)].iter().cloned().collect();
+    let mut known_map: HashMap<Point, char> = [(position, START)].iter().copied().collect();
     let mut save_points: Vec<(Point, Computer<i32>)> = vec![(position, c)];
     while let Some((position, c)) = save_points.pop() {
         
