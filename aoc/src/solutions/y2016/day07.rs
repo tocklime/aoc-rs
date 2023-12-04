@@ -19,9 +19,9 @@ fn outers_and_inners(s: &str) -> (Vec<&str>, Vec<&str>) {
     let mut inners = Vec::new();
     for (ix, sec) in s.split(|c| c == '[' || c == ']').enumerate() {
         if ix % 2 == 0 {
-            outers.push(sec)
+            outers.push(sec);
         } else {
-            inners.push(sec)
+            inners.push(sec);
         }
     }
     (outers, inners)

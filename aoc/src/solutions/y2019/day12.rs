@@ -49,7 +49,7 @@ fn do_gravity(moons: &mut [Moon], dimension: usize) {
         let s = (moons[m1ix].pos[dimension] - moons[m2ix].pos[dimension]).signum();
         moons.get_mut(m1ix).unwrap().vel[dimension] -= s;
         moons.get_mut(m2ix).unwrap().vel[dimension] += s;
-    })
+    });
 }
 
 pub fn p1(input: &[Moon]) -> i64 {

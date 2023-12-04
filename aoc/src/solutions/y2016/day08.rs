@@ -27,14 +27,14 @@ fn screen(input: &str) -> Vec<Vec<bool>> {
                 {
                     let before = grid[row].clone();
                     for i in 0..WIDTH {
-                        grid[row][i] = before[(i + WIDTH - (dist % WIDTH)) % WIDTH]
+                        grid[row][i] = before[(i + WIDTH - (dist % WIDTH)) % WIDTH];
                     }
                 }
             Instr::RotateCol(col, dist) =>
                 {
                     let before = grid.iter().map(|row| row[col]).collect_vec();
                     for i in 0..HEIGHT {
-                        grid[i][col] = before[(i + HEIGHT - (dist % HEIGHT)) % HEIGHT]
+                        grid[i][col] = before[(i + HEIGHT - (dist % HEIGHT)) % HEIGHT];
                     }
                 }
         }

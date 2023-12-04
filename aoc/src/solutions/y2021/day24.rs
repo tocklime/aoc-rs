@@ -88,7 +88,7 @@ impl Alu {
                 }
             }
             "eql" => {
-                self.wxyz[to_reg_ix(s[1])] = isize::from(self.read(s[1]) == self.read(s[2]))
+                self.wxyz[to_reg_ix(s[1])] = isize::from(self.read(s[1]) == self.read(s[2]));
             }
             _ => panic!("wat is {input}"),
         }

@@ -115,11 +115,11 @@ fn part2_map(input: &[Claim]) -> usize {
 }
 
 #[cfg(test)]
-const HINT_INPUT: &str = r#"
+const HINT_INPUT: &str = "
 #1 @ 1,3: 4x4
 #2 @ 3,1: 4x4
 #3 @ 5,5: 2x2
-"#;
+";
 
 #[test]
 fn test_example() {

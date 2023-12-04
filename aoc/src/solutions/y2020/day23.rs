@@ -30,12 +30,12 @@ impl Game {
         let new_current = self.next_map[c as usize];
         let mut destination = self.current - 1;
         if destination == 0 {
-            destination = self.max_num
+            destination = self.max_num;
         };
         while [a, b, c].contains(&destination) {
             destination -= 1;
             if destination == 0 {
-                destination = self.max_num
+                destination = self.max_num;
             };
         }
         let next = self.next_map[destination as usize];

@@ -72,7 +72,7 @@ pub fn example() {
     let input: Vec<isize> = vec![1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0];
     let correct_output = [0, 0, 0, 0, 1, 0, 0, 0];
     for i in input.iter() {
-        txb.send(*i).unwrap()
+        txb.send(*i).unwrap();
     }
     drop(txb);
     let mut output = vec![];

@@ -111,12 +111,12 @@ fn solve(input: &str) -> (i32, i32) {
                 Dir::Up | Dir::Down => {
                     a.entry(point.x as usize)
                         .or_insert_with(|| vec![false; bb.top_right.y as usize])
-                        [point.y as usize] = true
+                        [point.y as usize] = true;
                 }
                 Dir::Left | Dir::Right => {
                     a.entry(point.y as usize)
                         .or_insert_with(|| vec![false; bb.top_right.x as usize])
-                        [point.x as usize] = true
+                        [point.x as usize] = true;
                 }
             }
         }

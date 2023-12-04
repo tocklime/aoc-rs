@@ -41,7 +41,7 @@ impl Particle {
     fn step(&mut self) {
         for d in 0..3 {
             self.vel[d] += self.acc[d];
-            self.pos[d] += self.vel[d]
+            self.pos[d] += self.vel[d];
         }
     }
 }
