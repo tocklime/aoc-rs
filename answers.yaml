@@ -617,5 +617,5 @@
     part1: !Checked '527364'
     part2: !Checked '79026871'
   4:
-    part1: !Observed '18619'
-    part2: !Observed '8063216'
+    part1: !Checked '18619'
+    part2: !Checked '8063216'

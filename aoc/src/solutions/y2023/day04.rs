@@ -1,66 +1,73 @@
-use std::collections::HashSet;
-
 use aoc_harness::aoc_main;
 use nom::{
-    bytes::complete::tag,
-    character::complete::{self, newline},
-    combinator::all_consuming,
-    multi::{many1, separated_list1},
-    sequence::{preceded, terminated, tuple},
-    IResult,
+    character::complete::{self, multispace1, newline},
+    combinator::eof,
+    multi::separated_list1,
+    sequence::preceded,
+};
+use nom_supreme::{multi::collect_separated_terminated, tag::complete::tag, ParserExt};
+use utils::{
+    nom::{ws, IResult},
+    numset::NumSet,
 };
 
-aoc_main!(2023 day 4, part1 [p1], part2 [p2], example both EG => (13, 30));
+aoc_main!(2023 day 4, generator gen, part1 [p1] => 18619, part2 [p2] => 8063216, example both EG => (13, 30));
 
-fn p1(input: &str) -> u32 {
-    let cards = all_consuming(many1(terminated(parse_card, newline)))(input)
-        .unwrap()
-        .1;
-    cards.iter().map(|x| x.score()).sum()
+fn gen(input: &str) -> Vec<Card> {
+    use nom::Parser;
+
+    collect_separated_terminated(Card::parse, newline, eof.opt_preceded_by(newline))
+        .parse(input)
+        .expect("Parse")
+        .1
 }
-fn p2(input: &str) -> u32 {
-    let cards = all_consuming(many1(terminated(parse_card, newline)))(input)
-        .unwrap()
-        .1;
-    let win_map : Vec<usize> = cards.iter().map(|x| x.win_count()).collect();
-    let mut card_counts = vec![1;cards.len()];
-    let mut index = 0;
-    while (index < cards.len()) {
-        let copies = card_counts[index];
-        let win_count = win_map[index];
-        for i in (index+1..=index+win_count) {
-            card_counts[i]+=copies;
-        }
-        index += 1;
-    }
-    card_counts.iter().sum()
+fn p1(cards: &[Card]) -> u32 {
+    cards.iter().map(Card::score).sum()
+}
+fn p2(cards: &[Card]) -> u32 {
+    let win_map: Vec<usize> = cards.iter().map(|x| x.win_count()).collect();
+    let mut card_counts = vec![1; cards.len()];
+    (0..cards.len())
+        .map(|index| {
+            let copies = card_counts[index];
+            let win_count = win_map[index];
+            for x in &mut card_counts[index + 1..=index + win_count] {
+                *x += copies;
+            }
+            copies
+        })
+        .sum()
 }
 
 #[derive(Debug)]
 struct Card {
-    id: u32,
-    winning: Vec<u32>,
-    have: Vec<u32>,
+    _id: u32,
+    winning: Vec<u8>,
+    have: Vec<u8>,
 }
 impl Card {
     fn win_count(&self) -> usize {
-        let win: HashSet<u32> = self.winning.iter().cloned().collect();
-        self.have.iter().filter(|x| win.contains(&x)).count()
+        let num_set: NumSet<u128> = self.winning.iter().cloned().collect();
+        self.have.iter().filter(|&&x| num_set.contains(x)).count()
     }
     fn score(&self) -> u32 {
-        let count = self.win_count();
-        if count > 0 {
-            1 << (count -1)
-        } else {
-            0
-        }
+        self.win_count()
+            .checked_sub(1)
+            .map(|x| 1 << x)
+            .unwrap_or_default()
     }
-}
-fn parse_card(input: &str) -> IResult<&str, Card> {
-    let (input, id) = preceded(tuple((tag("Card"), many1(tag(" ")))), complete::u32)(input)?;
-    let (input, winning) = preceded(tuple((tag(":"),many1(tag(" ")))), separated_list1(many1(tag(" ")), complete::u32))(input)?;
-    let (input, have) = preceded(tuple((tag(" |"),many1(tag(" ")))), separated_list1(many1(tag(" ")), complete::u32))(input)?;
-    Ok((input, Card { id, winning, have }))
+    fn parse(input: &str) -> IResult<Self> {
+        use nom::Parser;
+
+        let (input, _id) = complete::u32
+            .preceded_by(tag("Card").cut().terminated(multispace1))
+            .parse(input)?;
+        let (input, winning) =
+            preceded(ws(tag(":")), separated_list1(multispace1, complete::u8))(input)?;
+        let (input, have) =
+            preceded(ws(tag("|")), separated_list1(multispace1, complete::u8))(input)?;
+        Ok((input, Self { _id, winning, have }))
+    }
 }
 
 const EG: &str = "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53

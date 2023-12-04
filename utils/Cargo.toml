@@ -18,6 +18,8 @@ pathfinding = "4"
 reformation = "0.5.3"
 bitintr = "0.3"
 parse-display = "0.8"
+nom = "7.1"
+nom-supreme = "0.8.0"
 
 [dev-dependencies]
 proptest = "1.0.0"

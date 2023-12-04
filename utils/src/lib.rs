@@ -21,5 +21,6 @@ pub mod assembunny;
 pub mod comp;
 pub mod iter;
 pub mod knot_hash;
+pub mod nom;
 pub mod points;
 pub mod prelude;
