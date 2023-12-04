@@ -22,7 +22,7 @@ fn p1(_input: &str) -> usize {
             ('E', true) => (true, -1, 'C'),
             ('F', false) => (true, 1, 'D'),
             ('F', true) => (true, 1, 'A'),
-            (a, _) => panic!("Unknown state {}", a),
+            (a, _) => panic!("Unknown state {a}"),
         };
         if set {
             tape.insert(pos);

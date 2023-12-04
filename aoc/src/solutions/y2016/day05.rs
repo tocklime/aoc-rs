@@ -5,10 +5,10 @@ aoc_main!(2016 day 5, part1 [p1], part2 [p2]);
 fn p1(input: &str) -> String {
     (0..)
         .filter_map(|i| {
-            let str = format!("{}{}", input, i);
+            let str = format!("{input}{i}");
             let md5 = md5::compute(str);
             if md5[0] == 0 && md5[1] == 0 && (md5[2] & 0xF0) == 0 {
-                Some(format!("{:?}", md5).chars().nth(5).unwrap())
+                Some(format!("{md5:?}").chars().nth(5).unwrap())
             } else {
                 None
             }
@@ -20,7 +20,7 @@ fn p1(input: &str) -> String {
 fn p2(input: &str) -> String {
     let matches = (0..)
         .map(|i| {
-            let str = format!("{}{}", input, i);
+            let str = format!("{input}{i}");
             md5::compute(str)
         })
         .filter(|md5| md5[0] == 0 && md5[1] == 0 && (md5[2] & 0xF0) == 0);

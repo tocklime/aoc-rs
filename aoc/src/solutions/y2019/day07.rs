@@ -39,7 +39,7 @@ fn run_comp_loop(input: &str, a: &[isize]) -> isize {
             input.push(0)
         }
         this_comp
-            .with_name(format!("C-{}-{}", ix, v))
+            .with_name(format!("C-{ix}-{v}"))
             .connect_output_from(&mut prev_comp, &input);
     }
     let ts: Vec<_> = comps

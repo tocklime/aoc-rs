@@ -69,7 +69,7 @@ fn p2(_input: &str) -> i32 {
                         && n.y >= 0
                         && equ.is_compatible(
                             *map.get(&n)
-                                .unwrap_or_else(|| panic!("unknown square: {:?}", n)),
+                                .unwrap_or_else(|| panic!("unknown square: {n:?}")),
                         )
                     {
                         Some(((n, equ), 1))

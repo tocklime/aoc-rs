@@ -2,7 +2,6 @@ use aoc_harness::aoc_main;
 
 aoc_main!(2015 day 20, part1 [p1], part2 [p2]);
 use itertools::Itertools;
-use primal;
 use std::collections::HashSet;
 use std::iter;
 
@@ -61,7 +60,7 @@ fn day20p1tests() {
     assert_eq!(presents(&s, 8), 150);
     assert_eq!(presents(&s, 9), 130);
     assert_eq!(presents(&s, 210), 5760);
-    assert_eq!(presents(&s, 1274999), 14_361_600);
+    assert_eq!(presents(&s, 1_274_999), 14_361_600);
 }
 
 //1067430 too high

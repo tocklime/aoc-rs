@@ -12,7 +12,7 @@ use utils::knot_hash::KnotHash;
 fn p1(input: &str) -> u64 {
     (0..128)
         .map::<u64, _>(|l| {
-            KnotHash::from_str(&format!("{}-{}", input, l))
+            KnotHash::from_str(&format!("{input}-{l}"))
                 .unwrap()
                 .set_bit_count()
                 .into()
@@ -23,7 +23,7 @@ fn p1(input: &str) -> u64 {
 fn p2(input: &str) -> usize {
     let mut set: HashSet<Point<u8>> = HashSet::new();
     for l in 0..128 {
-        let v: Vec<u8> = KnotHash::from_str(&format!("{}-{}", input, l))
+        let v: Vec<u8> = KnotHash::from_str(&format!("{input}-{l}"))
             .unwrap()
             .bit_arr();
         for (ix, x) in BitVec::<u8, Msb0>::from_slice(&v).into_iter().enumerate() {

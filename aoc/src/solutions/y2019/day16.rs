@@ -60,7 +60,7 @@ pub fn p2_naive(input: &[usize]) -> usize {
         .cloned()
         .collect::<Vec<_>>();
     (0..100).for_each(|n| {
-        println!("{}", n);
+        println!("{n}");
         x = fft(&x)
     });
     list_to_int(&x[offset..8 + offset])

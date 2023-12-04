@@ -41,7 +41,7 @@ mod test {
     use super::*;
 
     fn test(input: &str) -> i64 {
-        let p = format!("0\n{}", input);
+        let p = format!("0\n{input}");
         p2(&gen(&p))
     }
     #[test]

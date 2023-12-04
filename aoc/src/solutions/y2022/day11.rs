@@ -65,7 +65,7 @@ fn parse_operation(input: &str) -> IResult<&str, Operation> {
         ("+", Some(i)) => Operation::AddI(i),
         ("*", None) => Operation::Square,
         ("*", Some(i)) => Operation::MulI(i),
-        a => panic!("bad match in parse operation: {:?}", a),
+        a => panic!("bad match in parse operation: {a:?}"),
     };
     Ok((input, ans))
 }

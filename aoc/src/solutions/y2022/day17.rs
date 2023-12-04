@@ -69,7 +69,7 @@ fn draw_grid(grid: &[NumSet<u8>]) {
             d[(ix, set_bit as usize)] = '#';
         }
     }
-    println!("{}", d);
+    println!("{d}");
 }
 #[allow(dead_code)]
 fn draw(grid: &[NumSet<u8>], falling_rock: &Vec<NumSet<u8>>, left: usize, height: usize) {
@@ -89,7 +89,7 @@ fn draw(grid: &[NumSet<u8>], falling_rock: &Vec<NumSet<u8>>, left: usize, height
             };
         }
     }
-    println!("{}", d);
+    println!("{d}");
 }
 fn get_rocks() -> Vec<Vec<NumSet<u8>>> {
     ROCKS

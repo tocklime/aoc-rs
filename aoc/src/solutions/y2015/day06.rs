@@ -21,12 +21,12 @@ fn gen(input: &str) -> Vec<Line> {
     let re = regex::Regex::new("(turn on|turn off|toggle) (\\d+),(\\d+) through (\\d+),(\\d+)").unwrap();
     input.lines().map(|l| {
 //turn on 489,959 through 759,964
-        let parsed = re.captures(l).unwrap_or_else(|| panic!("Bad line {}", l));
+        let parsed = re.captures(l).unwrap_or_else(|| panic!("Bad line {l}"));
         let mode = match parsed.get(1).unwrap().as_str() {
             "turn on" => Instr::On,
             "turn off" => Instr::Off,
             "toggle" => Instr::Toggle,
-            p => panic!("Unknown instruction {} on line {}", p, l)
+            p => panic!("Unknown instruction {p} on line {l}")
         };
         let coords = (0..4).map(|i| parsed.get(i + 2).unwrap().as_str().parse::<usize>().unwrap()).collect_vec();
         Line {

@@ -55,7 +55,7 @@ pub fn interactive(input: &str) -> i64 {
     loop {
         let out = c.output_as_string();
         c.clear_output();
-        print!("{}", out);
+        print!("{out}");
         let _ = stdout().flush();
         let mut s = String::new();
         stdin().read_line(&mut s).expect("Bad input");

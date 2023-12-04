@@ -44,7 +44,7 @@ impl Pos {
                 self.n += 1;
                 self.ne -= 1;
             }
-            _ => panic!("unknown step: {}", dir),
+            _ => panic!("unknown step: {dir}"),
         }
     }
 }

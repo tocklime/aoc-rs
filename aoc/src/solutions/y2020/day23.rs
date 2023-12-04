@@ -19,7 +19,7 @@ impl Game {
     #[allow(dead_code)]
     fn print(&self) {
         for x in self {
-            print!("{} ", x);
+            print!("{x} ");
         }
         println!();
     }

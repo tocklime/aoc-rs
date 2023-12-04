@@ -101,7 +101,8 @@ where
 pub struct VecLookup<T>(Vec<Option<T>>);
 
 impl<T> VecLookup<T> {
-    #[must_use] pub fn with_capacity(capacity: usize) -> Self {
+    #[must_use]
+    pub fn with_capacity(capacity: usize) -> Self {
         Self(Vec::with_capacity(capacity))
     }
     pub fn ensure_size(&mut self, size: usize) {
@@ -112,7 +113,8 @@ impl<T> VecLookup<T> {
         self.ensure_size(key + 1);
         self.0[key] = Some(value);
     }
-    #[must_use] pub fn get(&self, key: usize) -> Option<&T> {
+    #[must_use]
+    pub fn get(&self, key: usize) -> Option<&T> {
         self.0.get(key).and_then(|x| x.as_ref())
     }
     pub fn get_mut(&mut self, key: usize) -> Option<&mut T> {
@@ -121,7 +123,8 @@ impl<T> VecLookup<T> {
             None => None,
         })
     }
-    #[must_use] pub fn contains_key(&self, key: usize) -> bool {
+    #[must_use]
+    pub fn contains_key(&self, key: usize) -> bool {
         self.get(key).is_some()
     }
     pub fn iter(&self) -> impl Iterator<Item = (usize, &T)> {
@@ -188,7 +191,8 @@ pub enum VecLookupEntry<'a, T: 'a> {
     Vacant(usize, &'a mut VecLookup<T>),
 }
 impl<'a, T: Default> VecLookupEntry<'a, T> {
-    #[must_use] pub fn or_default(self) -> &'a mut T {
+    #[must_use]
+    pub fn or_default(self) -> &'a mut T {
         match self {
             VecLookupEntry::Occupied(_, r) => r,
             VecLookupEntry::Vacant(k, v) => {

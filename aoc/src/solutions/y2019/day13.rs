@@ -12,7 +12,7 @@ pub fn symbol_for(i: isize) -> char {
         2 => 'x',
         3 => 'ￚ',
         4 => '●',
-        _ => panic!("Unknown block {}", i),
+        _ => panic!("Unknown block {i}"),
     }
 }
 //#[aoc(day13, part1)]

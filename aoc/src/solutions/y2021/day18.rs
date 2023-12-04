@@ -59,7 +59,7 @@ impl Add for Snail {
 impl Display for Snail {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
-            Self::Leaf(n) => f.write_fmt(format_args!("{}", n))?,
+            Self::Leaf(n) => f.write_fmt(format_args!("{n}"))?,
             Self::Pair(c) => f.write_fmt(format_args!("[{},{}]", c.0, c.1))?,
         }
         Ok(())
@@ -202,18 +202,18 @@ mod snailtest {
     fn exp(input: &str) -> String {
         let mut p: Snail = input.parse().unwrap();
         p.try_explode(4);
-        format!("{}", p)
+        format!("{p}")
     }
     fn spl(input: &str) -> String {
         let mut p: Snail = input.parse().unwrap();
         p.try_split();
-        format!("{}", p)
+        format!("{p}")
     }
     fn add(a: &str, b: &str) -> String {
         let a: Snail = a.parse().unwrap();
         let b: Snail = b.parse().unwrap();
         let c = a + b;
-        format!("{}", c)
+        format!("{c}")
     }
     #[test]
     fn test_explodes() {

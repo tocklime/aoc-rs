@@ -90,7 +90,7 @@ impl Alu {
             "eql" => {
                 self.wxyz[to_reg_ix(s[1])] = isize::from(self.read(s[1]) == self.read(s[2]))
             }
-            _ => panic!("wat is {}", input),
+            _ => panic!("wat is {input}"),
         }
         AluState::Going
     }
@@ -146,7 +146,7 @@ fn both(input: &str) -> (isize, isize) {
                     return (max(1, 1 - diff), min(9, 9 - diff));
                 }
             }
-            panic!("unconstrained ix: {}", ix);
+            panic!("unconstrained ix: {ix}");
         })
         .collect_vec();
     {

@@ -91,7 +91,7 @@ impl Tile {
             (3, true) => (self.map.column(0), false),
             (2, true) => (self.map.row(9), false),
             (1, true) => (self.map.column(9), true),
-            _ => panic!("where is edge {}?", n),
+            _ => panic!("where is edge {n}?"),
         };
         if rev {
             x.iter()
@@ -186,7 +186,7 @@ fn print_grid(arr: &Array2<Option<Placement>>) {
                     (3, true) => (9 - int_c, 9 - int_r),
                     (2, true) => (9 - int_r, int_c),
                     (1, true) => (int_c, int_r),
-                    _ => panic!("bad rotation: {:?}", p),
+                    _ => panic!("bad rotation: {p:?}"),
                 };
                 print!("{}", if p.tile.map[(r2, c2)] { '#' } else { '.' });
             } else {

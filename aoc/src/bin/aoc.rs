@@ -41,7 +41,12 @@ pub fn main() {
     for (&y, day_map) in &results {
         let best_times_by_day = day_map
             .values()
-            .map(|d| d.iter().map(aoc_harness::dayresult::DayResult::total_time).min().unwrap())
+            .map(|d| {
+                d.iter()
+                    .map(aoc_harness::dayresult::DayResult::total_time)
+                    .min()
+                    .unwrap()
+            })
             .filter(|&d| d > Duration::ZERO)
             .collect_vec();
         let (scale, suffix) = best_times_by_day
@@ -49,6 +54,7 @@ pub fn main() {
             .map(|&d| aoc_harness::appropriate_scale(d))
             .min()
             .unwrap();
+        #[allow(clippy::cast_precision_loss)]
         let days_str = best_times_by_day
             .iter()
             .map(|d| format!("{:.3}", scale as f64 * d.as_secs_f64()))

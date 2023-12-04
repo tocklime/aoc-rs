@@ -17,7 +17,7 @@ impl FromStr for Star {
         let re = Regex::new(
             r"position=<\s*([-0-9]+),\s*([-0-9]+)>\s+velocity=<\s*([-0-9]+),\s*([-0-9]+)>",
         )
-        .map_err(|x| format!("{}", x))?;
+        .map_err(|x| format!("{x}"))?;
         let caps = re.captures(s).ok_or_else(|| "No match".to_string())?;
         let nums: Vec<i32> = (1..5)
             .map(|n| caps[n].parse::<i32>())
@@ -50,7 +50,7 @@ fn gen(input: &str) -> Vec<Star> {
             // position=<-31503, -52596> velocity=< 3,  5>
             match l.parse() {
                 Ok(p) => p,
-                Err(e) => panic!("can't parse line: {}: {}", l, e),
+                Err(e) => panic!("can't parse line: {l}: {e}"),
             }
         })
         .collect()

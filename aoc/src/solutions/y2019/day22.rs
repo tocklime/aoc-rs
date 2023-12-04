@@ -35,7 +35,7 @@ pub fn handle_deck(input: &str, deck_size: NT) -> (T, T) {
             let n = increment.convert(n);
             increment = increment * n.inv().unwrap();
         } else {
-            panic!("Unknown instr: {}", l);
+            panic!("Unknown instr: {l}");
         }
     }
     (offset, increment)

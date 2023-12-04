@@ -32,7 +32,7 @@ fn gen(input: &str) -> HashMap<Point<i64>, usize> {
                 stack.pop();
             }
             _ => {
-                panic!("unknown char: {}", c);
+                panic!("unknown char: {c}");
             }
         }
     }

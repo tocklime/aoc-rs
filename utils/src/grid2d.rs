@@ -132,7 +132,8 @@ impl<T> Grid2d<T> {
             None
         }
     }
-    #[must_use] pub fn to_u(p: ICoord) -> Option<Coord> {
+    #[must_use]
+    pub fn to_u(p: ICoord) -> Option<Coord> {
         Some((p.0.try_into().ok()?, p.1.try_into().ok()?))
     }
     #[must_use]
