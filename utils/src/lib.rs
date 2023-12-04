@@ -24,3 +24,4 @@ pub mod knot_hash;
 pub mod nom;
 pub mod points;
 pub mod prelude;
+pub mod numset_bytes;
