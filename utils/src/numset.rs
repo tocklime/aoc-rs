@@ -45,6 +45,7 @@ impl<T: PrimInt> NumSet<T> {
         self.n.set_bit(n, true);
         !was_in
     }
+    #[must_use]
     pub fn with(&self, n: u8) -> Self {
         let mut a = *self;
         a.insert(n);
@@ -140,5 +141,13 @@ impl<T: PrimInt> Iterator for NumSetIter<T> {
         self.n.n = self.n.n >> 1;
         self.pow += 1;
         Some(ans)
+    }
+}
+
+impl Extend<u8> for NumSet<u128> {
+    fn extend<T: IntoIterator<Item = u8>>(&mut self, iter: T) {
+        for x in iter {
+            self.insert(x);
+        }
     }
 }
