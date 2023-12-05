@@ -29,7 +29,7 @@ impl Map {
             .terminated(tag(" map:\n"))
             .map(|(a, b)| (a.to_owned(), b.to_owned()))
             .parse(input)?;
-        let (input, ranges) = nom::multi::separated_list1(
+        let (input, mut ranges) = nom::multi::separated_list1(
             newline,
             tuple((
                 complete::i64.terminated(space1),
@@ -37,6 +37,7 @@ impl Map {
                 complete::i64,
             )),
         )(input)?;
+        ranges.sort_by_key(|x| x.1);
         Ok((
             input,
             Self {
@@ -71,7 +72,7 @@ impl Almanac {
                             span.intersection(&input_s).map(|x| (x, delta))
                         });
 
-                        let (mut ans, last_overlap_end) = overlaps.sorted().fold(
+                        let (mut ans, last_overlap_end) = overlaps.fold(
                             (Vec::new(), span.start),
                             |(mut ans, start), (span, delta)| {
                                 if start < span.start {
