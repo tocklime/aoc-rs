@@ -1,7 +1,6 @@
-use std::collections::BTreeSet;
-
 use aoc_harness::aoc_main;
 use itertools::Itertools;
+use nom::Parser;
 use nom::{
     character::complete::{self, alpha1, newline, space1},
     multi::separated_list1,
@@ -9,7 +8,6 @@ use nom::{
 };
 use nom_supreme::{tag::complete::tag, ParserExt};
 use utils::{nom::IResult, span::Span};
-use nom::Parser;
 
 aoc_main!(2023 day 5, generator gen, part1 [p1] => 289863851, part2 [p2] => 60568880, example both EG => (35,46));
 
@@ -67,23 +65,22 @@ impl Almanac {
                 spans
                     .iter()
                     .flat_map(|span| {
-                        //BTreeSet because we want things in order.
-                        let overlaps: BTreeSet<(Span<i64>, i64)> = m
-                            .ranges
-                            .iter()
-                            .filter_map(move |&(to, from, size)| {
-                                let input_s = Span::new(from, from + size);
-                                let delta = to - from;
-                                span.intersection(&input_s).map(|x| (x, delta))
-                            })
-                            .collect();
-                        let (mut ans, last_overlap_end) = overlaps.into_iter().fold((Vec::new(), span.start), |(mut ans, start), (span, delta)| {
-                            if start < span.start {
-                                ans.push(Span::new(start, span.start));
-                            }
-                            ans.push(span + delta);
-                            (ans, span.end)
+                        let overlaps = m.ranges.iter().filter_map(move |&(to, from, size)| {
+                            let input_s = Span::new(from, from + size);
+                            let delta = to - from;
+                            span.intersection(&input_s).map(|x| (x, delta))
                         });
+
+                        let (mut ans, last_overlap_end) = overlaps.sorted().fold(
+                            (Vec::new(), span.start),
+                            |(mut ans, start), (span, delta)| {
+                                if start < span.start {
+                                    ans.push(Span::new(start, span.start));
+                                }
+                                ans.push(span + delta);
+                                (ans, span.end)
+                            },
+                        );
                         if last_overlap_end < span.end {
                             ans.push(Span::new(last_overlap_end, span.end));
                         }
@@ -114,7 +111,8 @@ fn gen(input: &str) -> Almanac {
         .complete()
         .all_consuming()
         .parse(input)
-        .expect("Parse").1
+        .expect("Parse")
+        .1
 }
 
 fn p1(almanac: &Almanac) -> i64 {

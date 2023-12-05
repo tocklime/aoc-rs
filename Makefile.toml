@@ -1,3 +1,10 @@
+[tasks.flamegraph]
+description = "Generate flamegraph for aoc_latest"
+install_crate = "flamegraph"
+command = "sudo"
+args = ["cargo", "flamegraph", "-p", "aoc_latest"]
+workspace = false
+
 [tasks.watch]
 description = "watch for latest changes to a single solution file and recompile and run on changes"
 install_crate = "cargo-watch"
