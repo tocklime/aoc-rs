@@ -9,7 +9,7 @@ use nom::{
 use nom_supreme::{tag::complete::tag, ParserExt};
 use utils::{nom::IResult, span::Span};
 
-aoc_main!(2023 day 5, generator gen, part1 [p1] => 289863851, part2 [p2] => 60568880, example both EG => (35,46));
+aoc_main!(2023 day 5, generator gen, part1 [p1] => 289863851, part2 [p2::<true>, p2::<false>] => 60568880, example both EG => (35,46));
 
 #[derive(Debug)]
 struct Map {
@@ -58,12 +58,12 @@ impl Almanac {
         let (input, _) = newline(input)?;
         Ok((input, Self { seeds, maps }))
     }
-    fn convert_range_and_minimise(&self, from: i64, size: i64) -> i64 {
+    fn convert_range_and_minimise<const DO_SQUASH: bool>(&self, from: i64, size: i64) -> i64 {
         let init = Span::new(from, from + size);
         self.maps
             .iter()
             .fold(vec![init], |spans, m| {
-                spans
+                let spans: Vec<Span<i64>> = spans
                     .iter()
                     .flat_map(|span| {
                         let overlaps = m.ranges.iter().filter_map(move |&(to, from, size)| {
@@ -87,7 +87,24 @@ impl Almanac {
                         }
                         ans
                     })
-                    .collect()
+                    .collect();
+                if DO_SQUASH {
+                    let mut ans: Vec<Span<i64>> = Vec::new();
+                    for span in spans {
+                        if let Some(s) = ans.last_mut() {
+                            if s.end == span.start {
+                                s.end = span.end;
+                            } else {
+                                ans.push(span);
+                            }
+                        } else {
+                            ans.push(span);
+                        }
+                    }
+                    ans
+                } else {
+                    spans
+                }
             })
             .into_iter()
             .map(|x| x.start)
@@ -125,12 +142,12 @@ fn p1(almanac: &Almanac) -> i64 {
         .unwrap()
 }
 
-fn p2(almanac: &Almanac) -> i64 {
+fn p2<const DO_SQUASH: bool>(almanac: &Almanac) -> i64 {
     almanac
         .seeds
         .iter()
         .tuples()
-        .map(|(&a, &b)| almanac.convert_range_and_minimise(a, b))
+        .map(|(&a, &b)| almanac.convert_range_and_minimise::<DO_SQUASH>(a, b))
         .min()
         .unwrap()
 }
