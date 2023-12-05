@@ -9,13 +9,13 @@ use nom::{
 use nom_supreme::{tag::complete::tag, ParserExt};
 use utils::{nom::IResult, span::Span};
 
-aoc_main!(2023 day 5, generator gen, part1 [p1] => 289863851, part2 [p2::<true>, p2::<false>] => 60568880, example both EG => (35,46));
+aoc_main!(2023 day 5, generator gen, part1 [p1] => 289863851, part2 [p2] => 60568880, example both EG => (35,46));
 
 #[derive(Debug)]
 struct Map {
     _from: String,
     _to: String,
-    ranges: Vec<(i64, i64, i64)>,
+    ranges: Vec<(Span<i64>, i64)>,
 }
 #[derive(Debug)]
 struct Almanac {
@@ -35,9 +35,10 @@ impl Map {
                 complete::i64.terminated(space1),
                 complete::i64.terminated(space1),
                 complete::i64,
-            )),
+            ))
+            .map(|(t, f, size)| (Span::new(f, f + size), t - f)),
         )(input)?;
-        ranges.sort_by_key(|x| x.1);
+        ranges.sort();
         Ok((
             input,
             Self {
@@ -58,28 +59,26 @@ impl Almanac {
         let (input, _) = newline(input)?;
         Ok((input, Self { seeds, maps }))
     }
-    fn convert_range_and_minimise<const DO_SQUASH: bool>(&self, from: i64, size: i64) -> i64 {
+    fn convert_range_and_minimise(&self, from: i64, size: i64) -> i64 {
         let init = Span::new(from, from + size);
         self.maps
             .iter()
             .fold(vec![init], |spans, m| {
-                let spans: Vec<Span<i64>> = spans
+                spans
                     .iter()
                     .flat_map(|span| {
-                        let overlaps = m.ranges.iter().filter_map(move |&(to, from, size)| {
-                            let input_s = Span::new(from, from + size);
-                            let delta = to - from;
-                            span.intersection(&input_s).map(|x| (x, delta))
-                        });
-
-                        let (mut ans, last_overlap_end) = overlaps.fold(
+                        let (mut ans, last_overlap_end) = m.ranges.iter().fold(
                             (Vec::new(), span.start),
-                            |(mut ans, start), (span, delta)| {
-                                if start < span.start {
-                                    ans.push(Span::new(start, span.start));
+                            |(mut ans, start), (from, delta)| {
+                                if let Some(i) = span.intersection(from) {
+                                    if start < i.start {
+                                        ans.push(Span::new(start, i.start));
+                                    }
+                                    ans.push(i + *delta);
+                                    (ans, i.end)
+                                } else {
+                                    (ans, start)
                                 }
-                                ans.push(span + delta);
-                                (ans, span.end)
                             },
                         );
                         if last_overlap_end < span.end {
@@ -87,24 +86,7 @@ impl Almanac {
                         }
                         ans
                     })
-                    .collect();
-                if DO_SQUASH {
-                    let mut ans: Vec<Span<i64>> = Vec::new();
-                    for span in spans {
-                        if let Some(s) = ans.last_mut() {
-                            if s.end == span.start {
-                                s.end = span.end;
-                            } else {
-                                ans.push(span);
-                            }
-                        } else {
-                            ans.push(span);
-                        }
-                    }
-                    ans
-                } else {
-                    spans
-                }
+                    .collect()
             })
             .into_iter()
             .map(|x| x.start)
@@ -116,7 +98,7 @@ impl Almanac {
             let output = m
                 .ranges
                 .iter()
-                .find_map(|&(t, f, size)| (f..f + size).contains(&x).then_some(t + x - f))
+                .find_map(|&(from, delta)| from.contains(x).then_some(x + delta))
                 .unwrap_or(x);
             output
         })
@@ -142,12 +124,12 @@ fn p1(almanac: &Almanac) -> i64 {
         .unwrap()
 }
 
-fn p2<const DO_SQUASH: bool>(almanac: &Almanac) -> i64 {
+fn p2(almanac: &Almanac) -> i64 {
     almanac
         .seeds
         .iter()
         .tuples()
-        .map(|(&a, &b)| almanac.convert_range_and_minimise::<DO_SQUASH>(a, b))
+        .map(|(&a, &b)| almanac.convert_range_and_minimise(a, b))
         .min()
         .unwrap()
 }
