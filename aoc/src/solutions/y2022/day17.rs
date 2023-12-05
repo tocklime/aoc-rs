@@ -108,6 +108,7 @@ fn get_rocks() -> Vec<Vec<NumSet<u8>>> {
         .collect()
 }
 fn solve<const ROCK_COUNT: usize>(input: &str) -> usize {
+    const MATCH_SIZE: usize = 20;
     let mut grid = Vec::new();
     let mut iter = input.trim().chars().enumerate().cycle();
     let rock_conv = get_rocks();
@@ -123,7 +124,6 @@ fn solve<const ROCK_COUNT: usize>(input: &str) -> usize {
         if ix + 1 == ROCK_COUNT {
             return grid.len();
         }
-        const MATCH_SIZE: usize = 20;
         if ix > MATCH_SIZE && (ix % rock_conv.len() == 0) {
             let position = &mut seen_before[last_wind_ix];
             match *position {

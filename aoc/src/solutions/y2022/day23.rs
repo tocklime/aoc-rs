@@ -25,12 +25,12 @@ const EG0: &str = ".....
 ";
 
 fn step_world(world: &mut HashSet<Point<i64>>, round_num: usize) -> usize {
-    let mut proposals: HashMap<Point<i64>, Option<Point<i64>>> = Default::default();
+    const CHOICES: [[usize; 3]; 4] = [[7, 0, 1], [3, 4, 5], [5, 6, 7], [1, 2, 3]];
+    let mut proposals: HashMap<Point<i64>, Option<Point<i64>>> = HashMap::default();
     //we get neighbours from `neighbours_with_diagonals clockwise from up.
     // 701
     // 6#2
     // 543
-    const CHOICES: [[usize; 3]; 4] = [[7, 0, 1], [3, 4, 5], [5, 6, 7], [1, 2, 3]];
     for loc in world.iter() {
         let neighbours = loc.neighbours_with_diagonals();
         let n_map = neighbours.map(|p| world.get(&p));

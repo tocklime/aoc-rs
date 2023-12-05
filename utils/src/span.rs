@@ -2,7 +2,7 @@ use num::Num;
 use parse_display::{Display, FromStr};
 use std::{
     cmp::{max, min, Ordering},
-    ops::{Range, RangeBounds},
+    ops::{Add, Range, RangeBounds},
 };
 
 #[derive(Display, FromStr, PartialEq, Debug, Eq, Clone, Copy, Hash, PartialOrd, Ord)]
@@ -147,6 +147,16 @@ impl<T: Eq + Ord + Copy> Span<T> {
     }
 }
 
+impl<T: Add<Output = T> + Copy> Add<T> for Span<T> {
+    type Output = Self;
+
+    fn add(self, rhs: T) -> Self::Output {
+        Self {
+            start: self.start + rhs,
+            end: self.end + rhs,
+        }
+    }
+}
 #[cfg(test)]
 pub mod test {
     use std::ops::Range;

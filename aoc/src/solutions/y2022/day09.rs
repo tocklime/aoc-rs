@@ -78,12 +78,12 @@ fn get_bb(input: &str) -> Aabb<isize> {
     a
 }
 fn both(input: &str) -> (usize, usize) {
+    const SIZE: usize = 10;
     let bb = get_bb(input);
     let mut p1 = 0;
     let mut p1_grid = Grid2d::from_elem((bb.height(), bb.width()), false);
     let mut p2 = 0;
     let mut p2_grid = p1_grid.clone();
-    const SIZE: usize = 10;
     let mut rope = [Point::<isize>::new(0, 0); SIZE];
     for l in input.lines() {
         let count = l[2..].parse().unwrap();

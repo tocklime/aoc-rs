@@ -124,7 +124,7 @@ impl X {
     }
 
     fn do_time_step<'a>(&'a self, old_dp: &DpType<'a>) -> DpType<'a> {
-        let mut new_dp: DpType = Default::default();
+        let mut new_dp: DpType = VecLookup::default();
 
         macro_rules! update {
             ($loc:expr, $cooldown:expr, $oldflow:expr, $oldopen:expr, $newopen:expr) => {
