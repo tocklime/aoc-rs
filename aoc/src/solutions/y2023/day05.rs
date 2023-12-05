@@ -9,6 +9,7 @@ use nom::{
 };
 use nom_supreme::{tag::complete::tag, ParserExt};
 use utils::{nom::IResult, span::Span};
+use nom::Parser;
 
 aoc_main!(2023 day 5, generator gen, part1 [p1] => 289863851, part2 [p2] => 60568880, example both EG => (35,46));
 
@@ -26,7 +27,6 @@ struct Almanac {
 
 impl Map {
     fn parse(input: &str) -> IResult<Self> {
-        use nom::Parser;
         let (input, (from, to)) = separated_pair(alpha1::<&str, _>, tag("-to-"), alpha1)
             .terminated(tag(" map:\n"))
             .map(|(a, b)| (a.to_owned(), b.to_owned()))
@@ -51,7 +51,6 @@ impl Map {
 }
 impl Almanac {
     fn parse(input: &str) -> IResult<Self> {
-        use nom::Parser;
         let (input, seeds) = nom::multi::separated_list1(space1, complete::i64)
             .preceded_by(tag("seeds: "))
             .parse(input)?;

@@ -15,10 +15,10 @@ use answers::AnswerAll;
 use answertype::AnswerType;
 pub use aoc_harness_macros::*;
 use chrono::TimeZone;
-use clap::{arg, Parser};
+use clap::arg;
 pub use itertools::Itertools;
 
-#[derive(Parser, Debug)]
+#[derive(clap::Parser, Debug)]
 pub struct Opts {
     /// Override the input with the contents of this file
     #[arg(short, long)]
