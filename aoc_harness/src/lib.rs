@@ -235,7 +235,7 @@ pub fn render_duration(d: std::time::Duration) -> String {
     let (scale, suffix) = appropriate_scale(d);
     #[allow(clippy::cast_precision_loss)]
     if suffix == "ns" {
-        format!("{}{}", scale as f64 * d.as_secs_f64(), suffix)
+        format!("{:.0}{}", scale as f64 * d.as_secs_f64(), suffix)
     } else {
         format!("{:.3}{}", scale as f64 * d.as_secs_f64(), suffix)
     }

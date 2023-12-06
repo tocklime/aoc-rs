@@ -1,44 +1,53 @@
 use aoc_harness::aoc_main;
 use nom::{
-    character::complete::{self, newline, space1},
-    multi::separated_list1,
-    Parser, sequence::tuple,
+    character::complete::{self, newline, space0},
+    Parser,
 };
-use nom_supreme::{ParserExt, tag::complete::tag};
+use nom_supreme::{tag::complete::tag, ParserExt, multi::collect_separated_terminated};
+use num::integer::Roots;
 use utils::nom::IResult;
 
-aoc_main!(2023 day 6, part1 [p1], part2 [p2], example both EG => (288, 71503));
+aoc_main!(2023 day 6, part1 [p::<false>] => 2756160, part2 [p::<true>] => 34788142, example both EG => (288, 71503));
 
 fn parse(input: &str) -> IResult<Vec<(u64, u64)>> {
-    let (input, times) = separated_list1(space1, complete::u64)
-        .preceded_by(tuple((tag("Time:"), space1)))
-        .terminated(newline)
+    let (input, times): (&str, Vec<u64>) = tag("Time:")
+        .precedes(space0)
+        .precedes(collect_separated_terminated(
+            complete::u64,
+            space0,
+            newline,
+        ))
         .parse(input)?;
-    let (input, distance) = separated_list1(space1, complete::u64)
-        .preceded_by(tuple((tag("Distance:"), space1)))
-        .terminated(newline)
+    let (input, distance): (&str, Vec<u64>) = tag("Distance:")
+        .precedes(space0)
+        .precedes(collect_separated_terminated(
+            complete::u64,
+            space0,
+            newline,
+        ))
         .parse(input)?;
-    let zipped = times.into_iter().zip(distance.into_iter()).collect();
+    let zipped = times.into_iter().zip(distance).collect();
     Ok((input, zipped))
 }
 
-fn solve(time: u64, record: u64) -> usize {
-    (0..time).filter(|t| {
-        let speed = t;
-        let remaining = time - t;
-        let distance = speed * remaining;
-        distance > record
-    }).count()
+fn solve(time_allowed: u64, record: u64) -> u64 {
+    let dist_f = |x| x * time_allowed - x * x;
+    let intermediate = (time_allowed*time_allowed-4*record).sqrt();
+    let root1 = (time_allowed - intermediate) / 2;
+    let root2 = (time_allowed + intermediate) / 2;
+
+    //roots may be 1 too big or too small. Find values that are both to the right of the root.
+    let root1 = (root1-1..=root1+1).find(|x| dist_f(*x) > record).unwrap();
+    let root2 = (root2-1..=root2+1).find(|x| dist_f(*x) <= record).unwrap();
+    root2 - root1
 }
-fn p1(input: &str) -> usize {
-    let t = parse(input).unwrap().1;
-    t.into_iter().map(|(a,b)|solve(a,b)).product()
-}
-fn p2(input: &str) -> usize {
-    let mut l = input.lines();
-    let time : u64 = l.next().unwrap().chars().filter(char::is_ascii_digit).collect::<String>().parse().unwrap();
-    let dist : u64 = l.next().unwrap().chars().filter(char::is_ascii_digit).collect::<String>().parse().unwrap();
-    solve(time,dist)
+fn p<const NO_SPACE: bool>(input: &str) -> u64 {
+    let t = if NO_SPACE {
+        parse(&input.replace(' ', "")).unwrap().1
+    } else {
+        parse(input).unwrap().1
+    };
+    t.into_iter().map(|(a, b)| solve(a, b)).product()
 }
 
 const EG: &str = "Time:      7  15   30
