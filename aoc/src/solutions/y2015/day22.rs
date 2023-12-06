@@ -38,7 +38,7 @@ impl Spell {
         ];
         &SPELLS
     }
-    fn mana_cost(&self) -> isize {
+    fn mana_cost(self) -> isize {
         match self {
             Spell::MagicMissile => 53,
             Spell::Drain => 73,
@@ -171,7 +171,7 @@ fn gen(input: &str) -> State {
 }
 
 fn p1(init: &State) -> isize {
-    dijkstra(init, |s| s.neighbours(), |s| s.is_win())
+    dijkstra(init, State::neighbours, State::is_win)
         .unwrap()
         .1
 }
@@ -179,7 +179,7 @@ fn p1(init: &State) -> isize {
 fn p2(init: &State) -> isize {
     let mut hard = *init;
     hard.is_hard_mode = true;
-    dijkstra(&hard, |s| s.neighbours(), |s| s.is_win())
+    dijkstra(&hard, State::neighbours, State::is_win)
         .unwrap()
         .1
 }

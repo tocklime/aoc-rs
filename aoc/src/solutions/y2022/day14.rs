@@ -4,6 +4,7 @@ use nom::{
     sequence::separated_pair, IResult,
 };
 use utils::{aabb::Aabb, cartesian::Point, grid2d::Grid2d};
+use std::string::ToString;
 
 aoc_main!(2022 day 14, generator gen, part1 [solve::<false>] => 757, part2 [solve::<true>] => 24943, example both EG => (24,93));
 
@@ -79,7 +80,7 @@ fn draw_grid(grid: &Grid2d<char>, mem: &[Point<usize>]) {
         mine[*p] = '~';
     }
     let bb = mine.find_bb(|c| c != &'.');
-    println!("{}", mine.render_section_with(bb, |c| c.to_string()));
+    println!("{}", mine.render_section_with(bb, ToString::to_string));
 }
 
 fn solve<const STOP_ON_BOTTOM: bool>(input: &Grid2d<char>) -> usize {

@@ -63,7 +63,7 @@ fn p1(input: &str) -> usize {
         if closest != new_closest {
             closest = new_closest;
         }
-        ps.iter_mut().for_each(|p| p.step());
+        ps.iter_mut().for_each(Particle::step);
     }
     closest
 }
@@ -75,7 +75,7 @@ fn p2(input: &str) -> usize {
         .map(|(x, l)| Particle::new(x, l))
         .collect_vec();
     for _ in 0..50 {
-        ps.iter_mut().for_each(|p| p.step());
+        ps.iter_mut().for_each(Particle::step);
     }
     ps.len()
 }

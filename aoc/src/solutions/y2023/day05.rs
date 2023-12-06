@@ -9,7 +9,7 @@ use nom::{
 use nom_supreme::{tag::complete::tag, ParserExt};
 use utils::{nom::IResult, span::Span};
 
-aoc_main!(2023 day 5, generator gen, part1 [p1] => 289863851, part2 [p2] => 60568880, example both EG => (35,46));
+aoc_main!(2023 day 5, generator gen, part1 [p1] => 289_863_851, part2 [p2] => 60_568_880, example both EG => (35,46));
 
 #[derive(Debug)]
 struct Map {

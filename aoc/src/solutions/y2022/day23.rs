@@ -1,3 +1,5 @@
+use std::option::Option;
+
 use aoc_harness::*;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use utils::{
@@ -34,7 +36,7 @@ fn step_world(world: &mut HashSet<Point<i64>>, round_num: usize) -> usize {
     for loc in world.iter() {
         let neighbours = loc.neighbours_with_diagonals();
         let n_map = neighbours.map(|p| world.get(&p));
-        if n_map.iter().any(|x| x.is_some()) {
+        if n_map.iter().any(Option::is_some) {
             let choice = (0..4).find_map(|ix| {
                 let ch = &CHOICES[(ix + round_num) % 4];
                 ch.iter()

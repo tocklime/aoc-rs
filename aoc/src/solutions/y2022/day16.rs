@@ -1,4 +1,4 @@
-use std::{cmp::Reverse, collections::HashMap, str::FromStr};
+use std::{cmp::Reverse, collections::HashMap, str::FromStr, string::ToString};
 
 use aoc_harness::*;
 use nom::{
@@ -51,7 +51,7 @@ fn parse_line(input: &str) -> IResult<&str, Valve> {
             name: name.to_string(),
             id: 0,
             rate,
-            connections: connections.into_iter().map(|x| x.to_string()).collect(),
+            connections: connections.into_iter().map(ToString::to_string).collect(),
         },
     ))
 }
@@ -180,7 +180,7 @@ fn p2a(input: &X) -> (u32, u32) {
 
     let bests: Vec<(usize, u32)> = dp26
         .iter()
-        .map(|(b, x)| (b, *x.values().flat_map(|x| x.values()).max().unwrap()))
+        .map(|(b, x)| (b, *x.values().flat_map(VecLookup::values).max().unwrap()))
         .collect();
 
     let p2 = bests
@@ -194,8 +194,8 @@ fn p2a(input: &X) -> (u32, u32) {
 
     let p1 = *dp30
         .values()
-        .flat_map(|x| x.values())
-        .flat_map(|y| y.values())
+        .flat_map(VecLookup::values)
+        .flat_map(VecLookup::values)
         .max()
         .unwrap();
     (p1, p2)

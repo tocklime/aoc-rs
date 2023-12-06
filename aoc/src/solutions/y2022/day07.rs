@@ -1,4 +1,3 @@
-use anyhoo::anyhow::Context;
 use aoc_harness::*;
 use nom::{
     branch::alt,
@@ -78,14 +77,11 @@ impl Dir {
     }
 }
 
-#[anyhoo::anyhoo]
 fn solve(input: &str) -> (u32, u32) {
     let mut rest = input;
     let mut dir_stack: Vec<Dir> = vec![Dir::default()];
     while !rest.is_empty() {
-        let (input, l) = parse_line(rest)
-            .map_err(|e| e.to_owned())
-            .context("Failed to parse input")?;
+        let (input, l) = parse_line(rest).unwrap();
         rest = input;
         match l {
             Line::CdUp => {
@@ -105,14 +101,14 @@ fn solve(input: &str) -> (u32, u32) {
     }
 
     while dir_stack.len() > 1 {
-        let ch = dir_stack.pop().context("dir_stack is empty")?;
+        let ch = dir_stack.pop().expect("dir_stack not empty");
         dir_stack
             .last_mut()
-            .context("dir_stack is empty")?
+            .expect("dir_stack not empty")
             .dirs
             .push(ch);
     }
-    let top = dir_stack.pop().context("dir_stack is empty")?;
+    let top = dir_stack.pop().expect("dir_stack not empty");
     let all_sizes = top.all_sizes();
     let part1 = all_sizes.iter().filter(|&&x| x < 100_000).sum::<u32>();
     let total = 70_000_000;
@@ -125,7 +121,7 @@ fn solve(input: &str) -> (u32, u32) {
         .iter()
         .filter(|&&x| x >= required_to_free)
         .min()
-        .context("no sizes found")?;
+        .expect("size found");
 
     (part1, *part2)
 }
