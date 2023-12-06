@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2015 day 7, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2015 day 7, part1 [p1], part2 [p2]);
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{alpha1, digit1};

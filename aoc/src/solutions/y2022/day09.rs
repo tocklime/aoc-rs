@@ -1,13 +1,12 @@
 use std::collections::HashSet;
 
-use aoc_harness::*;
 use utils::{
     aabb::Aabb,
     cartesian::{Dir, Point},
     grid2d::Grid2d,
 };
 
-aoc_main!(2022 day 9, both [both], part1 [solve::<2>] => 6357, part2 [solve::<10>] => 2627,  example both EG => (13,0), example both EG2 => (88, 36));
+aoc_harness::aoc_main!(2022 day 9, both [both], part1 [solve::<2>] => 6357, part2 [solve::<10>] => 2627,  example both EG => (13,0), example both EG2 => (88, 36));
 
 const EG: &str = "R 4
 U 4

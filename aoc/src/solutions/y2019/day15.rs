@@ -1,11 +1,11 @@
-use aoc_harness::aoc_main;
+
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use utils::intcode::Computer;
 use utils::points::{Dir, Point};
 
-aoc_main!(2019 day 15, generator explore, part1 [p1] => 230, part2 [p2] => 288);
+aoc_harness::aoc_main!(2019 day 15, generator explore, part1 [p1] => 230, part2 [p2] => 288);
 
 const WALL: char = '█';
 const SPACE: char = '.';

@@ -1,7 +1,7 @@
-use aoc_harness::*;
+
 use std::cell::RefCell;
 use std::collections::HashMap;
-aoc_main!(2019 day 6, part1 [p1] => 227_612, part2 [p2] => 454, example part1 EG1 => 42, example part2 EG2 => 4);
+aoc_harness::aoc_main!(2019 day 6, part1 [p1] => 227_612, part2 [p2] => 454, example part1 EG1 => 42, example part2 EG2 => 4);
 
 struct OrbitalMap<'a> {
     map: HashMap<&'a str, &'a str>,

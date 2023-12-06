@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use aoc_harness::*;
 
-aoc_main!(2021 day 21, generator whole_input_is::<Game>, part1 [p1] => 598_416, part2 [p2] => 27_674_034_218_179, example part1 EG => 739_785, example part2 EG => 444_356_092_776_315);
+aoc_harness::aoc_main!(2021 day 21, generator whole_input_is::<Game>, part1 [p1] => 598_416, part2 [p2] => 27_674_034_218_179, example part1 EG => 739_785, example part2 EG => 444_356_092_776_315);
 
 const EG: &str = "Player 1 starting position: 4
 Player 2 starting position: 8";

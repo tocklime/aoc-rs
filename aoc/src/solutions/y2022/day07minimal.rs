@@ -12,7 +12,7 @@ use nom::{
     Finish, IResult,
 };
 
-aoc_main!(2022 day 7, generator whole_input_is::<Dirs>, part1 [p1] => 1_644_735, part2 [p2] => 1_300_850, example both EG => (95437, 24_933_642));
+aoc_harness::aoc_main!(2022 day 7, generator whole_input_is::<Dirs>, part1 [p1] => 1_644_735, part2 [p2] => 1_300_850, example both EG => (95437, 24_933_642));
 
 const EG: &str = "$ cd /
 $ ls

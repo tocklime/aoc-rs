@@ -1,13 +1,13 @@
 use std::option::Option;
 
-use aoc_harness::*;
+
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use utils::{
     aabb::Aabb,
     cartesian::{as_point_map, Point},
 };
 
-aoc_main!(2022 day 23, generator gen, part1 [p1] => 3990, part2 [p2] => 1057, example both EG0 => (25,4), example both EG => (110,20));
+aoc_harness::aoc_main!(2022 day 23, generator gen, part1 [p1] => 3990, part2 [p2] => 1057, example both EG0 => (25,4), example both EG => (110,20));
 
 const EG: &str = "....#..
 ..###.#

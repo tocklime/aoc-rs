@@ -4,7 +4,7 @@ use std::{fmt::Display, ops::Add, str::FromStr};
 
 use aoc_harness::*;
 
-aoc_main!(2021 day 18, generator lines::<Snail>, part1 [p1] => 4641, part2 [p2,p2_parallel] => 4624, example part1 EG => 4140, example part2 EG => 3993);
+aoc_harness::aoc_main!(2021 day 18, generator lines::<Snail>, part1 [p1] => 4641, part2 [p2,p2_parallel] => 4624, example part1 EG => 4140, example part2 EG => 3993);
 
 const EG: &str = "[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
 [[[5,[2,8]],4],[5,[[9,9],0]]]

@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 22, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2020 day 22, part1 [p1], part2 [p2]);
 use nohash_hasher::IntSet;
 use std::{
     collections::{hash_map::DefaultHasher, VecDeque},

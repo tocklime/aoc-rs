@@ -9,7 +9,7 @@ use smallvec::smallvec;
 use smallvec::SmallVec;
 use utils::cartesian::Point;
 
-aoc_main!(2021 day 23, generator whole_input_is::<X>,
+aoc_harness::aoc_main!(2021 day 23, generator whole_input_is::<X>,
         part1 [solve::<false>] => 15358,
         part2 [solve::<true>]=>51436,
         example part1 EG => 12521);

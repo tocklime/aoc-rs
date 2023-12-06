@@ -3,7 +3,7 @@ use std::str::FromStr;
 use aoc_harness::*;
 use utils::numset::NumSet;
 
-aoc_main!(2021 day 8, generator lines::<Line>, part1 [p1] => 473, part2 [p2] => 1_097_568,
+aoc_harness::aoc_main!(2021 day 8, generator lines::<Line>, part1 [p1] => 473, part2 [p2] => 1_097_568,
   example part1 EG => 26, example part2 EG0 => 5353, example part2 EG => 61229
 );
 type NSet = NumSet<u8>;

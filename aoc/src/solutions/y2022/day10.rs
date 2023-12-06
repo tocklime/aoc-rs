@@ -1,7 +1,7 @@
-use aoc_harness::*;
+
 use utils::{grid2d::Grid2d, ocr::OcrString};
 
-aoc_main!(2022 day 10, part1 [p1] => 14360, part2 [p2] => "BGKAEREZ", example both EG => (13140, "????????"), both [both]);
+aoc_harness::aoc_main!(2022 day 10, part1 [p1] => 14360, part2 [p2] => "BGKAEREZ", example both EG => (13140, "????????"), both [both]);
 
 const EG: &str = "addx 15
 addx -11

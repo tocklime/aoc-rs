@@ -5,7 +5,7 @@ use std::{
 
 use aoc_harness::*;
 
-aoc_main!(2021 day 24, both [both] => (69_914_999_975_369, 14_911_675_311_114));
+aoc_harness::aoc_main!(2021 day 24, both [both] => (69_914_999_975_369, 14_911_675_311_114));
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct Alu {

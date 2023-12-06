@@ -1,6 +1,6 @@
-use aoc_harness::*;
 
-aoc_main!(2022 day 1, generator gen, part1 [solve::<1>] => 67633, part2 [solve::<3>] => 199_628,
+
+aoc_harness::aoc_main!(2022 day 1, generator gen, part1 [solve::<1>] => 67633, part2 [solve::<3>] => 199_628,
         example both EG => (24000, 45000));
 
 fn gen(input: &str) -> Vec<usize> {

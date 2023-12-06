@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use aoc_harness::*;
 use nom::{
     branch::alt,
     character::complete::u32,
@@ -13,7 +12,7 @@ use utils::{
     cartesian::{self, Dir, Point},
 };
 
-aoc_main!(2022 day 22, part1 [p1] => 58248, part2 [p2] => 179_091); //, example both EG => (6032,5031));
+aoc_harness::aoc_main!(2022 day 22, part1 [p1] => 58248, part2 [p2] => 179_091); //, example both EG => (6032,5031));
 
 const EG: &str = "        ...#
         .#..

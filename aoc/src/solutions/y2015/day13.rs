@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2015 day 13, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2015 day 13, part1 [p1], part2 [p2]);
 //Eric would lose 65 happiness units by sitting next to Alice.
 //Eric would gain 24 happiness units by sitting next to Bob.
 

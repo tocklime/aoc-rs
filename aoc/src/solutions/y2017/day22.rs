@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2017 day 22, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2017 day 22, part1 [p1], part2 [p2]);
 use utils::cartesian::{as_point_map, point_map_bounding_box, Dir};
 
 fn p1(input: &str) -> usize {

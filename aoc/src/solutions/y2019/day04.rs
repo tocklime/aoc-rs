@@ -1,9 +1,9 @@
-use aoc_harness::*;
+
 use itertools::Itertools;
 use rayon::prelude::*;
 use utils::nums::int_to_digits_big_endian;
 
-aoc_main!(2019 day 4, generator gen, part1 [p1] => 921, part2 [p2] => 603);
+aoc_harness::aoc_main!(2019 day 4, generator gen, part1 [p1] => 921, part2 [p2] => 603);
 
 pub fn check_groups(input: usize, check: fn(usize) -> bool) -> bool {
     let groups = int_to_digits_big_endian::<6>(input)

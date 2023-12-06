@@ -1,7 +1,7 @@
-use aoc_harness::aoc_main;
+
 use utils::intcode::Computer;
 
-aoc_main!(2019 day 21, part1 [p1] => 19_359_316, part2 [p2a] => 1_141_281_622);
+aoc_harness::aoc_main!(2019 day 21, part1 [p1] => 19_359_316, part2 [p2a] => 1_141_281_622);
 
 pub fn go(input: &str, string_script: &str) -> Option<i32> {
     let mut c: Computer = input.parse().unwrap();

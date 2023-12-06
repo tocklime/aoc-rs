@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2017 day 14, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2017 day 14, part1 [p1], part2 [p2]);
 use bitvec::order::Msb0;
 use bitvec::vec::BitVec;
 use std::collections::HashSet;

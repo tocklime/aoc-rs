@@ -1,7 +1,7 @@
-use aoc_harness::aoc_main;
+
 use utils::{grid2d::Grid2d, numset::NumSet};
 
-aoc_main!(2022 day 17, part1 [solve::<2022>] => 3085, part2 [solve::<1_000_000_000_000>] => 1_535_483_870_924, example both EG => (3068,1_514_285_714_288));
+aoc_harness::aoc_main!(2022 day 17, part1 [solve::<2022>] => 3085, part2 [solve::<1_000_000_000_000>] => 1_535_483_870_924, example both EG => (3068,1_514_285_714_288));
 
 const EG: &str = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>";
 const ROCKS: [&str; 5] = [

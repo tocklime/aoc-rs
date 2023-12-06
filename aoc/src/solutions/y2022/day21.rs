@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use aoc_harness::*;
+
 use nom::{
     branch::alt,
     bytes::complete::{tag, take},
@@ -11,7 +11,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 21, part1 [p1] => 194_058_098_264_286, part2 [p2] => 3_592_056_845_086, example both EG => (152,301));
+aoc_harness::aoc_main!(2022 day 21, part1 [p1] => 194_058_098_264_286, part2 [p2] => 3_592_056_845_086, example both EG => (152,301));
 
 const EG: &str = "root: pppw + sjmn
 dbpl: 5

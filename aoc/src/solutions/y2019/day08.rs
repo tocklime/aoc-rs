@@ -1,11 +1,11 @@
-use aoc_harness::aoc_main;
+
 use counter::Counter;
 use itertools::Itertools;
 use std::cmp::max;
 use transpose::transpose_inplace;
 use utils::ocr::OcrString;
 
-aoc_main!(2019 day 8, part1 [p1] => 2460, part2 [p2_forloop, p2_transpose, p2_steps] => "LRFKU");
+aoc_harness::aoc_main!(2019 day 8, part1 [p1] => 2460, part2 [p2_forloop, p2_transpose, p2_steps] => "LRFKU");
 
 const WIDTH: usize = 25;
 const HEIGHT: usize = 6;

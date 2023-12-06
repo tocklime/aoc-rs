@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 13, generator gen, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2020 day 13, generator gen, part1 [p1], part2 [p2]);
 use utils::nums::chinese_remainder_theorem;
 pub struct Bus {
     id: i64,

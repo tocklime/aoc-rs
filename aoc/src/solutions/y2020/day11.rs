@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 11, generator gen_grid,
+
+aoc_harness::aoc_main!(2020 day 11, generator gen_grid,
     part1 [p1_ndarray_clone, p1_ndarray_mut, p1_ndarray_two],
     part2 [p2_ndarray_clone, p2_ndarray_mut, p2_ndarray_two]);
 use itertools::{iterate, Itertools};

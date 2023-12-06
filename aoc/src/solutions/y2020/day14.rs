@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 14, generator gen, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2020 day 14, generator gen, part1 [p1], part2 [p2]);
 use bitvec::{order::Lsb0, prelude::*, view::BitView};
 use std::{collections::HashMap, num::ParseIntError, str::FromStr};
 

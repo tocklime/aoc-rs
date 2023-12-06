@@ -3,7 +3,7 @@ use std::str::FromStr;
 use aoc_harness::*;
 use utils::numset::NumSet;
 
-aoc_main!(2022 day 3, part1 [p1], part2 [p2], example both EG => (157,70));
+aoc_harness::aoc_main!(2022 day 3, part1 [p1], part2 [p2], example both EG => (157,70));
 
 const EG: &str = "vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL

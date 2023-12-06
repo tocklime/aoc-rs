@@ -1,5 +1,5 @@
 use utils::points::*;
-use aoc_harness::aoc_main;
+
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::mpsc;
@@ -7,7 +7,7 @@ use std::thread;
 use utils::intcode::Computer;
 use utils::ocr::OcrString;
 
-aoc_main!(2019 day 11, part1 [p1] => 2160, part2 [p2] => "LRZECGFE");
+aoc_harness::aoc_main!(2019 day 11, part1 [p1] => 2160, part2 [p2] => "LRZECGFE");
 const WHITE: char = '█';
 const BLACK: char = ' ';
 

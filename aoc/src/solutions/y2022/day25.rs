@@ -6,7 +6,7 @@ use std::{
 
 use aoc_harness::*;
 
-aoc_main!(2022 day 25, generator lines::<Snafu>, part1 [p1] => "2=0--0---11--01=-100", example part1 EG => "2=-1=0");
+aoc_harness::aoc_main!(2022 day 25, generator lines::<Snafu>, part1 [p1] => "2=0--0---11--01=-100", example part1 EG => "2=-1=0");
 
 const EG: &str = "1=-0-2
 12111

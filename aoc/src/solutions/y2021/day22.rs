@@ -3,7 +3,7 @@ use std::{collections::HashMap, str::FromStr};
 use aoc_harness::*;
 use utils::cube::Cube;
 
-aoc_main!(2021 day 22, generator lines::<X>,
+aoc_harness::aoc_main!(2021 day 22, generator lines::<X>,
     example part1 EG => 39,
     part1 [by_block::<20>, construction::<20>, region_weights::<20>] => 582_644,
     part2 [by_block::<420>, construction::<420>, region_weights::<420>] => 1_263_804_707_062_415);

@@ -10,7 +10,7 @@ use lazy_static::lazy_static;
 use nalgebra::{Matrix4, Vector4};
 use utils::imap::IMap;
 
-aoc_main!(2021 day 19, generator whole_input_is::<Day19>, both [p1] => (419,13210), example both EG => (79,3621));
+aoc_harness::aoc_main!(2021 day 19, generator whole_input_is::<Day19>, both [p1] => (419,13210), example both EG => (79,3621));
 
 #[derive(Debug)]
 struct Day19 {

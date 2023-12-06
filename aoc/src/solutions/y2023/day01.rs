@@ -1,6 +1,6 @@
-use aoc_harness::*;
 
-aoc_main!(2023 day 1, part1 [p1] => 54877, part2 [p2] => 54100, example part1 EG => 142, example part2 EG2 => 281);
+
+aoc_harness::aoc_main!(2023 day 1, part1 [p1] => 54877, part2 [p2] => 54100, example part1 EG => 142, example part2 EG2 => 281);
 
 fn p1(input: &str) -> u32 {
     input

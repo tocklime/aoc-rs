@@ -1,7 +1,6 @@
-use aoc_harness::*;
 use utils::grid2d::{Coord, Grid2d};
 
-aoc_main!(2021 day 11,  both [both] => (1675,515), example both EG => (1656,195));
+aoc_harness::aoc_main!(2021 day 11,  both [both] => (1675,515), example both EG => (1656,195));
 
 const EG: &str = "5483143223
 2745854711

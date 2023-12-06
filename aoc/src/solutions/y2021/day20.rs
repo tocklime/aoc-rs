@@ -4,7 +4,7 @@ use aoc_harness::*;
 
 use utils::grid2d::{Grid2d, ICoord};
 
-aoc_main!(2021 day 20, generator gen, part1 [solve::<1>] => 5786, part2 [solve::<25>] => 16757, example both EG => (35,3351));
+aoc_harness::aoc_main!(2021 day 20, generator gen, part1 [solve::<1>] => 5786, part2 [solve::<25>] => 16757, example both EG => (35,3351));
 
 const EG: &str = "
 ..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#.

@@ -2,7 +2,7 @@ use aoc_harness::*;
 use utils::aabb::Aabb;
 use utils::cartesian::{Dir, Point};
 
-aoc_main!(2019 day 3, generator gen, part1 [p1] => 1017, part2 [p2] => 11432,
+aoc_harness::aoc_main!(2019 day 3, generator gen, part1 [p1] => 1017, part2 [p2] => 11432,
     example part1 EG1 => 159,
     example part1 EG2 => 135,
     example part2 EG1 => 610,

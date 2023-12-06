@@ -1,9 +1,9 @@
 use std::collections::BinaryHeap;
 
-use aoc_harness::*;
+
 use utils::grid2d::Grid2d;
 
-aoc_main!(2021 day 9, generator gen, part1 [p1] => 633, part2 [p2] => 1_050_192,
+aoc_harness::aoc_main!(2021 day 9, generator gen, part1 [p1] => 633, part2 [p2] => 1_050_192,
           example part1 EG => 15, example part2 EG => 1134);
 const EG: &str = "
 2199943210

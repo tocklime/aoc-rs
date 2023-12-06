@@ -1,7 +1,6 @@
 use ndarray::prelude::*;
 use std::collections::HashSet;
 
-use aoc_harness::*;
 use nom::{
     bytes::complete::tag,
     character::complete::{self, newline},
@@ -11,7 +10,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 18, both [fixed_arrays] => (3432,2042),
+aoc_harness::aoc_main!(2022 day 18, both [fixed_arrays] => (3432,2042),
     part1 [p1] => 3432, part2 [p2] => 2042,
     example both EG0 => (10,10), example both EG => (64,58));
 

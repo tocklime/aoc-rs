@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2017 day 17, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2017 day 17, part1 [p1], part2 [p2]);
 use std::collections::VecDeque;
 
 fn p1(input: &str) -> usize {

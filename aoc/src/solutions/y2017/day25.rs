@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2017 day 25, part1 [p1]);
+
+aoc_harness::aoc_main!(2017 day 25, part1 [p1]);
 use std::collections::HashSet;
 
 fn p1(_input: &str) -> usize {

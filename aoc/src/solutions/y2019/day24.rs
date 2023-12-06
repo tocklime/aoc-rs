@@ -1,12 +1,12 @@
 use utils::algorithms::{automata_step, automata_step_mut};
 use utils::points::Point;
-use aoc_harness::aoc_main;
+
 use itertools::iterate;
 use num::pow;
 use std::collections::HashSet;
 use std::convert::TryInto;
 
-aoc_main!(2019 day 24, generator gen, part1 [p1] => 32_509_983, part2 [p2m,p2c] => 2012);
+aoc_harness::aoc_main!(2019 day 24, generator gen, part1 [p1] => 32_509_983, part2 [p2m,p2c] => 2012);
 
 #[must_use]
 pub fn gen(input: &str) -> HashSet<Point> {

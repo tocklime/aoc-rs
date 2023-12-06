@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2016 day 13, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2016 day 13, part1 [p1], part2 [p2]);
 use utils::cartesian::Point;
 use pathfinding::directed::astar::astar;
 use bitintr::Popcnt;

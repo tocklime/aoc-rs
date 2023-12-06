@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 
-use aoc_harness::*;
 use utils::{aabb::Aabb, cartesian::Point, grid2d::Grid2d};
 
-aoc_main!(2021 day 25, part1 [hashmap, mut_grid_pair, grid] => 601, example part1 EG => 58);
+aoc_harness::aoc_main!(2021 day 25, part1 [hashmap, mut_grid_pair, grid] => 601, example part1 EG => 58);
 
 const EG: &str = "v...>>.vv>
 .vv>>.vv..

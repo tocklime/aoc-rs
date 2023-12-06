@@ -1,4 +1,4 @@
-use aoc_harness::aoc_main;
+
 use nom::{
     character::complete::{self, newline, space0},
     Parser,
@@ -7,7 +7,7 @@ use nom_supreme::{tag::complete::tag, ParserExt, multi::collect_separated_termin
 use num::integer::Roots;
 use utils::nom::IResult;
 
-aoc_main!(2023 day 6, part1 [p::<false>] => 2_756_160, part2 [p::<true>] => 34_788_142, example both EG => (288, 71503));
+aoc_harness::aoc_main!(2023 day 6, part1 [p::<false>] => 2_756_160, part2 [p::<true>] => 34_788_142, example both EG => (288, 71503));
 
 fn parse(input: &str) -> IResult<Vec<(u64, u64)>> {
     let (input, times): (&str, Vec<u64>) = tag("Time:")

@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 4, generator gen, part1 [p1] => 233, part2 [p2] => 111);
+
+aoc_harness::aoc_main!(2020 day 4, generator gen, part1 [p1] => 233, part2 [p2] => 111);
 use itertools::Itertools;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};

@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use aoc_harness::*;
 
-aoc_main!(2021 day 10, generator lines::<StackEval>, part1 [p1] => 411_471, part2 [p2] => 3_122_628_974,
+aoc_harness::aoc_main!(2021 day 10, generator lines::<StackEval>, part1 [p1] => 411_471, part2 [p2] => 3_122_628_974,
           example part1 EG => 26_397, example part2 EG => 288_957);
 
 const EG: &str = "[({(<(())[]>[[{[]{<()<>>

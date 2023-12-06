@@ -1,11 +1,11 @@
-use aoc_harness::*;
+
 use utils::{
     aabb::Aabb,
     cartesian::{self, Dir, Point},
     collections::VecLookup,
 };
 
-aoc_main!(2022 day 24, both [solve] => (373,997), example both EG => (18,54));
+aoc_harness::aoc_main!(2022 day 24, both [solve] => (373,997), example both EG => (18,54));
 
 const EG: &str = "#.######
 #>>.<^<#

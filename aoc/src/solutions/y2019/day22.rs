@@ -1,8 +1,8 @@
-use aoc_harness::aoc_main;
+
 use num_modular::{ModularInteger, Montgomery, MontgomeryInt, ReducedInt};
 use std::convert::TryInto;
 
-aoc_main!(2019 day 22, part1 [p1] => 6526, part2 [p2] => 79_855_812_422_607);
+aoc_harness::aoc_main!(2019 day 22, part1 [p1] => 6526, part2 [p2] => 79_855_812_422_607);
 
 type NT = u64;
 type T = ReducedInt<NT, Montgomery<NT>>;

@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2016 day 12, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2016 day 12, part1 [p1], part2 [p2]);
 use utils::assembunny::Computer;
 
 fn p1(input: &str) -> i64 {

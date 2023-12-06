@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2015 day 25, part1 [p1] => 8_997_277);
+
+aoc_harness::aoc_main!(2015 day 25, part1 [p1] => 8_997_277);
 use itertools::Itertools;
 use num_modular::{ModularInteger, VanillaInt};
 use regex::Regex;

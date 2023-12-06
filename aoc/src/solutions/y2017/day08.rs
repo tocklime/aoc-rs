@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2017 day 8, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2017 day 8, part1 [p1], part2 [p2]);
 use reformation::Reformation;
 use std::cmp::max;
 use std::collections::HashMap;

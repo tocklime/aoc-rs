@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2017 day 7, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2017 day 7, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 use nom::bytes::complete::tag;
 use nom::character::complete::{alpha1, digit1};

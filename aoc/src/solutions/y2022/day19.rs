@@ -1,4 +1,4 @@
-use aoc_harness::*;
+
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -9,7 +9,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 19, generator gen, part1 [p1] => 1199, part2 [p2] => 3510, example part1 EG => 33);
+aoc_harness::aoc_main!(2022 day 19, generator gen, part1 [p1] => 1199, part2 [p2] => 3510, example part1 EG => 33);
 
 const EG: &str = "Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
 Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian.

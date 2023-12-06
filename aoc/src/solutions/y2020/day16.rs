@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 16, generator gen, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2020 day 16, generator gen, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 use std::{num::ParseIntError, str::FromStr};
 use utils::inputs::try_parse_many;

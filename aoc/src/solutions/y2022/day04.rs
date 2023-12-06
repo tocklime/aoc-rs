@@ -1,7 +1,7 @@
-use aoc_harness::*;
+
 use utils::span::Span;
 
-aoc_main!(2022 day 4, generator gen, part1 [p1], part2 [p2], example part1 EG => 2);
+aoc_harness::aoc_main!(2022 day 4, generator gen, part1 [p1], part2 [p2], example part1 EG => 2);
 
 const EG: &str = "2-4,6-8
 2-3,4-5

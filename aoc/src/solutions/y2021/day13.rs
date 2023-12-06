@@ -3,7 +3,7 @@ use std::{collections::HashSet, str::FromStr};
 use aoc_harness::*;
 use utils::{cartesian::Point, ocr::point_cloud_to_str};
 
-aoc_main!(2021 day 13, generator whole_input_is::<X>, part1 [p1] => 653, part2 [p2] => "LKREBPRK", example part1 EG => 17);
+aoc_harness::aoc_main!(2021 day 13, generator whole_input_is::<X>, part1 [p1] => 653, part2 [p2] => "LKREBPRK", example part1 EG => 17);
 
 const EG: &str = "6,10
 0,14

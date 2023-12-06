@@ -6,7 +6,7 @@ use std::{
 use aoc_harness::*;
 use itertools::MinMaxResult;
 
-aoc_main!(2021 day 14, generator whole_input_is::<Day14>, part1 [solve::<10>] => 3284, part2 [ solve::<40>] => 4_302_675_529_689,
+aoc_harness::aoc_main!(2021 day 14, generator whole_input_is::<Day14>, part1 [solve::<10>] => 3284, part2 [ solve::<40>] => 4_302_675_529_689,
         example both EG => (1588, 2_188_189_693_529_usize));
 
 const EG: &str = "NNCB

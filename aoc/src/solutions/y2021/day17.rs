@@ -5,7 +5,7 @@ use parse_display::{Display, FromStr};
 use aoc_harness::*;
 use utils::span::Span;
 
-aoc_main!(2021 day 17, generator whole_input_is::<Day17>, part1 [p1] => 8911, part2 [p2] => 4748, example part1 EG => 45, example part2 EG => 112);
+aoc_harness::aoc_main!(2021 day 17, generator whole_input_is::<Day17>, part1 [p1] => 8911, part2 [p2] => 4748, example part1 EG => 45, example part2 EG => 112);
 
 const EG: &str = "target area: x=20..30, y=-10..-5";
 #[derive(Debug, Display, FromStr, Clone)]

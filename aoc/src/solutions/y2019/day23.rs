@@ -1,8 +1,8 @@
-use aoc_harness::aoc_main;
+
 use std::collections::{HashMap, VecDeque};
 use utils::intcode::Computer;
 
-aoc_main!(2019 day 23, part1 [p1] => 20225, part2 [p2] => 14348);
+aoc_harness::aoc_main!(2019 day 23, part1 [p1] => 20225, part2 [p2] => 14348);
 
 pub fn run_comp(
     comp: &mut Computer<i64>,

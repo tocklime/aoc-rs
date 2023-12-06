@@ -1,8 +1,8 @@
-use aoc_harness::{aoc_main, Itertools};
+use aoc_harness::{Itertools};
 use std::{collections::HashSet, ops::RangeInclusive};
 use utils::grid2d::{Coord, Grid2d};
 
-aoc_main!(2018 day 17, generator gen_grid,
+aoc_harness::aoc_main!(2018 day 17, generator gen_grid,
     example both EG2 => (56, 28),
     example both EG1 => (57, 29),
     both [both] => (33052, 27068)

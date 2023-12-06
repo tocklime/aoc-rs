@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 7, generator gen, part1 [p1], part2 [p2_graph]);
+
+aoc_harness::aoc_main!(2020 day 7, generator gen, part1 [p1], part2 [p2_graph]);
 
 use itertools::Itertools;
 use petgraph::{

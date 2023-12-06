@@ -4,7 +4,7 @@ use aoc_harness::*;
 use nom::{bytes::complete::tag, character::complete::u8, multi::separated_list1, sequence::tuple};
 use utils::iter::borrow_mut_twice;
 
-aoc_main!(2022 day 5, generator whole_input_is::<X>, part1 [solve::<false>] => "GFTNRBZPF", part2 [solve::<true>] => "VRQWPDSGP", example both EG => ("CMZ","MCD"));
+aoc_harness::aoc_main!(2022 day 5, generator whole_input_is::<X>, part1 [solve::<false>] => "GFTNRBZPF", part2 [solve::<true>] => "VRQWPDSGP", example both EG => ("CMZ","MCD"));
 
 const EG: &str = "    [D]    
 [N] [C]    

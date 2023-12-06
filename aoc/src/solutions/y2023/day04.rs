@@ -1,4 +1,4 @@
-use aoc_harness::aoc_main;
+
 use nom::{
     character::complete::{self, newline, space1},
     combinator::{eof, success},
@@ -9,7 +9,7 @@ use utils::{
     numset::NumSet,
 };
 
-aoc_main!(2023 day 4, generator gen, part1 [p1] => 18619, part2 [p2] => 8_063_216, example both EG => (13, 30));
+aoc_harness::aoc_main!(2023 day 4, generator gen, part1 [p1] => 18619, part2 [p2] => 8_063_216, example both EG => (13, 30));
 
 fn gen(input: &str) -> Vec<Card> {
     use nom::Parser;

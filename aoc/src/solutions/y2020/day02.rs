@@ -1,8 +1,8 @@
 use parse_display::{Display, FromStr};
 
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 2, generator gen, part1 [p1] => 620, part2 [p2] => 727);
+
+aoc_harness::aoc_main!(2020 day 2, generator gen, part1 [p1] => 620, part2 [p2] => 727);
 
 use utils::inputs::parse_input_from_str_sep_by;
 

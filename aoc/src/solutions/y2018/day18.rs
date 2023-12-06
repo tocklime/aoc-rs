@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use aoc_harness::{aoc_main, Itertools};
+use aoc_harness::{Itertools};
 use ndarray::{Array2, IntoDimension};
 use utils::cartesian::Point;
 
-aoc_main!(2018 day 18, generator gen_grid,
+aoc_harness::aoc_main!(2018 day 18, generator gen_grid,
     example part1 EG1 => 1147,
     part1 [p1] => 519_552,
     part2 [p2] => 165_376

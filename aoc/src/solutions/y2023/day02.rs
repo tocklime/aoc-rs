@@ -1,4 +1,4 @@
-use aoc_harness::*;
+
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -9,7 +9,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2023 day 2, generator gen, part1 [p1] => 2771, part2 [p2] => 70924, example both EG => (8, 2286));
+aoc_harness::aoc_main!(2023 day 2, generator gen, part1 [p1] => 2771, part2 [p2] => 70924, example both EG => (8, 2286));
 
 #[derive(Debug, Default, PartialEq)]
 struct Colours {

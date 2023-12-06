@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 24, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2020 day 24, part1 [p1], part2 [p2]);
 use counter::Counter;
 use std::collections::HashSet;
 use utils::cartesian::Point;

@@ -1,10 +1,10 @@
 use utils::points::{as_point_map, Point};
-use aoc_harness::aoc_main;
+
 use std::cmp::min;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::hash::BuildHasher;
 
-aoc_main!(2019 day 18, part1 [p1] => 4204, part2 [p2] => 1682,
+aoc_harness::aoc_main!(2019 day 18, part1 [p1] => 4204, part2 [p2] => 1682,
         example part1 MAZ0 => 86,
         example part1 MAZ1 => 132,
         example part1 MAZ2 => 136

@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2015 day 11, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2015 day 11, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 use std::char;
 use std::collections::HashSet;

@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 25, part1 [p1] => 11_328_376);
+
+aoc_harness::aoc_main!(2020 day 25, part1 [p1] => 11_328_376);
 
 use num_modular::{ModularInteger, MontgomeryInt};
 

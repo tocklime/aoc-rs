@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 23, generator gen, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2020 day 23, generator gen, part1 [p1], part2 [p2]);
 use std::convert::TryInto;
 struct Game {
     /// next_map is a lookup table mapping cups to their next neighbour on the right.

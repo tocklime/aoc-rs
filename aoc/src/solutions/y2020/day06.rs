@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 6, part1 [p1, p1_binop], part2 [p2_binop]);
+
+aoc_harness::aoc_main!(2020 day 6, part1 [p1, p1_binop], part2 [p2_binop]);
 
 use std::collections::HashSet;
 

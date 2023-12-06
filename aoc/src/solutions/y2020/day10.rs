@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 10, generator gen, part1 [p1], part2 [p2, p2_dp, p2_dp_by_value, p2_dp_deque, p2_dp_fold]);
+
+aoc_harness::aoc_main!(2020 day 10, generator gen, part1 [p1], part2 [p2, p2_dp, p2_dp_by_value, p2_dp_deque, p2_dp_fold]);
 use itertools::Itertools;
 use std::{
     cmp::Ordering,

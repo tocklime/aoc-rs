@@ -1,9 +1,9 @@
-use aoc_harness::*;
+
 use num::Integer;
 use pathfinding::prelude::dijkstra;
 use utils::grid2d::{Coord, Grid2d};
 
-aoc_main!(2021 day 15, generator gen, 
+aoc_harness::aoc_main!(2021 day 15, generator gen, 
     part1 [solve::<1>] => 717, example part1 EG => 40, 
     part2 [solve::<5>] => 2993, example part2 EG => 315);
 

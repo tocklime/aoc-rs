@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 18, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2020 day 18, part1 [p1], part2 [p2]);
 #[derive(Debug,PartialEq,Eq)]
 pub enum Op {
     Add,

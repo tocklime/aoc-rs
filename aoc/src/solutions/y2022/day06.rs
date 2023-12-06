@@ -1,7 +1,7 @@
-use aoc_harness::*;
+
 use utils::numset::NumSet;
 
-aoc_main!(2022 day 6, part1 [solve::<4>, solve_by_strides::<4>] => 1544, part2 [solve::<14>, solve_by_strides::<14>] => 2145, example both EG => (7,19));
+aoc_harness::aoc_main!(2022 day 6, part1 [solve::<4>, solve_by_strides::<4>] => 1544, part2 [solve::<14>, solve_by_strides::<14>] => 2145, example both EG => (7,19));
 
 const EG: &str = "mjqjpqmgbljsphdztnvjfqwrcgsmlb";
 

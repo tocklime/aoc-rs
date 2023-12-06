@@ -6,7 +6,7 @@ use nom::{
 use utils::{aabb::Aabb, cartesian::Point, grid2d::Grid2d};
 use std::string::ToString;
 
-aoc_main!(2022 day 14, generator gen, part1 [solve::<false>] => 757, part2 [solve::<true>] => 24943, example both EG => (24,93));
+aoc_harness::aoc_main!(2022 day 14, generator gen, part1 [solve::<false>] => 757, part2 [solve::<true>] => 24943, example both EG => (24,93));
 
 const EG: &str = "498,4 -> 498,6 -> 496,6
 503,4 -> 502,4 -> 502,9 -> 494,9

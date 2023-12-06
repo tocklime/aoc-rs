@@ -1,13 +1,13 @@
 use utils::algorithms::{bfs_dist_all, to_lookup};
 use utils::points::{as_point_map, Point};
 use utils::prelude::HashMap;
-use aoc_harness::aoc_main;
+
 use itertools::Itertools;
 use pathfinding::directed::dijkstra::dijkstra;
 use std::convert::TryInto;
 use std::hash::Hash;
 
-aoc_main!(2019 day 20, part1 [p1] => 692, part2 [p2] => 8314,
+aoc_harness::aoc_main!(2019 day 20, part1 [p1] => 692, part2 [p2] => 8314,
 example part1 EG0 => 58,
 example part2 EG2A => 11,
 example part2 EG2B => 396);

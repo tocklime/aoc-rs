@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 9, generator gen, part1 [p1], part2 [p2, p2_no_ps, p2_just_fast, p2_other]);
+
+aoc_harness::aoc_main!(2020 day 9, generator gen, part1 [p1], part2 [p2, p2_no_ps, p2_just_fast, p2_other]);
 
 use itertools::Itertools;
 use utils::collections::prefix_sum;

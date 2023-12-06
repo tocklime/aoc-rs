@@ -14,7 +14,7 @@ use nom::{
 };
 use utils::{collections::VecLookup, numset::NumSet};
 
-aoc_main!(2022 day 16, generator whole_input_is::<X>, both [p2a] => (1728, 2304), example both EG => (1651,1707));
+aoc_harness::aoc_main!(2022 day 16, generator whole_input_is::<X>, both [p2a] => (1728, 2304), example both EG => (1651,1707));
 
 const EG: &str = "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
 Valve BB has flow rate=13; tunnels lead to valves CC, AA

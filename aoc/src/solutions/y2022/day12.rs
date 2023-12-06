@@ -1,7 +1,7 @@
-use aoc_harness::*;
+
 use utils::grid2d::{Coord, Grid2d};
 
-aoc_main!(2022 day 12, generator gen, part1 [p1_astar, p1_bfs] => 412, part2 [p2] => 402, example both EG => (31,29));
+aoc_harness::aoc_main!(2022 day 12, generator gen, part1 [p1_astar, p1_bfs] => 412, part2 [p2] => 402, example both EG => (31,29));
 
 const EG: &str = "Sabqponm
 abcryxxl

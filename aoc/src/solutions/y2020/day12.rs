@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 12, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2020 day 12, part1 [p1], part2 [p2]);
 use utils::cartesian::{Dir, Point};
 use utils::nums::NumExt;
 

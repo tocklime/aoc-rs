@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 8, generator gen, part1 [p1], part2 [p2, p2d, p2_optimal]);
+
+aoc_harness::aoc_main!(2020 day 8, generator gen, part1 [p1], part2 [p2, p2d, p2_optimal]);
 use parse_display::{Display, FromStr};
 use pathfinding::prelude::bfs;
 use std::collections::HashSet;

@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2020 day 15, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2020 day 15, part1 [p1], part2 [p2]);
 use std::convert::TryInto;
 use utils::inputs::parse_input_from_str_sep_by;
 

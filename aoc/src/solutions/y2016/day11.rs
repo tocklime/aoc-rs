@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2016 day 11, generator gen, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2016 day 11, generator gen, part1 [p1], part2 [p2]);
 
 use bitintr::*;
 use num::traits::ToPrimitive;

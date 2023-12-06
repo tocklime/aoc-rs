@@ -1,7 +1,7 @@
-use aoc_harness::*;
+
 use utils::take_upto_n::TakeUpToN;
 
-aoc_main!(2021 day 16, generator gen, part1 [p1] => 883, part2 [p2] => 1_675_198_555_015, example part1 EG => 16);
+aoc_harness::aoc_main!(2021 day 16, generator gen, part1 [p1] => 883, part2 [p2] => 1_675_198_555_015, example part1 EG => 16);
 
 const EG: &str = "8A004A801A8002F478";
 

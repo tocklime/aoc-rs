@@ -4,8 +4,8 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use utils::intcode::Computer;
 
-use aoc_harness::*;
-aoc_main!(2019 day 7, part1 [p1] => 273_814, part2 [p2] => 34_579_864,
+
+aoc_harness::aoc_main!(2019 day 7, part1 [p1] => 273_814, part2 [p2] => 34_579_864,
     example part1 EG => 43210
 );
 

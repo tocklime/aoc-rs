@@ -1,4 +1,4 @@
-use aoc_harness::*;
+
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
@@ -8,7 +8,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 7, both [solve] => (1_644_735, 1_300_850), example both EG => (95437, 24_933_642));
+aoc_harness::aoc_main!(2022 day 7, both [solve] => (1_644_735, 1_300_850), example both EG => (95437, 24_933_642));
 
 const EG: &str = "$ cd /
 $ ls

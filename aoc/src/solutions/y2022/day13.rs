@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use aoc_harness::*;
+
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -11,7 +11,7 @@ use nom::{
     IResult,
 };
 
-aoc_main!(2022 day 13, generator gen, part1 [p1] => 5625, example both EG => (13,140), part2 [p2] => 23111);
+aoc_harness::aoc_main!(2022 day 13, generator gen, part1 [p1] => 5625, example both EG => (13,140), part2 [p2] => 23111);
 
 const EG: &str = "[1,1,3,1,1]
 [1,1,5,1,1]

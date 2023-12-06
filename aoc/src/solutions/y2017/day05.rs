@@ -1,6 +1,6 @@
-use aoc_harness::aoc_main;
 
-aoc_main!(2017 day 5, part1 [p1], part2 [p2]);
+
+aoc_harness::aoc_main!(2017 day 5, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 use std::convert::TryInto;
 
