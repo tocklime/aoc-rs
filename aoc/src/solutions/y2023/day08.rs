@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
+use itertools::{FoldWhile, Itertools};
 use num::Integer;
-use rustc_hash::FxHashMap;
 use rayon::prelude::*;
 
 aoc_harness::aoc_main!(2023 day 8, generator gen, part1 [p1] => 13019, part2 [p2] => 13_524_038_372_771,
@@ -7,53 +9,91 @@ aoc_harness::aoc_main!(2023 day 8, generator gen, part1 [p1] => 13019, part2 [p2
 
 struct Prob {
     directions: String,
-    map: FxHashMap<String, (String, String)>,
+    minimum_mid: usize,
+    minimum_end: usize,
+    map: Vec<(usize, usize)>,
 }
 impl Prob {
-    fn solve_from(&self, start: &str) -> usize {
+    fn is_end(&self, p: usize) -> bool {
+        p >= self.minimum_end
+    }
+    fn solve_from(&self, start: usize) -> usize {
         self.directions
             .chars()
             .cycle()
-            .try_fold((0, start), |(ix, pos), dir| {
-                if pos.ends_with('Z') {
-                    return Err(ix);
-                }
+            .fold_while((0, start), |(ix, pos), dir| {
                 let pos = match dir {
-                    'R' => &self.map[pos].1,
-                    'L' => &self.map[pos].0,
+                    'R' => self.map[pos].1,
+                    'L' => self.map[pos].0,
                     _ => panic!("Unknown dir {dir}"),
                 };
-                Ok((ix + 1, pos))
+                if self.is_end(pos) {
+                    FoldWhile::Done((ix + 1, pos))
+                } else {
+                    FoldWhile::Continue((ix + 1, pos))
+                }
             })
-            .unwrap_err()
+            .into_inner()
+            .0
     }
+}
+
+#[derive(Debug, Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
+enum NodeType {
+    Start,
+    Mid,
+    End,
 }
 
 fn gen(input: &str) -> Prob {
     let mut l = input.lines();
     let rls = l.next().unwrap();
     let _ = l.next().unwrap();
-    let map = l
+    let get_type = |x: &str| {
+        if x.ends_with('A') {
+            NodeType::Start
+        } else if x.ends_with('Z') {
+            NodeType::End
+        } else {
+            NodeType::Mid
+        }
+    };
+    let name_to_targets = l
         .map(|l| {
             let (from, to) = l.split_once(" = ").unwrap();
             let (l, r) = to[1..to.len() - 1].split_once(", ").unwrap();
-            (from.to_owned(), (l.to_owned(), r.to_owned()))
+            (get_type(from), from, (l, r))
         })
+        .sorted()
+        .collect::<Vec<_>>();
+    let mut minimums = HashMap::new();
+
+    let name_to_ix = name_to_targets
+        .iter()
+        .zip(0usize..)
+        .map(|((typ, name, _), ix)| {
+            minimums.entry(typ).or_insert(ix);
+            (name, ix)
+        })
+        .collect::<HashMap<_, _>>();
+    let map = name_to_targets
+        .iter()
+        .map(|(_, _, (l, r))| (name_to_ix[&l], name_to_ix[&r]))
         .collect();
     Prob {
         directions: rls.to_owned(),
         map,
+        minimum_mid: minimums[&NodeType::Mid],
+        minimum_end: minimums[&NodeType::End],
     }
 }
 fn p1(input: &Prob) -> usize {
-    input.solve_from("AAA")
+    input.solve_from(0)
 }
 
 fn p2(input: &Prob) -> usize {
-    input
-        .map
-        .par_iter()
-        .filter_map(|x| x.0.ends_with('A').then_some(x.0))
+    (0..input.minimum_mid)
+        .into_par_iter()
         .map(|p| input.solve_from(p))
         .reduce(|| 1, |a, b| b.lcm(&a))
 }
