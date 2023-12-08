@@ -1,12 +1,13 @@
 use num::Integer;
-use std::collections::HashMap;
+use rustc_hash::FxHashMap;
+use rayon::prelude::*;
 
 aoc_harness::aoc_main!(2023 day 8, generator gen, part1 [p1] => 13019, part2 [p2] => 13_524_038_372_771,
     example part1 EG => 2, example part1 EG2 => 6, example part2 EG3 => 6);
 
 struct Prob {
     directions: String,
-    map: HashMap<String, (String, String)>,
+    map: FxHashMap<String, (String, String)>,
 }
 impl Prob {
     fn solve_from(&self, start: &str) -> usize {
@@ -38,7 +39,7 @@ fn gen(input: &str) -> Prob {
             let (l, r) = to[1..to.len() - 1].split_once(", ").unwrap();
             (from.to_owned(), (l.to_owned(), r.to_owned()))
         })
-        .collect::<HashMap<_, _>>();
+        .collect();
     Prob {
         directions: rls.to_owned(),
         map,
@@ -51,10 +52,10 @@ fn p1(input: &Prob) -> usize {
 fn p2(input: &Prob) -> usize {
     input
         .map
-        .keys()
-        .filter(|x| x.ends_with('A'))
+        .par_iter()
+        .filter_map(|x| x.0.ends_with('A').then_some(x.0))
         .map(|p| input.solve_from(p))
-        .fold(1, |a, b| b.lcm(&a))
+        .reduce(|| 1, |a, b| b.lcm(&a))
 }
 const EG: &str = "RL
 
