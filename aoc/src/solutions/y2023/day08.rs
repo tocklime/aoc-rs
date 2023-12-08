@@ -4,7 +4,7 @@ use itertools::{FoldWhile, Itertools};
 use num::Integer;
 use rayon::prelude::*;
 
-aoc_harness::aoc_main!(2023 day 8, generator gen, part1 [p1] => 13019, part2 [p2] => 13_524_038_372_771,
+aoc_harness::aoc_main!(2023 day 8, generator gen, part1 [p1] => 13019, part2 [p2, p2_rayon] => 13_524_038_372_771,
     example part1 EG => 2, example part1 EG2 => 6, example part2 EG3 => 6);
 
 struct Prob {
@@ -92,6 +92,12 @@ fn p1(input: &Prob) -> usize {
 }
 
 fn p2(input: &Prob) -> usize {
+    (0..input.minimum_mid)
+        .map(|p| input.solve_from(p))
+        .fold(1, |a, b| b.lcm(&a))
+}
+
+fn p2_rayon(input: &Prob) -> usize {
     (0..input.minimum_mid)
         .into_par_iter()
         .map(|p| input.solve_from(p))
