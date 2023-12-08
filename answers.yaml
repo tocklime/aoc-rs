@@ -629,5 +629,5 @@
     part1: !Checked '251545216'
     part2: !Checked '250384185'
   8:
-    part1: !Observed '13019'
-    part2: !Observed '13524038372771'
+    part1: !Checked '13019'
+    part2: !Checked '13524038372771'

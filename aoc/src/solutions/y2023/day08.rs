@@ -1,35 +1,61 @@
+use num::Integer;
 use std::collections::HashMap;
 
-use itertools::Itertools;
-use num::Integer;
+aoc_harness::aoc_main!(2023 day 8, generator gen, part1 [p1] => 13019, part2 [p2] => 13_524_038_372_771,
+    example part1 EG => 2, example part1 EG2 => 6, example part2 EG3 => 6);
 
-aoc_harness::aoc_main!(2023 day 8, part1 [p1], part2 [p2], example part1 EG => 2, example part1 EG2 => 6, example part2 EG3 => 6);
+struct Prob {
+    directions: String,
+    map: HashMap<String, (String, String)>,
+}
+impl Prob {
+    fn solve_from(&self, start: &str) -> usize {
+        self.directions
+            .chars()
+            .cycle()
+            .try_fold((0, start), |(ix, pos), dir| {
+                if pos.ends_with('Z') {
+                    return Err(ix);
+                }
+                let pos = match dir {
+                    'R' => &self.map[pos].1,
+                    'L' => &self.map[pos].0,
+                    _ => panic!("Unknown dir {dir}"),
+                };
+                Ok((ix + 1, pos))
+            })
+            .unwrap_err()
+    }
+}
 
-fn p1(input: &str) -> usize {
+fn gen(input: &str) -> Prob {
     let mut l = input.lines();
     let rls = l.next().unwrap();
     let _ = l.next().unwrap();
-    let map = l.map(|l| {
-        let (from, to) = l.split_once(" = ").unwrap();
-        let (l,r) = to[1..to.len()-1].split_once(", ").unwrap();
-        (from.to_owned(), (l.to_owned(),r.to_owned()))
-    }).collect::<HashMap<_,_>>();
-    
-    let mut pos = "AAA";
-    for (count, dir) in rls.chars().cycle().enumerate() {
-        if pos == "ZZZ" {
-            return count;
-        }
-        pos = match dir {
-            'R' => &map[pos].1,
-            'L' => &map[pos].0,
-            
-            _ => panic!("Unknown dir {dir}")
-        };
+    let map = l
+        .map(|l| {
+            let (from, to) = l.split_once(" = ").unwrap();
+            let (l, r) = to[1..to.len() - 1].split_once(", ").unwrap();
+            (from.to_owned(), (l.to_owned(), r.to_owned()))
+        })
+        .collect::<HashMap<_, _>>();
+    Prob {
+        directions: rls.to_owned(),
+        map,
     }
-    unreachable!()
+}
+fn p1(input: &Prob) -> usize {
+    input.solve_from("AAA")
 }
 
+fn p2(input: &Prob) -> usize {
+    input
+        .map
+        .keys()
+        .filter(|x| x.ends_with('A'))
+        .map(|p| input.solve_from(p))
+        .fold(1, |a, b| b.lcm(&a))
+}
 const EG: &str = "RL
 
 AAA = (BBB, CCC)
@@ -58,53 +84,3 @@ const EG3: &str = "LR
 22Z = (22B, 22B)
 XXX = (XXX, XXX)
 ";
-
-fn p2(input: &str) -> usize {
-    let mut l = input.lines();
-    let rls = l.next().unwrap();
-    let _ = l.next().unwrap();
-    let map = l.map(|l| {
-        let (from, to) = l.split_once(" = ").unwrap();
-        let (l,r) = to[1..to.len()-1].split_once(", ").unwrap();
-        (from.to_owned(), (l.to_owned(),r.to_owned()))
-    }).collect::<HashMap<_,_>>();
-    let mut pos = map.keys().filter(|x| x.ends_with('A')).collect_vec();
-    let mut anss = Vec::new();
-    for (ix, p) in pos.iter().enumerate() {
-        let mut pos = *p;
-        let mut finish_count = 0;
-        for (count, dir) in rls.chars().cycle().enumerate() {
-            if pos.ends_with('Z') {
-                finish_count += 1;
-                println!("pos {ix} finishes {finish_count}th after {count} steps");
-                anss.push(count);
-                break;
-            }
-            pos = match dir {
-                'R' => &map[pos].1,
-                'L' => &map[pos].0,
-                
-                _ => panic!("Unknown dir {dir}")
-            };
-        }
-    }
-    dbg!(&anss);
-    return anss.iter().fold(1, |a, b| b.lcm(&a));
-    for (count, dir) in rls.chars().cycle().enumerate() {
-        if pos.iter().all(|x| x.ends_with('Z')) {
-            return count;
-        }
-        pos = pos.into_iter().enumerate().map(|(ix,p)| {
-            // if p.ends_with('Z') {
-                // println!("Pos {ix} is at end after {count} steps");
-            // }
-
-            match dir {
-                'R' => &map[p].1,
-                'L' => &map[p].0,
-                _ => panic!("Unknown dir {dir}")
-            }
-        }).collect();
-    }
-    unreachable!()
-}
