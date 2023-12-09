@@ -9,7 +9,7 @@ where
     delimited(multispace0, inner, multispace0)
 }
 
-type NomError<'a> = nom_supreme::error::ErrorTree<&'a str>;
+pub type NomError<'a> = nom_supreme::error::ErrorTree<&'a str>;
 pub type IResult<'a, T> = nom::IResult<&'a str, T, NomError<'a>>;
 
 pub fn parse_all<'a, F, O>(input: &'a str, inner: F) -> O

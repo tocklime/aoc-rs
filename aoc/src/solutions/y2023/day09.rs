@@ -1,21 +1,20 @@
 use nom::{
     character::complete::{self, newline, space1},
     multi::separated_list1,
-    Parser,
 };
-use nom_supreme::ParserExt;
-use utils::nom::IResult;
+use nom_supreme::{final_parser::final_parser, ParserExt};
+use utils::nom::NomError;
+use rayon::prelude::*;
 
-aoc_harness::aoc_main!(2023 day 9, both [both] => (1_877_825_184, 1108), example both EG => (114,2));
+aoc_harness::aoc_main!(2023 day 9, both [single_thread, multi_thread] => (1_877_825_184, 1108), example both EG => (114,2));
 
-fn gen(input: &str) -> Vec<Vec<i64>> {
-    let p: IResult<Vec<Vec<i64>>> =
-        separated_list1(newline, separated_list1(space1, complete::i64))
-            .terminated(newline.opt())
-            .all_consuming()
-            .complete()
-            .parse(input);
-    p.expect("parse").1
+fn gen(input: &str) -> Result<Vec<Vec<i64>>, NomError> {
+    let p = separated_list1(
+        newline::<_, NomError>,
+        separated_list1(space1, complete::i64),
+    )
+    .terminated(newline.opt());
+    final_parser(p)(input)
 }
 fn solve_line(mut ns: Vec<i64>) -> (i64, i64) {
     let mut suffix = *ns.last().unwrap();
@@ -38,11 +37,20 @@ fn solve_line(mut ns: Vec<i64>) -> (i64, i64) {
     (suffix, prefix)
 }
 
-fn both(input: &str) -> (i64, i64) {
-    let x = gen(input);
-    x.into_iter()
+fn single_thread(input: &str) -> (i64, i64) {
+    gen(input)
+        .expect("parse")
+        .into_iter()
         .map(solve_line)
         .fold((0, 0), |(a, b), (c, d)| (a + c, b + d))
+}
+
+fn multi_thread(input: &str) -> (i64, i64) {
+    gen(input)
+        .expect("parse")
+        .into_par_iter()
+        .map(solve_line)
+        .reduce(|| (0, 0), |(a, b), (c, d)| (a + c, b + d))
 }
 
 const EG: &str = "0 3 6 9 12 15

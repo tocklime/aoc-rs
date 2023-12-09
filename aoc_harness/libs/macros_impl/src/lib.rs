@@ -271,8 +271,7 @@ impl AocMainInput {
                 }
                 if !is_single_solution {
                     inner.extend(quote! {
-                        opts.log(||format!("{} {} expected result: {:?}",desc,PartNum::Part1, expected_p1));
-                        opts.log(||format!("{} {} expected result: {:?}",desc,PartNum::Part2, expected_p2));
+                        opts.log(||format!("{desc} both parts expected result: ({expected_p1:?}, {expected_p2:?})"));
                     });
                 }
                 inner.extend(quote! {
