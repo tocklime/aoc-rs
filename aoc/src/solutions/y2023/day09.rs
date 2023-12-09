@@ -19,8 +19,8 @@ fn gen(input: &str) -> Vec<Vec<i64>> {
 }
 fn solve_line(mut ns: Vec<i64>) -> (i64, i64) {
     let mut suffix = *ns.last().unwrap();
-    let mut first = [0, ns[0]];
-    for first_ix in [0, 1].into_iter().cycle() {
+    let mut prefix = ns[0];
+    for first_sign in [-1, 1].into_iter().cycle() {
         let mut all_zero = true;
         for ix in 0..ns.len() - 1 {
             ns[ix] = ns[ix + 1] - ns[ix];
@@ -30,14 +30,14 @@ fn solve_line(mut ns: Vec<i64>) -> (i64, i64) {
         }
         ns.pop();
         suffix += ns[ns.len() - 1];
-        first[first_ix] += ns[0];
+        prefix += first_sign * ns[0];
         if all_zero {
             break;
         }
     }
-    let prefix = first[1] - first[0];
     (suffix, prefix)
 }
+
 fn both(input: &str) -> (i64, i64) {
     let x = gen(input);
     x.into_iter()
