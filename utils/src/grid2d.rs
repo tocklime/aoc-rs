@@ -1,7 +1,8 @@
 use std::{
+    convert::Into,
     fmt::{Display, Write},
     iter,
-    ops::{Index, IndexMut}, convert::Into,
+    ops::{Index, IndexMut},
 };
 
 use itertools::Itertools;
@@ -27,7 +28,7 @@ impl<T: Copy> Grid2d<T> {
     }
 }
 impl<T> Grid2d<T> {
-    pub fn from_fn<F,TC : Into<Coord>>(size: TC, mut f: F) -> Self
+    pub fn from_fn<F, TC: Into<Coord>>(size: TC, mut f: F) -> Self
     where
         F: FnMut(Coord) -> T,
     {
@@ -41,8 +42,9 @@ impl<T> Grid2d<T> {
         Self { data, size }
     }
 }
-impl<T,TC> Index<TC> for Grid2d<T> where
-    TC: Into<Coord>
+impl<T, TC> Index<TC> for Grid2d<T>
+where
+    TC: Into<Coord>,
 {
     type Output = T;
 
@@ -52,7 +54,7 @@ impl<T,TC> Index<TC> for Grid2d<T> where
     }
 }
 
-impl<T, TC : Into<Coord>> IndexMut<TC> for Grid2d<T> {
+impl<T, TC: Into<Coord>> IndexMut<TC> for Grid2d<T> {
     fn index_mut(&mut self, index: TC) -> &mut Self::Output {
         let index = index.into();
         &mut self.data[index.y * self.size.x + index.x]
@@ -113,7 +115,7 @@ impl<T> Grid2d<T> {
         self.data.is_empty()
     }
     #[must_use]
-    pub fn get<TC : Into<Coord>>(&self, p: TC) -> Option<&T> {
+    pub fn get<TC: Into<Coord>>(&self, p: TC) -> Option<&T> {
         let p = p.into();
         if p.y < self.size.y && p.x < self.size.x {
             Some(&self[p])
@@ -179,7 +181,8 @@ impl<T> Grid2d<T> {
             down.and_then(|y| left.map(|x| (y, x))),
             down.map(|y| (y, p.x)),
             down.and_then(|y| right.map(|x| (y, x))),
-        ].map(|x| x.map(Into::into))
+        ]
+        .map(|x| x.map(Into::into))
     }
     pub fn neighbours_with_diagonals(&'_ self, p: Coord) -> impl Iterator<Item = Coord> {
         let s = self.dim();
@@ -197,14 +200,15 @@ impl<T> Grid2d<T> {
         .into_iter()
         .filter(move |x: &Coord| x.y < s.y && x.x < s.x)
     }
-    pub fn neighbours_array_ordered(&'_ self, p: Coord) -> [Option<Coord>;4] {
+    pub fn neighbours_array_ordered(&'_ self, p: Coord) -> [Option<Coord>; 4] {
         let s = self.dim();
         [
-            p.y.checked_sub(1).map(|x| (x,p.x)),
+            p.y.checked_sub(1).map(|x| (x, p.x)),
             p.x.checked_sub(1).map(|x| (p.y, x)),
-            (p.y+1 < s.y).then_some((p.y+1, p.x)),
-            (p.x+1 < s.x).then_some((p.y, p.x + 1)),
-        ].map(|x| x.map(Into::into))
+            (p.y + 1 < s.y).then_some((p.y + 1, p.x)),
+            (p.x + 1 < s.x).then_some((p.y, p.x + 1)),
+        ]
+        .map(|x| x.map(Into::into))
     }
     pub fn neighbours(&'_ self, p: Coord) -> impl Iterator<Item = Coord> {
         let s = self.dim();
@@ -257,22 +261,27 @@ impl<T> Grid2d<T> {
         self.get((y, x))
     }
     #[must_use]
-    pub fn wraparound_relative_lookup<TU: Into<Coord>, TI: Into<ICoord>>(&self, p: TU, relative: TI) -> &T {
+    pub fn wraparound_relative_lookup<TU: Into<Coord>, TI: Into<ICoord>>(
+        &self,
+        p: TU,
+        relative: TI,
+    ) -> &T {
         let p = p.into();
         let relative = relative.into();
         let d = self.dim();
         let y = add_i_mod(p.y, &relative.y, d.y);
         let x = add_i_mod(p.x, &relative.x, d.x);
-        &self[Point{y,x}]
+        &self[Point { y, x }]
     }
-    pub fn wraparound_neighbours(&self, Point{y, x}: Coord) -> [Coord; 4] {
+    pub fn wraparound_neighbours(&self, Point { y, x }: Coord) -> [Coord; 4] {
         let s = self.dim();
         [
             ((y + s.y - 1) % s.y, x),
             (y, (x + s.x - 1) % s.x),
             (y, (x + 1) % s.x),
             ((y + 1) % s.y, x),
-        ].map(Into::into)
+        ]
+        .map(Into::into)
     }
     pub fn to_string_with<F>(&self, disp: F) -> String
     where
@@ -303,7 +312,7 @@ impl<T> Grid2d<T> {
         let mut ans = String::with_capacity(bb.area());
         for y in bb.bottom_left.y..=bb.top_right.y {
             for x in bb.bottom_left.x..=bb.top_right.x {
-                ans.push_str(&disp(&self[Point{y,x}]));
+                ans.push_str(&disp(&self[Point { y, x }]));
             }
             ans.push('\n');
         }
