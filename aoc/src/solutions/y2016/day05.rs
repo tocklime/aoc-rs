@@ -1,8 +1,9 @@
 
 
-aoc_harness::aoc_main!(2016 day 5, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 5, part1 [p1] => "2414bc77", part2 [p2] => "437e60fc");
 
 fn p1(input: &str) -> String {
+    let input = input.trim();
     (0..)
         .filter_map(|i| {
             let str = format!("{input}{i}");
@@ -18,6 +19,7 @@ fn p1(input: &str) -> String {
 }
 
 fn p2(input: &str) -> String {
+    let input = input.trim();
     let matches = (0..)
         .map(|i| {
             let str = format!("{input}{i}");

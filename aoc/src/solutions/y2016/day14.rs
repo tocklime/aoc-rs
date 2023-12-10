@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 14, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 14, part1 [p1] => 23769, part2 [p2] => 20606);
 use itertools::Itertools;
 use std::collections::{HashMap, VecDeque};
 

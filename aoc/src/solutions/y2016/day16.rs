@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 16, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 16, part1 [p1] => "10010010110011010", part2 [p2] => "01010100101011100");
 fn expand(a: &mut Vec<char>) {
     let len = a.len();
     a.push('0');

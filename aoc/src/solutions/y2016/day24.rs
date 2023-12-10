@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 24, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 24, part1 [p1] => 456, part2 [p2] => 704);
 use itertools::Itertools;
 use pathfinding::prelude::astar;
 use std::collections::HashMap;

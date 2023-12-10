@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 7, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 7, part1 [p1] => 115, part2 [p2] => 231);
 use itertools::Itertools;
 
 fn has_abba(s: &str) -> bool {

@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 3, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 3, generator gen, part1 [p1] => 1050, part2 [p2] => 1921);
 use itertools::Itertools;
 use regex::Regex;
 

@@ -1,6 +1,9 @@
 
 
-aoc_harness::aoc_main!(2016 day 9, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 9, part1 [p1] => 107_035, part2 [p2] => 11_451_628_995,
+    example part1 "ADVENT" => 6,
+    example part1 "A(1x5)BC" => 7,
+);
 
 use nom::{
     IResult,
@@ -56,10 +59,10 @@ impl Seg {
 }
 
 fn p1(input: &str) -> usize {
-    Seg::parse(input).into_iter().map(|x| x.shallow_depth()).sum()
+    Seg::parse(input.trim()).into_iter().map(|x| x.shallow_depth()).sum()
 }
 
 fn p2(input: &str) -> usize {
-    Seg::parse(input).into_iter().map(|x| x.full_depth()).sum()
+    Seg::parse(input.trim()).into_iter().map(|x| x.full_depth()).sum()
 }
 

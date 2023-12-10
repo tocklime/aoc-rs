@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 21, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 21, part1 [p1] => "agcebfdh", part2 [p2] => "afhdbegc");
 use reformation::Reformation;
 use std::collections::VecDeque;
 

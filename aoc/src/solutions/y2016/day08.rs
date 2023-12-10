@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 8, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 8, part1 [p1] => 123, part2 [p2] => "AFBUPZBJPS");
 
 use reformation::Reformation;
 use itertools::Itertools;

@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 20, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 20, part1 [p1] => 32259706, part2 [p2] => 113);
 use itertools::Itertools;
 use std::cmp::max;
 use std::collections::BTreeSet;

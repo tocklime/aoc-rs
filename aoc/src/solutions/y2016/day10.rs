@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 10, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 10, generator gen, part1 [p1] => 101, part2 [p2] => 37789);
 
 use reformation::Reformation;
 use nom::lib::std::collections::{HashMap, VecDeque};

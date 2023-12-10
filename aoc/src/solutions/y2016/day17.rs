@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 17, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 17, part1 [p1] => "DRLRDDURDR", part2 [p2] => 500);
 
 use pathfinding::directed::dijkstra::{dijkstra, dijkstra_all};
 use md5;

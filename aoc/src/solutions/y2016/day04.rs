@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 4, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2016 day 4, generator gen, part1 [p1] => 245_102, part2 [p2] => 324);
 
 use counter::Counter;
 use reformation::Reformation;
