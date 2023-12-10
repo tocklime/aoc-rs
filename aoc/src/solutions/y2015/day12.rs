@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 12, part1 [p1] => 111754, part2 [p2] => 65402);
+aoc_harness::aoc_main!(2015 day 12, part1 [p1] => 111_754, part2 [p2] => 65402);
 use json::JsonValue;
 
 fn num_val(j: &JsonValue) -> f64 {

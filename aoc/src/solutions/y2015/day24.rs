@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 24, part1 [p1] => 11846773891, part2 [p2] => 80393059);
+aoc_harness::aoc_main!(2015 day 24, part1 [p1] => 11_846_773_891, part2 [p2] => 80_393_059);
 use itertools::Itertools;
 
 fn can_split_to(items: &[usize], target: usize) -> bool {

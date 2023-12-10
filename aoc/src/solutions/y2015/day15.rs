@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 15, part1 [p1] => 18965440, part2 [p2] => 15862900);
+aoc_harness::aoc_main!(2015 day 15, part1 [p1] => 18_965_440, part2 [p2] => 15_862_900);
 
 use counter::Counter;
 use itertools::Itertools;

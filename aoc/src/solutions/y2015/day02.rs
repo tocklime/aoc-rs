@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 2, part1 [p1] => 1586300, part2 [p2] => 3737498);
+aoc_harness::aoc_main!(2015 day 2, part1 [p1] => 1_586_300, part2 [p2] => 3_737_498);
 use itertools::Itertools;
 
 fn p1(input: &str) -> u32 {
