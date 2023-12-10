@@ -38,7 +38,7 @@ fn p1(input: &[Instruction]) -> isize {
 fn p2(input: &[Instruction]) -> isize {
     input
         .iter()
-        .fold((Point::default(), 0), |(pos, aim), ins| match ins.dir {
+        .fold((Point::<isize>::default(), 0), |(pos, aim), ins| match ins.dir {
             Dir::Right => (
                 pos + (Dir::Right * ins.distance) + Dir::Up * aim * ins.distance,
                 aim,
