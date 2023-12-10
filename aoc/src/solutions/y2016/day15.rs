@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 15, part1 [p1] => 376777, part2 [p2] => 3903937);
+aoc_harness::aoc_main!(2016 day 15, part1 [p1] => 376_777, part2 [p2] => 3_903_937);
 use reformation::Reformation;
 use itertools::Itertools;
 

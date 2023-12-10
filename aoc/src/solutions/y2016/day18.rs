@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 18, part1 [p1] => 1974, part2 [p2] => 19991126);
+aoc_harness::aoc_main!(2016 day 18, part1 [p1] => 1974, part2 [p2] => 19_991_126);
 fn calc(l: char, r: char) -> char {
     let l = l == '^';
     let r = r == '^';

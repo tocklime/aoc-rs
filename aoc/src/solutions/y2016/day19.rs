@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 19, part1 [p1] => 1816277, part2 [p2] => 1410967);
+aoc_harness::aoc_main!(2016 day 19, part1 [p1] => 1_816_277, part2 [p2] => 1_410_967);
 use nom::lib::std::collections::VecDeque;
 
 fn p1(input: &str) -> usize {
