@@ -1,7 +1,7 @@
 use std::{
     fmt::{Display, Write},
     iter,
-    ops::{Index, IndexMut},
+    ops::{Index, IndexMut}, convert::Into,
 };
 
 use itertools::Itertools;
@@ -15,40 +15,47 @@ pub struct Grid2d<T> {
     size: Coord,
 }
 
-pub type Coord = (usize, usize);
-pub type ICoord = (isize, isize);
+pub type Coord = Point<usize>;
+pub type ICoord = Point<isize>;
 impl<T: Copy> Grid2d<T> {
-    pub fn from_elem(size: Coord, elem: T) -> Self {
+    pub fn from_elem<TC: Into<Coord>>(size: TC, elem: T) -> Self {
+        let size = size.into();
         Self {
-            data: vec![elem; size.0 * size.1],
+            data: vec![elem; size.y * size.x],
             size,
         }
     }
 }
 impl<T> Grid2d<T> {
-    pub fn from_fn<F>(size: Coord, mut f: F) -> Self
+    pub fn from_fn<F,TC : Into<Coord>>(size: TC, mut f: F) -> Self
     where
         F: FnMut(Coord) -> T,
     {
-        let mut data = Vec::with_capacity(size.0 * size.1);
-        for a in 0..size.0 {
-            for b in 0..size.1 {
-                data.push(f((a, b)));
+        let size = size.into();
+        let mut data = Vec::with_capacity(size.y * size.x);
+        for a in 0..size.y {
+            for b in 0..size.x {
+                data.push(f(Point::new(b, a)));
             }
         }
         Self { data, size }
     }
 }
-impl<T> Index<Point<usize>> for Grid2d<T> {
+impl<T,TC> Index<TC> for Grid2d<T> where
+    TC: Into<Coord>
+{
     type Output = T;
 
-    fn index(&self, index: Point<usize>) -> &Self::Output {
-        &self[(index.y, index.x)]
+    fn index(&self, index: TC) -> &Self::Output {
+        let index = index.into();
+        &self.data[index.y * self.size.x + index.x]
     }
 }
-impl<T> IndexMut<Point<usize>> for Grid2d<T> {
-    fn index_mut(&mut self, index: Point<usize>) -> &mut Self::Output {
-        &mut self[(index.y, index.x)]
+
+impl<T, TC : Into<Coord>> IndexMut<TC> for Grid2d<T> {
+    fn index_mut(&mut self, index: TC) -> &mut Self::Output {
+        let index = index.into();
+        &mut self.data[index.y * self.size.x + index.x]
     }
 }
 impl<T> Index<usize> for Grid2d<T> {
@@ -63,23 +70,11 @@ impl<T> IndexMut<usize> for Grid2d<T> {
         &mut self.data[index]
     }
 }
-impl<T> Index<Coord> for Grid2d<T> {
-    type Output = T;
-
-    fn index(&self, index: Coord) -> &Self::Output {
-        &self.data[index.0 * self.size.1 + index.1]
-    }
-}
-impl<T> IndexMut<Coord> for Grid2d<T> {
-    fn index_mut(&mut self, index: Coord) -> &mut Self::Output {
-        &mut self.data[index.0 * self.size.1 + index.1]
-    }
-}
 impl<T: Display> Display for Grid2d<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for ((_, x), t) in self.indexed_iter() {
+        for (p, t) in self.indexed_iter() {
             f.write_fmt(format_args!("{t}"))?;
-            if x == self.size.1 - 1 {
+            if p.x == self.size.x - 1 {
                 f.write_char('\n')?;
             }
         }
@@ -89,12 +84,13 @@ impl<T: Display> Display for Grid2d<T> {
 impl<T: Copy> Grid2d<T> {
     pub fn grow_and_invalidate_all_data(&mut self, new_size: Coord, new_t: T) {
         self.size = new_size;
-        let need_len = self.size.0 * self.size.1;
+        let need_len = self.size.y * self.size.x;
         self.data.extend((self.data.len()..need_len).map(|_| new_t));
     }
 }
 impl<T: PartialEq<T>> Grid2d<T> {
-    pub fn insert(&mut self, p: Coord, val: T) -> bool {
+    pub fn insert<TC: Into<Coord>>(&mut self, p: TC, val: T) -> bool {
+        let p = p.into();
         let x = &mut self[p];
         if *x != val {
             *x = val;
@@ -117,16 +113,18 @@ impl<T> Grid2d<T> {
         self.data.is_empty()
     }
     #[must_use]
-    pub fn get(&self, p: Coord) -> Option<&T> {
-        if p.0 < self.size.0 && p.1 < self.size.1 {
+    pub fn get<TC : Into<Coord>>(&self, p: TC) -> Option<&T> {
+        let p = p.into();
+        if p.y < self.size.y && p.x < self.size.x {
             Some(&self[p])
         } else {
             None
         }
     }
     #[must_use]
-    pub fn get_mut(&mut self, p: Coord) -> Option<&mut T> {
-        if p.0 < self.size.0 && p.1 < self.size.1 {
+    pub fn get_mut<TC: Into<Coord>>(&mut self, p: TC) -> Option<&mut T> {
+        let p = p.into();
+        if p.y < self.size.y && p.x < self.size.x {
             Some(&mut self[p])
         } else {
             None
@@ -134,31 +132,32 @@ impl<T> Grid2d<T> {
     }
     #[must_use]
     pub fn to_u(p: ICoord) -> Option<Coord> {
-        Some((p.0.try_into().ok()?, p.1.try_into().ok()?))
+        Some((p.y.try_into().ok()?, p.x.try_into().ok()?).into())
     }
     #[must_use]
-    pub fn get_i(&self, p: ICoord) -> Option<&T> {
+    pub fn get_i<TC: Into<ICoord>>(&self, p: TC) -> Option<&T> {
+        let p = p.into();
         Self::to_u(p).and_then(|p| self.get(p))
     }
-    #[must_use]
+
     pub fn dim(&self) -> Coord {
         self.size
     }
     pub fn indexes(&'_ self) -> impl Iterator<Item = Coord> {
         let max = self.size;
-        (0..max.0).cartesian_product(0..max.1)
+        (0..max.y).cartesian_product(0..max.x).map(Into::into)
     }
     pub fn indexed_iter(&self) -> impl Iterator<Item = (Coord, &T)> {
         self.data
             .iter()
             .enumerate()
-            .map(|(x, v)| (x.div_mod_floor(&self.size.1), v))
+            .map(|(x, v)| (x.div_mod_floor(&self.size.x).into(), v))
     }
     pub fn indexed_iter_mut(&mut self) -> impl Iterator<Item = (Coord, &mut T)> {
         self.data
             .iter_mut()
             .enumerate()
-            .map(|(x, v)| (x.div_mod_floor(&self.size.1), v))
+            .map(|(x, v)| (x.div_mod_floor(&self.size.x).into(), v))
     }
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.data.iter()
@@ -166,118 +165,123 @@ impl<T> Grid2d<T> {
     #[must_use]
     pub fn ordered_neighbours_with_self(&self, p: Coord) -> [Option<Coord>; 9] {
         let s = self.dim();
-        let up = p.0.checked_sub(1);
-        let left = p.1.checked_sub(1);
-        let down = if p.0 + 1 == s.0 { None } else { Some(p.0 + 1) };
-        let right = if p.1 + 1 == s.1 { None } else { Some(p.1 + 1) };
+        let up = p.y.checked_sub(1);
+        let left = p.x.checked_sub(1);
+        let down = if p.y + 1 == s.y { None } else { Some(p.y + 1) };
+        let right = if p.x + 1 == s.x { None } else { Some(p.x + 1) };
         [
             up.and_then(|y| left.map(|x| (y, x))),
-            up.map(|y| (y, p.1)),
+            up.map(|y| (y, p.x)),
             up.and_then(|y| right.map(|x| (y, x))),
-            left.map(|x| (p.0, x)),
-            Some(p),
-            right.map(|x| (p.0, x)),
+            left.map(|x| (p.y, x)),
+            Some(p.into()),
+            right.map(|x| (p.y, x)),
             down.and_then(|y| left.map(|x| (y, x))),
-            down.map(|y| (y, p.1)),
+            down.map(|y| (y, p.x)),
             down.and_then(|y| right.map(|x| (y, x))),
-        ]
+        ].map(|x| x.map(Into::into))
     }
     pub fn neighbours_with_diagonals(&'_ self, p: Coord) -> impl Iterator<Item = Coord> {
         let s = self.dim();
         [
-            (p.0.wrapping_sub(1), p.1),
-            (p.0, p.1.wrapping_sub(1)),
-            (p.0 + 1, p.1),
-            (p.0, p.1 + 1),
-            (p.0.wrapping_sub(1), p.1.wrapping_sub(1)),
-            (p.0 + 1, p.1.wrapping_sub(1)),
-            (p.0 + 1, p.1 + 1),
-            (p.0.wrapping_sub(1), p.1 + 1),
+            (p.y.wrapping_sub(1), p.x),
+            (p.y, p.x.wrapping_sub(1)),
+            (p.y + 1, p.x),
+            (p.y, p.x + 1),
+            (p.y.wrapping_sub(1), p.x.wrapping_sub(1)),
+            (p.y + 1, p.x.wrapping_sub(1)),
+            (p.y + 1, p.x + 1),
+            (p.y.wrapping_sub(1), p.x + 1),
         ]
+        .map(Into::into)
         .into_iter()
-        .filter(move |&x| x.0 < s.0 && x.1 < s.1)
+        .filter(move |x: &Coord| x.y < s.y && x.x < s.x)
     }
     pub fn neighbours_array_ordered(&'_ self, p: Coord) -> [Option<Coord>;4] {
         let s = self.dim();
         [
-            p.0.checked_sub(1).map(|x| (x,p.1)),
-            p.1.checked_sub(1).map(|x| (p.0, x)),
-            (p.0+1 < s.0).then_some((p.0+1, p.1)),
-            (p.1+1 < s.1).then_some((p.0, p.1 + 1)),
-        ]
+            p.y.checked_sub(1).map(|x| (x,p.x)),
+            p.x.checked_sub(1).map(|x| (p.y, x)),
+            (p.y+1 < s.y).then_some((p.y+1, p.x)),
+            (p.x+1 < s.x).then_some((p.y, p.x + 1)),
+        ].map(|x| x.map(Into::into))
     }
     pub fn neighbours(&'_ self, p: Coord) -> impl Iterator<Item = Coord> {
         let s = self.dim();
         [
-            (p.0.wrapping_sub(1), p.1),
-            (p.0, p.1.wrapping_sub(1)),
-            (p.0 + 1, p.1),
-            (p.0, p.1 + 1),
+            (p.y.wrapping_sub(1), p.x),
+            (p.y, p.x.wrapping_sub(1)),
+            (p.y + 1, p.x),
+            (p.y, p.x + 1),
         ]
+        .map(Into::into)
         .into_iter()
-        .filter(move |&x| x.0 < s.0 && x.1 < s.1)
+        .filter(move |x: &Coord| x.y < s.y && x.x < s.x)
     }
 
     /// Returns all values in the grid by taking steps of `relative` from `start`.
     /// Includes the value at `start`.
-    pub fn values_in_direction(
+    pub fn values_in_direction<T1: Into<Coord>, T2: Into<ICoord>>(
         &self,
-        start: Coord,
-        relative: ICoord,
+        start: T1,
+        relative: T2,
     ) -> impl Iterator<Item = (Coord, &T)> {
-        let mut pos: ICoord = (start.0 as isize, start.1 as isize);
+        let start = start.into();
+        let relative = relative.into();
+        let mut pos: ICoord = (start.y as isize, start.x as isize).into();
         iter::from_fn(move || {
             let here = Self::to_u(pos)?;
-            pos.0 += relative.0;
-            pos.1 += relative.1;
+            pos.y += relative.y;
+            pos.x += relative.x;
             let next = self.get(here);
             next.map(|p| (here, p))
         })
     }
     #[must_use]
     pub fn get_row(&self, y: usize) -> &[T] {
-        let w = self.size.1;
+        let w = self.size.x;
         &self.data[y * w..(y + 1) * w]
     }
     #[must_use]
     pub fn relative_lookup(&self, p: Coord, relative: ICoord) -> Option<&T> {
-        let y = if relative.0 > 0 {
-            p.0.wrapping_add(relative.0 as usize)
+        let y = if relative.y > 0 {
+            p.y.wrapping_add(relative.y as usize)
         } else {
-            p.0.wrapping_sub((-relative.0) as usize)
+            p.y.wrapping_sub((-relative.y) as usize)
         };
-        let x = if relative.1 > 0 {
-            p.1.wrapping_add(relative.1 as usize)
+        let x = if relative.x > 0 {
+            p.x.wrapping_add(relative.x as usize)
         } else {
-            p.1.wrapping_sub((-relative.1) as usize)
+            p.x.wrapping_sub((-relative.x) as usize)
         };
         self.get((y, x))
     }
     #[must_use]
-    pub fn wraparound_relative_lookup(&self, p: Coord, relative: ICoord) -> &T {
+    pub fn wraparound_relative_lookup<TU: Into<Coord>, TI: Into<ICoord>>(&self, p: TU, relative: TI) -> &T {
+        let p = p.into();
+        let relative = relative.into();
         let d = self.dim();
-        let y = add_i_mod(p.0, &relative.0, d.0);
-        let x = add_i_mod(p.1, &relative.1, d.1);
-        &self[(y, x)]
+        let y = add_i_mod(p.y, &relative.y, d.y);
+        let x = add_i_mod(p.x, &relative.x, d.x);
+        &self[Point{y,x}]
     }
-    #[must_use]
-    pub fn wraparound_neighbours(&self, (y, x): Coord) -> [Coord; 4] {
-        let (sy, sx) = self.dim();
+    pub fn wraparound_neighbours(&self, Point{y, x}: Coord) -> [Coord; 4] {
+        let s = self.dim();
         [
-            ((y + sy - 1) % sy, x),
-            (y, (x + sx - 1) % sx),
-            (y, (x + 1) % sx),
-            ((y + 1) % sy, x),
-        ]
+            ((y + s.y - 1) % s.y, x),
+            (y, (x + s.x - 1) % s.x),
+            (y, (x + 1) % s.x),
+            ((y + 1) % s.y, x),
+        ].map(Into::into)
     }
     pub fn to_string_with<F>(&self, disp: F) -> String
     where
         F: Fn(&T) -> String,
     {
         let mut ans = String::with_capacity(self.data.len());
-        for ((_, x), t) in self.indexed_iter() {
+        for (p, t) in self.indexed_iter() {
             ans.push_str(&disp(t));
-            if x == self.size.1 - 1 {
+            if p.x == self.size.x - 1 {
                 ans.push('\n');
             }
         }
@@ -289,7 +293,7 @@ impl<T> Grid2d<T> {
     {
         self.indexed_iter()
             .filter(|&(_, x)| pred(x))
-            .map(|((y, x), _)| Point::new(x, y))
+            .map(|(p, _)| p)
             .collect()
     }
     pub fn render_section_with<F>(&self, bb: Aabb<usize>, disp: F) -> String
@@ -299,7 +303,7 @@ impl<T> Grid2d<T> {
         let mut ans = String::with_capacity(bb.area());
         for y in bb.bottom_left.y..=bb.top_right.y {
             for x in bb.bottom_left.x..=bb.top_right.x {
-                ans.push_str(&disp(&self[(y, x)]));
+                ans.push_str(&disp(&self[Point{y,x}]));
             }
             ans.push('\n');
         }
@@ -325,7 +329,7 @@ impl<T> Grid2d<T> {
         }
         Self {
             data,
-            size: (rows, stride.unwrap()),
+            size: (rows, stride.unwrap()).into(),
         }
     }
     pub fn from_str_with_index<F>(input: &str, mut conv: F) -> Self
@@ -342,13 +346,13 @@ impl<T> Grid2d<T> {
                 _ => {}
             }
             for (col, c) in l.chars().enumerate() {
-                data.push(conv((row, col), c));
+                data.push(conv((row, col).into(), c));
             }
             rows += 1;
         }
         Self {
             data,
-            size: (rows, stride.unwrap()),
+            size: (rows, stride.unwrap()).into(),
         }
     }
     pub fn map<F, TO>(&self, mut f: F) -> Grid2d<TO>

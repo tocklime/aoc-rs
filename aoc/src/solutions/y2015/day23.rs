@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 23, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2015 day 23, part1 [p1] => 170, part2 [p2] => 247);
 use nom::lib::std::collections::HashMap;
 use reformation::Reformation;
 

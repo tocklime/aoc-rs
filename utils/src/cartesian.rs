@@ -6,13 +6,16 @@ use num::{
     traits::{WrappingAdd, WrappingSub},
     Integer, Num, Signed, Unsigned,
 };
-use std::hash::{BuildHasher, Hash};
 use std::ops::{Add, AddAssign, Mul, RangeInclusive, Sub};
 use std::{collections::HashMap, fmt::Display};
 use std::{collections::HashSet, fmt::Debug};
 use std::{
     convert::{TryFrom, TryInto},
     str::FromStr,
+};
+use std::{
+    hash::{BuildHasher, Hash},
+    ops::Neg,
 };
 
 use crate::nums::NumExt;
@@ -22,6 +25,18 @@ pub struct Point<T> {
     pub y: T, //important to order y then x, because that gives you row-major order, which is required for y2018d15.
     pub x: T,
 }
+
+impl<T> From<(T, T)> for Point<T> {
+    fn from((y, x): (T, T)) -> Self {
+        Self { y, x }
+    }
+}
+impl<T> From<Point<T>> for (T, T) {
+    fn from(value: Point<T>) -> Self {
+        (value.y, value.x)
+    }
+}
+
 impl<T> IntoDimension for Point<T>
 where
     (T, T): IntoDimension,
@@ -361,6 +376,16 @@ where
         .collect()
 }
 
+impl<T: Neg<Output = T>> Neg for Point<T> {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self {
+            y: -self.y,
+            x: -self.x,
+        }
+    }
+}
 impl<T: AddAssign> AddAssign for Point<T> {
     fn add_assign(&mut self, other: Self) {
         self.x += other.x;

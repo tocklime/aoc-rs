@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 17, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2015 day 17, part1 [p1] => 1304, part2 [p2] => 18);
 use itertools::Itertools;
 
 const TARGET: usize = 150;

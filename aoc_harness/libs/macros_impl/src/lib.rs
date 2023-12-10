@@ -370,7 +370,7 @@ impl AocMainInput {
         }
         ans.extend(quote!{
             match as_opt {
-                Some(x) => { assert_eq!(x, #expected, "Example failure: {} example {} with fn {}",#part_num, #eg_num, stringify!(#func)); }
+                Some(x) => { assert_eq!(x, #expected, "Example failure: {} example {} with fn {}\nInput:\n{}",#part_num, stringify!(#input), stringify!(#func), #input); }
                 None => { assert!(false, "Example failure: {} example {} with fn {} failed", #part_num, #eg_num, stringify!(#func)); }
             };
         });
@@ -452,25 +452,29 @@ impl AocMainInput {
                             }
                             PartNum::Both => {
                                 for f in &s.fns {
-                                    let get_p1: ExprLit = parse_quote!(0);
-                                    let get_p2: ExprLit = parse_quote!(1);
+                                    if e.part_num == PartNum::Part1 {
+                                        let get_p1: ExprLit = parse_quote!(0);
+                                        out.extend(self.example(
+                                            "both/part1",
+                                            eg_num,
+                                            expected,
+                                            &e.str_input,
+                                            f,
+                                            Some(&get_p1),
+                                        ));
+                                    }
 
-                                    out.extend(self.example(
-                                        "both/part1",
-                                        eg_num,
-                                        expected,
-                                        &e.str_input,
-                                        f,
-                                        Some(&get_p1),
-                                    ));
-                                    out.extend(self.example(
-                                        "both/part2",
-                                        eg_num,
-                                        expected,
-                                        &e.str_input,
-                                        f,
-                                        Some(&get_p2),
-                                    ));
+                                    if e.part_num == PartNum::Part2 {
+                                        let get_p2: ExprLit = parse_quote!(1);
+                                        out.extend(self.example(
+                                            "both/part2",
+                                            eg_num,
+                                            expected,
+                                            &e.str_input,
+                                            f,
+                                            Some(&get_p2),
+                                        ));
+                                    }
                                 }
                             }
                         }

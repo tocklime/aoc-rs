@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 1, part1 [p1], part2 [p2,p2a]);
+aoc_harness::aoc_main!(2015 day 1, part1 [p1] => 138, part2 [p2,p2a] => 1771);
 
 
 fn p1(input: &str) -> i32 {

@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 10, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2015 day 10, part1 [p1] => 329_356, part2 [p2] => 4_666_278);
 use itertools::Itertools;
 use std::str::FromStr;
 

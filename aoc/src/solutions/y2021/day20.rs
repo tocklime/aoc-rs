@@ -1,8 +1,6 @@
 use std::rc::Rc;
 
-use aoc_harness::*;
-
-use utils::grid2d::{Grid2d, ICoord};
+use utils::{grid2d::{Grid2d, ICoord}, cartesian::Point};
 
 aoc_harness::aoc_main!(2021 day 20, generator gen, part1 [solve::<1>] => 5786, part2 [solve::<25>] => 16757, example both EG => (35,3351));
 
@@ -33,21 +31,21 @@ impl Picture {
         self.grid.get_i(p).copied().unwrap_or(self.infinite_value)
     }
     fn lit_next_time(&self, p: ICoord) -> bool {
-        let n: usize = (p.0 - 1..=p.0 + 1)
-            .cartesian_product(p.1 - 1..=p.1 + 1)
+        let n: usize = p.neighbours_and_self_with_diagonals_in_order()
             .map(|p| self.is_lit(p))
+            .into_iter()
             .fold(0_usize, |acc, n| acc << 1 | usize::from(n));
         self.rules[n]
     }
     fn step_into(&self, target: &mut Self) {
-        let (my, mx) = self.grid.dim();
-        let new_dim = (my + 2, mx + 2);
+        let m = self.grid.dim();
+        let new_dim = (m.y + 2, m.x + 2).into();
         target.grid.grow_and_invalidate_all_data(new_dim, false);
-        for ((y, x), v) in target.grid.indexed_iter_mut() {
+        for (Point{y, x}, v) in target.grid.indexed_iter_mut() {
             *v = self.lit_next_time((
                 isize::try_from(y).unwrap() - 1,
                 isize::try_from(x).unwrap() - 1,
-            ));
+            ).into());
         }
         target.infinite_value = if self.infinite_value {
             self.rules[0b1_1111_1111]

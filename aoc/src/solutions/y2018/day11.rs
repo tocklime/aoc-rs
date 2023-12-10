@@ -20,7 +20,8 @@ const SIZE: usize = 300;
 
 fn gen(input: &str) -> Grid2d<isize> {
     let n: usize = input.trim().parse().unwrap();
-    let g = Grid2d::from_fn((SIZE, SIZE), |(x, y)| level(n, x + 1, y + 1));
+    //TODO: This entire solution seems to have x and y swapped.
+    let g = Grid2d::from_fn((SIZE, SIZE), |p| level(n, p.y + 1, p.x+ 1));
     let mut prefix_grid = Grid2d::from_elem((SIZE, SIZE), 0);
     for y in 0..as_i(SIZE) {
         for x in 0..as_i(SIZE) {

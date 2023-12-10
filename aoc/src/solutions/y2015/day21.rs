@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 21, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2015 day 21, part1 [p1] => 121, part2 [p2] => 201);
 use itertools::Itertools;
 
 struct Item {

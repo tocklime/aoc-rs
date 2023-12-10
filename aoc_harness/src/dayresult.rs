@@ -2,6 +2,7 @@ use std::{fmt::Display, time::Duration};
 
 use crate::render_duration;
 
+#[derive(Debug)]
 pub enum ExecutionTime {
     NoneRecorded,
     Part1(Duration),
@@ -9,6 +10,7 @@ pub enum ExecutionTime {
     Separate(Duration, Duration),
     Both(Duration),
 }
+#[derive(Debug)]
 pub struct DayResult {
     pub year: i32,
     pub day: u8,
@@ -94,7 +96,7 @@ impl DayResult {
     }
     pub fn record_p1<T: Display>(&mut self, ans: Option<T>, time: Duration) {
         if let Err(x) = Self::record_ans(1, &mut self.part1_ans, ans) {
-            eprintln!("{} {}", self.desc(), x);
+            panic!("{} {}", self.desc(), x);
         }
         match &mut self.solve_time {
             ExecutionTime::NoneRecorded => self.solve_time = ExecutionTime::Part1(time),
@@ -107,7 +109,7 @@ impl DayResult {
     }
     pub fn record_p2<T: Display>(&mut self, ans: Option<T>, time: Duration) {
         if let Err(x) = Self::record_ans(2, &mut self.part2_ans, ans) {
-            eprintln!("{} {}", self.desc(), x);
+            panic!("{} {}", self.desc(), x);
         }
         match &mut self.solve_time {
             ExecutionTime::NoneRecorded => self.solve_time = ExecutionTime::Part2(time),
@@ -124,10 +126,10 @@ impl DayResult {
             None => (None, None),
         };
         if let Err(x) = Self::record_ans(1, &mut self.part1_ans, p1) {
-            eprintln!("{} {}", self.desc(), x);
+            panic!("{} {}", self.desc(), x);
         }
         if let Err(x) = Self::record_ans(2, &mut self.part2_ans, p2) {
-            eprintln!("{} {}", self.desc(), x);
+            panic!("{} {}", self.desc(), x);
         }
         match &mut self.solve_time {
             ExecutionTime::Both(b) => {

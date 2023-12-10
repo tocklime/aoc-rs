@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 18, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2015 day 18, part1 [p1] => 814, part2 [p2] => 924);
 use nom::lib::std::collections::HashMap;
 use utils::cartesian::{as_point_map, Point};
 

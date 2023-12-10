@@ -1,6 +1,9 @@
-use aoc_harness::{Itertools};
+use aoc_harness::Itertools;
 use std::{collections::HashSet, ops::RangeInclusive};
-use utils::grid2d::{Coord, Grid2d};
+use utils::{
+    cartesian::Point,
+    grid2d::{Coord, Grid2d},
+};
 
 aoc_harness::aoc_main!(2018 day 17, generator gen_grid,
     example both EG2 => (56, 28),
@@ -110,26 +113,29 @@ fn fill_from(grid: &mut Grid2d<char>, pos: Coord) -> FillResult {
     if grid[pos] == '~' {
         return FillResult::DoneFilling; //(Fill point is flooded)
     }
-    let Some(bottom_of_fall) = (pos.0..grid.dim().0).find(|y| is_solid(grid[(*y, pos.1)])).map(|y| y - 1) else {
-        for y in pos.0..grid.dim().0 {
-            grid[(y, pos.1)] = '|';
+    let Some(bottom_of_fall) = (pos.y..grid.dim().y)
+        .find(|y| is_solid(grid[(*y, pos.x)]))
+        .map(|y| y - 1)
+    else {
+        for y in pos.y..grid.dim().y {
+            grid[(y, pos.x)] = '|';
         }
         return FillResult::DoneFilling; //(Fill point goes off bottom of map)
     };
-    for y in pos.0..=bottom_of_fall {
-        grid[(y, pos.1)] = '|';
+    for y in pos.y..=bottom_of_fall {
+        grid[(y, pos.x)] = '|';
     }
 
-    let left_of_fall = (0..pos.1)
+    let left_of_fall = (0..pos.x)
         .rev()
         .find(|x| is_solid(grid[(bottom_of_fall, *x)]));
-    let right_of_fall = (pos.1..grid.dim().1).find(|x| is_solid(grid[(bottom_of_fall, *x)]));
+    let right_of_fall = (pos.x..grid.dim().x).find(|x| is_solid(grid[(bottom_of_fall, *x)]));
     let left_stop = left_of_fall.unwrap_or(0);
-    let right_stop = right_of_fall.unwrap_or(grid.dim().1);
-    let hole_to_left = (left_stop..pos.1)
+    let right_stop = right_of_fall.unwrap_or(grid.dim().x);
+    let hole_to_left = (left_stop..pos.x)
         .rev()
         .find(|x| !is_solid(grid[(bottom_of_fall + 1, *x)]));
-    let hole_to_right = (pos.1..right_stop).find(|x| !is_solid(grid[(bottom_of_fall + 1, *x)]));
+    let hole_to_right = (pos.x..right_stop).find(|x| !is_solid(grid[(bottom_of_fall + 1, *x)]));
     if let (Some(l), Some(r), None, None) =
         (left_of_fall, right_of_fall, hole_to_left, hole_to_right)
     {
@@ -144,20 +150,26 @@ fn fill_from(grid: &mut Grid2d<char>, pos: Coord) -> FillResult {
             .into_iter()
             .flatten()
             .max()
-            .unwrap_or(pos.1);
+            .unwrap_or(pos.x);
         let fill_from_r = [hole_to_right, right_of_fall]
             .into_iter()
             .flatten()
             .min()
-            .unwrap_or(pos.1);
+            .unwrap_or(pos.x);
         for x in fill_from_l + 1..fill_from_r {
             grid[(bottom_of_fall, x)] = '|';
         }
         if let Some(x) = hole_to_left {
-            new_falls.push((bottom_of_fall, x));
+            new_falls.push(Point {
+                y: bottom_of_fall,
+                x,
+            });
         }
         if let Some(x) = hole_to_right {
-            new_falls.push((bottom_of_fall, x));
+            new_falls.push(Point {
+                y: bottom_of_fall,
+                x,
+            });
         }
         FillResult::NowFillFrom(new_falls)
     }

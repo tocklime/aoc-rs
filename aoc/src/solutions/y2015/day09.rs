@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 9, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2015 day 9, generator gen, part1 [p1] => 207, part2 [p2] => 804);
 
 use reformation::Reformation;
 use itertools::Itertools;

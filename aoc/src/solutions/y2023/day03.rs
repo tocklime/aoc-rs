@@ -27,24 +27,24 @@ fn gen(input: &str) -> Grid2d<char> {
 
 fn find_numbers(g: &Grid2d<char>) -> impl Iterator<Item = FoundNum> + '_ {
     let mut curr: Option<FoundNum> = None;
-    let width = g.dim().1 - 1;
+    let width = g.dim().x - 1;
     g.indexed_iter()
         //Find all the nums.
-        .filter_map(move |((row, col), c)| {
+        .filter_map(move |(pos, c)| {
             if let Some(d) = c.to_digit(10) {
                 if let Some(n) = curr.as_mut() {
                     n.value = n.value * 10 + d;
-                    n.col_end = col;
+                    n.col_end = pos.x;
                 } else {
                     curr = Some(FoundNum {
                         value: d,
-                        row,
-                        col_start: col,
-                        col_end: col,
+                        row: pos.y,
+                        col_start: pos.x,
+                        col_end: pos.x,
                     });
                 }
             }
-            if col == width || !c.is_ascii_digit() {
+            if pos.x == width || !c.is_ascii_digit() {
                 curr.take()
             } else {
                 None

@@ -25,26 +25,26 @@ struct RepeatingGrid<'a> {
 }
 impl RepeatingGrid<'_> {
     fn dim(&self) -> Coord {
-        let (a, b) = self.map.dim();
-        (a * self.repeats, b * self.repeats)
+        self.map.dim() * self.repeats
     }
 
     fn neighbours(&'_ self, p: usize) -> impl Iterator<Item = Coord> {
         let s = self.dim();
-        let p = p.div_mod_floor(&s.1);
+        let p = p.div_mod_floor(&s.x);
         [
             (p.0.wrapping_sub(1), p.1),
             (p.0, p.1.wrapping_sub(1)),
             (p.0 + 1, p.1),
             (p.0, p.1 + 1),
         ]
+        .map(Into::into)
         .into_iter()
-        .filter(move |&x| x.0 < s.0 && x.1 < s.1)
+        .filter(move |p: &Coord| p.y < s.y && p.x < s.x)
     }
     fn risk_at(&self, index: Coord) -> usize {
         let inner_dim = self.map.dim();
-        let (outer_x, inner_x) = index.0.div_mod_floor(&inner_dim.0);
-        let (outer_y, inner_y) = index.1.div_mod_floor(&inner_dim.1);
+        let (outer_x, inner_x) = index.y.div_mod_floor(&inner_dim.y);
+        let (outer_y, inner_y) = index.x.div_mod_floor(&inner_dim.x);
         let inner_val = self.map[(inner_y, inner_x)] as usize;
         1 + (outer_x + outer_y + inner_val - 1) % 9
     }
@@ -59,10 +59,10 @@ fn solve<const REPEATS: usize>(input: &Grid2d<u8>) -> usize {
         repeats: REPEATS,
     };
     let dim = rg.dim();
-    let target = dim.0 * dim.1 - 1;
+    let target = dim.y * dim.x - 1;
     dijkstra(
         &0,
-        |&p| rg.neighbours(p).map(|x| (x.0 * dim.1 + x.1, rg.risk_at(x))),
+        |&p| rg.neighbours(p).map(|p2| (p2.y * dim.x + p2.x, rg.risk_at(p2))),
         |&p| p == target,
     )
     .unwrap()

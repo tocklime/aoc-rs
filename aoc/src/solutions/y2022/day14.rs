@@ -49,7 +49,7 @@ fn next_sand(
             path.pop();
             continue;
         }
-        if p.y + 1 >= grid.dim().0 {
+        if p.y + 1 >= grid.dim().y {
             //this is the bottom. stop here.
             if stop_on_bottom {
                 return Some(p);

@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 14, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2015 day 14, part1 [p1] => 2655, part2 [p2] => 1059);
 
 use reformation::Reformation;
 use std::cmp::min;

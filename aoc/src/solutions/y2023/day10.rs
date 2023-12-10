@@ -1,19 +1,44 @@
-use std::collections::{hash_map::Entry, HashMap};
+use itertools::Itertools;
+use utils::grid2d::{Grid2d, ICoord};
 
-use ahash::HashSet;
-use utils::{
-    cartesian::render_char_map_w,
-    grid2d::{Coord, Grid2d},
-    points::render_char_map,
-};
-
-aoc_harness::aoc_main!(2023 day 10, part1 [p1], part2 [p2], 
+aoc_harness::aoc_main!(2023 day 10, both [both] => (6909, 461),
     example both EG => (4,1), example both EG2 => (8,1), 
     example part2 EG3 => 8, example part2 EG4 => 10);
 
-fn p1(input: &str) -> usize {
-    let map = Grid2d::from_str(input, |x| x);
+fn map_char(c: char) -> Option<[ICoord; 2]> {
+    match c {
+        '|' => Some([(-1, 0), (1, 0)].map(Into::into)),
+        '-' => Some([(0, -1), (0, 1)].map(Into::into)),
+        'F' => Some([(1, 0), (0, 1)].map(Into::into)),
+        'J' => Some([(-1, 0), (0, -1)].map(Into::into)),
+        'L' => Some([(-1, 0), (0, 1)].map(Into::into)),
+        '7' => Some([(1, 0), (0, -1)].map(Into::into)),
+        _ => None,
+    }
+}
+const CHARS: &str = "|-FJL7";
+
+fn both(input: &str) -> (usize, usize) {
+    let mut map = Grid2d::from_str(input, |x| x);
+    // println!("Map:\n{map}");
     let s = map.indexed_iter().find(|x| x.1 == &'S').unwrap().0;
+
+    // Figure out what is really under S by examining neighbours.
+    map[s] = CHARS
+        .chars()
+        .find(|&c| {
+            map_char(c).unwrap().into_iter().all(|n| {
+                map.relative_lookup(s, n)
+                    .copied()
+                    .map(map_char)
+                    .into_iter()
+                    .flatten()
+                    .flatten()
+                    .contains(&-n)
+            })
+        })
+        .unwrap();
+
     let mut seen = Grid2d::from_elem(map.dim(), None);
     let mut next = vec![(s, 0usize)];
     while !next.is_empty() {
@@ -23,7 +48,6 @@ fn p1(input: &str) -> usize {
                 seen[n] = Some(dist);
                 let here = *map.get(n).unwrap();
                 let [north, west, south, east] = map.neighbours_array_ordered(n);
-                // dbg!(n, north, east, south, west,here);
                 if "S|JL".contains(here) {
                     if let Some(x) = north {
                         if let Some('7') | Some('F') | Some('|') = map.get(x) {
@@ -56,74 +80,12 @@ fn p1(input: &str) -> usize {
         }
         next = new_next;
     }
-    seen.iter().filter_map(|x| *x).max().unwrap()
-}
-fn p2(input: &str) -> usize {
-    let mut map = Grid2d::from_str(input, |x| x);
-    let s = map.indexed_iter().find(|x| x.1 == &'S').unwrap().0;
-
-    let can_north = "|F7".contains(*map.get((s.0.wrapping_sub(1),s.1)).unwrap_or(&' '));
-    let can_south = "|JL".contains(*map.get((s.0+1,s.1)).unwrap_or(&' '));
-    let can_east = "-J7".contains(*map.get((s.0,s.1+1)).unwrap_or(&' '));
-    let can_west = "-FL".contains(*map.get((s.0,s.1.wrapping_sub(1))).unwrap_or(&' '));
-    println!("Before:\n{map}");
-    map[s] = match (can_north, can_east, can_south, can_west) {
-        (true, true, false, false) => 'L',
-        (true, false, true, false) => '|',
-        (true, false, false, true) => 'J',
-        (false, true, true, false) => 'F',
-        (false, true, false, true) => '-',
-        (false, false, true, true) => '7',
-        _ => panic!("{map}\n{s:?}")
-    };
-    println!("After:\n{map}");
-
-    let mut seen = Grid2d::from_elem(map.dim(), '.');
-    let mut next = vec![s];
-    while !next.is_empty() {
-        let mut new_next = vec![];
-        for n in next {
-            if seen.get(n).unwrap() == &'.'{
-                let here = *map.get(n).unwrap();
-                seen[n] = here;
-                let [north, west, south, east] = map.neighbours_array_ordered(n);
-                // dbg!(n, north, east, south, west,here);
-                if "S|JL".contains(here) {
-                    if let Some(x) = north {
-                        if let Some('7') | Some('F') | Some('|') = map.get(x) {
-                            new_next.push(x);
-                        }
-                    }
-                }
-                if "S-FL".contains(here) {
-                    if let Some(x) = east {
-                        if let Some('7') | Some('J') | Some('-') = map.get(x) {
-                            new_next.push(x);
-                        }
-                    }
-                }
-                if "S|F7".contains(here) {
-                    if let Some(x) = south {
-                        if let Some('L') | Some('J') | Some('|') = map.get(x) {
-                            new_next.push(x);
-                        }
-                    }
-                }
-                if "S-J7".contains(here) {
-                    if let Some(x) = west {
-                        if let Some('L') | Some('F') | Some('-') = map.get(x) {
-                            new_next.push(x);
-                        }
-                    }
-                }
-            }
-        }
-        next = new_next;
-    }
-    println!("{map}\n{seen}");
+    let p1 = seen.iter().filter_map(|x| *x).max().unwrap();
+    let mut clean_map =
+        Grid2d::from_fn(map.dim(), |p| if seen[p].is_some() { map[p] } else { '.' });
     let mut state = TraceState::Outside;
-    for (p,c) in seen.indexed_iter_mut() {
-        if p.1 == 0 {
+    for (p, c) in clean_map.indexed_iter_mut() {
+        if p.x == 0 {
             state = TraceState::Outside;
         }
         match (*c, state) {
@@ -139,17 +101,20 @@ fn p2(input: &str) -> usize {
             ('7', TraceState::OnPipeInBelow) => state = TraceState::Outside,
             ('J', TraceState::OnPipeInAbove) => state = TraceState::Outside,
             ('J', TraceState::OnPipeInBelow) => state = TraceState::Inside,
-            // _ => panic!("{c}, {state:?} ???")
             _ => {}
         }
     }
-    println!("{seen}");
-    seen.iter().filter(|x| x == &&'I').count()
+    let p2 = clean_map.iter().filter(|x| x == &&'I').count();
+    // println!("{clean_map} contains {p2} 'I's");
+    (p1, p2)
 }
 
 #[derive(Debug, Copy, Clone)]
 enum TraceState {
-    Inside,OnPipeInBelow,OnPipeInAbove, Outside
+    Inside,
+    OnPipeInBelow,
+    OnPipeInAbove,
+    Outside,
 }
 const EG: &str = "-L|F7
 7S-7|
@@ -185,4 +150,3 @@ L---JF-JLJ.||-FJLJJ7
 L.L7LFJ|||||FJL7||LJ
 L7JLJL-JLJLJL--JLJ.L
 ";
-//too high: 469, 463, 462

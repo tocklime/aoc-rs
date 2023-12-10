@@ -91,10 +91,10 @@ fn step_grid(g: &mut Grid) -> usize {
     let mut count = 0;
     for (p, &d) in g.indexed_iter() {
         if d == 1 {
-            let tx = (p.1 + 1) % g.dim().1;
-            if g[(p.0, tx)] == 0 {
+            let tx = (p.x + 1) % g.dim().x;
+            if g[(p.y, tx)] == 0 {
                 intermediate[p] = 3;
-                intermediate[(p.0, tx)] = d;
+                intermediate[(p.y, tx)] = d;
                 count += 1;
             }
         }
@@ -103,11 +103,11 @@ fn step_grid(g: &mut Grid) -> usize {
         if d == 1 {
             g[p] = d;
         } else if d == 2 {
-            let ty = (p.0 + 1) % g.dim().0;
-            match intermediate[(ty, p.1)] {
+            let ty = (p.y + 1) % g.dim().y;
+            match intermediate[(ty, p.x)] {
                 0 | 3 => {
                     g[p] = 0;
-                    g[(ty, p.1)] = d;
+                    g[(ty, p.x)] = d;
                     count += 1;
                 }
                 _ => {}

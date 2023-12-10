@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 11, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2015 day 11, part1 [p1] => "cqjxxyzz", part2 [p2] => "cqkaabcc");
 use itertools::Itertools;
 use std::char;
 use std::collections::HashSet;
@@ -63,11 +63,11 @@ impl Password {
 }
 
 fn p1(input: &str) -> String {
-    let pw: Password = input.into();
+    let pw: Password = input.trim().into();
     pw.into_iter().find(Password::acceptable).unwrap().into()
 }
 
 fn p2(input: &str) -> String {
-    let pw: Password = input.into();
+    let pw: Password = input.trim().into();
     pw.filter(Password::acceptable).nth(1).unwrap().into()
 }

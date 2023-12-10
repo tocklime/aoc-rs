@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 16, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2015 day 16, part1 [p1] => "Sue 103", part2 [p2] => "Sue 405");
 use itertools::Itertools;
 use nom::lib::std::collections::HashMap;
 use std::cmp::Ordering;
