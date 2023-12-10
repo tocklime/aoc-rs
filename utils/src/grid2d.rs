@@ -248,17 +248,7 @@ impl<T> Grid2d<T> {
     }
     #[must_use]
     pub fn relative_lookup(&self, p: Coord, relative: ICoord) -> Option<&T> {
-        let y = if relative.y > 0 {
-            p.y.wrapping_add(relative.y as usize)
-        } else {
-            p.y.wrapping_sub((-relative.y) as usize)
-        };
-        let x = if relative.x > 0 {
-            p.x.wrapping_add(relative.x as usize)
-        } else {
-            p.x.wrapping_sub((-relative.x) as usize)
-        };
-        self.get((y, x))
+        self.get(p + relative)
     }
     #[must_use]
     pub fn wraparound_relative_lookup<TU: Into<Coord>, TI: Into<ICoord>>(

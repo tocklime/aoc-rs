@@ -425,6 +425,32 @@ impl<T: Mul + Copy + Num + Signed> Mul<T> for Dir {
     }
 }
 
+macro_rules! u_i_add_pairs {
+    ($tu:tt, $ti: tt) => {
+        impl Add<Point<$ti>> for Point<$tu> {
+            type Output = Self;
+            fn add(self, other: Point<$ti>) -> Self::Output {
+                let x = if other.x.is_negative() {
+                    self.x.wrapping_sub(-other.x as $tu)
+                } else {
+                    self.x + (other.x as $tu)
+                };
+                let y = if other.y.is_negative() {
+                    self.y.wrapping_sub(-other.y as $tu)
+                } else {
+                    self.y + (other.y as $tu)
+                };
+                Self::new(x, y)
+            }
+        }
+    };
+}
+u_i_add_pairs!(usize, isize);
+u_i_add_pairs!(u8, i8);
+u_i_add_pairs!(u16, i16);
+u_i_add_pairs!(u32, i32);
+u_i_add_pairs!(u64, i64);
+
 pub fn point_map_bounding_box<N, T, S>(hm: &HashMap<Point<N>, T, S>) -> Aabb<N>
 where
     N: Copy + Num + TryInto<usize> + Ord + WrappingSub,
