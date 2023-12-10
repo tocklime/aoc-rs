@@ -197,6 +197,15 @@ impl<T> Grid2d<T> {
         .into_iter()
         .filter(move |&x| x.0 < s.0 && x.1 < s.1)
     }
+    pub fn neighbours_array_ordered(&'_ self, p: Coord) -> [Option<Coord>;4] {
+        let s = self.dim();
+        [
+            p.0.checked_sub(1).map(|x| (x,p.1)),
+            p.1.checked_sub(1).map(|x| (p.0, x)),
+            (p.0+1 < s.0).then_some((p.0+1, p.1)),
+            (p.1+1 < s.1).then_some((p.0, p.1 + 1)),
+        ]
+    }
     pub fn neighbours(&'_ self, p: Coord) -> impl Iterator<Item = Coord> {
         let s = self.dim();
         [
