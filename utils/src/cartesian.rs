@@ -351,8 +351,16 @@ impl<T: Integer + Copy> Point<T> {
 
 impl<T: Num + Unsigned + Ord + Copy> Point<T> {
     pub fn manhattan_unsigned(self, other: &Self) -> T {
-        let x_diff = if self.x > other.x { self.x - other.x} else {other.x - self.x};
-        let y_diff = if self.y > other.y { self.y - other.y} else {other.y - self.y};
+        let x_diff = if self.x > other.x {
+            self.x - other.x
+        } else {
+            other.x - self.x
+        };
+        let y_diff = if self.y > other.y {
+            self.y - other.y
+        } else {
+            other.y - self.y
+        };
         x_diff + y_diff
     }
 }
