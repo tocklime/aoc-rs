@@ -1,6 +1,6 @@
 use std::{
     convert::Into,
-    fmt::{Display, Write, Debug},
+    fmt::{Debug, Display, Write},
     iter,
     ops::{Index, IndexMut},
 };
@@ -310,7 +310,7 @@ impl<T> Grid2d<T> {
     }
     pub fn from_iter<C, F>(input: impl Iterator<Item = C>, conv: F, new_row_marker: C) -> Self
     where
-        C: Eq + Debug + Copy,
+        C: Eq,
         F: Fn(C) -> T,
         T: Debug,
     {
@@ -325,7 +325,10 @@ impl<T> Grid2d<T> {
                 rows += 1;
                 if let Some(other_rows) = stride {
                     // dbg!(&all, &data, &stride, rows, this_row_len);
-                    assert_eq!(this_row_len, other_rows, "Unequal line lengths: {other_rows} and {this_row_len}");
+                    assert_eq!(
+                        this_row_len, other_rows,
+                        "Unequal line lengths: {other_rows} and {this_row_len}"
+                    );
                 } else {
                     stride = Some(this_row_len);
                 }
