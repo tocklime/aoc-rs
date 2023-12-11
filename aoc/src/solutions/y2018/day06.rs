@@ -24,7 +24,7 @@ fn p1(input: &[Point<i32>]) -> usize {
     let bb2 = bb.grow(1);
     for p in bb2.all_points() {
         let dists: Vec<(Point<i32>, i32)> =
-            input.iter().map(|&p2| (p2, (p2 - p).manhattan())).collect();
+            input.iter().map(|&p2| (p2, (p2 - p).manhattan_from_origin())).collect();
         let min_dist = dists.iter().map(|x| x.1).min().unwrap();
         let points_at_min_dist: Vec<_> = dists.iter().filter(|x| x.1 == min_dist).collect();
         if points_at_min_dist.len() == 1 {
@@ -49,7 +49,7 @@ fn p2(input: &[Point<i32>]) -> usize {
     }
     let mut region_size = 0;
     for p in bb.all_points() {
-        let total_dist: i32 = input.iter().map(|&p2| (p2 - p).manhattan()).sum();
+        let total_dist: i32 = input.iter().map(|&p2| (p2 - p).manhattan_from_origin()).sum();
         if total_dist < 10000 {
             region_size += 1;
         }

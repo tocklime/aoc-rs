@@ -85,7 +85,7 @@ impl World {
                     .filter(move |p| world.space_at(*p, my_t + 1) == '.')
                     .map(move |p| ((t + 1, p), 1))
             },
-            |(_, p)| (target - *p).manhattan(),
+            |(_, p)| (target - *p).manhattan_from_origin(),
             |(_, p)| *p == target,
         );
         x.unwrap().1 + start_time

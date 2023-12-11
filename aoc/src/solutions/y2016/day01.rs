@@ -27,7 +27,7 @@ fn gen(input: &str) -> Vec<Point<i32>> {
 }
 
 fn p1(input: &[Point<i32>]) -> i32 {
-    input.last().unwrap().manhattan()
+    input.last().unwrap().manhattan_from_origin()
 }
 
 fn p2(input: &[Point<i32>]) -> Option<i32> {
@@ -36,7 +36,7 @@ fn p2(input: &[Point<i32>]) -> Option<i32> {
         if seen.insert(*x) {
             None
         } else {
-            Some(x.manhattan())
+            Some(x.manhattan_from_origin())
         }
     })
 }

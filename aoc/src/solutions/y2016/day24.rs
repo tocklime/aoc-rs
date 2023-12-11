@@ -38,7 +38,7 @@ fn gen_dists(input: &str) -> HashMap<char, HashMap<char, usize>> {
                     })
                     .collect_vec()
             },
-            |&p| (b - p).manhattan().try_into().unwrap(),
+            |&p| (b - p).manhattan_from_origin().try_into().unwrap(),
             |&p| b == p,
         )
         .unwrap_or_else(|| panic!("No route: {:?}", &v))

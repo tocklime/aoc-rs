@@ -144,7 +144,7 @@ impl State {
                 |x| {
                     in_range
                         .iter()
-                        .map(|y| (*x - *y).manhattan())
+                        .map(|y| (*x - *y).manhattan_from_origin())
                         .min()
                         .expect("nothing in_range?")
                 },

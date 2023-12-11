@@ -23,7 +23,7 @@ fn p1(input: &str) -> usize {
         |n| n.neighbours().iter()
             .filter_map(|&p| if p.x >= 0 && p.y >= 0 && is_open(p,favourite_n) {Some ((p,1))} else {None})
             .collect_vec(),
-            |h| (target - *h).manhattan(),
+            |h| (target - *h).manhattan_from_origin(),
         |g| *g == target
     ).unwrap().0.len() - 1
 }
@@ -38,7 +38,7 @@ fn p2(input: &str) -> usize {
         &start,
         |n| n.neighbours().iter()
             .filter_map(|&p|
-                if p.x >= 0 && p.y >= 0 && is_open(p,favourite_n) && (p-start).manhattan() <= 50
+                if p.x >= 0 && p.y >= 0 && is_open(p,favourite_n) && (p-start).manhattan_from_origin() <= 50
                     {Some ((p,1))} else {None})
             .collect_vec(),
     );

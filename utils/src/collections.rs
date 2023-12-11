@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::hash::Hash;
 use std::ops::{AddAssign, Index};
 use std::{
@@ -213,4 +214,19 @@ impl<'a, T: Default> VecLookupEntry<'a, T> {
             }
         }
     }
+}
+
+/// return the index of the first element in sorted_haystack which is >= needle.
+pub fn bisect<T: Ord>(sorted_haystack: &[T], needle: T) -> usize {
+    let mut lo = 0;
+    let mut hi = sorted_haystack.len();
+    while hi > lo {
+        let c = (hi + lo) / 2;
+        match sorted_haystack[c].cmp(&needle) {
+            Ordering::Less => lo = c + 1,
+            Ordering::Equal => return c,
+            Ordering::Greater => hi = c,
+        }
+    }
+    lo
 }

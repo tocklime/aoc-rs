@@ -1,39 +1,50 @@
-use utils::grid2d::{Grid2d, Coord};
+use itertools::Itertools;
+use utils::grid2d::{Coord, Grid2d};
 
-aoc_harness::aoc_main!(2023 day 11, part1 [solve::<2>], part2 [solve::<1000000>], example part1 EG => 374);
+aoc_harness::aoc_main!(2023 day 11, part1 [solve::<2>] => 9_623_138, part2 [solve::<1_000_000>] => 726_820_169_514, example part1 EG => 374);
 
-fn solve<const N: usize> (input: &str) -> usize {
-    let mut map = Grid2d::from_str(input, |x| x);
+fn solve<const N: usize>(input: &str) -> usize {
+    let map = Grid2d::from_str(input, |x| x);
     let s = map.dim();
-    let mut wide_rows = vec![];
-    let mut wide_cols = vec![];
-    for x in 0..s.x {
-        if (0..s.y).all(|y| map[(y,x)] != '#') {
-            wide_cols.push(x);
-            (0..s.y).for_each(|y| map[(y,x)] = ':');
-        }
-    }
-    for y in 0..s.y {
-        if (0..s.x).all(|x| map[(y,x)] != '#') {
-            wide_rows.push(y);
-            (0..s.x).for_each(|x| map[(y,x)] = ':');
-        }
-    }
-    // println!("{map}");
-    let stars : Vec<Coord> = map.indexed_iter().filter(|x| x.1 == &'#').map(|x| x.0).collect();
-    let mut total = 0;
-    for (a_ix, a) in stars.iter().enumerate() {
-        for (b_ix, b)in stars.iter().enumerate().skip(a_ix) {
-            let x_range = if b.x > a.x { a.x..b.x } else { b.x..a.x };
-            let y_range = if b.y > a.y { a.y..b.y } else { b.y..a.y };
-            let x_extra = wide_cols.iter().filter(|c| x_range.contains(c)).count();
-            let y_extra = wide_rows.iter().filter(|r| y_range.contains(r)).count();
-            let dist = a.x.abs_diff(b.x) + a.y.abs_diff(b.y) + (N-1) * (x_extra + y_extra);
-            // println!("Dist between {} and {} is {}", a_ix+1,b_ix+1,dist);
-            total += dist;
-        }
-    }
-    total
+    let x_dists = (0..s.x)
+        .scan(0, |d, x| {
+            *d += if (0..s.y).all(|y| map[(y, x)] != '#') {
+                N
+            } else {
+                1
+            };
+            Some(*d)
+        })
+        .collect_vec();
+    let y_dists = (0..s.y)
+        .scan(0, |d, y| {
+            *d += if (0..s.x).all(|x| map[(y, x)] != '#') {
+                N
+            } else {
+                1
+            };
+            Some(*d)
+        })
+        .collect_vec();
+    let stars: Vec<Coord> = map
+        .indexed_iter()
+        .filter(|x| x.1 == &'#')
+        .map(|x| x.0)
+        .collect();
+    stars
+        .iter()
+        .enumerate()
+        .map(|(a_ix, a)| {
+            stars
+                .iter()
+                .skip(a_ix)
+                .map(|b| {
+                    (x_dists[a.x.max(b.x)] - x_dists[a.x.min(b.x)])
+                        + (y_dists[a.y.max(b.y)] - y_dists[a.y.min(b.y)])
+                })
+                .sum::<usize>()
+        })
+        .sum()
 }
 
 const EG: &str = "...#......
@@ -47,7 +58,6 @@ const EG: &str = "...#......
 .......#..
 #...#.....
 ";
-
 
 //wrong: 726820896326
 #[cfg(test)]

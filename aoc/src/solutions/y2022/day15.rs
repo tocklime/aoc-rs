@@ -45,7 +45,7 @@ struct X {
 
 impl Sensor {
     fn can_see(&self, p: Point<i64>) -> bool {
-        (self.location - p).manhattan() <= self.range
+        (self.location - p).manhattan_from_origin() <= self.range
     }
     fn can_see_all(&self, bb: Aabb<i64>) -> bool {
         let furthest_x = ((bb.bottom_left.x - self.location.x).abs())
@@ -86,7 +86,7 @@ fn parse_sensor(input: &str) -> IResult<&str, Sensor> {
         Sensor {
             location,
             closest_beacon,
-            range: (location - closest_beacon).manhattan(),
+            range: (location - closest_beacon).manhattan_from_origin(),
         },
     ))
 }

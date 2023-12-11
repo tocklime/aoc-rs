@@ -85,7 +85,7 @@ fn p2(_input: &str) -> i32 {
             }
             options
         },
-        |&(p, _)| (target - p).manhattan(),
+        |&(p, _)| (target - p).manhattan_from_origin(),
         |&(p, equ)| p == target && equ == Equipment::Torch,
     );
     r.unwrap().1

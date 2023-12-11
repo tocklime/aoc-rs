@@ -40,7 +40,7 @@ impl WireLine {
         Some(a.bottom_left)
     }
     pub fn signal_delay_at(self, p: Point<isize>) -> usize {
-        self.signal_delay + (p - self.start).manhattan() as usize
+        self.signal_delay + (p - self.start).manhattan_from_origin() as usize
     }
 }
 
@@ -74,7 +74,7 @@ pub fn p1(input: &[Wire]) -> isize {
     input[0]
         .iter()
         .flat_map(move |a| input[1].iter().filter_map(move |b| a.intersects(b)))
-        .map(Point::manhattan)
+        .map(Point::manhattan_from_origin)
         .filter(|l| *l > 0)
         .min()
         .unwrap()

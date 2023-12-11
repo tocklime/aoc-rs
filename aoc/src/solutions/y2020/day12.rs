@@ -17,7 +17,7 @@ pub fn solve<F>(input: &str,waypoint : Point<i64>, move_fn : F) -> i64
             c => move_fn(ship,way,Dir::from_x("NSWE", c) * d)
         })
         .0
-        .manhattan()
+        .manhattan_from_origin()
 }
 pub fn p1(input: &str) -> i64 {
     solve(input,Point::new(1,0), |ship,way,step| (ship+step,way))
