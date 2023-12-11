@@ -64,7 +64,7 @@ impl AocAllMainInput {
         let mut adds = TokenStream::new();
         let len = files.len();
         files.sort();
-        for (y, d, dir, file) in files {
+        for (y, d, dir, file) in files.into_iter().rev() {
             adds.extend(quote! {
                 ans.push(((#y, #d), aoc::solutions::#dir::#file::run_with_opts));
             });
