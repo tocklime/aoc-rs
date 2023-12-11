@@ -1,6 +1,6 @@
 use std::{
     convert::Into,
-    fmt::{Display, Write},
+    fmt::{Display, Write, Debug},
     iter,
     ops::{Index, IndexMut},
 };
@@ -307,6 +307,38 @@ impl<T> Grid2d<T> {
             ans.push('\n');
         }
         ans
+    }
+    pub fn from_iter<C, F>(input: impl Iterator<Item = C>, conv: F, new_row_marker: C) -> Self
+    where
+        C: Eq + Debug + Copy,
+        F: Fn(C) -> T,
+        T: Debug,
+    {
+        let mut stride = None;
+        let mut data = Vec::with_capacity(input.size_hint().0);
+        // let mut all = Vec::new();
+        let mut rows = 0;
+        let mut this_row_len = 0;
+        for c in input {
+            // all.push(c);
+            if c == new_row_marker {
+                rows += 1;
+                if let Some(other_rows) = stride {
+                    // dbg!(&all, &data, &stride, rows, this_row_len);
+                    assert_eq!(this_row_len, other_rows, "Unequal line lengths: {other_rows} and {this_row_len}");
+                } else {
+                    stride = Some(this_row_len);
+                }
+                this_row_len = 0;
+            } else {
+                this_row_len += 1;
+                data.push(conv(c));
+            }
+        }
+        Self {
+            data,
+            size: (rows, stride.unwrap()).into(),
+        }
     }
     pub fn from_str<F>(input: &str, conv: F) -> Self
     where
