@@ -1,196 +1,77 @@
-use std::collections::HashMap;
+use itertools::{repeat_n, Itertools};
 
-use itertools::Itertools;
-use nom::{
-    character::complete::{space1, self, one_of},
-    multi::{many1, separated_list1},
-    sequence::separated_pair, combinator::map,
-};
-use nom_supreme::tag::complete::tag;
-use utils::{nom::NomError, nums::NumBitExt, collections::Intersections};
+aoc_harness::aoc_main!(2023 day 12,
+    part1 [ solve_all::<1>] => 7221,
+    part2 [solve_all::<5>] => 7_139_671_893_722,
+    example both EG => (21,525_152), example part1 EG1 => 10);
 
-aoc_harness::aoc_main!(2023 day 12, part1 [p1], part2 [p2], example both EG => (21,525152), example part1 EG1 => 10);
+fn solve(springs: &str, counts: &[usize]) -> usize {
+    let mut dp = counts.iter().map(|x| vec![0usize; x + 1]).collect_vec();
+    dp.push(vec![0]);
+    //indexes to dp are
+    // [how many blocks of broken springs we've seen the end of]
+    // [how many broken springs we've seen so far this block.]
+    // values of dp are how many ways there is to get to that state.
+    // we mutate dp in place for each character in the string.
+    // it has been constructed so that each 'row' (options of how many
+    // broken springs we've seen so far) is one more than the relevant number in `counts`.
 
-fn to_spring(c: char) -> Option<SpringState> {
-    match c {
-        '?' => None,
-        '.' => Some(SpringState::Working),
-        '#' => Some(SpringState::Broken),
-        _ => panic!("Not a spring: {c}")
-    }
-}
+    dp[0][0] = 1;
+    //things move to the right and down in dp, so iterate
+    //backward to avoid double stepping anything.
+    for c in springs.as_bytes() {
+        for done_counts in (0..dp.len()).rev() {
+            for so_far in (0..dp[done_counts].len()).rev() {
+                let count = dp[done_counts][so_far];
+                if count > 0 {
+                    //consider the case where we've done `done_counts`,
+                    //the current block has `so_far`, so far, and we have a c.
 
-#[derive(Debug,PartialEq, Eq,Copy,Clone)]
-enum SpringState {
-    Working,Broken
-}
-fn draw(choices: u32, input: &[Option<SpringState>]) {
-    let mut rem = choices;
-    for x in input {
-        let c = match x{
-            Some(SpringState::Broken) => '#',
-            Some(SpringState::Working) => '.',
-            None => {
-                let a = if rem.get_bit(0) {
-                    '#'
-                } else {
-                    '.'
-                };
-                rem >>= 1;
-                a
-            }
-        };
-        print!("{c}");
-    }
-}
-fn count_possibles(input: &[Option<SpringState>], correct: &[usize]) -> usize {
-    let count_of_unknowns = input.iter().filter(|x| x.is_none()).count();
-    dbg!(count_of_unknowns);
-    
-    (0..(1u64 << count_of_unknowns)).filter(|x| {        let mut choices = *x;
-        let mut correct_next = correct.iter().peekable();
-        let mut current_run_count = 0;
-        // print!("{correct:?} ");
-        // draw(*x, input);
-        for &i in input {
-            let target = correct_next.peek().copied().copied().unwrap_or_default();
-            let here = i.unwrap_or_else(|| {let a = choices.get_bit(0); choices >>= 1; if a { SpringState::Broken} else {SpringState::Working}});
-            match here {
-                SpringState::Broken => {
-                    current_run_count += 1;
-                }
-                SpringState::Working => {
-                    if current_run_count > 0 {
-                        if current_run_count != target {
-                            // println!(" ==> run mismatch");
-                            return false;
-                        } else {
-                            current_run_count = 0;
-                            correct_next.next();
+                    //Don't usually stay still, so there's no ways (yet) of reaching this state now.
+                    dp[done_counts][so_far] = 0;
+
+                    if b"?#".contains(c) {
+                        //this could extend the current count -> move one space to the right.
+                        if so_far < dp[done_counts].len() - 1 {
+                            dp[done_counts][so_far + 1] += count;
+                        }
+                    }
+                    if b"?.".contains(c) {
+                        match so_far {
+                            //We haven't seen any #s yet, state remains as is.
+                            0 => dp[done_counts][0] += count,
+                            //This ends a correctly-lengthed block of #s. Move to next line.
+                            x if x == dp[done_counts].len() - 1 => {
+                                dp[done_counts + 1][0] += count;
+                            }
+                            //Otherwise, it's the wrong number of things. Drop it.
+                            _ => (),
                         }
                     }
                 }
             }
-            if current_run_count > target {
-                // println!(" ==> run too long");
-                return false;
-            }
         }
-        let target = correct_next.next().copied().unwrap_or_default();
-        if correct_next.peek().is_some() {
-            // println!("Bad Remaining");
-            return false;
-        }
-        // if target == current_run_count {
-        //     println!(" ==> OK");
-        // } else {
-        //     println!(" ==> last item wrong");
-        // }
-        target == current_run_count
-
-    }).count()
-}
-
-// fn check_counts(input: &[SpringState], counts: &[usize]) -> bool {
-//     let mut next_count = counts.iter();
-//     for (key, group) in &input.iter().group_by(|x| **x) {
-//         if key == SpringState::Broken {
-//             match (group.count(), next_count.next()) {
-//                 (_, None) => return false,
-//                 (a, Some(b)) if a != *b => return false,
-//                 _ => ()
-//             };
-//         }
-//     }
-//     next_count.next().is_none()
-// }
-
-type Memo<'a> = HashMap<(&'a[char], u32, &'a [u32]), usize>;
-
-fn count_arrangements<'a>(memo: &mut Memo<'a>, input: &'a [char], current_run: u32, runs: &'a [u32]) -> usize 
-{
-    let key = (input, current_run, runs);
-    if let Some(x) = memo.get(&key) {
-        return *x
     }
-    
-    if runs.is_empty() {
-        let a = if input.iter().all(|&x| x != '#') {1} else {0};
-        memo.insert(key, a);
-        return a;
-    }
-    if current_run > runs[0] {
-        memo.insert(key,0);
-        return 0;
-    }
-    if input.is_empty() {
-        let a = if current_run == runs[0] && runs.len() == 1 {
-            1
-        } else {
-            0
-        };
-        memo.insert(key, a);
-        return a;
-    }
-    let a = match input[0] {
-        '#' => {
-            count_arrangements(memo, &input[1..], current_run+1, runs)
-        }
-        '.' => {
-            if current_run == 0 {
-                count_arrangements(memo, &input[1..], 0, runs)
-            } else if current_run == runs[0] {
-                count_arrangements(memo, &input[1..], 0, &runs[1..])
-            } else {
-                0
-            }
-        }
-        '?' => {
-            count_arrangements(memo, &input[1..], current_run+1, runs) + //'#' case.
-            if current_run == 0 {
-                count_arrangements(memo, &input[1..], 0, runs)
-            } else if current_run == runs[0] {
-                count_arrangements(memo, &input[1..], 0, &runs[1..])
-            } else {
-                0
-            }
-        }
-        _ => panic!("Unknown char {input:?}")
-    };
-    memo.insert(key, a);
-    a
+    //Finally, we want total of the final two states. (depending on whether we saw a final '.' or not)
+    dp.iter().flatten().rev().take(2).sum()
+    // dp[dp.len() - 1][0] + dp[dp.len() - 2].last().unwrap()
 }
 
-fn solve_line(input: &str) -> usize {
-    let (input, (springs, counts)) = separated_pair(
-        many1( one_of::<_,_,NomError>("#.?")),
-        space1,
-        separated_list1(tag(","), complete::u32)
-    )(input).expect("parse");
-    assert_eq!(input, "");
-    let mut memo = HashMap::new();
-    count_arrangements(&mut memo, &springs, 0, &counts)
+fn solve_all<const N: usize>(input: &str) -> usize {
+    input
+        .lines()
+        .map(|l| {
+            let (springs, counts) = l.split_once(' ').unwrap();
+            let counts = counts
+                .split(',')
+                .map(|s| s.parse::<usize>().unwrap())
+                .collect_vec();
+            let i: String = repeat_n(springs, N).join("?");
+            let counts = repeat_n(counts.iter(), N).flatten().copied().collect_vec();
+            solve(&i, &counts)
+        })
+        .sum()
 }
-fn solve_line_2(input: &str) -> usize {
-    let (input, (springs, counts)) = separated_pair(
-        many1( one_of::<_,_,NomError>("#.?")),
-        space1,
-        separated_list1(tag(","), complete::u32)
-    )(input).expect("parse");
-    assert_eq!(input, "");
-    let sep = vec!['?'];
-    let springs : Vec<char> = [&springs, &sep, &springs, &sep, &springs, &sep, &springs, &sep, &springs].into_iter().flatten().copied().collect();
-    let counts: Vec<u32> = [&counts, &counts, &counts, &counts, &counts].iter().flat_map(|x| x.iter()).copied().collect();
-    let mut memo = HashMap::new();
-    count_arrangements(&mut memo, &springs, 0, &counts)
-}
-fn p1(input: &str) -> usize {
-    input.lines().map(|x| {let a = solve_line(x); println!("{x:?} => {a}"); a}).sum()
-}
-fn p2(input: &str) -> usize {
-    input.lines().map(|x| {let a = solve_line_2(x); println!("{x:?} => {a}"); a}).sum()
-}
-
 
 const EG1: &str = "?###???????? 3,2,1";
 const EG: &str = "???.### 1,1,3
