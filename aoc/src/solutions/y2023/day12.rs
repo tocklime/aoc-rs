@@ -5,10 +5,12 @@ aoc_harness::aoc_main!(2023 day 12,
     part2 [solve_all::<5>] => 7_139_671_893_722,
     example both EG => (21,525_152), example part1 EG1 => 10);
 
+const BIGGEST_GROUP: usize = 16;
+const MAX_GROUP_COUNT: usize = 32;
+
 fn solve(springs: &str, counts: &[usize]) -> usize {
-    let mut dp = counts.iter().map(|x| vec![0usize; x + 1]).collect_vec();
-    dp.push(vec![0]);
-    //indexes to dp are
+    let mut dp = [[0usize; BIGGEST_GROUP]; MAX_GROUP_COUNT];
+    // Indexes to dp are
     // [how many blocks of broken springs we've seen the end of]
     // [how many broken springs we've seen so far this block.]
     // values of dp are how many ways there is to get to that state.
@@ -16,12 +18,17 @@ fn solve(springs: &str, counts: &[usize]) -> usize {
     // it has been constructed so that each 'row' (options of how many
     // broken springs we've seen so far) is one more than the relevant number in `counts`.
 
+    // Initial state: there is 1 way to get to 0 groups done, 0 #s in current run.
     dp[0][0] = 1;
-    //things move to the right and down in dp, so iterate
-    //backward to avoid double stepping anything.
-    for c in springs.as_bytes() {
-        for done_counts in (0..dp.len()).rev() {
-            for so_far in (0..dp[done_counts].len()).rev() {
+
+    // Things in the 2d array `dp` move to the right, down, or stay still; so iterate
+    // backward to avoid double stepping anything.
+    // also, append a '.', to avoid annoying corner cases.
+    for &c in springs.as_bytes().iter().chain(b".") {
+        for done_counts in (0..=counts.len()).rev() {
+            let max_count_here = counts.get(done_counts).copied().unwrap_or_default();
+            // assert_eq!(dp[done_counts].len(), max_count_here + 1);
+            for so_far in (0..=max_count_here).rev() {
                 let count = dp[done_counts][so_far];
                 if count > 0 {
                     //consider the case where we've done `done_counts`,
@@ -30,18 +37,18 @@ fn solve(springs: &str, counts: &[usize]) -> usize {
                     //Don't usually stay still, so there's no ways (yet) of reaching this state now.
                     dp[done_counts][so_far] = 0;
 
-                    if b"?#".contains(c) {
+                    if c != b'.' {
                         //this could extend the current count -> move one space to the right.
-                        if so_far < dp[done_counts].len() - 1 {
+                        if so_far < max_count_here {
                             dp[done_counts][so_far + 1] += count;
                         }
                     }
-                    if b"?.".contains(c) {
+                    if c != b'#' {
                         match so_far {
                             //We haven't seen any #s yet, state remains as is.
                             0 => dp[done_counts][0] += count,
                             //This ends a correctly-lengthed block of #s. Move to next line.
-                            x if x == dp[done_counts].len() - 1 => {
+                            x if x == max_count_here => {
                                 dp[done_counts + 1][0] += count;
                             }
                             //Otherwise, it's the wrong number of things. Drop it.
@@ -52,9 +59,9 @@ fn solve(springs: &str, counts: &[usize]) -> usize {
             }
         }
     }
-    //Finally, we want total of the final two states. (depending on whether we saw a final '.' or not)
-    dp.iter().flatten().rev().take(2).sum()
-    // dp[dp.len() - 1][0] + dp[dp.len() - 2].last().unwrap()
+    // Finally, we want the final state.
+    // We already appended a '.' to the input, so all blocks should be finished.
+    dp[counts.len()][0]
 }
 
 fn solve_all<const N: usize>(input: &str) -> usize {
@@ -67,7 +74,7 @@ fn solve_all<const N: usize>(input: &str) -> usize {
                 .map(|s| s.parse::<usize>().unwrap())
                 .collect_vec();
             let i: String = repeat_n(springs, N).join("?");
-            let counts = repeat_n(counts.iter(), N).flatten().copied().collect_vec();
+            let counts = repeat_n(counts.into_iter(), N).flatten().collect_vec();
             solve(&i, &counts)
         })
         .sum()
