@@ -644,5 +644,5 @@
     part1: !Checked '7221'
     part2: !Checked '7139671893722'
   13:
-    part1: !Observed '36041'
-    part2: !Observed '35915'
+    part1: !Checked '36041'
+    part2: !Checked '35915'
