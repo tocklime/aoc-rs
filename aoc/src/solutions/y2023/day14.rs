@@ -1,7 +1,7 @@
 use ahash::HashMap;
 use utils::grid2d::Grid2d;
 
-aoc_harness::aoc_main!(2023 day 14, part1 [p1] => 111_339, part2 [p2] => 93736, example both EG => (136, 64));
+aoc_harness::aoc_main!(2023 day 14, part1 [p1] => 111_339, part2 [p2_by_duplicate_state_detection, p2_by_full_cycle_detection] => 93736, example both EG => (136, 64));
 
 fn roll_north(g: &mut Grid2d<char>) {
     let s = g.dim();
@@ -79,7 +79,7 @@ fn cycle(g: &mut Grid2d<char>) {
     roll_east(g);
 }
 const P2_ITER_COUNT: usize = 1_000_000_000;
-fn p2(input: &str) -> usize {
+fn p2_by_duplicate_state_detection(input: &str) -> usize {
     let mut g = Grid2d::from_str(input, |x| x);
     let mut seen = HashMap::default();
     for x in 1..=P2_ITER_COUNT {
@@ -95,6 +95,26 @@ fn p2(input: &str) -> usize {
             }
             seen.insert(g.clone(), x);
         }
+    }
+    unreachable!()
+}
+fn p2_by_full_cycle_detection(input: &str) -> usize {
+    let mut g = Grid2d::from_str(input, |x| x);
+    let mut seen = HashMap::default();
+    let mut seen_vec = Vec::new();
+    for x in 1..=P2_ITER_COUNT {
+        cycle(&mut g);
+        let load = calc_north_load(&g);
+        seen_vec.push(load);
+        if let Some(&old) = seen.get(&load) {
+            let size = x - old;
+            if size > 1 && old > size && seen_vec[old - size..old] == seen_vec[old..] {
+                //cycle found!
+                let cycles_left_to_do = (P2_ITER_COUNT - x) % size;
+                return seen_vec[old + cycles_left_to_do - 1];
+            }
+        }
+        seen.insert(load, x);
     }
     unreachable!()
 }

@@ -2,7 +2,7 @@ use std::{
     convert::Into,
     fmt::{Debug, Display, Write},
     iter,
-    ops::{Index, IndexMut},
+    ops::{Index, IndexMut}, slice,
 };
 
 use itertools::Itertools;
@@ -145,11 +145,15 @@ impl<T> Grid2d<T> {
     pub fn dim(&self) -> Coord {
         self.size
     }
-    pub fn indexes(&'_ self) -> impl Iterator<Item = Coord> {
+    pub fn indexes(&'_ self) -> impl DoubleEndedIterator<Item = Coord> {
         let max = self.size;
-        (0..max.y).cartesian_product(0..max.x).map(Into::into)
+        (0..max.y).flat_map(move |y| (0..max.x).map(move |x| Point::new(x,y)))
     }
-    pub fn indexed_iter(&self) -> impl Iterator<Item = (Coord, &T)> {
+    pub fn indexes_col_major(&'_ self) -> impl DoubleEndedIterator<Item = Coord> {
+        let max = self.size;
+        (0..max.x).flat_map(move|x| (0..max.y).map(move|y| Point::new(x,y)))
+    }
+    pub fn indexed_iter(&self) -> impl DoubleEndedIterator<Item = (Coord, &T)> {
         self.data
             .iter()
             .enumerate()
@@ -245,6 +249,13 @@ impl<T> Grid2d<T> {
     pub fn get_row(&self, y: usize) -> &[T] {
         let w = self.size.x;
         &self.data[y * w..(y + 1) * w]
+    }
+    pub fn get_row_mut<'a>(&'a mut self, y: usize) -> &'a mut [T] {
+        let w = self.size.x;
+        &mut self.data[y * w..(y + 1) * w]
+    }
+    pub fn rows_mut(&mut self) -> RowMajorIteratorMut<T>{
+        RowMajorIteratorMut::new(self)
     }
     #[must_use]
     pub fn relative_lookup(&self, p: Coord, relative: ICoord) -> Option<&T> {
@@ -394,6 +405,91 @@ impl<T> Grid2d<T> {
         F: FnMut(Coord, &T) -> TO,
     {
         Grid2d::from_fn(self.dim(), |p| f(p, &self[p]))
+    }
+}
+
+struct ColIteratorMut<'a, T> {
+    grid: &'a mut Grid2d<T>,
+    column: usize,
+    row_start: usize,
+    row_end: usize,
+}
+
+impl<'a, T> Iterator for ColIteratorMut<'a, T> {
+    type Item = &'a mut T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row_start < self.row_end {
+            let r = self.row_start;
+            self.row_start += 1;
+            let p = &mut self.grid[(r,self.column)] as *mut T;
+            Some(unsafe {p.as_mut().unwrap()})
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a, T> ColIteratorMut<'a, T> {
+    fn new(grid: &'a mut Grid2d<T>, column: usize) -> Self {
+        let row_end = grid.dim().y;
+        Self {
+            grid, column, row_start: 0, row_end
+        }
+    }
+}
+
+pub struct RowMajorIteratorMut<'a,T> {
+    grid: &'a mut Grid2d<T>,
+    row_start: usize,
+    row_end: usize,
+}
+impl<'a, T> RowMajorIteratorMut<'a,T> {
+    fn new(grid : &'a mut Grid2d<T>) -> Self {
+        let row_end = grid.dim().x;
+        Self {
+            grid,
+            row_start: 0,
+            row_end
+        }
+    }
+}
+impl<'grid, T> DoubleEndedIterator for RowMajorIteratorMut<'grid, T> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.row_start < self.row_end {
+            self.row_end -= 1;
+            let r = self.row_end;
+            let row = self.grid.get_row_mut(r).as_mut_ptr();
+            let size = self.grid.dim().x;
+            // SAFETY: We promise never to return overlapping pointers from
+            // this or next_back.
+            unsafe {
+                Some(slice::from_raw_parts_mut(row, size))
+            }
+        } else {
+            None
+        }
+    }
+}
+
+impl<'grid, T> Iterator for RowMajorIteratorMut<'grid, T> 
+{
+    type Item = &'grid mut [T];
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row_start < self.row_end {
+            let r = self.row_start;
+            self.row_start += 1;
+            let row = self.grid.get_row_mut(r).as_mut_ptr();
+            let size = self.grid.dim().x;
+            // SAFETY: We promise never to return overlapping pointers from
+            // this or next_back.
+            unsafe {
+                Some(slice::from_raw_parts_mut(row, size))
+            }
+        } else {
+            None
+        }
     }
 }
 
