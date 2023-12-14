@@ -10,7 +10,7 @@ use num::Integer;
 
 use crate::{aabb::Aabb, cartesian::Point, nums::add_i_mod};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Grid2d<T> {
     data: Vec<T>,
     size: Coord,
