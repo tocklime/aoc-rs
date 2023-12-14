@@ -69,7 +69,6 @@ fn calc_north_load(g: &Grid2d<char>) -> usize {
 fn p1(input: &str) -> usize {
     let mut g = Grid2d::from_str(input, |x| x);
     roll_north(&mut g);
-
     calc_north_load(&g)
 }
 fn cycle(g: &mut Grid2d<char>) {
