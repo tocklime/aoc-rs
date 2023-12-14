@@ -1,3 +1,19 @@
+[tasks.build_latest]
+description = "Build aoc_latest"
+command = "cargo"
+args = ["build", "-p", "aoc_latest", "--release"]
+workspace = false
+
+[tasks.vtune]
+description = "Run intel vTune"
+dependencies = ["build_latest"]
+script = '''
+    rm -rf vtune_out
+    sudo "c:/Program Files (x86)/Intel/oneAPI/vtune/latest/bin64/vtune.exe" -r vtune_out -collect hotspots -knob sampling-mode=hw -- target/release/aoc_latest.exe -r 10
+    "c:/Program Files (x86)/Intel/oneAPI/vtune/latest/bin64/vtune-gui.exe" vtune_out
+'''
+workspace = false
+
 [tasks.flamegraph]
 description = "Generate flamegraph for aoc_latest"
 install_crate = "flamegraph"
