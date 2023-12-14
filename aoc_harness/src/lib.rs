@@ -178,38 +178,28 @@ impl Opts {
                 .replace('\r', "")),
         }
     }
+    #[inline]
     pub fn time_fn<O, F>(&self, f: F) -> (std::time::Duration, O)
     where
         F: Fn() -> O,
     {
-        let start = Instant::now();
-        let ans = f();
-        let end = Instant::now();
-        let dur = end - start;
         #[allow(
             clippy::cast_possible_truncation,
             clippy::cast_sign_loss,
             clippy::cast_precision_loss
         )] //it's only for reporting the time.
-        if !self.bypass && dur < Self::TARGET_DUR {
-            let bench =
-                benchmarking::bench_function_with_duration(Self::TARGET_DUR, move |measurer| {
-                    measurer.measure(&f);
-                })
-                .unwrap();
+        if !self.bypass {
+            let mut ans = None;
+            let bench = benchmarking::bench_function_with_duration(Self::TARGET_DUR, |measurer| {
+                measurer.measure(|| ans = Some(f()));
+            })
+            .unwrap();
             let overall = bench.elapsed().as_secs_f64();
-            //took less than 5ms. How many could we do in 5ms?
-            // let min_time = (0..10).map(|_| {
-            //     let start = Instant::now();
-            //     for _ in 0..c {
-            //         f();
-            //     }
-            //     let end = Instant::now();
-            //     end - start
-            // }).min().unwrap();
-            // let overall = (min_time).as_secs_f64() / (c as f64);
-            (std::time::Duration::from_secs_f64(overall), ans)
+            (std::time::Duration::from_secs_f64(overall), ans.unwrap())
         } else {
+            let start = Instant::now();
+            let ans = f();
+            let dur = start.elapsed();
             (dur, ans)
         }
     }

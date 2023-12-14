@@ -17,8 +17,9 @@ workspace = false
 [tasks.flamegraph]
 description = "Generate flamegraph for aoc_latest"
 install_crate = "flamegraph"
-command = "sudo"
-args = ["cargo", "flamegraph", "-p", "aoc_latest"]
+script = '''
+    sudo cargo flamegraph -p aoc_latest -F4294967295 --open -- -r30 -b
+'''
 workspace = false
 
 [tasks.watch]
