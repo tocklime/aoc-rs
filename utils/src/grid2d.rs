@@ -250,7 +250,7 @@ impl<T> Grid2d<T> {
         let w = self.size.x;
         &self.data[y * w..(y + 1) * w]
     }
-    pub fn get_row_mut<'a>(&'a mut self, y: usize) -> &'a mut [T] {
+    pub fn get_row_mut(&mut self, y: usize) -> &mut [T] {
         let w = self.size.x;
         &mut self.data[y * w..(y + 1) * w]
     }
