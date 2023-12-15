@@ -1,49 +1,45 @@
 aoc_harness::aoc_main!(2023 day 15, part1 [p1], part2 [p2], example both EG => (1320,145));
 
-fn hash(input: &str) -> u8 {
-    let mut current_value = 0u8;
+fn hash(input: &str) -> usize {
+    let mut current_value = 0;
     for b in input.as_bytes() {
-        if b'\n' != *b {
-            current_value = current_value.wrapping_add(*b);
-            current_value = current_value.wrapping_mul(17);
-        }
+        current_value += usize::from(*b);
+        current_value *= 17;
+        current_value %= 256;
     }
     current_value
 }
 fn p1(input: &str) -> usize {
-    input.split(',').map(hash).map(usize::from).sum()
+    input.trim().split(',').map(hash).map(usize::from).sum()
 }
 
 fn p2(input: &str) -> usize {
-    let mut boxes: Vec<Vec<(&str, u8)>> = vec![vec![]; 256];
-    for i in input.split(',') {
+    let mut boxes: Vec<Vec<(&str, usize)>> = vec![vec![]; 256];
+    for i in input.trim().split(',') {
         if let Some((label, val)) = i.split_once('=') {
-            let val = val.trim().parse::<u8>().expect(&format!("{i} -> {label} '{val}'"));
+            let val = val.trim().parse::<usize>().unwrap();
             let hash = hash(label);
-            let bo: &mut Vec<(&str, u8)> = &mut boxes[usize::from(hash)];
-            if let Some(x) = bo.iter().position(|i| i.0 == label) {
-                bo[x] = (label, val);
+            if let Some(x) = boxes[hash].iter().position(|i| i.0 == label) {
+                boxes[hash][x] = (label, val);
             } else {
-                bo.push((label, val));
+                boxes[hash].push((label, val));
             }
         } else {
             assert_eq!(i.as_bytes().last().unwrap(), &b'-');
             let label = &i[0..i.len() - 1];
             let hash = hash(label);
-            let bo: &mut Vec<(&str, u8)> = &mut boxes[usize::from(hash)];
-            if let Some(x) = bo.iter().position(|i| i.0 == label) {
-                bo.remove(x);
+            if let Some(x) = boxes[hash].iter().position(|i| i.0 == label) {
+                boxes[hash].remove(x);
             }
         }
     }
     boxes
-        .iter()
+        .into_iter()
         .zip(1..)
-        .map(|(b, n)| {
-            b.iter()
+        .flat_map(|(b, n)| {
+            b.into_iter()
                 .zip(1..)
-                .map(|(lens, lens_n)| usize::from(lens.1) * n * lens_n)
-                .sum::<usize>()
+                .map(move |(lens, lens_n)| lens.1 * lens_n * n)
         })
         .sum()
 }
