@@ -14,8 +14,8 @@ fn p1(input: &str) -> usize {
 }
 
 fn p2(input: &str) -> usize {
-    const EMPTY : Vec<(&str, usize)> = Vec::new();
-    let mut boxes: [Vec<(&str, usize)>;256] = [EMPTY; 256];
+    const EMPTY: Vec<(&str, usize)> = Vec::new();
+    let mut boxes: [Vec<(&str, usize)>; 256] = [EMPTY; 256];
     for i in input.trim().split(',') {
         if let Some((label, val)) = i.split_once('=') {
             let val = val.trim().parse::<usize>().unwrap();
