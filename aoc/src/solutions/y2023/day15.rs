@@ -14,22 +14,23 @@ fn p1(input: &str) -> usize {
 }
 
 fn p2(input: &str) -> usize {
-    let mut boxes: Vec<Vec<(&str, usize)>> = vec![vec![]; 256];
+    const EMPTY : Vec<(&str, usize)> = Vec::new();
+    let mut boxes: [Vec<(&str, usize)>;256] = [EMPTY; 256];
     for i in input.trim().split(',') {
         if let Some((label, val)) = i.split_once('=') {
             let val = val.trim().parse::<usize>().unwrap();
-            let hash = hash(label);
-            if let Some(x) = boxes[hash].iter().position(|i| i.0 == label) {
-                boxes[hash][x] = (label, val);
+            let bo = &mut boxes[hash(label)];
+            if let Some(x) = bo.iter().position(|i| i.0 == label) {
+                bo[x].1 = val;
             } else {
-                boxes[hash].push((label, val));
+                bo.push((label, val));
             }
         } else {
-            assert_eq!(i.as_bytes().last().unwrap(), &b'-');
-            let label = &i[0..i.len() - 1];
-            let hash = hash(label);
-            if let Some(x) = boxes[hash].iter().position(|i| i.0 == label) {
-                boxes[hash].remove(x);
+            debug_assert_eq!(i.as_bytes().last().unwrap(), &b'-');
+            let label = &i[0..i.len() - 1]; //ignore the final '-'.
+            let bo = &mut boxes[hash(label)];
+            if let Some(x) = bo.iter().position(|i| i.0 == label) {
+                bo.remove(x);
             }
         }
     }
