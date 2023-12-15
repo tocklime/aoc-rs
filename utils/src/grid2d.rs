@@ -497,6 +497,7 @@ impl<'grid, T> Iterator for RowMajorIteratorMut<'grid, T> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use itertools::Itertools;
     #[test]
     pub fn values_in_direction_test() {
         const GRID: &str = "012
