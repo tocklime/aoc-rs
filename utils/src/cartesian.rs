@@ -187,6 +187,14 @@ impl<T: Num + WrappingSub> Point<T> {
     }
 }
 impl<T: Num + WrappingAdd + WrappingSub> Point<T> {
+    pub fn step_flip_y(self, d: Dir) -> Self {
+        match d {
+            Dir::Up => self.down(),
+            Dir::Down => self.up(),
+            Dir::Left => self.left(),
+            Dir::Right => self.right(),
+        }
+    }
     pub fn step(self, d: Dir) -> Self {
         match d {
             Dir::Up => self.up(),
