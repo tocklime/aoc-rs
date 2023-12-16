@@ -653,5 +653,5 @@
     part1: !Checked '509167'
     part2: !Checked '259333'
   16:
-    part1: !Observed '7884'
-    part2: !Observed '8185'
+    part1: !Checked '7884'
+    part2: !Checked '8185'

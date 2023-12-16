@@ -96,29 +96,22 @@ impl Dir {
     pub fn turn_right_n(self, n: u8) -> Self {
         n.applications_of(self, Self::turn_right)
     }
-    pub const fn turn_right(self) -> Self {
+    pub const fn map(self, udlr: [Dir;4]) -> Self {
         match self {
-            Self::Up => Self::Right,
-            Self::Down => Self::Left,
-            Self::Left => Self::Up,
-            Self::Right => Self::Down,
+            Dir::Up => udlr[0],
+            Dir::Down => udlr[1],
+            Dir::Left => udlr[2],
+            Dir::Right => udlr[3],
         }
+    }
+    pub const fn turn_right(self) -> Self {
+        self.map([Dir::Right, Dir::Left, Dir::Up, Dir::Down])
     }
     pub const fn turn_left(self) -> Self {
-        match self {
-            Self::Up => Self::Left,
-            Self::Down => Self::Right,
-            Self::Left => Self::Down,
-            Self::Right => Self::Up,
-        }
+        self.map([Dir::Left, Dir::Right, Dir::Down, Dir::Up])
     }
     pub const fn turn_about(self) -> Self {
-        match self {
-            Self::Up => Self::Down,
-            Self::Down => Self::Up,
-            Self::Left => Self::Right,
-            Self::Right => Self::Left,
-        }
+        self.map([Dir::Down, Dir::Up, Dir::Right, Dir::Left])
     }
     pub fn as_point_step<T: Signed + Num>(self) -> Point<T> {
         match self {
