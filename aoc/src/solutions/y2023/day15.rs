@@ -1,4 +1,4 @@
-aoc_harness::aoc_main!(2023 day 15, part1 [p1], part2 [p2], example both EG => (1320,145));
+aoc_harness::aoc_main!(2023 day 15, part1 [p1] => 509_167, part2 [p2] => 259_333, example both EG => (1320,145));
 
 fn hash(input: &str) -> usize {
     let mut current_value = 0;
