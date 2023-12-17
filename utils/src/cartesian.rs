@@ -96,7 +96,7 @@ impl Dir {
     pub fn turn_right_n(self, n: u8) -> Self {
         n.applications_of(self, Self::turn_right)
     }
-    pub const fn map(self, udlr: [Dir;4]) -> Self {
+    pub const fn map<T: Copy>(self, udlr: [T; 4]) -> T {
         match self {
             Dir::Up => udlr[0],
             Dir::Down => udlr[1],
