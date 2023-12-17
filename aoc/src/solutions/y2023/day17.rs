@@ -5,68 +5,58 @@ use utils::{
 };
 
 aoc_harness::aoc_main!(2023 day 17,
+    generator gen,
     part1 [solve_astar::<0,3>,solve_dijk::<0, 3>] => 1110,
     part2 [solve_astar::<4,10>,solve_dijk::<4,10>] => 1294,
     example both EG => (102, 94), example part2 EG2 => 71);
 
-fn solve_astar<const MIN_STRAIGHT_LINE: usize, const MAX_STRAIGHT_LINE: usize>(input: &str) -> u32 {
-    let g = Grid2d::<u32>::from_str(input, |x| ((x as u8) - b'0') as u32);
-    let target = Point::new(g.dim().x-1,g.dim().y-1);
+type Grid = Grid2d<u8>;
+fn gen(input: &str) -> Grid {
+    Grid2d::from_iter(input.as_bytes().iter(), |&x| x - b'0', &b'\n')
+}
+type State = (Point<usize>, Dir, usize);
+
+fn step<const MIN: usize, const MAX: usize>(
+    g: &Grid,
+    &(loc, dir, dir_count): &State,
+) -> Vec<(State, usize)> {
+    //right, left or straight on.
+    let mut ans = Vec::new();
+    if dir_count == 0 || dir_count >= MIN {
+        //turning OK.
+        for d in [dir.turn_left(), dir.turn_right()] {
+            let new_pos = loc.step(d);
+            if let Some(&x) = g.get(new_pos) {
+                ans.push(((new_pos, d, 1), x.into()));
+            }
+        }
+    }
+    if dir_count < MAX {
+        //straight line OK.
+        let new_pos = loc.step(dir);
+        if let Some(&x) = g.get(new_pos) {
+            ans.push(((new_pos, dir, dir_count + 1), x.into()));
+        }
+    }
+    ans
+}
+fn solve_astar<const MIN: usize, const MAX: usize>(g: &Grid) -> usize {
+    let target = g.indexes().next_back().unwrap();
     astar(
         &(Point::new(0, 0), Dir::Right, 0),
-        |&(loc, dir, dir_count)| {
-            //right, left or straight on.
-            let mut ans = Vec::new();
-            if dir_count == 0 || dir_count >= MIN_STRAIGHT_LINE {
-                //turning OK.
-                for d in [dir.turn_left(), dir.turn_right()] {
-                    let new_pos = loc.step(d);
-                    if let Some(&x) = g.get(new_pos) {
-                        ans.push(((new_pos, d, 1), x));
-                    }
-                }
-            }
-            if dir_count < MAX_STRAIGHT_LINE {
-                //straight line OK.
-                let new_pos = loc.step(dir);
-                if let Some(&x) = g.get(new_pos) {
-                    ans.push(((new_pos, dir, dir_count + 1), x));
-                }
-            }
-            ans
-        },
-        |(loc, _, _)| loc.manhattan_unsigned(&target) as u32,
-        |x| x.2 >= MIN_STRAIGHT_LINE && x.0 == target
+        |s| step::<MIN, MAX>(g, s),
+        |(loc, _, _)| loc.manhattan_unsigned(&target),
+        |x| x.2 >= MIN && x.0 == target,
     )
     .unwrap()
     .1
 }
-fn solve_dijk<const MIN_STRAIGHT_LINE: usize, const MAX_STRAIGHT_LINE: usize>(input: &str) -> u32 {
-    let g = Grid2d::<u32>::from_str(input, |x| ((x as u8) - b'0') as u32);
+fn solve_dijk<const MIN: usize, const MAX: usize>(g: &Grid) -> usize {
+    let target = g.indexes().next_back().unwrap();
     dijkstra(
         &(Point::new(0, 0), Dir::Right, 0),
-        |&(loc, dir, dir_count)| {
-            //right, left or straight on.
-            let mut ans = Vec::new();
-            if dir_count == 0 || dir_count >= MIN_STRAIGHT_LINE {
-                //turning OK.
-                for d in [dir.turn_left(), dir.turn_right()] {
-                    let new_pos = loc.step(d);
-                    if let Some(&x) = g.get(new_pos) {
-                        ans.push(((new_pos, d, 1), x));
-                    }
-                }
-            }
-            if dir_count < MAX_STRAIGHT_LINE {
-                //straight line OK.
-                let new_pos = loc.step(dir);
-                if let Some(&x) = g.get(new_pos) {
-                    ans.push(((new_pos, dir, dir_count + 1), x));
-                }
-            }
-            ans
-        },
-        |x| x.2 >= MIN_STRAIGHT_LINE && x.0 == Point::new(g.dim().x - 1, g.dim().y - 1),
+        |s| step::<MIN, MAX>(g, s),
+        |x| x.2 >= MIN && x.0 == target,
     )
     .unwrap()
     .1
