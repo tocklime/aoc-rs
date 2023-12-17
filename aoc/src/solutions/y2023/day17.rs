@@ -1,12 +1,12 @@
 use pathfinding::prelude::*;
 use utils::{
     cartesian::{Dir, Point},
-    grid2d::Grid2d,
+    grid2d::{Grid2d, ICoord},
 };
 
 aoc_harness::aoc_main!(2023 day 17,
     generator gen,
-    part1 [solve_astar::<0,3>,solve_dijk::<0, 3>] => 1110,
+    part1 [solve_astar::<1,3>,solve_dijk::<1, 3>] => 1110,
     part2 [solve_astar::<4,10>,solve_dijk::<4,10>] => 1294,
     example both EG => (102, 94), example part2 EG2 => 71);
 
@@ -14,49 +14,47 @@ type Grid = Grid2d<u8>;
 fn gen(input: &str) -> Grid {
     Grid2d::from_iter(input.as_bytes().iter(), |&x| x - b'0', &b'\n')
 }
-type State = (Point<usize>, Dir, usize);
 
-fn step<const MIN: usize, const MAX: usize>(
-    g: &Grid,
-    &(loc, dir, dir_count): &State,
-) -> Vec<(State, usize)> {
+//State is current location, and the 2 directions we're allowed to go from here.
+type State = (Point<usize>, [Dir; 2]);
+
+fn step<const MIN: isize, const MAX: isize>(g: &Grid, &(loc, dirs): &State) -> Vec<(State, usize)> {
     //right, left or straight on.
-    let mut ans = Vec::new();
-    if dir_count == 0 || dir_count >= MIN {
-        //turning OK.
-        for d in [dir.turn_left(), dir.turn_right()] {
-            let new_pos = loc.step(d);
-            if let Some(&x) = g.get(new_pos) {
-                ans.push(((new_pos, d, 1), x.into()));
-            }
-        }
-    }
-    if dir_count < MAX {
-        //straight line OK.
-        let new_pos = loc.step(dir);
-        if let Some(&x) = g.get(new_pos) {
-            ans.push(((new_pos, dir, dir_count + 1), x.into()));
-        }
-    }
-    ans
+    //walk for MIN..MAX steps, and then turn left or right.
+
+    dirs.iter().flat_map(|dir| {
+        //need to start from 1 to make sure we don't miss costs.
+        let cost_to_min_steps : usize = (1..MIN).filter_map(|ss| { 
+            let step : ICoord = dir.as_point_step() * ss;
+            g.get(loc + step).copied().map(usize::from)
+        }).sum();
+        (MIN..=MAX).scan(cost_to_min_steps, |cost,step_size| {
+            let step: ICoord = dir.as_point_step() * step_size;
+            let new_pos = loc + step;
+            g.get(new_pos).map(|&x| {
+                *cost += usize::from(x);
+                ((new_pos, [dir.turn_left(), dir.turn_right()]), *cost)
+            })
+        })
+    }).collect()
 }
-fn solve_astar<const MIN: usize, const MAX: usize>(g: &Grid) -> usize {
+fn solve_astar<const MIN: isize, const MAX: isize>(g: &Grid) -> usize {
     let target = g.indexes().next_back().unwrap();
-    astar(
-        &(Point::new(0, 0), Dir::Right, 0),
+    let a = astar(
+        &(Point::new(0, 0), [Dir::Up, Dir::Right]),
         |s| step::<MIN, MAX>(g, s),
-        |(loc, _, _)| loc.manhattan_unsigned(&target),
-        |x| x.2 >= MIN && x.0 == target,
+        |(loc, _)| loc.manhattan_unsigned(&target),
+        |x| x.0 == target,
     )
-    .unwrap()
-    .1
+    .unwrap();
+    a.1
 }
-fn solve_dijk<const MIN: usize, const MAX: usize>(g: &Grid) -> usize {
+fn solve_dijk<const MIN: isize, const MAX: isize>(g: &Grid) -> usize {
     let target = g.indexes().next_back().unwrap();
     dijkstra(
-        &(Point::new(0, 0), Dir::Right, 0),
+        &(Point::new(0, 0), [Dir::Up, Dir::Right]),
         |s| step::<MIN, MAX>(g, s),
-        |x| x.2 >= MIN && x.0 == target,
+        |x| x.0 == target,
     )
     .unwrap()
     .1
