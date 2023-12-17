@@ -21,7 +21,6 @@ type State = (Point<usize>, [Dir; 2]);
 fn step<const MIN: isize, const MAX: isize>(g: &Grid, &(loc, dirs): &State) -> Vec<(State, usize)> {
     //right, left or straight on.
     //walk for MIN..MAX steps, and then turn left or right.
-
     dirs.iter().flat_map(|dir| {
         //need to start from 1 to make sure we don't miss costs.
         let cost_to_min_steps : usize = (1..MIN).filter_map(|ss| { 
@@ -38,6 +37,8 @@ fn step<const MIN: isize, const MAX: isize>(g: &Grid, &(loc, dirs): &State) -> V
         })
     }).collect()
 }
+// TODO: Implement my own astar, using a bucket queue, as shown here:
+// https://github.com/maneatingape/advent-of-code-rust/blob/main/src/year2023/day17.rs
 fn solve_astar<const MIN: isize, const MAX: isize>(g: &Grid) -> usize {
     let target = g.indexes().next_back().unwrap();
     let a = astar(
