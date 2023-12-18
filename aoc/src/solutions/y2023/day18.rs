@@ -39,13 +39,14 @@ fn solve<const PART: usize>(input: &str) -> isize {
     let (final_x, total) = lines.iter().fold((0, 1), |(x_pos, total), l| {
         let l = &l[PART];
         match l.0 {
-            //when going to side to side, we just dig our line.
+            //when going to the right, we just dig our line.
             Dir::Right => (x_pos + l.1, total + l.1),
             //when going left, we dig nothing (the area we travel through is handled in the right and down cases)
             Dir::Left => (x_pos - l.1, total),
             //when going down, we additionally dig everything to the left (up to the x=0 axis).
+            //the x_pos +1 represents the width of the digger.
             Dir::Down => (x_pos, total + l.1 * (x_pos + 1)),
-            //when going up we additionally anti-dig everything to the left.
+            //when going up we anti-dig everything to the left.
             Dir::Up => (x_pos, total - l.1 * x_pos),
         }
     });
