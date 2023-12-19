@@ -85,7 +85,7 @@ fn pf_astar<const MIN: isize, const MAX: isize>(g: &Grid) -> usize {
 // https://github.com/maneatingape/advent-of-code-rust/blob/main/src/year2023/day17.rs
 fn manual_astar_no_hash<const MIN: isize, const MAX: isize>(g: &Grid) -> usize {
     let target = g.indexes().next_back().unwrap();
-    //bests represents the lower bound of the fastest ways to get to each cell.
+    //bests represents the time of the fastest way to get to each cell.
     //you can arrive at a cell horizontally or vertically. So we store 2 values in each cell.
     let mut bests = Grid2d::from_elem(g.dim(), [usize::MAX, usize::MAX]);
     bests[Point::new(0,0)] = [0,0];
