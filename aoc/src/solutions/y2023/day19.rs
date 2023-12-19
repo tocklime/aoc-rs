@@ -29,8 +29,8 @@ impl X {
     }
     fn explore(&self) -> Vec<PartConstraints> {
         let mut ans = Vec::new();
-        let pc = PartConstraints::default();
-        let mut stack = vec![("in", pc)];
+        let pc = PartConstraints::new();
+        let mut stack : Vec<(&str, PartConstraints)> = vec![("in", pc)];
         while let Some((pos, constraints)) = stack.pop() {
             if pos == "A" {
                 ans.push(constraints);
@@ -38,21 +38,21 @@ impl X {
                 //...
             } else {
                 let wf = &self.workflows[pos];
-                let mut elses: Vec<(Quality, Ordering, u16)> = Vec::new();
+                let mut base_constraint = Some(constraints);
                 for r in &wf.rules {
-                    let mut new_cons = constraints.clone();
-                    for e in &elses {
-                        new_cons.add(e.0, e.1, true, e.2);
+                    match &base_constraint {
+                        Some(to_here) => {
+                            if let Some(x) = to_here.add(r.quality, r.check, false, r.value) {
+                                stack.push((&r.target, x));
+                            }
+                            base_constraint = base_constraint.and_then(|e| e.add(r.quality, r.check, true, r.value));
+                        }
+                        None => break,
                     }
-                    new_cons.add(r.quality, r.check, false, r.value);
-                    stack.push((&r.target, new_cons));
-                    elses.push((r.quality, r.check, r.value));
                 }
-                let mut new_cons = constraints.clone();
-                for e in &elses {
-                    new_cons.add(e.0, e.1, true, e.2);
+                if let Some(x) = base_constraint {
+                    stack.push((&wf.default, x));
                 }
-                stack.push((&wf.default, new_cons));
             }
         }
         ans
@@ -91,37 +91,36 @@ impl Workflow {
     }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 struct PartConstraints {
-    constraints: [Vec<(Ordering, bool, u16)>; 4],
+    constraints: [Span<u16>; 4],
 }
 
 impl PartConstraints {
-    fn count_quality_options(cs: &Vec<(Ordering, bool, u16)>) -> u64 {
-        let mut span = Span::new(1,4001u16);
-        for &(ord, invert, cut) in cs {
-            let as_span = match (ord,invert) {
-                (Ordering::Less, true) => Span::new(cut, 4001),
-                (Ordering::Less, false) => Span::new(1, cut),
-                (Ordering::Greater, true) => Span::new(1, cut+1),
-                (Ordering::Greater, false) => Span::new(cut+1, 4001),
-                _ => panic!()
-            };
-            match span.intersection(&as_span) {
-                Some(x) => span = x,
-                None => return 0
-            }
+    fn new() -> Self {
+        Self {
+            constraints: [Span::new(1, 4001); 4],
         }
-        span.size() as u64
+    }
+    fn to_span(ord: Ordering, invert: bool, cut: u16) -> Span<u16> {
+        match (ord, invert) {
+            (Ordering::Less, true) => Span::new(cut, 4001),
+            (Ordering::Less, false) => Span::new(1, cut),
+            (Ordering::Greater, true) => Span::new(1, cut + 1),
+            (Ordering::Greater, false) => Span::new(cut + 1, 4001),
+            _ => panic!(),
+        }
     }
     fn count(&self) -> u64 {
-        self.constraints
-            .iter()
-            .map(PartConstraints::count_quality_options)
-            .product()
+        self.constraints.map(|x| x.size() as u64).iter().product()
     }
-    fn add(&mut self, q: Quality, ord: Ordering, invert: bool, val: u16) {
-        self.constraints[u8::from(q) as usize].push((ord, invert, val));
+    fn add(&self, q: Quality, ord: Ordering, invert: bool, val: u16) -> Option<Self> {
+        let qi = u8::from(q) as usize;
+        let as_span = Self::to_span(ord, invert, val);
+        let new_q = self.constraints[qi].intersection(&as_span)?;
+        let mut a = self.clone();
+        a.constraints[qi] = new_q;
+        Some(a)
     }
 }
 
