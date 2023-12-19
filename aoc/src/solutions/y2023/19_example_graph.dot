@@ -1,0 +1,27 @@
+digraph {
+qqz -> qs [label = "s>2770"]
+qqz -> hdj [label = "m<1801"]
+qqz -> R
+lnx -> A [label = "m>1548"]
+lnx -> A
+px -> qkq [label = "a<2006"]
+px -> A [label = "m>2090"]
+px -> rfg
+rfg -> gd [label = "s<537"]
+rfg -> R [label = "x>2440"]
+rfg -> A
+qkq -> A [label = "x<1416"]
+qkq -> crn
+in -> px [label = "s<1351"]
+in -> qqz
+qs -> A [label = "s>3448"]
+qs -> lnx
+gd -> R [label = "a>3333"]
+gd -> R
+crn -> A [label = "x>2662"]
+crn -> R
+hdj -> A [label = "m>838"]
+hdj -> pv
+pv -> R [label = "a>1716"]
+pv -> A
+}
