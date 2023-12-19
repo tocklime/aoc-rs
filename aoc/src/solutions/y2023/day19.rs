@@ -3,15 +3,14 @@ use std::{cmp::Ordering, collections::HashMap};
 use nom::{
     character::complete::{self, alpha1, newline, one_of},
     multi::{many1, separated_list1},
-    sequence::{separated_pair, tuple},
+    sequence::tuple,
     Parser,
 };
 use nom_supreme::{multi::collect_separated_terminated, tag::complete::tag, ParserExt};
-use petgraph::Graph;
-use rustc_hash::FxHashMap;
-use utils::nom::IResult;
+use num_enum::IntoPrimitive;
+use utils::{nom::IResult, span::Span};
 
-aoc_harness::aoc_main!(2023 day 19, part1 [p1], part2 [p2], example both EG => (19114, 167_409_079_868_000));
+aoc_harness::aoc_main!(2023 day 19, part1 [p1] => 399_284, part2 [p2] => 121_964_982_771_486, example both EG => (19114, 167_409_079_868_000));
 
 #[derive(Debug)]
 struct X {
@@ -58,29 +57,6 @@ impl X {
         }
         ans
     }
-    fn count_paths<'a>(&'a self, start: &'a str, cache: &mut FxHashMap<&'a str, usize>) -> usize {
-        if let Some(&n) = cache.get(&start) {
-            return n;
-        }
-        println!("Routes from {start}...");
-        let count = if start == "A" {
-            1
-        } else {
-            self.workflows
-                .values()
-                .map(|w: &Workflow| {
-                    // dbg!(w);
-                    w.rules
-                        .iter()
-                        .map(|r| self.count_paths(&r.target, cache))
-                        .sum::<usize>()
-                        + self.count_paths(&w.default, cache)
-                })
-                .sum()
-        };
-        cache.insert(start, count);
-        count
-    }
 }
 #[derive(Debug)]
 struct Workflow {
@@ -117,32 +93,40 @@ impl Workflow {
 
 #[derive(Debug, Default, Clone)]
 struct PartConstraints {
-    constraints: HashMap<Quality, Vec<(Ordering, bool, u16)>>,
+    constraints: [Vec<(Ordering, bool, u16)>; 4],
 }
 
 impl PartConstraints {
+    fn count_quality_options(cs: &Vec<(Ordering, bool, u16)>) -> u64 {
+        let mut span = Span::new(1,4001u16);
+        for &(ord, invert, cut) in cs {
+            let as_span = match (ord,invert) {
+                (Ordering::Less, true) => Span::new(cut, 4001),
+                (Ordering::Less, false) => Span::new(1, cut),
+                (Ordering::Greater, true) => Span::new(1, cut+1),
+                (Ordering::Greater, false) => Span::new(cut+1, 4001),
+                _ => panic!()
+            };
+            match span.intersection(&as_span) {
+                Some(x) => span = x,
+                None => return 0
+            }
+        }
+        span.size() as u64
+    }
     fn count(&self) -> u64 {
-        [Quality::Aerodynamic,Quality::ExtremelyCool,Quality::Musical,Quality::Shiny]
-        .map(|q| {
-            self.constraints.get(&q).map(|v| {
-                (1..=4000)
-                    .filter(|n| {
-                        v.iter()
-                            .all(|(ord, invert, val)| (n.cmp(val) == *ord) != *invert)
-                    })
-                    .count() as u64
-            }).unwrap_or(4000)
-        }).iter().product()
+        self.constraints
+            .iter()
+            .map(PartConstraints::count_quality_options)
+            .product()
     }
     fn add(&mut self, q: Quality, ord: Ordering, invert: bool, val: u16) {
-        self.constraints
-            .entry(q)
-            .or_default()
-            .push((ord, invert, val));
+        self.constraints[u8::from(q) as usize].push((ord, invert, val));
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, IntoPrimitive)]
+#[repr(u8)]
 enum Quality {
     ExtremelyCool,
     Musical,
@@ -161,20 +145,6 @@ impl Quality {
             })
             .parse(input)
     }
-    fn to_char(&self) -> char {
-        match self {
-            Quality::ExtremelyCool => 'x',
-            Quality::Musical => 'm',
-            Quality::Aerodynamic => 'a',
-            Quality::Shiny => 's',
-        }
-    }
-}
-
-#[derive(Debug)]
-enum RuleTypes {
-    Default(String),
-    Checked(CheckRule),
 }
 
 #[derive(Debug)]
@@ -187,7 +157,8 @@ struct CheckRule {
 
 impl CheckRule {
     fn matches(&self, part: &Part) -> Option<&str> {
-        (part.values[&self.quality].cmp(&self.value) == self.check).then_some(&self.target)
+        (part.values[u8::from(self.quality) as usize].cmp(&self.value) == self.check)
+            .then_some(&self.target)
     }
     fn parse(input: &str) -> IResult<Self> {
         let (input, (quality, check, value, _, target)) = tuple((
@@ -217,18 +188,19 @@ impl CheckRule {
 
 #[derive(Debug)]
 struct Part {
-    values: HashMap<Quality, u16>,
+    values: [u16; 4],
 }
 
 impl Part {
     fn parse(input: &str) -> IResult<Self> {
-        let (input, values) = collect_separated_terminated(
-            separated_pair(Quality::parse, tag("="), complete::u16),
+        let (input, values): (_, Vec<u16>) = collect_separated_terminated(
+            Quality::parse.precedes(tag("=")).precedes(complete::u16),
             tag(","),
             tag("}\n"),
         )
         .preceded_by(tag("{"))
         .parse(input)?;
+        let values: [u16; 4] = std::array::from_fn(|n| values[n]);
         Ok((input, Self { values }))
     }
 }
@@ -243,38 +215,14 @@ fn p1(input: &str) -> u32 {
             flow = prob.workflows[flow].sort(&p);
         }
         if flow == "A" {
-            total += p.values.values().copied().map(u32::from).sum::<u32>();
+            total += p.values.iter().copied().map(u32::from).sum::<u32>();
         }
     }
     total
 }
-fn shw(x: Ordering) -> char {
-    match x {
-        Ordering::Less => '<',
-        Ordering::Equal => '=',
-        Ordering::Greater => '>',
-    }
-}
 fn p2(input: &str) -> u64 {
     let (input, prob) = X::parse(input).unwrap();
     assert_eq!(input, "");
-    // println!("digraph {{");
-    // for w in prob.workflows.values() {
-    //     for r in &w.rules {
-    //         println!(
-    //             "{} -> {} [label = \"{}{}{}\"]",
-    //             w.name,
-    //             r.target,
-    //             r.quality.to_char(),
-    //             shw(r.check),
-    //             r.value
-    //         );
-    //     }
-    //     println!("{} -> {}", w.name, w.default);
-    // }
-    // println!("}}");
-
-    //what are all possible A-routes?
     let a_routes = prob.explore();
     // dbg!(&a_routes);
     a_routes.iter().map(PartConstraints::count).sum()
