@@ -51,20 +51,13 @@ impl<'a> X<'a> {
                 "R" => (),
                 pos => {
                     let wf = &self.workflows[pos];
-                    let mut base_constraint = Some(constraints);
-                    for r in &wf.rules {
-                        match &base_constraint {
-                            Some(to_here) => {
-                                if let Some(x) = to_here.add(r.quality, r.check, false, r.value) {
-                                    stack.push((&r.target, x));
-                                }
-                                base_constraint = base_constraint
-                                    .and_then(|e| e.add(r.quality, r.check, true, r.value));
-                            }
-                            None => break,
+                    let final_constraint = wf.rules.iter().try_fold(constraints, |to_here, r| {
+                        if let Some(x) = to_here.add(r.quality, r.check, false, r.value) {
+                            stack.push((&r.target, x));
                         }
-                    }
-                    if let Some(x) = base_constraint {
+                        to_here.add(r.quality, r.check, true, r.value)
+                    });
+                    if let Some(x) = final_constraint {
                         stack.push((&wf.default, x));
                     }
                 }
