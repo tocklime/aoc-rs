@@ -1,23 +1,38 @@
 use std::{cmp::Ordering, collections::HashMap};
 
 use nom::{
+    branch::alt,
+    bytes::complete::tag,
     character::complete::{self, alpha1, newline, one_of},
+    combinator::value,
     multi::{many1, separated_list1},
     sequence::tuple,
     Parser,
 };
-use nom_supreme::{multi::collect_separated_terminated, tag::complete::tag, ParserExt};
-use num_enum::IntoPrimitive;
-use utils::{nom::IResult, span::Span};
+use nom_supreme::{multi::collect_separated_terminated, ParserExt};
+use utils::span::Span;
 
-aoc_harness::aoc_main!(2023 day 19, part1 [p1] => 399_284, part2 [p2] => 121_964_982_771_486, example both EG => (19114, 167_409_079_868_000));
+aoc_harness::aoc_main!(2023 day 19,
+    generator X::parse_all,
+    part1 [p1] => 399_284,
+    part2 [p2] => 121_964_982_771_486,
+    example both EG => (19114, 167_409_079_868_000));
 
 #[derive(Debug)]
 struct X {
     workflows: HashMap<String, Workflow>,
     parts: Vec<Part>,
 }
+pub type IResult<'a, T> = nom::IResult<&'a str, T, ()>;
 impl X {
+    fn parse_all(input: &str) -> X {
+        X::parse
+            .all_consuming()
+            .complete()
+            .parse(input)
+            .expect("parse")
+            .1
+    }
     fn parse(input: &str) -> IResult<Self> {
         let (input, (workflows, _, parts)) = tuple((
             separated_list1(newline, Workflow::parse),
@@ -30,28 +45,29 @@ impl X {
     fn explore(&self) -> Vec<PartConstraints> {
         let mut ans = Vec::new();
         let pc = PartConstraints::new();
-        let mut stack : Vec<(&str, PartConstraints)> = vec![("in", pc)];
+        let mut stack: Vec<(&str, PartConstraints)> = vec![("in", pc)];
         while let Some((pos, constraints)) = stack.pop() {
-            if pos == "A" {
-                ans.push(constraints);
-            } else if pos == "R" {
-                //...
-            } else {
-                let wf = &self.workflows[pos];
-                let mut base_constraint = Some(constraints);
-                for r in &wf.rules {
-                    match &base_constraint {
-                        Some(to_here) => {
-                            if let Some(x) = to_here.add(r.quality, r.check, false, r.value) {
-                                stack.push((&r.target, x));
+            match pos {
+                "A" => ans.push(constraints),
+                "R" => (),
+                pos => {
+                    let wf = &self.workflows[pos];
+                    let mut base_constraint = Some(constraints);
+                    for r in &wf.rules {
+                        match &base_constraint {
+                            Some(to_here) => {
+                                if let Some(x) = to_here.add(r.quality, r.check, false, r.value) {
+                                    stack.push((&r.target, x));
+                                }
+                                base_constraint = base_constraint
+                                    .and_then(|e| e.add(r.quality, r.check, true, r.value));
                             }
-                            base_constraint = base_constraint.and_then(|e| e.add(r.quality, r.check, true, r.value));
+                            None => break,
                         }
-                        None => break,
                     }
-                }
-                if let Some(x) = base_constraint {
-                    stack.push((&wf.default, x));
+                    if let Some(x) = base_constraint {
+                        stack.push((&wf.default, x));
+                    }
                 }
             }
         }
@@ -61,7 +77,7 @@ impl X {
 #[derive(Debug)]
 struct Workflow {
     name: String,
-    rules: Vec<CheckRule>,
+    rules: Vec<Rule>,
     default: String,
 }
 impl Workflow {
@@ -69,7 +85,7 @@ impl Workflow {
         let (input, (name, _, rules, _, default, _)) = tuple((
             alpha1.map(|x: &str| x.to_owned()),
             tag("{"),
-            separated_list1(tag(","), CheckRule::parse),
+            separated_list1(tag(","), Rule::parse),
             tag(","),
             alpha1.map(|x: &str| x.to_owned()),
             tag("}"),
@@ -83,7 +99,7 @@ impl Workflow {
             },
         ))
     }
-    fn sort(&self, part: &Part) -> &str {
+    fn process(&self, part: &Part) -> &str {
         self.rules
             .iter()
             .find_map(|r| r.matches(part))
@@ -114,61 +130,40 @@ impl PartConstraints {
     fn count(&self) -> u64 {
         self.constraints.map(|x| x.size() as u64).iter().product()
     }
-    fn add(&self, q: Quality, ord: Ordering, invert: bool, val: u16) -> Option<Self> {
-        let qi = u8::from(q) as usize;
+    fn add(&self, q: usize, ord: Ordering, invert: bool, val: u16) -> Option<Self> {
         let as_span = Self::to_span(ord, invert, val);
-        let new_q = self.constraints[qi].intersection(&as_span)?;
+        let new_q = self.constraints[q].intersection(&as_span)?;
         let mut a = self.clone();
-        a.constraints[qi] = new_q;
+        a.constraints[q] = new_q;
         Some(a)
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug, IntoPrimitive)]
-#[repr(u8)]
-enum Quality {
-    ExtremelyCool,
-    Musical,
-    Aerodynamic,
-    Shiny,
-}
-impl Quality {
-    fn parse(input: &str) -> IResult<Self> {
-        one_of("xmas")
-            .map(|x| match x {
-                'x' => Quality::ExtremelyCool,
-                'm' => Quality::Musical,
-                'a' => Quality::Aerodynamic,
-                's' => Quality::Shiny,
-                _ => panic!(),
-            })
-            .parse(input)
-    }
+fn parse_quality(input: &str) -> IResult<usize> {
+    one_of("xmas")
+        .map(|x| "xmas".chars().position(|t| t == x).unwrap())
+        .parse(input)
 }
 
 #[derive(Debug)]
-struct CheckRule {
-    quality: Quality,
+struct Rule {
+    quality: usize,
     check: Ordering,
     value: u16,
     target: String,
 }
 
-impl CheckRule {
+impl Rule {
     fn matches(&self, part: &Part) -> Option<&str> {
-        (part.values[u8::from(self.quality) as usize].cmp(&self.value) == self.check)
-            .then_some(&self.target)
+        (part.values[self.quality].cmp(&self.value) == self.check).then_some(&self.target)
     }
     fn parse(input: &str) -> IResult<Self> {
         let (input, (quality, check, value, _, target)) = tuple((
-            Quality::parse,
-            one_of("<>").map(|x| {
-                if x == '<' {
-                    Ordering::Less
-                } else {
-                    Ordering::Greater
-                }
-            }),
+            parse_quality,
+            alt((
+                value(Ordering::Less, tag("<")),
+                value(Ordering::Greater, tag(">")),
+            )),
             complete::u16,
             tag(":"),
             alpha1.map(|x: &str| x.to_owned()),
@@ -193,7 +188,7 @@ struct Part {
 impl Part {
     fn parse(input: &str) -> IResult<Self> {
         let (input, values): (_, Vec<u16>) = collect_separated_terminated(
-            Quality::parse.precedes(tag("=")).precedes(complete::u16),
+            parse_quality.precedes(tag("=")).precedes(complete::u16),
             tag(","),
             tag("}\n"),
         )
@@ -204,27 +199,23 @@ impl Part {
     }
 }
 
-fn p1(input: &str) -> u32 {
-    let (input, prob) = X::parse(input).unwrap();
-    assert_eq!(input, "");
-    let mut total = 0;
-    for p in prob.parts {
-        let mut flow = "in";
-        while flow != "A" && flow != "R" {
-            flow = prob.workflows[flow].sort(&p);
-        }
-        if flow == "A" {
-            total += p.values.iter().copied().map(u32::from).sum::<u32>();
-        }
-    }
-    total
+fn p1(prob: &X) -> u32 {
+    prob.parts
+        .iter()
+        .map(|p| {
+            let mut flow = "in";
+            loop {
+                match prob.workflows[flow].process(p) {
+                    "A" => break p.values.iter().copied().map(u32::from).sum::<u32>(),
+                    "R" => break 0,
+                    x => flow = x,
+                }
+            }
+        })
+        .sum()
 }
-fn p2(input: &str) -> u64 {
-    let (input, prob) = X::parse(input).unwrap();
-    assert_eq!(input, "");
-    let a_routes = prob.explore();
-    // dbg!(&a_routes);
-    a_routes.iter().map(PartConstraints::count).sum()
+fn p2(prob: &X) -> u64 {
+    prob.explore().iter().map(PartConstraints::count).sum()
 }
 
 const EG: &str = "px{a<2006:qkq,m>2090:A,rfg}
