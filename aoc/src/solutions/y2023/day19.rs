@@ -10,7 +10,7 @@ use nom::{
     Parser,
 };
 use nom_supreme::{multi::collect_separated_terminated, ParserExt};
-use utils::span::Span;
+use utils::{nom::IResult, span::Span};
 
 aoc_harness::aoc_main!(2023 day 19,
     generator X::parse_all,
@@ -19,13 +19,12 @@ aoc_harness::aoc_main!(2023 day 19,
     example both EG => (19114, 167_409_079_868_000));
 
 #[derive(Debug)]
-struct X {
-    workflows: HashMap<String, Workflow>,
+struct X<'a> {
+    workflows: HashMap<&'a str, Workflow<'a>>,
     parts: Vec<Part>,
 }
-pub type IResult<'a, T> = nom::IResult<&'a str, T, ()>;
-impl X {
-    fn parse_all(input: &str) -> X {
+impl<'a> X<'a> {
+    fn parse_all(input: &'a str) -> Self {
         X::parse
             .all_consuming()
             .complete()
@@ -33,13 +32,13 @@ impl X {
             .expect("parse")
             .1
     }
-    fn parse(input: &str) -> IResult<Self> {
+    fn parse(input: &'a str) -> IResult<Self> {
         let (input, (workflows, _, parts)) = tuple((
             separated_list1(newline, Workflow::parse),
             tag("\n\n"),
             many1(Part::parse),
         ))(input)?;
-        let workflows = workflows.into_iter().map(|x| (x.name.clone(), x)).collect();
+        let workflows = workflows.into_iter().map(|x| (x.name, x)).collect();
         Ok((input, Self { workflows, parts }))
     }
     fn explore(&self) -> Vec<PartConstraints> {
@@ -75,19 +74,19 @@ impl X {
     }
 }
 #[derive(Debug)]
-struct Workflow {
-    name: String,
-    rules: Vec<Rule>,
-    default: String,
+struct Workflow<'a> {
+    name: &'a str,
+    rules: Vec<Rule<'a>>,
+    default: &'a str,
 }
-impl Workflow {
-    fn parse(input: &str) -> IResult<Self> {
+impl<'a> Workflow<'a> {
+    fn parse(input: &'a str) -> IResult<Self> {
         let (input, (name, _, rules, _, default, _)) = tuple((
-            alpha1.map(|x: &str| x.to_owned()),
+            alpha1,
             tag("{"),
             separated_list1(tag(","), Rule::parse),
             tag(","),
-            alpha1.map(|x: &str| x.to_owned()),
+            alpha1,
             tag("}"),
         ))(input)?;
         Ok((
@@ -103,7 +102,7 @@ impl Workflow {
         self.rules
             .iter()
             .find_map(|r| r.matches(part))
-            .unwrap_or(&self.default)
+            .unwrap_or(self.default)
     }
 }
 
@@ -146,18 +145,18 @@ fn parse_quality(input: &str) -> IResult<usize> {
 }
 
 #[derive(Debug)]
-struct Rule {
+struct Rule<'a> {
     quality: usize,
     check: Ordering,
     value: u16,
-    target: String,
+    target: &'a str,
 }
 
-impl Rule {
+impl<'a> Rule<'a> {
     fn matches(&self, part: &Part) -> Option<&str> {
-        (part.values[self.quality].cmp(&self.value) == self.check).then_some(&self.target)
+        (part.values[self.quality].cmp(&self.value) == self.check).then_some(self.target)
     }
-    fn parse(input: &str) -> IResult<Self> {
+    fn parse(input: &'a str) -> IResult<Self> {
         let (input, (quality, check, value, _, target)) = tuple((
             parse_quality,
             alt((
@@ -166,7 +165,7 @@ impl Rule {
             )),
             complete::u16,
             tag(":"),
-            alpha1.map(|x: &str| x.to_owned()),
+            alpha1,
         ))(input)?;
         Ok((
             input,
