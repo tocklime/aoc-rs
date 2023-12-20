@@ -98,8 +98,14 @@ where
     })
 }
 
-#[derive(Default, PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub struct VecLookup<T>(Vec<Option<T>>);
+
+impl<T> Default for VecLookup<T> {
+    fn default() -> Self {
+        Self(Vec::default())
+    }
+}
 
 impl<T> VecLookup<T> {
     #[must_use]
@@ -170,7 +176,7 @@ impl<'a, T> Iterator for VecLookupIter<'a, T> {
         None //out of items in array.
     }
 }
-impl<T: Default> FromIterator<(usize, T)> for VecLookup<T> {
+impl<T> FromIterator<(usize, T)> for VecLookup<T> {
     fn from_iter<TI: IntoIterator<Item = (usize, T)>>(iter: TI) -> Self {
         let mut a = Self::default();
         for (ix, t) in iter {
