@@ -1,20 +1,16 @@
-use std::{
-    collections::{HashMap, VecDeque},
-    future::pending,
-};
+use std::collections::{HashMap, VecDeque};
 
-use clap::builder::StyledStr;
 use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{alpha1, newline},
     combinator::{success, value},
     multi::separated_list1,
-    sequence::{preceded, tuple},
+    sequence::tuple,
     Parser,
 };
 use nom_supreme::ParserExt;
-use utils::{collections::VecLookup, iter::borrow_mut_twice, nom::IResult};
+use utils::nom::IResult;
 
 aoc_harness::aoc_main!(2023 day 20,
     generator System::from_str,
@@ -24,12 +20,12 @@ aoc_harness::aoc_main!(2023 day 20,
     example part1 EG2 => 11_687_500);
 
 #[derive(Clone, PartialEq, Eq, Debug)]
-enum ModuleType {
+enum ModuleType<ID: PartialEq + Eq + std::hash::Hash> {
     Broadcast,
     FlipFlop(bool),
-    Conjunction(HashMap<String, bool>),
+    Conjunction(HashMap<ID, bool>),
 }
-impl ModuleType {
+impl<'a> ModuleType<&'a str> {
     fn parse(input: &str) -> IResult<Self> {
         alt((
             value(ModuleType::FlipFlop(false), tag("%")),
@@ -40,31 +36,28 @@ impl ModuleType {
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
-struct Module {
-    name: String,
-    typ: ModuleType,
-    targets: Vec<String>,
+struct Module<ID : PartialEq + Eq + std::hash::Hash> {
+    name: ID,
+    typ: ModuleType<ID>,
+    targets: Vec<ID>,
 }
-impl Module {
-    fn parse(input: &str) -> IResult<Self> {
+impl<'a> Module<&'a str> {
+    fn parse(input: &'a str) -> IResult<Self> {
         let (input, (typ, name, targets)) = tuple((
             ModuleType::parse,
             alpha1.terminated(tag(" -> ")),
             separated_list1(tag(", "), alpha1),
         ))(input)?;
-        let name = name.to_string();
-        let targets = targets
-            .into_iter()
-            .map(std::borrow::ToOwned::to_owned)
-            .collect();
         Ok((input, Self { name, typ, targets }))
     }
-    fn add_input(&mut self, name: &str) {
+}
+impl<ID : PartialEq + Eq + std::hash::Hash + std::fmt::Display> Module<ID> {
+    fn add_input(&mut self, name: ID) {
         if let ModuleType::Conjunction(inputs) = &mut self.typ {
-            inputs.insert(name.to_string(), false);
+            inputs.insert(name, false);
         }
     }
-    fn handle_pulse(&mut self, source: &str, value: bool) -> Option<bool> {
+    fn handle_pulse(&mut self, source: Option<ID>, value: bool) -> Option<bool> {
         match &mut self.typ {
             ModuleType::Broadcast => Some(value),
             ModuleType::FlipFlop(b) => {
@@ -76,7 +69,8 @@ impl Module {
                 }
             }
             ModuleType::Conjunction(inps) => {
-                if let Some(x) = inps.get_mut(source) {
+                let source = source.expect("No injecting to conjunctions");
+                if let Some(x) = inps.get_mut(&source) {
                     *x = value;
                     Some(!inps.values().all(|x| *x))
                 } else {
@@ -87,29 +81,25 @@ impl Module {
     }
 }
 #[derive(Default, Clone, Debug)]
-struct System {
-    modules: HashMap<String, Module>,
-    input_maps: HashMap<String, Vec<String>>,
-    pending_signals: VecDeque<(String, bool, String)>,
+struct System<ID : PartialEq + Eq + std::hash::Hash> {
+    modules: HashMap<ID, Module<ID>>,
+    input_maps: HashMap<ID, Vec<ID>>,
+    pending_signals: VecDeque<(Option<ID>, bool, ID)>,
     signal_counts: [usize; 2],
 }
-impl System {
-    fn from_str(input: &str) -> Self {
+impl<'a> System<&'a str> {
+    fn from_str(input: &'a str) -> Self {
         let (_, modules) = separated_list1(newline, Module::parse)
             .terminated(newline)
             .all_consuming()
             .complete()
             .parse(input)
             .expect("parse");
-        let mut modules: HashMap<String, Module> =
-            modules.into_iter().map(|x| (x.name.clone(), x)).collect();
-        let mut input_maps: HashMap<String, Vec<String>> = HashMap::new();
+        let mut modules: HashMap<&str, Module<&'a str>> = modules.into_iter().map(|x| (x.name, x)).collect();
+        let mut input_maps: HashMap<&str, Vec<&str>> = HashMap::new();
         for m in modules.values() {
             for t in &m.targets {
-                input_maps
-                    .entry(t.to_owned())
-                    .or_default()
-                    .push(m.name.to_owned());
+                input_maps.entry(t).or_default().push(m.name);
             }
         }
         for (target, sources) in &input_maps {
@@ -125,19 +115,20 @@ impl System {
             ..Default::default()
         }
     }
-    fn inject_signal(&mut self, target: &str, value: bool) {
-        let t = self.modules.get_mut(target).expect("valid module");
+}
+impl<ID : PartialEq + Eq + std::hash::Hash+ Clone + std::fmt::Display> System<ID> {
+    fn inject_signal(&mut self, target: ID, value: bool) {
+        let t = self.modules.get_mut(&target).expect("valid module");
         assert!(
             !matches!(t.typ, ModuleType::Conjunction(_)),
             "Cannot inject to Conjunction modules"
         );
-        self.pending_signals
-            .push_back(("injected".to_string(), value, target.to_owned()));
+        self.pending_signals.push_back((None, value, target));
     }
     fn quiet(&self) -> bool {
         self.pending_signals.is_empty()
     }
-    fn next_signal_is(&self, target: &str, value: bool) -> bool {
+    fn next_signal_is(&self, target: ID, value: bool) -> bool {
         self.pending_signals
             .front()
             .map(|s| s.1 == value && s.2 == target)
@@ -147,16 +138,16 @@ impl System {
         let (source, value, target) = self.pending_signals.pop_front().expect("pending signal");
         self.signal_counts[usize::from(value)] += 1;
         if let Some(me) = self.modules.get_mut(&target) {
-            if let Some(value) = me.handle_pulse(&source, value) {
+            if let Some(value) = me.handle_pulse(source, value) {
                 for out in &me.targets {
                     self.pending_signals
-                        .push_back((me.name.clone(), value, out.clone()));
+                        .push_back((Some(me.name.clone()), value, out.clone()));
                 }
             }
         }
     }
 }
-fn p1(system: &System) -> usize {
+fn p1(system: &System<&str>) -> usize {
     let mut sys = system.clone();
     for _ in 0..1000 {
         sys.inject_signal("broadcaster", false);
@@ -166,7 +157,7 @@ fn p1(system: &System) -> usize {
     }
     sys.signal_counts.iter().copied().product()
 }
-fn p2(system: &System) -> usize {
+fn p2(system: &System<&str>) -> usize {
     let broadcast_outputs = &system.modules["broadcaster"].targets;
     let rx_input = &system.input_maps["rx"][0];
     broadcast_outputs
