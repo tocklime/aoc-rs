@@ -3,19 +3,25 @@ use std::{
     future::pending,
 };
 
+use clap::builder::StyledStr;
 use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{alpha1, newline},
     combinator::{success, value},
     multi::separated_list1,
-    sequence::{tuple, preceded},
+    sequence::{preceded, tuple},
     Parser,
 };
 use nom_supreme::ParserExt;
-use utils::{collections::VecLookup, nom::IResult};
+use utils::{collections::VecLookup, iter::borrow_mut_twice, nom::IResult};
 
-aoc_harness::aoc_main!(2023 day 20, part1 [p1::<1000>], part2 [p2], example part1 EG => 32000000, example part1 EG2 => 11687500);
+aoc_harness::aoc_main!(2023 day 20,
+    generator System::from_str,
+    part1 [p1] => 730_797_576,
+    part2 [p2] => 226_732_077_152_351,
+    example part1 EG => 32_000_000,
+    example part1 EG2 => 11_687_500);
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 enum ModuleType {
@@ -80,122 +86,108 @@ impl Module {
         }
     }
 }
-fn p1<const N: usize>(input: &str) -> u32 {
-    let (_, modules) = separated_list1(newline, Module::parse)
-        .terminated(newline)
-        .all_consuming()
-        .complete()
-        .parse(input)
-        .expect("parse");
-    let mut lookup: HashMap<String, Module> =
-        modules.into_iter().map(|x| (x.name.clone(), x)).collect();
-    let mut input_maps: HashMap<String, Vec<String>> = HashMap::new();
-    for m in lookup.values() {
-        for t in &m.targets {
-            input_maps
-                .entry(t.to_owned())
-                .or_default()
-                .push(m.name.to_owned());
-        }
-    }
-    for (target, sources) in input_maps {
-        if let Some(t) = lookup.get_mut(&target) {
-            for s in sources {
-                t.add_input(&s);
-            }
-        }
-    }
-    let mut counts = [0; 2];
-    for _ in 0..N {
-        let mut pending_signals = VecDeque::new();
-        pending_signals.push_back(("button".to_owned(), false, "broadcaster".to_owned()));
-        while let Some((source, val, name)) = pending_signals.pop_front() {
-            // println!("{source} -{}-> {name}", if val { "high"} else {"low"});
-            counts[usize::from(val)] += 1;
-            if let Some(me) = lookup.get_mut(&name) {
-                if let Some(value) = me.handle_pulse(&source, val) {
-                    for out in &me.targets {
-                        pending_signals.push_back((me.name.clone(), value, out.clone()));
-                    }
-                }
-            }
-        }
-    }
-    counts[0] * counts[1]
+#[derive(Default, Clone, Debug)]
+struct System {
+    modules: HashMap<String, Module>,
+    input_maps: HashMap<String, Vec<String>>,
+    pending_signals: VecDeque<(String, bool, String)>,
+    signal_counts: [usize; 2],
 }
-fn p2(input: &str) -> usize {
-    let (_, modules) = separated_list1(newline, Module::parse)
-        .terminated(newline)
-        .all_consuming()
-        .complete()
-        .parse(input)
-        .expect("parse");
-    let mut lookup: HashMap<String, Module> =
-        modules.into_iter().map(|x| (x.name.clone(), x)).collect();
-    let mut input_maps: HashMap<String, Vec<String>> = HashMap::new();
-    // println!("digraph {{");
-    for m in lookup.values() {
-        // let ty = match m.typ {
-        //     ModuleType::Broadcast => "",
-        //     ModuleType::FlipFlop(_) => "%",
-        //     ModuleType::Conjunction(_) => "&",
-        // };
-        // println!("{} [label = \"{}: {}\"]", &m.name, &m.name, ty);
-        for (ix, t) in m.targets.iter().enumerate() {
-            // println!("{} -> {t} [label = \"{ix}\"]", &m.name);
-            input_maps
-                .entry(t.to_owned())
-                .or_default()
-                .push(m.name.to_owned());
-        }
-    }
-    // println!("}}");
-    for (target, sources) in input_maps {
-        if let Some(t) = lookup.get_mut(&target) {
-            for s in sources {
-                t.add_input(&s);
+impl System {
+    fn from_str(input: &str) -> Self {
+        let (_, modules) = separated_list1(newline, Module::parse)
+            .terminated(newline)
+            .all_consuming()
+            .complete()
+            .parse(input)
+            .expect("parse");
+        let mut modules: HashMap<String, Module> =
+            modules.into_iter().map(|x| (x.name.clone(), x)).collect();
+        let mut input_maps: HashMap<String, Vec<String>> = HashMap::new();
+        for m in modules.values() {
+            for t in &m.targets {
+                input_maps
+                    .entry(t.to_owned())
+                    .or_default()
+                    .push(m.name.to_owned());
             }
         }
-    }
-    let mut hit_count = 0;
-    let mut last_hit = 0;
-    //vj= 3732 + 3733n
-    //xk= 3792 + 3793n
-    //gr= 3946 + 3947n
-    //fb= 4056 + 4057n
-    //find n,m s.t.
-    // vj == xk:
-    // 3732 + 3733n = 3792 + 3793m
-    // ____   3733n = 60 + 3793m
-
-    
-
-    let start = std::time::Instant::now();
-
-    for press_count in 1.. {
-        let mut pending_signals = VecDeque::new();
-        pending_signals.push_back(("button".to_owned(), false, "fb".to_owned()));
-        while let Some((source, val, name)) = pending_signals.pop_front() {
-            if &name == "gh" && val {
-                println!("hit {hit_count} at {press_count} {} since last time", press_count - last_hit);
-                hit_count +=1;
-                last_hit = press_count;
-                if hit_count > 5 {
-                    let elapsed = start.elapsed();
-                    println!("{press_count} presses in {elapsed:?}");
-                    return 0;
+        for (target, sources) in &input_maps {
+            if let Some(t) = modules.get_mut(target) {
+                for s in sources {
+                    t.add_input(s);
                 }
             }
-            if let Some(me) = lookup.get_mut(&name) {
-                if let Some(value) = me.handle_pulse(&source, val) {
-                    for out in &me.targets {
-                        pending_signals.push_back((me.name.clone(), value, out.clone()));
+        }
+        Self {
+            modules,
+            input_maps,
+            ..Default::default()
+        }
+    }
+    fn inject_signal(&mut self, target: &str, value: bool) {
+        let t = self.modules.get_mut(target).expect("valid module");
+        assert!(
+            !matches!(t.typ, ModuleType::Conjunction(_)),
+            "Cannot inject to Conjunction modules"
+        );
+        self.pending_signals
+            .push_back(("injected".to_string(), value, target.to_owned()));
+    }
+    fn quiet(&self) -> bool {
+        self.pending_signals.is_empty()
+    }
+    fn next_signal_is(&self, target: &str, value: bool) -> bool {
+        self.pending_signals
+            .front()
+            .map(|s| s.1 == value && s.2 == target)
+            .unwrap_or_default()
+    }
+    fn step(&mut self) {
+        let (source, value, target) = self.pending_signals.pop_front().expect("pending signal");
+        self.signal_counts[usize::from(value)] += 1;
+        if let Some(me) = self.modules.get_mut(&target) {
+            if let Some(value) = me.handle_pulse(&source, value) {
+                for out in &me.targets {
+                    self.pending_signals
+                        .push_back((me.name.clone(), value, out.clone()));
+                }
+            }
+        }
+    }
+}
+fn p1(system: &System) -> usize {
+    let mut sys = system.clone();
+    for _ in 0..1000 {
+        sys.inject_signal("broadcaster", false);
+        while !sys.quiet() {
+            sys.step();
+        }
+    }
+    sys.signal_counts.iter().copied().product()
+}
+fn p2(system: &System) -> usize {
+    let broadcast_outputs = &system.modules["broadcaster"].targets;
+    let rx_input = &system.input_maps["rx"][0];
+    broadcast_outputs
+        .iter()
+        .map(|x| {
+            assert!(matches!(system.modules[x].typ, ModuleType::FlipFlop(_)));
+            let mut sys = system.clone();
+            (1..)
+                .find(|_| {
+                    sys.inject_signal(x, false);
+                    while !sys.quiet() {
+                        sys.step();
+                        if sys.next_signal_is(rx_input, true) {
+                            return true;
+                        }
                     }
-                }
-            }
-        }
-    }
-    unreachable!()
+                    false
+                })
+                .unwrap()
+        })
+        .product()
 }
 
 const EG: &str = "broadcaster -> a, b, c
