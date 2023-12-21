@@ -24,5 +24,5 @@ pub mod knot_hash;
 pub mod nom;
 pub mod numset_bytes;
 pub mod points;
-pub mod prelude;
 pub mod polynomials;
+pub mod prelude;

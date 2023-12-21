@@ -52,7 +52,7 @@ fn p1(input: &str) -> usize {
     let mut reach = Grid2d::from_fn(g.dim(), |x| g[x] == 'S');
     // println!("{g}");
     // draw(&g, &reach);
-    for i in 0..64 {
+    for _ in 0..64 {
         reach = step(&g, &reach);
     }
     // draw(&g, &reach);
