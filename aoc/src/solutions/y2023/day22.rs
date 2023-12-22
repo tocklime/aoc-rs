@@ -15,12 +15,13 @@ use utils::nom::IResult;
 
 aoc_harness::aoc_main!(2023 day 22, both [both] => (495, 76158), example both EG => (5,7));
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct Brick {
     id: usize,
     from: Ix3,
     to: Ix3,
 }
+#[derive(Debug, Clone)]
 struct World {
     space: Array3<Option<usize>>,
     bricks: Vec<Brick>,
@@ -46,6 +47,27 @@ impl Brick {
     }
 }
 
+impl World {
+fn remove(&mut self, brick: usize) {
+    let fall_dist = self.falls[brick];
+    for b in self.bricks[brick].blocks(fall_dist) {
+        assert_eq!(self.space[b], Some(brick));
+        self.space[b] = None;
+    }
+}
+fn do_drops<'a>(&mut self) {
+    for z in 0..self.space.dim().2 {
+        let mut anything_fell = false;
+        todo!();
+        
+        let max_fall = (0..z).take_while(|x| could_place(&self, brick, fall_dist))
+
+        if !anything_fell {
+            break;
+        }
+    }
+}
+}
 fn parse_brick(input: &str) -> IResult<Brick> {
     let (input, (a, b)): (&str, ([usize; 3], [usize; 3])) = separated_pair(
         separated_list1(tag(","), complete::u32.map(|x| x as usize)).map(|x| x.try_into().unwrap()),
@@ -63,34 +85,19 @@ fn parse_bricks(input: &str) -> IResult<Vec<Brick>> {
         .parse(input)
 }
 
-fn could_place(world: &World, brick: &Brick, fall_dist: usize) -> bool {
-    brick
+fn could_place(world: &World, brick: usize, fall_dist: usize) -> bool {
+    world.bricks[brick]
         .blocks(fall_dist)
-        .all(|b| world.space[b].is_none() || world.space[b] == Some(brick.id))
-}
-fn remove(world: &mut World, brick: &Brick, fall_dist: usize) {
-    for b in brick.blocks(fall_dist) {
-        assert_eq!(world.space[b], Some(brick.id));
-        world.space[b] = None;
-    }
+        .all(|b| world.space[b].is_none() || world.space[b] == Some(brick))
 }
 
-fn place(world: &mut World, brick: &Brick, fall_dist: usize) {
-    for b in brick.blocks(fall_dist) {
+fn place(world: &mut World, brick: usize, fall_dist: usize) {
+    for b in world.bricks[brick].blocks(fall_dist) {
         assert!(world.space[b].is_none());
-        world.space[b] = Some(brick.id);
+        world.space[b] = Some(brick);
     }
 }
 
-fn do_drops<'a>(world: &mut World, bricks: &[Brick]) {
-    for z in 0..world.space.dim().2 {
-        let mut anything_fell = false;
-
-        if !anything_fell {
-            break;
-        }
-    }
-}
 
 #[allow(dead_code)]
 fn draw_world(world: &World) {
@@ -117,17 +124,12 @@ impl World {
     fn new(bricks: Vec<Brick>, without: Option<usize>) -> Self {
         let mut world = World {
             space: Array3::default([10, 10, 400]),
-            bricks,
             falls: vec![0; bricks.len()],
+            bricks,
         };
-        for br in &world.bricks {
-            if Some(br.id) != without {
-                let correct_fall = (0..br.min_z())
-                    .take_while(|x| could_place(&world, br, *x))
-                    .last()
-                    .unwrap();
-                world.falls[br.id] = correct_fall;
-                place(&mut world, br, correct_fall);
+        for br in (0..world.bricks.len()) {
+            if Some(br) != without {
+                place(&mut world, br, 0);
             }
         }
         world
@@ -150,7 +152,7 @@ fn both(input: &str) -> (usize, usize) {
     //build a map of (A is supported by [B,C,D])
     //then a brick is not removable if its ever alone on the rhs in that map.
     let mut supported_by: HashMap<&Brick, HashSet<usize>> = HashMap::new();
-    for b in &bricks {
+    for b in &world.bricks {
         let fall = world.falls[b.id];
         for block in b.blocks(fall) {
             if block[2] > 1 {
@@ -173,14 +175,16 @@ fn both(input: &str) -> (usize, usize) {
                 .push(*supported);
         }
     }
-    let p1 = bricks.len() - unsafe_to_remove.len();
+    let p1 = world.bricks.len() - unsafe_to_remove.len();
 
     progress_bar::init_progress_bar(unsafe_to_remove.len());
     let p2 = unsafe_to_remove
         .par_iter()
         .map(|(x, _)| {
             progress_bar::inc_progress_bar();
-            let new_world = build_world(&bricks, Some(*x));
+            let mut new_world = world.clone();
+            new_world.remove(*x);
+            new_world.do_drops();
             new_world
                 .falls
                 .iter()
