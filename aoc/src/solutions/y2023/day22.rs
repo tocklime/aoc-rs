@@ -1,7 +1,8 @@
+use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
 
 use itertools::Itertools;
-use ndarray::{Array3, IntoDimension, Ix3};
+use ndarray::{Array3, IntoDimension, Ix3, Dim};
 use nom::{
     bytes::complete::tag,
     character::complete::{self, newline},
@@ -12,23 +13,33 @@ use nom::{
 use nom_supreme::ParserExt;
 use utils::nom::IResult;
 
-aoc_harness::aoc_main!(2023 day 22, both [both], example both EG => (5,7));
+aoc_harness::aoc_main!(2023 day 22, both [both] => (495, 76158), example both EG => (5,7));
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct Brick {
     id: usize,
     from: Ix3,
     to: Ix3,
 }
+struct World {
+    space : Array3<Option<usize>>,
+    bricks: Vec<Brick>,
+    falls: Vec<usize>,
+}
+
 impl Brick {
     fn min_z(&self) -> usize {
-        self.from[2].min(self.to[2])
+        self.from[2]
     }
     fn blocks(&self, fall_dist: usize) -> impl Iterator<Item = Ix3> {
         (0..3)
             .map(|x| self.from[x]..=self.to[x])
             .multi_cartesian_product()
-            .map(move |x| [x[0], x[1], x[2] - fall_dist].into_dimension())
+            .map(move |x| Dim([x[0], x[1], x[2] - fall_dist]))
+    }
+
+    fn below(&self, w: &World) -> HashSet<usize> {
+        self.blocks(0).flat_map(|x| (x[2]>0).then(|| w.space[x - Dim([0,0,1])])).flatten().collect()
     }
 }
 
@@ -49,25 +60,45 @@ fn parse_bricks(input: &str) -> IResult<Vec<Brick>> {
         .parse(input)
 }
 
-fn could_place<'a>(world: &Array3<Option<&'a Brick>>, brick: &'a Brick, fall_dist: usize) -> bool {
-    brick.blocks(fall_dist).all(|b| world[b].is_none())
+fn could_place(world: &World, brick: &Brick, fall_dist: usize) -> bool {
+    brick.blocks(fall_dist).all(|b| world.space[b].is_none() || world.space[b] == Some(brick.id))
 }
-fn place<'a>(world: &mut Array3<Option<&'a Brick>>, brick: &'a Brick, fall_dist: usize) {
+fn remove(world:&mut World, brick: &Brick, fall_dist: usize) {
     for b in brick.blocks(fall_dist) {
-        assert!(world[b].is_none());
-        world[b] = Some(brick);
+        assert_eq!(world.space[b], Some(brick.id));
+        world.space[b] = None;
     }
 }
 
-fn draw_world(world: &Array3<Option<&Brick>>) {
+fn place(world: &mut World, brick: &Brick, fall_dist: usize) {
+    for b in brick.blocks(fall_dist) {
+        assert!(world.space[b].is_none());
+        world.space[b] = Some(brick.id);
+    }
+}
+
+fn do_drops<'a>(world: &mut World, bricks: &[Brick]) {
+    for z in 0..world.space.dim().2 {
+        let mut anything_fell = false;
+
+
+        if !anything_fell {
+            break;
+        }
+    }
+
+}
+
+#[allow(dead_code)]
+fn draw_world(world: &World) {
     for z in 0..10 {
         println!("z: {z}");
         for y in 0..3 {
             for x in 0..3 {
                 print!(
                     "{}",
-                    if let Some(b) = world[[x, y, z]] {
-                        (b'A' + u8::try_from(b.id % 10).unwrap()) as char
+                    if let Some(b) = world.space[[x, y, z]] {
+                        (b'A' + u8::try_from(b % 10).unwrap()) as char
                     } else {
                         '.'
                     }
@@ -79,21 +110,26 @@ fn draw_world(world: &Array3<Option<&Brick>>) {
     }
 }
 
-
-fn build_world<'a>(bricks: &'a[Brick], without: Option<&Brick>) -> (HashMap<&'a Brick, usize>, Array3<Option<&'a Brick>>) {
-    let mut world = ndarray::Array3::<Option<&Brick>>::default([10, 10, 1000]);
-    let mut falls = HashMap::new();
+fn build_world(
+    bricks: &[Brick],
+    without: Option<usize>,
+) -> World {
+    let mut world = World {
+        space : Array3::default([10,10,400]),
+        bricks: bricks.to_vec(),
+        falls: vec![0;bricks.len()],
+    };
     for br in bricks {
-        if Some(br) != without {
+        if Some(br.id) != without {
             let correct_fall = (0..br.min_z())
                 .take_while(|x| could_place(&world, br, *x))
                 .last()
                 .unwrap();
-            falls.insert(br, correct_fall);
+            world.falls[br.id] = correct_fall;
             place(&mut world, br, correct_fall);
         }
     }
-    (falls, world)
+    world
 }
 
 fn both(input: &str) -> (usize, usize) {
@@ -106,43 +142,49 @@ fn both(input: &str) -> (usize, usize) {
         b.id = ix;
     }
     bricks.sort_by_key(Brick::min_z);
-    let (falls, world) = build_world(&bricks, None);
+    let world = build_world(&bricks, None);
     //can we remove this?
     //removable iff it's not the only brick supporting something.
     //build a map of (A is supported by [B,C,D])
     //then a brick is not removable if its ever alone on the rhs in that map.
-    let mut supported_by: HashMap<&Brick, HashSet<&Brick>> = HashMap::new();
+    let mut supported_by: HashMap<&Brick, HashSet<usize>> = HashMap::new();
     for b in &bricks {
-        let fall = falls[b];
+        let fall = world.falls[b.id];
         for block in b.blocks(fall) {
             if block[2] > 1 {
-                if let Some(supp) = world[block - [0, 0, 1].into_dimension()] {
-                    if supp != b {
+                if let Some(supp) = world.space[block - Dim([0,0,1])] {
+                    if supp != b.id {
                         supported_by.entry(b).or_default().insert(supp);
                     }
                 }
             }
         }
     }
-    let mut unsafe_to_remove: HashSet<&Brick> = HashSet::new();
-    for supporters in supported_by.values() {
+    //a is unsafe because it is the only brick supporting...
+    let mut unsafe_to_remove: HashMap<usize, Vec<&Brick>> = HashMap::new();
+    for (supported, supporters) in &supported_by {
         if supporters.len() == 1 {
-            unsafe_to_remove.extend(supporters);
+            let supporter = *supporters.iter().next().unwrap();
+            unsafe_to_remove
+                .entry(supporter)
+                .or_default()
+                .push(*supported);
         }
     }
-    // dbg!(&supported_by);
-    // dbg!(&unsafe_to_remove);
     let p1 = bricks.len() - unsafe_to_remove.len();
 
     progress_bar::init_progress_bar(unsafe_to_remove.len());
-    let p2 = unsafe_to_remove.iter().map(|x| {
-        progress_bar::inc_progress_bar();
-        let (new_falls, _world) = build_world(&bricks, Some(*x));
-        new_falls.iter().filter(|(k,v)| falls[**k] != **v).count()
-    }).sum();
+    let p2 = unsafe_to_remove
+        .par_iter()
+        .map(|(x, _)| {
+            progress_bar::inc_progress_bar();
+            let new_world = build_world(&bricks, Some(*x));
+            new_world.falls.iter().zip(&world.falls).filter(|(a,b)| a != b).count()
+            // new_world.falls.iter().enumerate().filter(|(k, v)| world.falls[**k] != **v).count()
+        })
+        .sum();
 
-
-    (p1,p2)
+    (p1, p2)
 }
 
 const EG: &str = "1,0,1~1,2,1

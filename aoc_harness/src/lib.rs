@@ -183,12 +183,15 @@ impl Opts {
     where
         F: Fn() -> O,
     {
+        let start = Instant::now();
+        let ans = f();
+        let dur = start.elapsed();
         #[allow(
             clippy::cast_possible_truncation,
             clippy::cast_sign_loss,
             clippy::cast_precision_loss
         )] //it's only for reporting the time.
-        if !self.bypass {
+        if !self.bypass && dur < Self::TARGET_DUR {
             let mut ans = None;
             let bench = benchmarking::bench_function_with_duration(Self::TARGET_DUR, |measurer| {
                 measurer.measure(|| ans = Some(f()));
@@ -196,12 +199,10 @@ impl Opts {
             .unwrap();
             let overall = bench.elapsed().as_secs_f64();
             (std::time::Duration::from_secs_f64(overall), ans.unwrap())
-        } else {
-            let start = Instant::now();
-            let ans = f();
-            let dur = start.elapsed();
+        } else { 
             (dur, ans)
         }
+
     }
 }
 
