@@ -673,3 +673,6 @@
   22:
     part1: !Checked '495'
     part2: !Checked '76158'
+  23:
+    part1: !Observed '2394'
+    part2: !Observed '6554'
