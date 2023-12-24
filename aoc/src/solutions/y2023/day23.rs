@@ -1,7 +1,4 @@
-use std::{
-    collections::{hash_map::Entry, BTreeMap, HashMap, HashSet, VecDeque},
-    iter,
-};
+use std::collections::{hash_map::Entry, HashMap, HashSet, VecDeque};
 
 use utils::{
     cartesian::Point,
@@ -51,6 +48,20 @@ fn topo_order(g: &Graph, start: Coord) -> Vec<Coord> {
     stack
 }
 
+#[allow(dead_code)]
+fn draw_digraph(g: &Graph) {
+    println!("digraph {{");
+    for (from, targets) in g {
+        let from_str = format!("p_{}_{}", from.x, from.y);
+        for (t, cost) in targets {
+            let to_str = format!("p_{}_{}", t.x, t.y);
+            println!("  {from_str} -> {to_str} [label = \"{cost}\"]");
+        }
+    }
+    println!("}}");
+
+}
+
 fn p2(input: &str) -> usize {
     let g = Grid2d::from_str(input, |x| x);
     let start = Point::new(1, 0);
@@ -75,27 +86,12 @@ fn p2(input: &str) -> usize {
                 if next.len() > 1 {
                     joints.entry(pos).or_default().push((last, step_count));
                     to_explore.push(last);
-                    println!("Start at {pos:?}, go to {last:?}, taking {step_count} steps then choose between {next:?}");
                 } else if last == target {
                     joints.entry(pos).or_default().push((last, step_count));
-                    println!(
-                        "Start at {pos:?}, go to {last:?}, taking {step_count} steps then FINISH"
-                    );
-                } else {
-                    println!("Start at {pos:?}, go to {last:?}, taking {step_count} steps then have no choices");
                 }
             }
         }
     }
-    println!("digraph {{");
-    for (from, targets) in &joints {
-        let from_str = format!("p_{}_{}", from.x, from.y);
-        for (t, cost) in targets {
-            let to_str = format!("p_{}_{}", t.x, t.y);
-            println!("  {from_str} -> {to_str} [label = \"{cost}\"]");
-        }
-    }
-    println!("}}");
 
     let mut dist = HashMap::new();
     dist.insert(start, 0);
@@ -112,38 +108,19 @@ fn p2(input: &str) -> usize {
             }
         } else {
             if let Some(nexts) = joints.get(&pos) {
-                for (n,cost2) in nexts {
+                for (n, cost2) in nexts {
                     if !path.contains(n) {
                         let mut new_path = path.clone();
                         new_path.push(*n);
-                        todo.push_back((new_path,  cost + cost2));
+                        todo.push_back((new_path, cost + cost2));
                     }
                 }
             }
         }
     }
-    return max_seen;
-    // let mut stack = topo_order(&joints, start);
-    // while let Some(u) = stack.pop() {
-    //     if let Some(&to_here) = dist.get(&u) {
-    //         if let Some(nexts) = joints.get(&u) {
-    //         for (next, cost) in nexts {
-    //             match dist.entry(*next) {
-    //                 Entry::Occupied(mut x) => {
-    //                     *x.get_mut() = (*x.get()).max(to_here + cost);
-    //                 }
-    //                 Entry::Vacant(x) => {
-    //                     let _ = *x.insert(to_here + cost);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     }
-    // }
-    // dbg!(&dist);
-    // dist[&target]
+    max_seen
 }
-//wrong: 4678, 5094(low)
+
 fn p1(input: &str) -> usize {
     let g = Grid2d::from_str(input, |x| x);
     let start = Point::new(1, 0);
@@ -196,17 +173,17 @@ fn p1(input: &str) -> usize {
     while let Some(u) = stack.pop() {
         if let Some(&to_here) = dist.get(&u) {
             if let Some(nexts) = joints.get(&u) {
-            for (next, cost) in nexts {
-                match dist.entry(*next) {
-                    Entry::Occupied(mut x) => {
-                        *x.get_mut() = (*x.get()).max(to_here + cost);
-                    }
-                    Entry::Vacant(x) => {
-                        let _ = *x.insert(to_here + cost);
+                for (next, cost) in nexts {
+                    match dist.entry(*next) {
+                        Entry::Occupied(mut x) => {
+                            *x.get_mut() = (*x.get()).max(to_here + cost);
+                        }
+                        Entry::Vacant(x) => {
+                            let _ = *x.insert(to_here + cost);
+                        }
                     }
                 }
             }
-        }
         }
     }
     dbg!(&dist);
