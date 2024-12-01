@@ -199,10 +199,9 @@ impl Opts {
             .unwrap();
             let overall = bench.elapsed().as_secs_f64();
             (std::time::Duration::from_secs_f64(overall), ans.unwrap())
-        } else { 
+        } else {
             (dur, ans)
         }
-
     }
 }
 
