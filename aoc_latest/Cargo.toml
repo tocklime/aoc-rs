@@ -38,7 +38,7 @@ num-modular = "0.6"
 
 anyhoo = { git = "https://github.com/tranzystorek-io/anyhoo", features = ["reexport"] }
 associative_positional_list = { git = "https://github.com/jwhitham/associative_positional_list"}
-rustc-hash = "1.1.0"
+rustc-hash = "2"
 ahash = "0.8.6"
 progress_bar = "1.0.5"
 rand = "0.8.5"
