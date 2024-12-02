@@ -1,5 +1,5 @@
 
-use itertools::{iterate, unfold};
+use itertools::iterate;
 
 aoc_harness::aoc_main!(2019 day 1, generator input_generator, part1 [part1] => 3_154_112, part2 [unfolding,iteration] => 4_728_317,
     example part1 "12" => 2,
@@ -26,13 +26,16 @@ pub fn unfolding(input: &[i32]) -> i32 {
     input
         .iter()
         .flat_map(|x| {
-            unfold(*x, |last_mass| match rocket_fn(*last_mass) {
-                a if a <= 0 => None,
-                a => {
-                    *last_mass = a;
-                    Some(a)
+            let mut last_mass = *x;
+            std::iter::from_fn(move ||
+                match rocket_fn(last_mass) {
+                    a if a <= 0 => None,
+                    a => {
+                        last_mass = a;
+                        Some(a)
+                    }
                 }
-            })
+            )
         })
         .sum()
 }

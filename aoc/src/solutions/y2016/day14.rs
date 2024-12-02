@@ -5,7 +5,7 @@ use itertools::Itertools;
 use std::collections::{HashMap, VecDeque};
 
 fn groups(i: &str, group_size: usize) -> Vec<char> {
-    let gs = i.chars().group_by(|c| *c);
+    let gs = i.chars().chunk_by(|c| *c);
     gs.into_iter()
         .filter_map(|(k, g)| {
             if g.count() >= group_size {

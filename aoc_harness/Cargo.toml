@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-itertools = "0.12"
+itertools = "0.13"
 ureq = "2.3.1"
 aoc_harness_macros = { path = "libs/macros"}
 serde = {version = "1", features = ["derive"]}
