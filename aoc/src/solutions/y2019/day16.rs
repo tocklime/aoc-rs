@@ -1,7 +1,6 @@
 
 use rayon::prelude::*;
 use std::cmp::{max, min};
-use std::convert::TryInto;
 
 aoc_harness::aoc_main!(2019 day 16, generator gen, part1 [p1] => 63_794_407, part2 [p2] => 77_247_538,
     example part1 "80871224585914546619083218645595" => 24_176_176,
@@ -16,7 +15,7 @@ pub fn gen(input: &str) -> Vec<usize> {
     input
         .trim()
         .bytes()
-        .map(|x| (x - b'0').try_into().unwrap())
+        .map(|x| (x - b'0').into())
         .collect()
 }
 

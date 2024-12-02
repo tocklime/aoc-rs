@@ -167,9 +167,9 @@ where
     }
 }
 
-impl<'a, T> FromIterator<Point<T>> for Aabb<T>
+impl<T> FromIterator<Point<T>> for Aabb<T>
 where
-    T: 'a + Num + Copy + TryInto<usize> + Ord + WrappingSub,
+    T: Num + Copy + TryInto<usize> + Ord + WrappingSub,
     RangeInclusive<T>: std::iter::Iterator<Item = T>,
 {
     fn from_iter<I>(iter: I) -> Self

@@ -6,7 +6,6 @@ use parse_display::{Display, FromStr};
 #[derive(Display, FromStr, PartialEq, Clone, Copy, Eq, Hash)]
 #[must_use]
 #[display("x={x},y={y},z={z}")]
-
 pub struct Cube {
     x: Span<isize>,
     y: Span<isize>,

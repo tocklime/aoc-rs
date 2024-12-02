@@ -107,7 +107,7 @@ mod test {
     }
     #[test]
     fn eg_from_2023d21() {
-        let ns = [3943, 97407, 315263, 657511, 1124151, 1715183];
+        let ns = [3943, 97407, 315_263, 657_511, 1_124_151, 1_715_183];
         let mut x = PolynomialDetector::default();
         for n in &ns {
             x.add(*n);
@@ -120,6 +120,6 @@ mod test {
         for (ix, x) in ns.iter().enumerate() {
             assert_eq!(r.evaluate(1 + ix as i64), *x, "Calculating {ix}th term.");
         }
-        assert_eq!(r.evaluate(101151), 636_350_496_972_143i64);
+        assert_eq!(r.evaluate(101_151), 636_350_496_972_143i64);
     }
 }

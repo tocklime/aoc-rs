@@ -71,7 +71,7 @@ fn draw_grid(grid: &[NumSet<u8>]) {
     println!("{d}");
 }
 #[allow(dead_code)]
-fn draw(grid: &[NumSet<u8>], falling_rock: &Vec<NumSet<u8>>, left: usize, height: usize) {
+fn draw(grid: &[NumSet<u8>], falling_rock: &[NumSet<u8>], left: usize, height: usize) {
     let h = grid.len().max(height + falling_rock.len());
     let mut d = Grid2d::from_elem((h, 7), '.');
     for (ix, l) in grid.iter().enumerate() {

@@ -17,7 +17,7 @@ fn has_tls(l: &&str) -> bool {
 fn outers_and_inners(s: &str) -> (Vec<&str>, Vec<&str>) {
     let mut outers = Vec::new();
     let mut inners = Vec::new();
-    for (ix, sec) in s.split(|c| c == '[' || c == ']').enumerate() {
+    for (ix, sec) in s.split(['[', ']']).enumerate() {
         if ix % 2 == 0 {
             outers.push(sec);
         } else {

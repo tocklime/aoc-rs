@@ -12,7 +12,7 @@ pub fn check_groups(input: usize, check: fn(usize) -> bool) -> bool {
     let mut last_key: Option<u8> = None;
     let mut saw_any_match = false;
     for (k, g) in &groups {
-        if last_key.map_or(false, |l| l > k) {
+        if last_key.is_some_and(|l| l > k) {
             return false; //key decreased!
         }
         last_key = Some(k);

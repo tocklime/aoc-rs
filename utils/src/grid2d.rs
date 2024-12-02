@@ -460,7 +460,7 @@ impl<'a, T> RowMajorIteratorMut<'a, T> {
         }
     }
 }
-impl<'grid, T> DoubleEndedIterator for RowMajorIteratorMut<'grid, T> {
+impl<T> DoubleEndedIterator for RowMajorIteratorMut<'_, T> {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.row_start < self.row_end {
             self.row_end -= 1;

@@ -62,7 +62,7 @@ fn p2_dp(input: &[usize]) -> usize {
         //now at index ix, and there's dp[ix] ways to get here.
         //for each of the next 3 values <= val + 3, add dp[ix] to the ways to get there.
         for offset in
-            (1..=3).take_while(|&offset| input.get(ix + offset).map_or(false, |&x| x <= val + 3))
+            (1..=3).take_while(|&offset| input.get(ix + offset).is_some_and(|&x| x <= val + 3))
         {
             dp[ix + offset] += dp[ix];
         }
@@ -105,7 +105,7 @@ fn p2_dp_deque(input: &[usize]) -> usize {
         last = dp.pop_front().unwrap();
         dp.push_back(0);
         for offset in
-            (0..3).take_while(|&offset| input.get(ix + 1 + offset).map_or(false, |&x| x <= val + 3))
+            (0..3).take_while(|&offset| input.get(ix + 1 + offset).is_some_and(|&x| x <= val + 3))
         {
             dp[offset] += last;
         }

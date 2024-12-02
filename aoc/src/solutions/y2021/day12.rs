@@ -26,7 +26,7 @@ struct Pos {
 }
 
 impl State {
-    fn neighbours<'a>(&'a self, p: &'a Pos) -> impl Iterator<Item = Pos> + '_ {
+    fn neighbours<'a>(&'a self, p: &'a Pos) -> impl Iterator<Item = Pos> + 'a {
         self.map[p.pos as usize].iter().copied().filter_map(|x| {
             let mut visited = p.visited;
             let small_visit_delta: usize = (!visited.insert(x)).into();

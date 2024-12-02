@@ -23,7 +23,7 @@ pub fn handle_deck(input: &str, deck_size: NT) -> (T, T) {
                 .parse::<i128>()
                 .expect("int for cut");
             let as_u: NT = n
-                .rem_euclid(deck_size.try_into().unwrap())
+                .rem_euclid(deck_size.into())
                 .try_into()
                 .unwrap();
             offset = offset + (increment * as_u);

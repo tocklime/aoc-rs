@@ -88,7 +88,7 @@ impl<'a> IntoIterator for &'a Game {
         self.iterate_from(self.current)
     }
 }
-impl<'a> Iterator for GameIter<'a> {
+impl Iterator for GameIter<'_> {
     type Item = u32;
 
     fn next(&mut self) -> Option<Self::Item> {

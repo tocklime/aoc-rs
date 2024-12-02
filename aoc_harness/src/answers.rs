@@ -95,6 +95,7 @@ impl Drop for AnswerAll {
         if self.save_on_drop {
             let f = std::fs::File::options()
                 .write(true)
+                .truncate(true)
                 .create(true)
                 .open("answers.new.yaml")
                 .expect("could not open answers.new.yaml");

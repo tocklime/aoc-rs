@@ -7,7 +7,7 @@ fn p1(input: &[Vec<usize>]) -> usize {
 }
 
 fn p2(input: &[Vec<usize>]) -> usize {
-    input.iter().filter(is_safe_by_skipping).count()
+    input.iter().filter(|x| is_safe_by_skipping(x)).count()
 }
 
 fn gen(input: &str) -> Vec<Vec<usize>> {
@@ -21,7 +21,7 @@ fn gen(input: &str) -> Vec<Vec<usize>> {
         .collect_vec()
 }
 
-fn is_safe_by_skipping(line: &&Vec<usize>) -> bool {
+fn is_safe_by_skipping(line: &[usize]) -> bool {
     match find_error_ix(line.iter()) {
         //It's ok as is!
         None => true,
@@ -44,7 +44,7 @@ fn find_error_ix<'a>(line: impl Iterator<Item = &'a usize>) -> Option<usize> {
             return Some(ix)
         }
     }
-    return None
+    None
 }
 
 const EG: &str = "7 6 4 2 1

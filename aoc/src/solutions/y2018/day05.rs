@@ -1,7 +1,7 @@
 aoc_harness::aoc_main!(2018 day 5, part1 [p1], part2 [p2]);
 
 fn react(a: char, b: char) -> bool {
-    a.to_ascii_lowercase() == b.to_ascii_lowercase() && a != b
+    a.eq_ignore_ascii_case(&b) && a != b
 }
 
 fn reduce(input: &str) -> String {

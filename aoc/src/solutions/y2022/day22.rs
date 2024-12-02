@@ -301,11 +301,11 @@ fn p2(input: &str) -> u32 {
         for x in 0..3 {
             for y in 0..4 {
                 let up = Point::new(x * s + offset, s * (y + 1) - 1);
-                if map.get(&up).is_none() {
+                if !map.contains_key(&up) {
                     continue;
                 }
                 // dbg!(up.step(Dir::Up), map.get(&up), map.get(&up.step(Dir::Up)));
-                if map.get(&up.step(Dir::Up)).is_none() {
+                if !map.contains_key(&up.step(Dir::Up)) {
                     let xfer = transfer_edge_prob(up, Dir::Up);
                     let back = transfer_edge_prob(xfer.0, xfer.1.turn_about());
                     assert_eq!(up, back.0);

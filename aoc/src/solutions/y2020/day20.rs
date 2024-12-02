@@ -70,7 +70,7 @@ impl<'a> Placement<'a> {
         self.tile.get_edge_id(self.get_edge(edge), self.flip)
     }
 }
-impl<'a> Debug for Placement<'a> {
+impl Debug for Placement<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Placement")
             .field("tile.id", &self.tile.id)

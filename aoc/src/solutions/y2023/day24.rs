@@ -12,7 +12,7 @@ use num::rational::Ratio;
 use num_traits::{CheckedDiv, Zero};
 use utils::nom::IResult;
 
-aoc_harness::aoc_main!(2023 day 24, part1 [p1::<200000000000000, 400000000000000>], part2 [p2]/* , example part2 EG => 47*/);
+aoc_harness::aoc_main!(2023 day 24, part1 [p1::<200_000_000_000_000, 400_000_000_000_000>], part2 [p2]/* , example part2 EG => 47*/);
 
 type MyNum = Ratio<i128>;
 
@@ -203,17 +203,17 @@ fn p2(input: &str) -> usize {
     }
     0 //todo
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
 const EG: &str = "19, 13, 30 @ -2,  1, -2
 18, 19, 22 @ -1, -1, -2
 20, 25, 34 @ -2, -2, -4
 12, 31, 28 @ -1, -2, -1
 20, 19, 15 @  1, -5, -3
 ";
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
     #[test]
     fn eg() {
         assert_eq!(p1::<7, 27>(EG), 2);

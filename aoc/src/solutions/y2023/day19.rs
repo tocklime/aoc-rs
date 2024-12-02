@@ -32,7 +32,7 @@ impl<'a> X<'a> {
             .expect("parse")
             .1
     }
-    fn parse(input: &'a str) -> IResult<Self> {
+    fn parse(input: &'a str) -> IResult<'a, Self> {
         let (input, (workflows, _, parts)) = tuple((
             separated_list1(newline, Workflow::parse),
             tag("\n\n"),
@@ -53,12 +53,12 @@ impl<'a> X<'a> {
                     let wf = &self.workflows[pos];
                     let final_constraint = wf.rules.iter().try_fold(constraints, |to_here, r| {
                         if let Some(x) = to_here.add(r.quality, r.check, false, r.value) {
-                            stack.push((&r.target, x));
+                            stack.push((r.target, x));
                         }
                         to_here.add(r.quality, r.check, true, r.value)
                     });
                     if let Some(x) = final_constraint {
-                        stack.push((&wf.default, x));
+                        stack.push((wf.default, x));
                     }
                 }
             }
@@ -73,7 +73,7 @@ struct Workflow<'a> {
     default: &'a str,
 }
 impl<'a> Workflow<'a> {
-    fn parse(input: &'a str) -> IResult<Self> {
+    fn parse(input: &'a str) -> IResult<'a, Self> {
         let (input, (name, _, rules, _, default, _)) = tuple((
             alpha1,
             tag("{"),
@@ -149,7 +149,7 @@ impl<'a> Rule<'a> {
     fn matches(&self, part: &Part) -> Option<&str> {
         (part.values[self.quality].cmp(&self.value) == self.check).then_some(self.target)
     }
-    fn parse(input: &'a str) -> IResult<Self> {
+    fn parse(input: &'a str) -> IResult<'a, Self> {
         let (input, (quality, check, value, _, target)) = tuple((
             parse_quality,
             alt((

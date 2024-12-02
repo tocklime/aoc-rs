@@ -265,7 +265,7 @@ impl AocMainInput {
                     let expected_p1 = #p1;
                     let expected_p2 = #p2;
                 });
-                if let Some(f) = &part.fns.get(0) {
+                if let Some(f) = part.fns.first() {
                     inner.extend(quote!{
                         ::aoc_harness::type_hint_pair_has_values_in_func_return(&expected_p1, &expected_p2, &#f);
                     });
@@ -285,7 +285,7 @@ impl AocMainInput {
             }
             (p, ExpectedResult::Single(exp)) => {
                 inner.extend(quote! { let expected = #exp; });
-                if let Some(f) = &part.fns.get(0) {
+                if let Some(f) = part.fns.first() {
                     inner.extend(quote! {
                         ::aoc_harness::type_hint_value_has_same_type_as_func_return(&expected, &#f);
                     });

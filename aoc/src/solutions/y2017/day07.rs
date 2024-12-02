@@ -17,7 +17,7 @@ struct Program<'a> {
     holding: Vec<&'a str>,
 }
 impl<'a> Program<'a> {
-    fn parse(input: &'a str) -> IResult<&str, Self> {
+    fn parse(input: &'a str) -> IResult<&'a str, Self> {
         let (i, (name, _, size, _, children)) =
             tuple((alpha1, tag(" ("), digit1, tag(")"), opt(tag(" -> "))))(input)?;
         let (i, holding) = if children.is_some() {

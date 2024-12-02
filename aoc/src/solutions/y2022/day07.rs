@@ -35,23 +35,23 @@ $ ls
 7214296 k
 ";
 #[derive(Debug, Clone)]
-enum Line<'a> {
-    CdDown(&'a str),
+enum Line {
+    CdDown,
     CdUp,
     Ls,
-    Dir(&'a str),
-    File(u32, &'a str),
+    Dir,
+    File(u32),
 }
 fn parse_line(input: &str) -> IResult<&str, Line> {
     terminated(
         alt((
             value(Line::CdUp, tag("$ cd ..")),
             value(Line::Ls, tag("$ ls")),
-            preceded(tag("$ cd "), map(take_until("\n"), Line::CdDown)),
-            preceded(tag("dir "), map(take_until("\n"), Line::Dir)),
+            preceded(tag("$ cd "), map(take_until("\n"), |_| Line::CdDown)),
+            preceded(tag("dir "), map(take_until("\n"), |_| Line::Dir)),
             map(
                 tuple((u32, tag(" "), take_until("\n"))),
-                |(size, _, name)| Line::File(size, name),
+                |(size, _, _name)| Line::File(size),
             ),
         )),
         newline,
@@ -89,11 +89,11 @@ fn solve(input: &str) -> (u32, u32) {
                 let ch = dir_stack.pop().unwrap();
                 dir_stack.last_mut().unwrap().dirs.push(ch);
             }
-            Line::Ls | Line::Dir(_) => (),
-            Line::CdDown(_) => {
+            Line::Ls | Line::Dir => (),
+            Line::CdDown => {
                 dir_stack.push(Dir::default());
             }
-            Line::File(size, _) => {
+            Line::File(size) => {
                 let b = dir_stack.last_mut().unwrap();
                 b.files += size;
             }

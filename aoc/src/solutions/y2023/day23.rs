@@ -8,9 +8,7 @@ use utils::{
 aoc_harness::aoc_main!(2023 day 23, part1 [p1], part2 [p2], example both EG => (94, 154));
 
 fn steps2(g: &Grid2d<char>, pos: Coord) -> impl Iterator<Item = Coord> + '_ {
-    let allowed = match g[pos] {
-        _ => pos.neighbours().to_vec(),
-    };
+    let allowed = pos.neighbours().to_vec();
     allowed
         .into_iter()
         .filter(|n| g.get(*n).map(|c| c != &'#').unwrap_or_default())
@@ -66,7 +64,7 @@ fn p2(input: &str) -> usize {
     let g = Grid2d::from_str(input, |x| x);
     let start = Point::new(1, 0);
     let target = g.dim() - Point::new(2, 1);
-    let mut joints: Graph = Default::default();
+    let mut joints: Graph = HashMap::default();
     let mut to_explore = vec![start];
     let mut explored = HashSet::new();
     while let Some(pos) = to_explore.pop() {
@@ -106,14 +104,12 @@ fn p2(input: &str) -> usize {
                 println!("{cost}");
                 max_seen = cost;
             }
-        } else {
-            if let Some(nexts) = joints.get(&pos) {
-                for (n, cost2) in nexts {
-                    if !path.contains(n) {
-                        let mut new_path = path.clone();
-                        new_path.push(*n);
-                        todo.push_back((new_path, cost + cost2));
-                    }
+        } else if let Some(nexts) = joints.get(pos) {
+            for (n, cost2) in nexts {
+                if !path.contains(n) {
+                    let mut new_path = path.clone();
+                    new_path.push(*n);
+                    todo.push_back((new_path, cost + cost2));
                 }
             }
         }
@@ -125,7 +121,7 @@ fn p1(input: &str) -> usize {
     let g = Grid2d::from_str(input, |x| x);
     let start = Point::new(1, 0);
     let target = g.dim() - Point::new(2, 1);
-    let mut joints: Graph = Default::default();
+    let mut joints: Graph = HashMap::default();
     let mut to_explore = vec![start];
     let mut explored = HashSet::new();
     while let Some(pos) = to_explore.pop() {

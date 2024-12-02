@@ -58,7 +58,7 @@ impl World {
             self.space[b] = None;
         }
     }
-    fn do_drops<'a>(&mut self) -> usize {
+    fn do_drops(&mut self) -> usize {
         // println!("Doing drops");
         let mut total_moves = 0;
         loop {
@@ -70,7 +70,7 @@ impl World {
                 let current_fall = self.falls[b.id];
                 let z = b.min_z();
                 let max_fall = (current_fall + 1..z)
-                    .take_while(|x| could_place(&self, b.id, *x))
+                    .take_while(|x| could_place(self, b.id, *x))
                     .last();
                 if let Some(dist) = max_fall {
                     let old_fall_dist = self.falls[b.id];
@@ -174,7 +174,7 @@ fn both(input: &str) -> (usize, usize) {
         .complete()
         .parse(input)
         .expect("parse");
-    bricks.sort_by_key(|x| x.min_z());
+    bricks.sort_by_key(Brick::min_z);
     for (ix, b) in bricks.iter_mut().enumerate() {
         b.id = ix;
     }

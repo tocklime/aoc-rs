@@ -17,7 +17,7 @@ fn p1(input: &str) -> String {
             Some('+') => {
                 let can_left = hm
                     .get(&pos.step(dir.turn_left()))
-                    .map_or(false, |&c| c != ' ');
+                    .is_some_and(|&c| c != ' ');
                 dir = if can_left {
                     dir.turn_left()
                 } else {

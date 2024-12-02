@@ -4,7 +4,7 @@ use itertools::Itertools;
 use petgraph::prelude::*;
 use rand::Rng;
 
-aoc_harness::aoc_main!(2023 day 25, part1 [p1] => 538560);
+aoc_harness::aoc_main!(2023 day 25, part1 [p1] => 538_560);
 
 fn karger(g: &Graph<&str, (), Undirected>) -> (usize, usize, usize) {
     let mut g = g.clone();
@@ -27,7 +27,7 @@ fn karger(g: &Graph<&str, (), Undirected>) -> (usize, usize, usize) {
         *weights.entry(*a_str).or_insert(1) += b_weight;
         g.remove_node(b);
     }
-    for (a, b) in g.node_indices().tuple_windows() {
+    if let Some((a,b)) = g.node_indices().tuple_windows().next() {
         let a_str = g.node_weight(a).unwrap();
         let b_str = g.node_weight(b).unwrap();
         return (

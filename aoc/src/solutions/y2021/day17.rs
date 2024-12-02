@@ -95,7 +95,7 @@ fn p2(i: &Day17) -> usize {
     //we iterate over the ys, and keep a sliding window (the VecDeque) of xs which match
     ys.map(|(y_min, y_max)| {
         //first, remove xs that no longer fit from matching_xs.
-        while matching_xs.get(0).map_or(false, |&xmin| xmin >= y_max) {
+        while matching_xs.front().is_some_and(|&xmin| xmin >= y_max) {
             //too big for this y, drop it.
             matching_xs.pop_front();
         }
