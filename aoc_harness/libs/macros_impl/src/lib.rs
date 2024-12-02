@@ -171,6 +171,7 @@ enum Parts {
     Day(DayInput),
     Gen(GeneratorPart),
     Part(SolutionPart),
+    #[allow(dead_code)]
     Bench(BenchPart),
     Example(ExamplePart),
 }
