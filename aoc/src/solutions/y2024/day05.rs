@@ -1,0 +1,99 @@
+use ahash::HashSet;
+use utils::{collections::VecLookup, inputs::parse_input_from_str_sep_by};
+
+aoc_harness::aoc_main!(2024 day 5, generator gen, both [p1] => (5329, 5833), example both EG => (143,123));
+
+fn check_line(line: &[usize], rules: &Rules) -> bool {
+    for (ix, n) in line.iter().enumerate() {
+        if let Some(after) = rules.get(*n) {
+            //if after appear in the list, they must come after.
+            //or, they must NOT come before.
+            if after.iter().any(|x| line[0..ix].contains(x)) {
+                return false;
+            }
+        }
+    }
+    true
+}
+type Rules = VecLookup<HashSet<usize>>;
+fn find_mid(line: &[usize], rules: &Rules) -> usize {
+    let mut remain = line.to_vec();
+    let mut placed = 0;
+    while !remain.is_empty() {
+        let x = remain
+            .iter()
+            .enumerate()
+            .find(|(_, n)| {
+                remain
+                    .iter()
+                    .all(|o| rules.get(*o).map(|x| !x.contains(n)).unwrap_or(true))
+            })
+            .unwrap();
+        if placed == line.len()/2 {
+            return *x.1;
+        }
+        placed += 1;
+        remain.swap_remove(x.0);
+    }
+    unreachable!()
+}
+
+struct P {
+    rules: Rules,
+    updates: Vec<Vec<usize>>
+}
+
+fn gen(input: &str) -> P {
+    let (rules, updates) = input.split_once("\n\n").unwrap();
+    let mut rules_map: Rules = Rules::default();
+    for r in rules.lines() {
+        let (a, b) = r.split_once('|').unwrap();
+        let a: usize = a.parse().unwrap();
+        let b: usize = b.parse().unwrap();
+        rules_map.entry(a).or_default().insert(b);
+    }
+    let updates = updates.lines().map(|l| parse_input_from_str_sep_by(l, ",")).collect();
+    P {rules: rules_map, updates}
+
+}
+
+
+fn p1(input: &P) -> (usize, usize) {
+    input.updates.iter().fold((0,0), |(p1,p2), line| {
+        if check_line(line, &input.rules) {
+            (p1 + line[line.len() / 2],p2)
+        } else {
+            (p1,p2+find_mid(line, &input.rules))
+        }
+    })
+}
+
+const EG: &str = "47|53
+97|13
+97|61
+97|47
+75|29
+61|13
+75|53
+29|13
+97|29
+53|29
+61|53
+97|53
+61|29
+47|13
+75|47
+97|75
+47|61
+75|61
+47|29
+75|13
+53|13
+
+75,47,61,53,29
+97,61,53,29,13
+75,29,13
+75,97,47,61,53
+61,13,29
+97,13,75,29,47
+";

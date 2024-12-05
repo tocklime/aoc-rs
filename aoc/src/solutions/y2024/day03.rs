@@ -1,20 +1,16 @@
-aoc_harness::aoc_main!(2024 day 3, part1 [p1] => 187194524, part2 [p2] => 127092535, example part1 EG => 161, example part2 EG2 => 48);
+aoc_harness::aoc_main!(2024 day 3, part1 [p1] => 187_194_524, part2 [p2] => 127_092_535, example part1 EG => 161, example part2 EG2 => 48);
 
 fn parse_num(input: &str) -> Option<(usize, &str)> {
     let first_non_numeric = input.find(|x: char| !x.is_numeric())?;
     if first_non_numeric == 0 {
-        return None;
+        None
     } else {
         let num = input[0..first_non_numeric].parse().unwrap();
         Some((num, &input[first_non_numeric..]))
     }
 }
 fn token<'a>(input: &'a str, token: &'static str) -> Option<&'a str> {
-    if input.starts_with(token) {
-        Some(&input[token.len()..])
-    } else {
-        None
-    }
+    input.strip_prefix(token)
 }
 fn parse_mul(input: &str) -> Option<(usize, &str)> {
     let i = token(input, "mul(")?;

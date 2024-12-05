@@ -26,6 +26,10 @@ impl<T: Copy> Grid2d<T> {
             size,
         }
     }
+
+    pub fn is_edge(&self, p: Point<usize>) -> bool {
+        p.x == 0 || p.y == 0 || p.x == self.dim().x - 1 || p.y == self.dim().y - 1
+    }
 }
 impl<T> Grid2d<T> {
     pub fn from_fn<F, TC: Into<Coord>>(size: TC, mut f: F) -> Self
@@ -100,6 +104,16 @@ impl<T: PartialEq<T>> Grid2d<T> {
         } else {
             false
         }
+    }
+}
+impl Grid2d<u8> {
+    pub fn from_str_as_bytes(input: &str) -> Self {
+        Grid2d::from_iter(input.bytes(), |x| x, b'\n')
+    }
+}
+impl Grid2d<char> {
+    pub fn from_str_as_char(input: &str) -> Self {
+        Self::from_str(input, |x| x)
     }
 }
 impl<T> Grid2d<T> {
