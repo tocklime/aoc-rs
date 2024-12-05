@@ -1,32 +1,31 @@
-use ahash::HashSet;
-use utils::{collections::VecLookup, inputs::parse_input_from_str_sep_by};
+use utils::{collections::VecLookup, inputs::parse_input_from_str_sep_by, numset::NumSet};
 
 aoc_harness::aoc_main!(2024 day 5, generator gen, both [p1] => (5329, 5833), example both EG => (143,123));
 
-fn check_line(line: &[usize], rules: &Rules) -> bool {
+fn check_line(line: &[u8], rules: &Rules) -> bool {
     for (ix, n) in line.iter().enumerate() {
-        if let Some(after) = rules.get(*n) {
+        if let Some(after) = rules.get(usize::from(*n)) {
             //if after appear in the list, they must come after.
             //or, they must NOT come before.
-            if after.iter().any(|x| line[0..ix].contains(x)) {
+            if after.iter().any(|x| line[0..ix].contains(&x)) {
                 return false;
             }
         }
     }
     true
 }
-type Rules = VecLookup<HashSet<usize>>;
-fn find_mid(line: &[usize], rules: &Rules) -> usize {
+type Rules = VecLookup<NumSet<u128>>;
+fn find_mid(line: &[u8], rules: &Rules) -> u8 {
     let mut remain = line.to_vec();
     let mut placed = 0;
     while !remain.is_empty() {
         let x = remain
             .iter()
             .enumerate()
-            .find(|(_, n)| {
+            .find(|(_, &n)| {
                 remain
                     .iter()
-                    .all(|o| rules.get(*o).map(|x| !x.contains(n)).unwrap_or(true))
+                    .all(|o| rules.get(usize::from(*o)).map(|x| !x.contains(n)).unwrap_or(true))
             })
             .unwrap();
         if placed == line.len()/2 {
@@ -40,7 +39,7 @@ fn find_mid(line: &[usize], rules: &Rules) -> usize {
 
 struct P {
     rules: Rules,
-    updates: Vec<Vec<usize>>
+    updates: Vec<Vec<u8>>
 }
 
 fn gen(input: &str) -> P {
@@ -48,8 +47,8 @@ fn gen(input: &str) -> P {
     let mut rules_map: Rules = Rules::default();
     for r in rules.lines() {
         let (a, b) = r.split_once('|').unwrap();
-        let a: usize = a.parse().unwrap();
-        let b: usize = b.parse().unwrap();
+        let a= a.parse().unwrap();
+        let b= b.parse().unwrap();
         rules_map.entry(a).or_default().insert(b);
     }
     let updates = updates.lines().map(|l| parse_input_from_str_sep_by(l, ",")).collect();
@@ -61,9 +60,9 @@ fn gen(input: &str) -> P {
 fn p1(input: &P) -> (usize, usize) {
     input.updates.iter().fold((0,0), |(p1,p2), line| {
         if check_line(line, &input.rules) {
-            (p1 + line[line.len() / 2],p2)
+            (p1 + usize::from(line[line.len() / 2]),p2)
         } else {
-            (p1,p2+find_mid(line, &input.rules))
+            (p1,p2+usize::from(find_mid(line, &input.rules)))
         }
     })
 }
