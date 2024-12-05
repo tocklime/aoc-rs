@@ -1,6 +1,9 @@
+use std::cmp::Ordering;
+
+use itertools::Itertools;
 use utils::{collections::VecLookup, inputs::parse_input_from_str_sep_by, numset::NumSet};
 
-aoc_harness::aoc_main!(2024 day 5, generator gen, both [p1] => (5329, 5833), example both EG => (143,123));
+aoc_harness::aoc_main!(2024 day 5, generator gen, both [checks,sort] => (5329, 5833), example both EG => (143,123));
 
 fn check_line(line: &[u8], rules: &Rules) -> bool {
     for (ix, n) in line.iter().enumerate() {
@@ -41,6 +44,22 @@ struct P {
     rules: Rules,
     updates: Vec<Vec<u8>>
 }
+impl P {
+    fn cmp_bool(&self) -> impl (Fn(&u8,&u8) -> bool) + use<'_> {
+        |&a,&b| {
+            self.rules.get(usize::from(a)).map(|x| x.contains(b)).unwrap_or_default()
+        }
+    }
+    fn cmp_ord(&self) -> impl (Fn(&&u8,&&u8) -> Ordering) + use<'_> {
+        |&&a,&&b| {
+            if self.rules.get(usize::from(a)).map(|x| x.contains(b)).unwrap_or_default() {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            }
+        }
+    }
+}
 
 fn gen(input: &str) -> P {
     let (rules, updates) = input.split_once("\n\n").unwrap();
@@ -57,12 +76,22 @@ fn gen(input: &str) -> P {
 }
 
 
-fn p1(input: &P) -> (usize, usize) {
+fn checks(input: &P) -> (usize, usize) {
     input.updates.iter().fold((0,0), |(p1,p2), line| {
         if check_line(line, &input.rules) {
             (p1 + usize::from(line[line.len() / 2]),p2)
         } else {
             (p1,p2+usize::from(find_mid(line, &input.rules)))
+        }
+    })
+}
+fn sort(input: &P) -> (usize, usize) {
+    input.updates.iter().fold((0,0), |(p1,p2), line| {
+        if line.is_sorted_by(input.cmp_bool()) {
+            (p1 + usize::from(line[line.len() / 2]),p2)
+        } else {
+            let sorted_mid = *line.iter().sorted_by(input.cmp_ord()).nth(line.len()/2).unwrap();
+            (p1,p2+usize::from(sorted_mid))
         }
     })
 }
