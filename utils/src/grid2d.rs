@@ -36,18 +36,15 @@ impl<T> Grid2d<T> {
         let size = self.size;
         let mut data = Vec::with_capacity(self.data.len());
         for r in (0..size.y).rev() {
-            data.extend(self.data.drain(r*size.x..));
+            data.extend(self.data.drain(r * size.x..));
         }
-        Self {
-            data,
-            size
-        }
+        Self { data, size }
     }
-    pub fn find<F>(&self, predicate: F) -> Option<(Coord,&T)> 
-    where F : Fn(&T) -> bool
+    pub fn find<F>(&self, predicate: F) -> Option<(Coord, &T)>
+    where
+        F: Fn(&T) -> bool,
     {
-        self.indexed_iter().find(|x|predicate(&x.1))
-
+        self.indexed_iter().find(|x| predicate(&x.1))
     }
     pub fn from_fn<F, TC: Into<Coord>>(size: TC, mut f: F) -> Self
     where
