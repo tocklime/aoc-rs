@@ -29,6 +29,8 @@
             bacon
             hyperfine
             cargo-flamegraph
+            cargo-make
+            cargo-watch
             bashInteractive
           ];
         };
