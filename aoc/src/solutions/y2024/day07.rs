@@ -5,8 +5,8 @@ use utils::{inputs::parse_input_from_str_sep_by, nums};
 
 aoc_harness::aoc_main!(2024 day 7, 
     generator gen, 
-    part1 [integer_bits::<1>, cartesian_product::<1>, pathfinding_dfs::<1>, manual_dfs::<1>] => 2299996598890, 
-    part2 [integer_bits::<2>, cartesian_product::<2>, pathfinding_dfs::<2>, manual_dfs::<2>] => 362646859298554, 
+    part1 [integer_bits::<1>, cartesian_product::<1>, pathfinding_dfs::<1>, manual_dfs::<1>] => 2_299_996_598_890, 
+    part2 [integer_bits::<2>, cartesian_product::<2>, pathfinding_dfs::<2>, manual_dfs::<2>] => 362_646_859_298_554, 
     example part1 EG => 3749, example part2 EG => 11387);
 
 #[derive(Copy, Clone, Debug)]
@@ -64,7 +64,7 @@ fn integer_bits<const PART: u64>(input: &[(u64, Vec<u64>)]) -> u64 {
             let gap_count = nums.len() - 1;
             let max_n = choices.pow(gap_count as u32);
             (0..max_n)
-                .any(|n| check_p1(*target, &nums, n, choices))
+                .any(|n| check_p1(*target, nums, n, choices))
                 .then_some(target)
         })
         .sum()
@@ -95,7 +95,7 @@ fn cartesian_product<const PART: u8>(input: &[(u64, Vec<u64>)]) -> u64 {
             std::iter::repeat(ops)
                 .take(gap_count)
                 .multi_cartesian_product()
-                .any(|s| check_p2(*target, &nums, &s))
+                .any(|s| check_p2(*target, nums, &s))
                 .then_some(target)
         })
         .sum()
@@ -137,10 +137,8 @@ fn manual_dfs<const PART: u64>(input: &[(u64, Vec<u64>)]) -> u64 {
                 if *target == total {
                     return Some(target);
                 }
-            } else {
-                if total <= *target {
-                    stack.extend(ops.iter().map(|o| (o.ap(total,nums[ix]),ix+1)));
-                }
+            } else if total <= *target {
+                stack.extend(ops.iter().map(|o| (o.ap(total,nums[ix]),ix+1)));
             }
         }
         None

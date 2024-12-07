@@ -44,7 +44,7 @@ impl<T> Grid2d<T> {
     where
         F: Fn(&T) -> bool,
     {
-        self.indexed_iter().find(|x| predicate(&x.1))
+        self.indexed_iter().find(|x| predicate(x.1))
     }
     pub fn from_fn<F, TC: Into<Coord>>(size: TC, mut f: F) -> Self
     where
