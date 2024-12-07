@@ -151,9 +151,9 @@ impl System {
     }
     fn inject_signal(&mut self, target: usize, value: bool) {
         if self.modules.get(target).is_none() {
-            CONVERT.with_borrow(|x| {
-                dbg!(x);
-            });
+            // CONVERT.with_borrow(|x| {
+            //     dbg!(x);
+            // });
             // dbg!(target, &self.modules[0], self.modules.len());
             for (ix, m) in self.modules.iter().enumerate() {
                 assert_eq!(ix, m.1.name);

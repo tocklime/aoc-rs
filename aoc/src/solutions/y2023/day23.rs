@@ -101,7 +101,7 @@ fn p2(input: &str) -> usize {
         let pos = path.last().unwrap();
         if pos == &target {
             if cost > max_seen {
-                println!("{cost}");
+                // println!("{cost}");
                 max_seen = cost;
             }
         } else if let Some(nexts) = joints.get(pos) {
@@ -141,27 +141,27 @@ fn p1(input: &str) -> usize {
                 if next.len() > 1 {
                     joints.entry(pos).or_default().push((last, step_count));
                     to_explore.push(last);
-                    println!("Start at {pos:?}, go to {last:?}, taking {step_count} steps then choose between {next:?}");
+                    // println!("Start at {pos:?}, go to {last:?}, taking {step_count} steps then choose between {next:?}");
                 } else if last == target {
                     joints.entry(pos).or_default().push((last, step_count));
-                    println!(
-                        "Start at {pos:?}, go to {last:?}, taking {step_count} steps then FINISH"
-                    );
+                    // println!(
+                    //     "Start at {pos:?}, go to {last:?}, taking {step_count} steps then FINISH"
+                    // );
                 } else {
-                    println!("Start at {pos:?}, go to {last:?}, taking {step_count} steps then have no choices");
+                    // println!("Start at {pos:?}, go to {last:?}, taking {step_count} steps then have no choices");
                 }
             }
         }
     }
-    println!("digraph {{");
-    for (from, targets) in &joints {
-        let from_str = format!("p_{}_{}", from.x, from.y);
-        for (t, cost) in targets {
-            let to_str = format!("p_{}_{}", t.x, t.y);
-            println!("  {from_str} -> {to_str} [label = \"{cost}\"]");
-        }
-    }
-    println!("}}");
+    // println!("digraph {{");
+    // for (from, targets) in &joints {
+    //     let from_str = format!("p_{}_{}", from.x, from.y);
+    //     for (t, cost) in targets {
+    //         let to_str = format!("p_{}_{}", t.x, t.y);
+    //         println!("  {from_str} -> {to_str} [label = \"{cost}\"]");
+    //     }
+    // }
+    // println!("}}");
 
     let mut dist = HashMap::new();
     dist.insert(start, 0);
@@ -182,7 +182,6 @@ fn p1(input: &str) -> usize {
             }
         }
     }
-    dbg!(&dist);
     dist[&target]
 }
 

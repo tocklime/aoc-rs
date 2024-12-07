@@ -57,7 +57,6 @@ impl<T: Num + Copy + std::fmt::Debug + CheckedSub> PolynomialDetector<T> {
         let mut last = n;
         for r in (0..self.ns.len() - 1).rev() {
             let Some(diff) = last.checked_sub(self.ns[r].last().unwrap()) else {
-                dbg!(self, last, r);
                 panic!();
             };
             self.ns[r].push(diff);
@@ -99,7 +98,6 @@ mod test {
         }
         let r = x.get_equation();
         assert_eq!(r.certainty, 3);
-        dbg!(x, &r);
         for (ix, x) in ns.iter().enumerate() {
             assert_eq!(r.evaluate(1 + ix as i64), *x, "Calculating {ix}th term.");
         }
@@ -116,7 +114,6 @@ mod test {
         assert_eq!(cp.power, 2);
         assert_eq!(cp.certainty, 4);
         let r = x.get_equation();
-        dbg!(&x, &r);
         for (ix, x) in ns.iter().enumerate() {
             assert_eq!(r.evaluate(1 + ix as i64), *x, "Calculating {ix}th term.");
         }
