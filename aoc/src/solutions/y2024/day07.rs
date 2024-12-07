@@ -5,8 +5,8 @@ use utils::{inputs::parse_input_from_str_sep_by, nums};
 
 aoc_harness::aoc_main!(2024 day 7, 
     generator gen, 
-    part1 [integer_bits::<1>, cartesian_product::<1>, pathfinding_dfs::<1>, manual_dfs::<1>] => 2_299_996_598_890, 
-    part2 [integer_bits::<2>, cartesian_product::<2>, pathfinding_dfs::<2>, manual_dfs::<2>] => 362_646_859_298_554, 
+    part1 [integer_bits::<1>, cartesian_product::<1>, pathfinding_dfs::<1>, manual_dfs::<1>, manual_dfs_backward::<1>] => 2_299_996_598_890, 
+    part2 [integer_bits::<2>, cartesian_product::<2>, pathfinding_dfs::<2>, manual_dfs::<2>,manual_dfs_backward::<2>] => 362_646_859_298_554, 
     example part1 EG => 3749, example part2 EG => 11387);
 
 #[derive(Copy, Clone, Debug)]
@@ -31,6 +31,17 @@ impl Op {
             Op::Concat => {
                 let m = 10u64.pow(nums::digit_count(b) as u32);
                 a * m + b
+            }
+        }
+    }
+    fn ap_rev(self, a: u64, b: u64) -> Option<u64> {
+        match self {
+            Op::Add => a.checked_sub(b),
+            Op::Mul => (a % b == 0).then_some(a / b),
+            Op::Concat => {
+                let m = 10u64.pow(nums::digit_count(b) as u32);
+                let c = a.checked_sub(b)?;
+                (c % m == 0).then_some(c / m)
             }
         }
     }
@@ -130,19 +141,48 @@ fn manual_dfs<const PART: u64>(input: &[(u64, Vec<u64>)]) -> u64 {
         2 => &OPS2,
         _ => unreachable!(),
     };
-    input.par_iter().filter_map(|(target, nums)| {
-        let mut stack = vec![(nums[0],1)];
-        while let Some((total,ix)) = stack.pop() {
-            if ix == nums.len() {
-                if *target == total {
-                    return Some(target);
+    input
+        .par_iter()
+        .filter_map(|(target, nums)| {
+            let mut stack = vec![(nums[0], 1)];
+            while let Some((total, ix)) = stack.pop() {
+                if ix == nums.len() {
+                    if *target == total {
+                        return Some(target);
+                    }
+                } else if total <= *target {
+                    stack.extend(ops.iter().map(|o| (o.ap(total, nums[ix]), ix + 1)));
                 }
-            } else if total <= *target {
-                stack.extend(ops.iter().map(|o| (o.ap(total,nums[ix]),ix+1)));
             }
-        }
-        None
-    }).sum()
+            None
+        })
+        .sum()
+}
+fn manual_dfs_backward<const PART: u64>(input: &[(u64, Vec<u64>)]) -> u64 {
+    let ops: &[Op] = match PART {
+        1 => &OPS,
+        2 => &OPS2,
+        _ => unreachable!(),
+    };
+    input
+        .par_iter()
+        .filter_map(|(target, nums)| {
+            let mut stack = vec![(*target, nums.len() - 1)];
+            while let Some((total, ix)) = stack.pop() {
+                if ix == 0 {
+                    if total == nums[0] {
+                        return Some(target);
+                    }
+                } else {
+                    stack.extend(
+                        ops.iter()
+                            .filter_map(|o| o.ap_rev(total, nums[ix]).map(|n| (n, ix - 1))),
+                    )
+                }
+            }
+            None
+        })
+        .sum()
 }
 
 const EG: &str = "190: 10 19
