@@ -21,19 +21,19 @@ pub fn int_to_digits_big_endian<const SIZE: usize>(mut i: usize) -> [u8; SIZE] {
     }
     ans
 }
-pub fn digit_count<T>(mut n: T) -> usize 
-where 
+pub fn digit_count<T>(mut n: T) -> usize
+where
     T: Num + DivAssign<T> + From<u8> + PartialOrd + Copy,
 {
     if n == T::zero() {
         return 1;
     }
     let mut div_count = 0;
-    let ten : T = 10.into();
+    let ten: T = 10.into();
     while n > T::zero() {
         div_count += 1;
         n /= ten;
-    } 
+    }
     div_count
 }
 
