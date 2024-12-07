@@ -21,6 +21,21 @@ pub fn int_to_digits_big_endian<const SIZE: usize>(mut i: usize) -> [u8; SIZE] {
     }
     ans
 }
+pub fn digit_count<T>(mut n: T) -> usize 
+where 
+    T: Num + DivAssign<T> + From<u8> + PartialOrd + Copy,
+{
+    if n == T::zero() {
+        return 1;
+    }
+    let mut div_count = 0;
+    let ten : T = 10.into();
+    while n > T::zero() {
+        div_count += 1;
+        n /= ten;
+    } 
+    div_count
+}
 
 pub fn digits<T>(mut n: T) -> impl Iterator<Item = T>
 where
@@ -290,6 +305,11 @@ mod tests {
         }
         eprintln!("{} ^ {} % {} == {}", a, b, m, a.pow(b) % m);
         TestResult::from_bool(mod_pow(a, b.into(), m) == a.pow(b) % m)
+    }
+    #[quickcheck]
+    fn div_count_test(n: u64) -> bool {
+        let len_by_to_str = format!("{n}").len();
+        digit_count(n) == len_by_to_str
     }
     proptest! {
         #[test]
