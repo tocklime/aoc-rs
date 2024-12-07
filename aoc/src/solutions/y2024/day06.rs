@@ -1,10 +1,11 @@
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use utils::{
     cartesian::{Dir, Point},
     grid2d::Grid2d,
     numset::NumSet,
 };
 
-aoc_harness::aoc_main!(2024 day 6, generator gen, part1 [p1] => 4696, part2 [bruteforce,p2] => 1443, example part1 EG => 41, example part2 EG => 6);
+aoc_harness::aoc_main!(2024 day 6, generator gen, part1 [p1] => 4696, part2 [bruteforce,p2,rayon] => 1443, example part1 EG => 41, example part2 EG => 6);
 
 fn gen(input: &str) -> Grid2d<char> {
     Grid2d::from_str_as_char(input).flip_y()
@@ -34,7 +35,7 @@ fn grid_cycles(g: &Grid2d<char>, mut pos: Point<usize>, mut dir: Dir, new_obstac
     }
 }
 
-fn p1(input: &Grid2d<char>) -> usize {
+fn all_touched_cells(input: &Grid2d<char>) -> Vec<Point<usize>> {
     let mut seen = Grid2d::from_elem(input.dim(),false);
     let mut pos = input.find(|c| c == &'^').unwrap().0;
     let mut dir = Dir::Up;
@@ -50,7 +51,11 @@ fn p1(input: &Grid2d<char>) -> usize {
             Some(_) => pos = next,
         }
     }
-    seen.iter().filter(|&&x| x).count()
+    seen.indexed_iter().filter_map(|x| x.1.then_some(x.0)).collect()
+}
+
+fn p1(input: &Grid2d<char>) -> usize {
+    all_touched_cells(input).len()
 }
 fn cycles(g: &Grid2d<char>, start: Point<usize>, obstruction: Point<usize>) -> bool {
     let mut been = Grid2d::from_fn(g.dim(), |_| NumSet::<u8>::default());
@@ -107,6 +112,14 @@ fn p2(input: &Grid2d<char>) -> usize {
             }
         }
     }
+
+}
+fn rayon(input: &Grid2d<char>) -> usize {
+    let start = input.find(|c| c == &'^').unwrap().0;
+    let to_check = all_touched_cells(input);
+    to_check.into_par_iter().filter(|x| {
+        cycles(input, start, *x)
+    }).count()
 
 }
 
