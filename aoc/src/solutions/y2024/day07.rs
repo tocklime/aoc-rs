@@ -1,5 +1,6 @@
 use itertools::Itertools;
 use num::Integer;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use utils::{inputs::parse_input_from_str_sep_by, nums};
 
 aoc_harness::aoc_main!(2024 day 7, 
@@ -119,7 +120,7 @@ fn find_solution(target: u64, nums: &[u64], max_op: u64) -> bool {
 }
 fn pathfinding_dfs<const PART: u64>(input: &[(u64, Vec<u64>)]) -> u64 {
     input
-        .iter()
+        .par_iter()
         .filter_map(|(target, nums)| find_solution(*target, nums, PART).then_some(target))
         .sum()
 }
@@ -129,8 +130,7 @@ fn manual_dfs<const PART: u64>(input: &[(u64, Vec<u64>)]) -> u64 {
         2 => &OPS2,
         _ => unreachable!(),
     };
-    input.iter().
-    filter_map(|(target, nums)| {
+    input.par_iter().filter_map(|(target, nums)| {
         let mut stack = vec![(nums[0],1)];
         while let Some((total,ix)) = stack.pop() {
             if ix == nums.len() {
