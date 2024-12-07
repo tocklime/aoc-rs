@@ -1,5 +1,5 @@
+use gomez::{nalgebra::{self, SVector}, Problem, SolverDriver, System};
 use itertools::Itertools;
-use nalgebra::SVector;
 use nom::{
     bytes::complete::tag,
     character::complete::{self, newline, space1},
@@ -9,10 +9,10 @@ use nom::{
 };
 use nom_supreme::ParserExt;
 use num::rational::Ratio;
-use num_traits::{CheckedDiv, Zero};
+use num_traits::{CheckedDiv, Zero, ToPrimitive};
 use utils::nom::IResult;
 
-aoc_harness::aoc_main!(2023 day 24, part1 [p1::<200_000_000_000_000, 400_000_000_000_000>], part2 [p2]/* , example part2 EG => 47*/);
+aoc_harness::aoc_main!(2023 day 24, part1 [p1::<200_000_000_000_000, 400_000_000_000_000>], /* , example part2 EG => 47*/);
 
 type MyNum = Ratio<i128>;
 
@@ -113,45 +113,46 @@ fn p1<const MIN: i128, const MAX: i128>(input: &str) -> u32 {
     count
 }
 
-// struct Hailstones {
-//     stones: [Hailstone; 3],
-// }
-// impl Problem for Hailstones {
-//     type Field = f64;
+struct Hailstones {
+    stones: [Hailstone; 3],
+}
+impl Problem for Hailstones {
+    type Field = f64;
 
-//     fn domain(&self) -> gomez::Domain<Self::Field> {
-//         gomez::Domain::unconstrained(9)
-//     }
-// }
-// impl System for Hailstones {
-//     fn eval<Sx, Srx>(
-//         &self,
-//         x: &nalgebra::Vector<Self::Field, nalgebra::Dyn, Sx>,
-//         rx: &mut nalgebra::Vector<Self::Field, nalgebra::Dyn, Srx>,
-//     ) where
-//         Sx: nalgebra::Storage<Self::Field, nalgebra::Dyn> + nalgebra::IsContiguous,
-//         Srx: nalgebra::StorageMut<Self::Field, nalgebra::Dyn>,
-//     {
-//         // vx*t0 + px = h[0].vel[0] * t0 + h[0].pos[0]
-//         // vy*t0 + py = h[0].vel[1] * t0 + h[0].pos[1]
-//         // vz*t0 + pz = h[0].vel[2] * t0 + h[0].pos[2]
+    fn domain(&self) -> gomez::Domain<Self::Field> {
+        gomez::Domain::unconstrained(9)
+    }
+}
+impl System for Hailstones {
+    fn eval<Sx, Srx>(
+        &self,
+        x: &nalgebra::Vector<Self::Field, nalgebra::Dyn, Sx>,
+        rx: &mut nalgebra::Vector<Self::Field, nalgebra::Dyn, Srx>,
+    ) where
+        Sx: nalgebra::Storage<Self::Field, nalgebra::Dyn> + nalgebra::IsContiguous,
+        Srx: nalgebra::StorageMut<Self::Field, nalgebra::Dyn>,
+    {
+        // vx*t0 + px = h[0].vel[0] * t0 + h[0].pos[0]
+        // vy*t0 + py = h[0].vel[1] * t0 + h[0].pos[1]
+        // vz*t0 + pz = h[0].vel[2] * t0 + h[0].pos[2]
 
-//         // vx*t1 + px = h[1].vel[0] * t1 + h[1].pos[0]
-//         // vy*t1 + py = h[1].vel[1] * t1 + h[1].pos[1]
-//         // vz*t1 + pz = h[1].vel[2] * t1 + h[1].pos[2]
+        // vx*t1 + px = h[1].vel[0] * t1 + h[1].pos[0]
+        // vy*t1 + py = h[1].vel[1] * t1 + h[1].pos[1]
+        // vz*t1 + pz = h[1].vel[2] * t1 + h[1].pos[2]
 
-//         // vx*t2 + px = h[2].vel[0] * t2 + h[2].pos[0]
-//         // vy*t2 + py = h[2].vel[1] * t2 + h[2].pos[1]
-//         // vz*t2 + pz = h[2].vel[2] * t2 + h[2].pos[2]
-//         let h = &self.stones;
-//         // let [p0,p1,p2,v0,v1,v2,t0,t1,t2] = &x;
-//         for h_ix in 0..3 {
-//             rx[3 * h_ix + 0] = h[h_ix].vel[0].to_f64().unwrap() * x[6] + h[h_ix].pos[0].to_f64().unwrap() - x[3] * x[6] - x[0];
-//             rx[3 * h_ix + 1] = h[h_ix].vel[1].to_f64().unwrap() * x[7] + h[h_ix].pos[1].to_f64().unwrap() - x[4] * x[7] - x[1];
-//             rx[3 * h_ix + 2] = h[h_ix].vel[2].to_f64().unwrap() * x[8] + h[h_ix].pos[2].to_f64().unwrap() - x[5] * x[8] - x[2];
-//         }
-//     }
-// }
+        // vx*t2 + px = h[2].vel[0] * t2 + h[2].pos[0]
+        // vy*t2 + py = h[2].vel[1] * t2 + h[2].pos[1]
+        // vz*t2 + pz = h[2].vel[2] * t2 + h[2].pos[2]
+        let h = &self.stones;
+        // let [p0,p1,p2,v0,v1,v2,t0,t1,t2] = &x;
+        for h_ix in 0..3 {
+            rx[3 * h_ix + 0] = h[h_ix].vel[0].to_f64().unwrap() * x[6] + h[h_ix].pos[0].to_f64().unwrap() - x[3] * x[6] - x[0];
+            rx[3 * h_ix + 1] = h[h_ix].vel[1].to_f64().unwrap() * x[7] + h[h_ix].pos[1].to_f64().unwrap() - x[4] * x[7] - x[1];
+            rx[3 * h_ix + 2] = h[h_ix].vel[2].to_f64().unwrap() * x[8] + h[h_ix].pos[2].to_f64().unwrap() - x[5] * x[8] - x[2];
+        }
+    }
+}
+#[allow(dead_code)]
 fn p2(input: &str) -> usize {
     let puzzle = separated_list1(newline, Hailstone::parse)
         .terminated(newline)
@@ -179,17 +180,17 @@ fn p2(input: &str) -> usize {
     // vx*t2 + px = h[2].vel[0] * t2 + h[2].pos[0]
     // vy*t2 + py = h[2].vel[1] * t2 + h[2].pos[1]
     // vz*t2 + pz = h[2].vel[2] * t2 + h[2].pos[2]
-//     let smol = Hailstones{
-//         stones: [
-//             puzzle[0], puzzle[1],puzzle[2]
-//         ]
-//     };
-//     let mut solver = SolverDriver::builder(&smol)
-//     .with_initial(vec![0.;9])
-//     .build();
-// let (x, norm) = solver.find(|s| s.norm() <= 1e-6 || s.iter() >= 100)
-// .expect("solver err");
-// dbg!(x, norm);
+    let smol = Hailstones{
+        stones: [
+            puzzle[0], puzzle[1],puzzle[2]
+        ]
+    };
+    let mut solver = SolverDriver::builder(&smol)
+    .with_initial(vec![0.;9])
+    .build();
+let (x, norm) = solver.find(|s| s.norm() <= 1e-6 || s.iter() >= 100)
+.expect("solver err");
+dbg!(x, norm);
 
     for (ix, h) in puzzle.iter().enumerate().take(3) {
         println!("pos{}, v{} = ([{},{},{}], [{},{},{}])", ix+1, ix+1, 
