@@ -547,6 +547,7 @@ impl AocMainInput {
                     #setup
                     #solutions
                     opts.answers.record_dayresult(results).expect("Mismatched results");
+                    opts.log(|| format!("{} best complete time is {}",&desc,aoc_harness::render_duration(results.total_time())));
                 }
                 #examples
 
