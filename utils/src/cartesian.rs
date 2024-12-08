@@ -471,6 +471,16 @@ macro_rules! u_i_add_pairs {
                 Ok(Point::new(value.x.try_into()?, value.y.try_into()?))
             }
         }
+        impl Point<$tu> {
+            pub fn as_i(self) -> Option<Point<$ti>> {
+                self.try_into().ok()
+            }
+        }
+        impl Point<$ti> {
+            pub fn as_u(self) -> Option<Point<$tu>> {
+                self.try_into().ok()
+            }
+        }
     };
 }
 u_i_add_pairs!(usize, isize);
