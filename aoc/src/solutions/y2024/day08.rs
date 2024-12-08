@@ -2,10 +2,10 @@ use ahash::HashMap;
 use itertools::Itertools;
 use utils::{cartesian::Point, grid2d::Grid2d};
 
-aoc_harness::aoc_main!(2024 day 8, part1 [p1::<1>] => 348, part2 [p1::<2>] => 1221, example both EG => (14, 34));
+aoc_harness::aoc_main!(2024 day 8, part1 [solve::<1>] => 348, part2 [solve::<2>] => 1221, example both EG => (14, 34));
 
-fn p1<const PART: u8>(input: &str) -> usize {
-    let mut g = Grid2d::from_str_as_char(input);
+fn solve<const PART: u8>(input: &str) -> usize {
+    let g = Grid2d::from_str_as_char(input);
     let mut anti_nodes = Grid2d::from_elem(g.dim(), false);
     let mut transmitters: HashMap<char, Vec<Point<isize>>> = HashMap::default();
     for (ix, c) in g.indexed_iter() {
@@ -13,7 +13,7 @@ fn p1<const PART: u8>(input: &str) -> usize {
             transmitters
                 .entry(*c)
                 .or_default()
-                .push(Point::new(ix.x as isize, ix.y as isize));
+                .push(ix.try_into().unwrap());
         }
     }
     for v in transmitters.values() {
@@ -25,27 +25,21 @@ fn p1<const PART: u8>(input: &str) -> usize {
                 if PART == 1 {
                     if let Some(x) = anti_nodes.get_i_mut(anti1) {
                         *x = true;
-                        *g.get_i_mut(anti1).unwrap() = 'X';
                     }
                     if let Some(x) = anti_nodes.get_i_mut(anti2) {
                         *x = true;
-                        *g.get_i_mut(anti2).unwrap() = 'X';
                     }
                 } else {
                     //start at a, and take steps of diff and -diff until you run off the map.
-                    let a_u = Grid2d::<usize>::to_u(a).unwrap();
-                    for (p, _) in g.values_in_direction(a_u, diff) {
-                        anti_nodes[p] = true;
-                    }
-                    for (p, _) in g.values_in_direction(a_u, -diff) {
-                        anti_nodes[p] = true;
+                    for d in [diff, -diff] {
+                        for (p, _) in g.values_in_direction::<Point<usize>,_>(a.try_into().unwrap(), d) {
+                            anti_nodes[p] = true;
+                        }
                     }
                 }
             }
         }
     }
-    // println!("{g}");
-
     anti_nodes.iter().filter(|&&x| x).count()
 }
 

@@ -459,6 +459,18 @@ macro_rules! u_i_add_pairs {
                 Self::new(x, y)
             }
         }
+        impl std::convert::TryFrom<Point<$tu>> for Point<$ti> {
+            type Error = std::num::TryFromIntError;
+            fn try_from(value: Point<$tu>) -> Result<Self, Self::Error> {
+                Ok(Point::new(value.x.try_into()?, value.y.try_into()?))
+            }
+        }
+        impl std::convert::TryFrom<Point<$ti>> for Point<$tu> {
+            type Error = std::num::TryFromIntError;
+            fn try_from(value: Point<$ti>) -> Result<Self, Self::Error> {
+                Ok(Point::new(value.x.try_into()?, value.y.try_into()?))
+            }
+        }
     };
 }
 u_i_add_pairs!(usize, isize);
