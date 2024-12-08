@@ -169,6 +169,11 @@ impl<T> Grid2d<T> {
         let p = p.into();
         Self::to_u(p).and_then(|p| self.get(p))
     }
+    #[must_use]
+    pub fn get_i_mut<TC: Into<ICoord>>(&mut self, p: TC) -> Option<&mut T> {
+        let p = p.into();
+        Self::to_u(p).and_then(|p| self.get_mut(p))
+    }
 
     pub fn dim(&self) -> Coord {
         self.size
