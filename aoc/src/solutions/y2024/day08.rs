@@ -13,7 +13,7 @@ fn solve<const PART: u8>(input: &str) -> usize {
             transmitters
                 .entry(*c)
                 .or_default()
-                .push(ix)
+                .push(ix);
         }
     }
     for v in transmitters.values() {

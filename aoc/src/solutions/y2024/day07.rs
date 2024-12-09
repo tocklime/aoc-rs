@@ -177,7 +177,7 @@ fn manual_dfs_backward<const PART: u64>(input: &[(u64, Vec<u64>)]) -> u64 {
                     stack.extend(
                         ops.iter()
                             .filter_map(|o| o.ap_rev(total, nums[ix]).map(|n| (n, ix - 1))),
-                    )
+                    );
                 }
             }
             None

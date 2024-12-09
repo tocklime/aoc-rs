@@ -146,7 +146,7 @@ impl System for Hailstones {
         let h = &self.stones;
         // let [p0,p1,p2,v0,v1,v2,t0,t1,t2] = &x;
         for h_ix in 0..3 {
-            rx[3 * h_ix + 0] = h[h_ix].vel[0].to_f64().unwrap() * x[6] + h[h_ix].pos[0].to_f64().unwrap() - x[3] * x[6] - x[0];
+            rx[3 * h_ix] = h[h_ix].vel[0].to_f64().unwrap() * x[6] + h[h_ix].pos[0].to_f64().unwrap() - x[3] * x[6] - x[0];
             rx[3 * h_ix + 1] = h[h_ix].vel[1].to_f64().unwrap() * x[7] + h[h_ix].pos[1].to_f64().unwrap() - x[4] * x[7] - x[1];
             rx[3 * h_ix + 2] = h[h_ix].vel[2].to_f64().unwrap() * x[8] + h[h_ix].pos[2].to_f64().unwrap() - x[5] * x[8] - x[2];
         }

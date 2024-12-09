@@ -12,19 +12,17 @@ fn print_disk(disk: &[Option<usize>]) {
 
 fn p1(input: &str) -> usize {
     let mut disk = Vec::new();
-    let mut index = 0;
-    for v in input.trim().as_bytes().chunks(2) {
+    for (index, v) in input.trim().as_bytes().chunks(2).enumerate() {
         let file_size = v[0] - b'0';
         disk.extend(std::iter::repeat(Some(index)).take(file_size.into()));
-        index += 1;
         if let Some(&x) = v.get(1) {
             disk.extend(std::iter::repeat(None).take((x - b'0').into()));
         }
     }
-    let mut gap = disk.iter().position(|x| x.is_none());
+    let mut gap = disk.iter().position(Option::is_none);
     while let Some(g) = gap {
         disk[g] = disk.pop().unwrap();
-        gap = (g..disk.len()).find(|ix| disk[*ix] == None);
+        gap = (g..disk.len()).find(|ix| disk[*ix].is_none());
         // print_disk(&disk);
         // println!("Gap now at {gap:?}");
     }
@@ -83,7 +81,7 @@ fn p2(input: &str) -> usize {
         let size = disk[ix].contiguous_files[0].1;
         assert_eq!(disk[ix].contiguous_files[0].0, ix);
         //find a spot for it and remove it.
-        let qni = first_gap_of_size_n_or_greater.get(size).cloned().filter(|&x| x<ix);
+        let qni = first_gap_of_size_n_or_greater.get(size).copied().filter(|&x| x<ix);
         if let Some(new_ix) = qni {
             disk[new_ix].contiguous_files.push((ix, size));
             let old_space = disk[new_ix].space;
