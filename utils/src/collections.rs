@@ -140,6 +140,10 @@ impl<T> VecLookup<T> {
     pub fn values(&self) -> impl Iterator<Item = &T> {
         self.iter().map(|(_k, v)| v)
     }
+    
+    pub fn remove(&mut self, index: usize) -> Option<T> {
+        self.0.get_mut(index).and_then(|x| x.take())
+    }
 }
 impl<'a, T> VecLookup<T> {
     pub fn entry(&'a mut self, key: usize) -> VecLookupEntry<'a, T> {
