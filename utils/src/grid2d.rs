@@ -28,8 +28,8 @@ impl<T: Copy> Grid2d<T> {
     }
 
     pub fn is_corner(&self, p: Point<usize>) -> bool {
-        p.x == 0 && (p.y == 0 || p.y == self.dim().y-1) ||
-        p.x == self.dim().x-1 && (p.y == self.dim().y-1 || p.y == 0)
+        p.x == 0 && (p.y == 0 || p.y == self.dim().y - 1)
+            || p.x == self.dim().x - 1 && (p.y == self.dim().y - 1 || p.y == 0)
     }
     pub fn is_edge(&self, p: Point<usize>) -> bool {
         p.x == 0 || p.y == 0 || p.x == self.dim().x - 1 || p.y == self.dim().y - 1

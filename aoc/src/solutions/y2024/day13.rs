@@ -1,7 +1,8 @@
+use nalgebra::{matrix, vector};
 use nom::{bytes::complete::tag, IResult};
 use utils::cartesian::Point;
 
-aoc_harness::aoc_main!(2024 day 13, part1 [solve::<0>] => 27157, part2[solve::<10_000_000_000_000>] => 104_015_411_578_548, example part1 EG => 480);
+aoc_harness::aoc_main!(2024 day 13, part1 [solve::<0>, solve_mat::<0>] => 27157, part2[solve::<10_000_000_000_000>,solve_mat::<10_000_000_000_000>] => 104_015_411_578_548, example part1 EG => 480);
 
 #[derive(Debug)]
 struct Machine {
@@ -14,7 +15,7 @@ fn try_div(a: i64, b: i64) -> Option<i64> {
 }
 impl Machine {
     fn solve(&self) -> Option<i64> {
-        let Machine{a,b,p} = *self;
+        let Machine { a, b, p } = *self;
         //in x, we have A * a_x + B * b_x == p_x
         //in y we have A * a_y + B * b_y == p_y
         //this is intersection of two lines.
@@ -27,7 +28,34 @@ impl Machine {
         // B == (a_y*p_x - a_x*p_y) / (a_y*b_x - a_x * b_y)
         let b_presses = try_div(a.y * p.x - a.x * p.y, a.y * b.x - a.x * b.y)?;
         let a_presses = try_div(p.x - b_presses * b.x, a.x)?;
-        Some(3*a_presses + b_presses)
+        Some(3 * a_presses + b_presses)
+    }
+    fn solve_mat(&self) -> Option<i64> {
+        let a = matrix![
+            self.a.x as f64, self.b.x as f64;
+            self.a.y as f64, self.b.y as f64;
+        ];
+        let b = vector![self.p.x as f64, self.p.y as f64];
+        let a_inv = a.try_inverse()?;
+        let x = a_inv * b;
+        let a = x[0].round() as i64;
+        let b = x[1].round() as i64;
+        let (c_a, c_b) = {
+            let Machine { a, b, p } = *self;
+            let b_presses = try_div(a.y * p.x - a.x * p.y, a.y * b.x - a.x * b.y)?;
+            let a_presses = try_div(p.x - b_presses * b.x, a.x)?;
+            (a_presses, b_presses)
+        };
+        if ((a as f64) - x[0]).abs() < 0.0001 && ((b as f64) - x[1]).abs() < 0.0001 {
+            assert_eq!(a, c_a);
+            assert_eq!(b, c_b);
+            Some(3 * a + b)
+        } else {
+            let c = self.solve();
+            dbg!(c, x);
+            assert!(self.solve().is_none());
+            None
+        }
     }
 }
 
@@ -52,6 +80,14 @@ fn parse(input: &str, prize_offset: i64) -> IResult<&str, Machine> {
             p: Point::new(px + prize_offset, py + prize_offset),
         },
     ))
+}
+
+fn solve_mat<const PRIZE_OFFSET: i64>(input: &str) -> i64 {
+    input
+        .split("\n\n")
+        .map(|x| parse(x, PRIZE_OFFSET).unwrap().1)
+        .filter_map(|x| x.solve_mat())
+        .sum()
 }
 
 fn solve<const PRIZE_OFFSET: i64>(input: &str) -> i64 {
