@@ -132,6 +132,7 @@ pub fn add_assign_i<T: Num + Signed + TryInto<usize>>(u: &mut usize, i: &T) {
     }
 }
 
+/// This calculates a single number N such that for every (a,b) in `list`, N%b == a.
 pub fn chinese_remainder_theorem<T>(list: &[(T, T)]) -> T
 where
     T: Num + Product + Sum + Integer + Copy,
