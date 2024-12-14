@@ -424,7 +424,7 @@ impl<T: Rem + Num> Rem for Point<T> {
     type Output = Self;
 
     fn rem(self, rhs: Self) -> Self::Output {
-        Point::new(self.x%rhs.x, self.y%rhs.y)
+        Point::new(self.x % rhs.x, self.y % rhs.y)
     }
 }
 
