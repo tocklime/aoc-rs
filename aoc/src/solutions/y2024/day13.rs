@@ -1,8 +1,12 @@
+use itertools::Itertools;
 use nalgebra::{matrix, vector};
-use nom::{bytes::complete::tag, IResult};
-use utils::cartesian::Point;
+use utils::{cartesian::Point, inputs::parse_numbers};
 
-aoc_harness::aoc_main!(2024 day 13, part1 [solve::<0>, solve_mat::<0>] => 27157, part2[solve::<10_000_000_000_000>,solve_mat::<10_000_000_000_000>] => 104_015_411_578_548, example part1 EG => 480);
+aoc_harness::aoc_main!(2024 day 13, 
+    generator gen, 
+    part1 [solve::<0>, solve_mat::<0>] => 27157, 
+    part2[solve::<10_000_000_000_000>,solve_mat::<10_000_000_000_000>] => 104_015_411_578_548, 
+    example part1 EG => 480);
 
 #[derive(Debug)]
 struct Machine {
@@ -14,6 +18,13 @@ fn try_div(a: i64, b: i64) -> Option<i64> {
     (a % b == 0).then_some(a / b)
 }
 impl Machine {
+    fn move_prize(&self, n: i64) -> Self {
+        Self {
+            a: self.a,
+            b: self.b,
+            p: self.p + Point::new(n, n),
+        }
+    }
     fn solve(&self) -> Option<i64> {
         let Machine { a, b, p } = *self;
         //in x, we have A * a_x + B * b_x == p_x
@@ -31,70 +42,46 @@ impl Machine {
         Some(3 * a_presses + b_presses)
     }
     fn solve_mat(&self) -> Option<i64> {
-        let a = matrix![
+        let m_a = matrix![
             self.a.x as f64, self.b.x as f64;
             self.a.y as f64, self.b.y as f64;
         ];
-        let b = vector![self.p.x as f64, self.p.y as f64];
-        let a_inv = a.try_inverse()?;
-        let x = a_inv * b;
+        let m_b = vector![self.p.x as f64, self.p.y as f64];
+        let a_inv = m_a.try_inverse()?;
+        let x = a_inv * m_b;
         let a = x[0].round() as i64;
         let b = x[1].round() as i64;
-        let (c_a, c_b) = {
-            let Machine { a, b, p } = *self;
-            let b_presses = try_div(a.y * p.x - a.x * p.y, a.y * b.x - a.x * b.y)?;
-            let a_presses = try_div(p.x - b_presses * b.x, a.x)?;
-            (a_presses, b_presses)
-        };
-        if ((a as f64) - x[0]).abs() < 0.0001 && ((b as f64) - x[1]).abs() < 0.0001 {
-            assert_eq!(a, c_a);
-            assert_eq!(b, c_b);
+        //check that the solution works with whole numbers.
+        if a * self.a.x + b * self.b.x == self.p.x && a * self.a.y + b * self.b.y == self.p.y {
             Some(3 * a + b)
         } else {
-            let c = self.solve();
-            dbg!(c, x);
-            assert!(self.solve().is_none());
             None
         }
     }
 }
 
-fn parse(input: &str, prize_offset: i64) -> IResult<&str, Machine> {
-    let (input, _) = tag("Button A: X+")(input)?;
-    let (input, ax) = nom::character::complete::i64(input)?;
-    let (input, _) = tag(", Y+")(input)?;
-    let (input, ay) = nom::character::complete::i64(input)?;
-    let (input, _) = tag("\nButton B: X+")(input)?;
-    let (input, bx) = nom::character::complete::i64(input)?;
-    let (input, _) = tag(", Y+")(input)?;
-    let (input, by) = nom::character::complete::i64(input)?;
-    let (input, _) = tag("\nPrize: X=")(input)?;
-    let (input, px) = nom::character::complete::i64(input)?;
-    let (input, _) = tag(", Y=")(input)?;
-    let (input, py) = nom::character::complete::i64(input)?;
-    Ok((
-        input,
-        Machine {
-            a: Point::new(ax, ay),
-            b: Point::new(bx, by),
-            p: Point::new(px + prize_offset, py + prize_offset),
-        },
-    ))
+fn gen(input: &str) -> Vec<Machine> {
+    parse_numbers(input)
+        .chunks(6)
+        .into_iter()
+        .map(|mut x| Machine {
+            a: Point::new(x.next().unwrap() as i64, x.next().unwrap() as i64),
+            b: Point::new(x.next().unwrap() as i64, x.next().unwrap() as i64),
+            p: Point::new(x.next().unwrap() as i64, x.next().unwrap() as i64),
+        })
+        .collect()
 }
-
-fn solve_mat<const PRIZE_OFFSET: i64>(input: &str) -> i64 {
+fn solve_mat<const PRIZE_OFFSET: i64>(input: &[Machine]) -> i64 {
     input
-        .split("\n\n")
-        .map(|x| parse(x, PRIZE_OFFSET).unwrap().1)
-        .filter_map(|x| x.solve_mat())
+        .iter()
+        .filter_map(|x| x.move_prize(PRIZE_OFFSET).solve_mat())
         .sum()
 }
 
-fn solve<const PRIZE_OFFSET: i64>(input: &str) -> i64 {
+fn solve<const PRIZE_OFFSET: i64>(input: &[Machine]) -> i64 {
     input
-        .split("\n\n")
-        .map(|x| parse(x, PRIZE_OFFSET).unwrap().1)
-        .filter_map(|x| x.solve())
+        .iter()
+        .filter_map(|x| x.move_prize(PRIZE_OFFSET).solve())
         .sum()
 }
 

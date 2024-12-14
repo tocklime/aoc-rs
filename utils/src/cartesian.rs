@@ -6,7 +6,7 @@ use num::{
     traits::{WrappingAdd, WrappingSub},
     Integer, Num, Signed, Unsigned,
 };
-use std::ops::{Add, AddAssign, Mul, RangeInclusive, Sub};
+use std::ops::{Add, AddAssign, Mul, RangeInclusive, Rem, Sub};
 use std::{collections::HashMap, fmt::Display};
 use std::{collections::HashSet, fmt::Debug};
 use std::{
@@ -418,6 +418,13 @@ impl<T: Add + Num> Add for Point<T> {
 impl<T: WrappingAdd + Num> WrappingAdd for Point<T> {
     fn wrapping_add(&self, v: &Self) -> Self {
         Self::new(self.x.wrapping_add(&v.x), self.y.wrapping_add(&v.y))
+    }
+}
+impl<T: Rem + Num> Rem for Point<T> {
+    type Output = Self;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        Point::new(self.x%rhs.x, self.y%rhs.y)
     }
 }
 

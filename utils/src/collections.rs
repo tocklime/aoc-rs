@@ -116,9 +116,11 @@ impl<T> VecLookup<T> {
         let short = size.saturating_sub(self.0.len());
         self.0.extend((0..short).map(|_| None));
     }
-    pub fn insert(&mut self, key: usize, value: T) {
+    pub fn insert(&mut self, key: usize, value: T) -> bool {
         self.ensure_size(key + 1);
+        let was_empty = self.0[key].is_none();
         self.0[key] = Some(value);
+        was_empty
     }
     #[must_use]
     pub fn get(&self, key: usize) -> Option<&T> {
