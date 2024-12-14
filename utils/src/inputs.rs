@@ -63,7 +63,7 @@ impl<N> Iterator for ThingParser<'_, N> {
     }
 }
 
-pub fn parse_numbers<'a>(input: &'a str) -> impl Iterator<Item = u64> + use<'a> {
+pub fn parse_numbers(input: &str) -> impl Iterator<Item = u64> + use<'_> {
     NumParser { input }
 }
 
