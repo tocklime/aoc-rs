@@ -81,7 +81,7 @@ fn p2(input: &str) -> isize {
         .unwrap();
     let best_y = (0..max.y)
         .map(|t| {
-            let mut vl = VecLookup::with_capacity(max.x as usize);
+            let mut vl = VecLookup::with_capacity(max.y as usize);
             let mut count = 0;
             for b in &bs {
                 if vl.insert(b.loc_after_n(t).y as usize, true) {
