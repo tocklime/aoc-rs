@@ -1,11 +1,9 @@
-use std::collections::{BTreeSet, HashSet};
-
 use itertools::Itertools;
 use utils::inputs;
 
-aoc_harness::aoc_main!(2024 day 17, part1 [p1], part2 [p2],
-    example part1 EG => "4,6,3,5,6,3,5,2,1,0"
-//   example part2 EG2 => 117_440
+aoc_harness::aoc_main!(2024 day 17, part1 [p1] => "2,7,4,7,2,1,7,5,1", part2 [p2] => 37_221_274_271_220,
+    example part1 EG => "4,6,3,5,6,3,5,2,1,0",
+    example part2 EG2 => 117_440
 );
 
 #[derive(Debug, Clone)]
@@ -105,6 +103,9 @@ impl Machine {
         // m.force_quine = true;
         m.regs[0] = init_a;
         m.run();
+        if m.output.len() > m.program.len() {
+            return 0;
+        }
         let matching = m
             .output
             .iter()
@@ -129,81 +130,26 @@ fn p1(input: &str) -> String {
 }
 fn p2(input: &str) -> i64 {
     let m = Machine::from_str(input);
-    // let mut sets_of_3_bits: Vec<i64> = vec![];
-    // let mut best_score = 0;
-    // let mut loops_since_score_increase = 0;
-    let mut fringe: HashSet<i64> = [0].into_iter().collect();
-    let mut correct : BTreeSet<i64> = BTreeSet::new();
+    let lookahead = if input == EG2 { 0 } else { 4 };
+    let mut fringe: Vec<i64> = [0].into_iter().collect();
     let mr = &m;
-    dbg!(m.program.len());
-    for step_ix in 0..m.program.len()-1 {
-        let new_fringe : HashSet<i64> = fringe.iter().flat_map(move |s| {
-            (0..0o1000).filter_map(move |x| {
-                let candidate = s | x << (3 * step_ix);
-                let res = mr.quine_score(candidate);
-                // println!("Trying {candidate:o}, got score {res}");
-                if res == mr.program.len() {
-                    // correct.insert(candidate);
-                    println!("Candidate: {candidate}");
-                    None
-                } else if res >= step_ix {
-                    Some(candidate)
-                } else {
-                    None
-                }
+    for step_ix in 0..m.program.len() {
+        fringe = fringe.into_iter().flat_map(move |s| {
+            (0..8).filter_map(move |x| {
+                //considering adding `x` as new octal digit on the front of the value.
+                //it's ok if by also adding any possible value between 0 and 2^lookahead 
+                //gives a new correct digit.
+                let with_la = (0..2_i64.pow(lookahead)).any(|la| {
+                    let f = la << 3 | x;
+                    let candidate = s | f << (3*step_ix);
+                    mr.quine_score(candidate) >= step_ix
+                });
+                (with_la).then_some(s | x << (3*step_ix))
             })
         }).collect();
-        println!("Step {} has {} options", step_ix, new_fringe.len());
-        if new_fringe.is_empty() {
-            println!("No possible way to get to step {step_ix}.");
-            for a in &fringe {
-                println!("  Opt: {a:o} => {step_ix}");
-            }
-        }
-        fringe = new_fringe;
+        // println!("Fringe at step {step_ix} now has {}", fringe.len());
     }
-    dbg!(fringe.len());
-    correct.pop_first().unwrap()
-    // fringe.into_iter().next().unwrap()
-    //38886110969332 is an answer?
-
-    // while let Some((s, n)) = stack.pop() {
-    //     //we have a value which outputs the first n outputs correctly. What are the next bits?
-    //     //search to find the next output value.
-    //     if n == m.program.len() {
-    //         return s;
-    //     }
-    //     stack.extend(next);
-    // }
-    // 0
-
-    // loop {
-    //     let (score, _, n) = (0..0o1000).map(|x| {
-    //         let n = sets_of_3_bits.iter().chain(&[x]).rev().copied().reduce(|a,b| a<<3|b).unwrap();
-    //         let s = m.quine_score(n);
-    //         println!("  trying to add bits of {x} to {:?}, n is now {n} which is {n:o} in octal. Score is {s}.", sets_of_3_bits);
-    //         (s,8-x, x)
-    //     }).max().unwrap();
-    //     if score > best_score {
-    //         loops_since_score_increase = 0;
-    //         best_score = score;
-    //     } else {
-    //         loops_since_score_increase += 1;
-    //         assert!(loops_since_score_increase < 3);
-    //     }
-    //     if score == m.program.len() {
-    //         println!("Found perfect x {n}");
-    //         sets_of_3_bits.push(n&0b111);
-    //         sets_of_3_bits.push((n>>3)&0b111);
-    //         println!("{sets_of_3_bits:?}");
-    //         return sets_of_3_bits.into_iter().rev().reduce(|a,b| a<<3|b).unwrap();
-    //     }else {
-    //         println!("Found good x {n} ({n:o}), {}", n&0b111);
-    //         sets_of_3_bits.push(n&0b111);
-    //         println!("known bits now: {sets_of_3_bits:?}");
-    //     }
-    //     // panic!()
-    // }
+    fringe.into_iter().min().unwrap()
 }
 
 const EG: &str = "Register A: 729
