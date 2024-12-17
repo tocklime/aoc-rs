@@ -134,7 +134,6 @@ fn p1(input: &Machine) -> String {
 fn p2_bfs(m: &Machine) -> i64 {
     let lookahead = if m.program.len() == 6 { 0 } else { 4 };
     let mut fringe: Vec<i64> = [0].into_iter().collect();
-    let mr = m;
     for step_ix in 0..m.program.len() {
         fringe = fringe.into_iter().flat_map(move |s| {
             (0..8).filter_map(move |x| {
@@ -144,7 +143,7 @@ fn p2_bfs(m: &Machine) -> i64 {
                 let with_la = (0..2_i64.pow(lookahead)).any(|la| {
                     let f = la << 3 | x;
                     let candidate = s | f << (3*step_ix);
-                    mr.quine_score(candidate) >= step_ix
+                    m.quine_score(candidate) >= step_ix
                 });
                 (with_la).then_some(s | x << (3*step_ix))
             })
@@ -156,9 +155,8 @@ fn p2_bfs(m: &Machine) -> i64 {
 fn p2_dfs(m: &Machine) -> i64 {
     let lookahead = if m.program.len() == 6 { 0 } else { 4 };
     let mut stack: Vec<(i64, usize)> = [(0, 0)].into_iter().collect();
-    let mr = &m;
     while let Some((s, step_ix)) = stack.pop() {
-        if step_ix == mr.program.len() {
+        if step_ix == m.program.len() {
             return s;
         }
         //do in reverse, so that lower numbers are TOS, so we'll find the smallest solution first.
@@ -169,7 +167,7 @@ fn p2_dfs(m: &Machine) -> i64 {
             let with_la = (0..2_i64.pow(lookahead)).any(|la| {
                 let f = la << 3 | x;
                 let candidate = s | f << (3 * step_ix);
-                mr.quine_score(candidate) >= step_ix
+                m.quine_score(candidate) >= step_ix
             });
             (with_la).then_some((s | x << (3 * step_ix), step_ix + 1))
         });
@@ -180,9 +178,8 @@ fn p2_dfs(m: &Machine) -> i64 {
 fn p2_dfs_2(m: &Machine) -> i64 {
     let lookahead = if m.program.len() == 6 { 0 } else { 4 };
     let mut stack: Vec<(i64, i64, usize)> = [(0, 0, 0)].into_iter().collect();
-    let mr = &m;
     while let Some((s, next_digit_to_try, step_ix)) = stack.pop() {
-        if step_ix == mr.program.len() {
+        if step_ix == m.program.len() {
             return s;
         }
         if next_digit_to_try < 7 {
@@ -194,7 +191,7 @@ fn p2_dfs_2(m: &Machine) -> i64 {
         let with_la = (0..2_i64.pow(lookahead)).any(|la| {
             let f = la << 3 | next_digit_to_try;
             let candidate = s | f << (3 * step_ix);
-            mr.quine_score(candidate) >= step_ix
+            m.quine_score(candidate) >= step_ix
         });
         if with_la {
             stack.push((s|next_digit_to_try << (3*step_ix),0,step_ix+1));
