@@ -1,7 +1,10 @@
 use itertools::Itertools;
 use utils::inputs;
 
-aoc_harness::aoc_main!(2024 day 17, part1 [p1] => "2,7,4,7,2,1,7,5,1", part2 [p2] => 37_221_274_271_220,
+aoc_harness::aoc_main!(2024 day 17, 
+    generator Machine::from_str, 
+    part1 [p1] => "2,7,4,7,2,1,7,5,1", 
+    part2 [p2_bfs, p2_dfs,p2_dfs_2] => 37_221_274_271_220,
     example part1 EG => "4,6,3,5,6,3,5,2,1,0",
     example part2 EG2 => 117_440
 );
@@ -120,19 +123,18 @@ impl Machine {
     }
 }
 
-fn p1(input: &str) -> String {
-    let mut m = Machine::from_str(input);
+fn p1(input: &Machine) -> String {
+    let mut m = input.clone();
     m.run();
     m.output
         .iter()
         .map(std::string::ToString::to_string)
         .join(",")
 }
-fn p2(input: &str) -> i64 {
-    let m = Machine::from_str(input);
-    let lookahead = if input == EG2 { 0 } else { 4 };
+fn p2_bfs(m: &Machine) -> i64 {
+    let lookahead = if m.program.len() == 6 { 0 } else { 4 };
     let mut fringe: Vec<i64> = [0].into_iter().collect();
-    let mr = &m;
+    let mr = m;
     for step_ix in 0..m.program.len() {
         fringe = fringe.into_iter().flat_map(move |s| {
             (0..8).filter_map(move |x| {
@@ -150,6 +152,55 @@ fn p2(input: &str) -> i64 {
         // println!("Fringe at step {step_ix} now has {}", fringe.len());
     }
     fringe.into_iter().min().unwrap()
+}
+fn p2_dfs(m: &Machine) -> i64 {
+    let lookahead = if m.program.len() == 6 { 0 } else { 4 };
+    let mut stack: Vec<(i64, usize)> = [(0, 0)].into_iter().collect();
+    let mr = &m;
+    while let Some((s, step_ix)) = stack.pop() {
+        if step_ix == mr.program.len() {
+            return s;
+        }
+        //do in reverse, so that lower numbers are TOS, so we'll find the smallest solution first.
+        let next = (0..8).rev().filter_map(move |x| {
+            //considering adding `x` as new octal digit on the front of the value.
+            //it's ok if by also adding any possible value between 0 and 2^lookahead
+            //gives a new correct digit.
+            let with_la = (0..2_i64.pow(lookahead)).any(|la| {
+                let f = la << 3 | x;
+                let candidate = s | f << (3 * step_ix);
+                mr.quine_score(candidate) >= step_ix
+            });
+            (with_la).then_some((s | x << (3 * step_ix), step_ix + 1))
+        });
+        stack.extend(next);
+    }
+    0
+}
+fn p2_dfs_2(m: &Machine) -> i64 {
+    let lookahead = if m.program.len() == 6 { 0 } else { 4 };
+    let mut stack: Vec<(i64, i64, usize)> = [(0, 0, 0)].into_iter().collect();
+    let mr = &m;
+    while let Some((s, next_digit_to_try, step_ix)) = stack.pop() {
+        if step_ix == mr.program.len() {
+            return s;
+        }
+        if next_digit_to_try < 7 {
+            stack.push((s,next_digit_to_try+1,step_ix));
+        }
+        //considering adding `next_digit_to_try` as new octal digit on the front of the value.
+        //it's ok if by also adding any possible value between 0 and 2^lookahead
+        //gives a new correct digit.
+        let with_la = (0..2_i64.pow(lookahead)).any(|la| {
+            let f = la << 3 | next_digit_to_try;
+            let candidate = s | f << (3 * step_ix);
+            mr.quine_score(candidate) >= step_ix
+        });
+        if with_la {
+            stack.push((s|next_digit_to_try << (3*step_ix),0,step_ix+1));
+        }
+    }
+    0
 }
 
 const EG: &str = "Register A: 729
