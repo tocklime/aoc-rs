@@ -234,25 +234,27 @@ pub fn find_upper<T: Integer + Copy>(func: &impl Fn(T) -> T, target: T) -> T {
 }
 
 pub fn bin_search<T: Integer + Copy, O: PartialOrd>(
-    func: &impl Fn(T) -> O,
+    func: impl Fn(T) -> O,
     target: O,
-    upper: T,
-    lower: T,
+    mut lower: T,
+    mut upper: T,
 ) -> T {
-    let candidate = (upper + lower) / (T::one() + T::one());
-    if candidate == lower {
-        return lower;
-    }
-    let val = func(candidate);
-    if val >= target {
-        bin_search(func, target, candidate, lower)
-    } else {
-        bin_search(func, target, upper, candidate)
+    loop {
+        let candidate = (upper + lower) / (T::one() + T::one());
+        if candidate == lower {
+            return lower;
+        }
+        let val = func(candidate);
+        if val >= target {
+            upper = candidate;
+        } else {
+            lower = candidate;
+        }
     }
 }
 pub fn unbounded_bin_search<T: Integer + Copy>(func: impl Fn(T) -> T, target: T) -> T {
     let upper = find_upper(&func, target);
-    bin_search(&func, target, upper, upper / (T::one() + T::one()))
+    bin_search(&func, target, upper / (T::one() + T::one()), upper)
 }
 pub fn mod_mul<T>(a: &T, b: &T, m: T) -> T
 where

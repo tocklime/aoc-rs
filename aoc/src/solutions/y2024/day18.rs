@@ -1,6 +1,6 @@
 use utils::{cartesian::Point, grid2d::Grid2d};
 
-aoc_harness::aoc_main!(2024 day 18, generator gen, part1 [p1] => 356, part2 [p2_binsearch, p2_pathinfo, p2_binsearch_lib] => "22,33", example both EG => (22,"6,1"));
+aoc_harness::aoc_main!(2024 day 18, generator gen, part1 [p1] => 356, part2 [p2_binsearch, p2_pathinfo] => "22,33", example both EG => (22,"6,1"));
 
 struct Memory {
     g: Grid2d<Option<usize>>,
@@ -31,14 +31,14 @@ impl Memory {
         let target = g.dim() - Point::new(1, 1);
         pathfinding::directed::astar::astar(
             &Point::new(0, 0),
-            |p| {
-                g.neighbours(*p).filter_map(|x| match g[x] {
+            |&p| {
+                g.neighbours(p).filter_map(|x| match g[x] {
                     Some(x) if x < at_time => None,
                     _ => Some((x, 1)),
                 })
             },
             |&p| p.manhattan_unsigned(&target),
-            |p| *p == target,
+            |&p| p == target,
         )
     }
 }
@@ -46,31 +46,16 @@ fn p1(input: &Memory) -> usize {
     let t_limit = if input.is_test { 12 } else { 1024 };
     input.try_solve(t_limit).unwrap().1
 }
-fn p2_binsearch_lib(input: &Memory) -> String {
+fn p2_binsearch(input: &Memory) -> String {
+    let t_limit = if input.is_test { 12 } else { 1024 };
     let t = utils::nums::bin_search(
-        &|x| input.try_solve(x).is_none(),
+        |x| input.try_solve(x).is_none(),
         true,
+        t_limit,
         input.corruptions.len(),
-        0,
     );
     let p = input.corruptions[t];
     format!("{},{}", p.x, p.y)
-}
-fn p2_binsearch(input: &Memory) -> String {
-    let mut min_t = 0usize;
-    let mut max_t = input.corruptions.len();
-    loop {
-        let cand = (min_t + max_t) / 2;
-        if cand == min_t {
-            let p = input.corruptions[min_t];
-            return format!("{},{}", p.x, p.y);
-        }
-        if input.try_solve(cand).is_some() {
-            min_t = cand;
-        } else {
-            max_t = cand;
-        }
-    }
 }
 fn p2_pathinfo(input: &Memory) -> String {
     let mut t = if input.is_test { 12 } else { 1024 };
