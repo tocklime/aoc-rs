@@ -6,7 +6,7 @@ aoc_harness::aoc_main!(2024 day 17,
     part1 [p1] => "2,7,4,7,2,1,7,5,1",
     part2 [p2_bfs, p2_dfs,p2_dfs_2, p2_backwards] => 37_221_274_271_220,
     example part1 EG => "4,6,3,5,6,3,5,2,1,0",
-    // example part2 EG2 => 117_440
+    example part2 EG2 => 117_440
 );
 
 #[derive(Debug, Clone)]

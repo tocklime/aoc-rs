@@ -233,7 +233,12 @@ pub fn find_upper<T: Integer + Copy>(func: &impl Fn(T) -> T, target: T) -> T {
     }
 }
 
-pub fn bin_search<T: Integer + Copy, O: PartialOrd>(func: &impl Fn(T) -> O, target: O, upper: T, lower: T) -> T {
+pub fn bin_search<T: Integer + Copy, O: PartialOrd>(
+    func: &impl Fn(T) -> O,
+    target: O,
+    upper: T,
+    lower: T,
+) -> T {
     let candidate = (upper + lower) / (T::one() + T::one());
     if candidate == lower {
         return lower;
