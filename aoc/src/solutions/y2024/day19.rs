@@ -3,7 +3,7 @@ use petgraph::prelude::*;
 
 use utils::collections::VecLookup;
 
-aoc_harness::aoc_main!(2024 day 19, part1 [p1] => 228, part2 [p2,p2_graph] => 584553405070389, example both EG => (6,16));
+aoc_harness::aoc_main!(2024 day 19, part1 [p1] => 228, part2 [p2,p2_graph] => 584_553_405_070_389, example both EG => (6,16));
 
 fn p1(input: &str) -> usize {
     let (towels, patterns) = input.split_once("\n\n").unwrap();
@@ -58,7 +58,7 @@ fn p2_graph(input: &str) -> usize {
         options.insert(entry.index(), 1);
         for c in l.chars() {
             let mut new_options = VecLookup::default();
-            for (node_index, count) in options.into_iter() {
+            for (node_index, &count) in &options {
                 if let Some(n) = g.edges(node_index.into()).find(|x| x.weight() == &c) {
                     let target = n.target();
                     if g[target] {
@@ -88,7 +88,7 @@ fn p2(input: &str) -> usize {
         options.insert(0, 1);
         for (ix, _c) in l.chars().enumerate() {
             let mut new_options = VecLookup::default();
-            for (progress, count) in options.into_iter() {
+            for (progress, &count) in &options {
                 let word_so_far = &bs[ix-progress..=ix];
                 if trie.contains_key(word_so_far) {
                     //could end here.
