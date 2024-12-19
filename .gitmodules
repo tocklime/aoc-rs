@@ -1,3 +1,3 @@
 [submodule "aoc-inputs"]
 	path = aoc-inputs
-	url = https://github.com/tocklime/aoc-inputs.git
+	url = git@github.com:tocklime/aoc-inputs.git
