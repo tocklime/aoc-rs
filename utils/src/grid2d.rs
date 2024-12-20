@@ -8,7 +8,11 @@ use std::{
 
 use num::Integer;
 
-use crate::{aabb::Aabb, cartesian::Point, nums::add_i_mod};
+use crate::{
+    aabb::Aabb,
+    cartesian::{Dir, Point},
+    nums::add_i_mod,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Grid2d<T> {
@@ -274,6 +278,26 @@ impl<T> Grid2d<T> {
         let bb: Aabb<usize> = [top_left, bottom_right].into_iter().collect();
         bb.all_points()
             .filter(move |q| p.manhattan_unsigned(q) <= range && self.get(*q).is_some())
+    }
+
+    /// Returns an iterator over all cells which are exactly `range` cells away by manhattan from `p`.
+    pub fn cells_at_range(
+        &self,
+        p: Coord,
+        range: usize,
+    ) -> impl Iterator<Item = Coord> + use<'_, T> {
+        let pi = p.as_i().unwrap();
+        let ri: isize = range.try_into().unwrap();
+        Dir::all_dirs()
+            .into_iter()
+            .flat_map(move |d| {
+                let start = pi + d.as_point_step() * ri;
+                let step = d.turn_right().as_point_step::<isize>()
+                    + d.turn_about().as_point_step::<isize>();
+                (0..ri).map(move |x| start + step * x)
+            })
+            .filter_map(Point::<isize>::as_u)
+            .filter(|&x| self.get(x).is_some())
     }
 
     /// Returns all values in the grid by taking steps of `relative` from `start`.

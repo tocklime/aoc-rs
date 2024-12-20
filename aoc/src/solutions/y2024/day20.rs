@@ -1,60 +1,76 @@
-use std::collections::{BTreeMap, HashSet};
+use std::{collections::HashSet, sync::atomic::AtomicUsize};
 
 use utils::grid2d::Grid2d;
+use rayon::prelude::*;
 
-aoc_harness::aoc_main!(2024 day 20, part1 [solve::<2>] => 1389, part2 [solve::<20>] => 1_005_068);
+aoc_harness::aoc_main!(2024 day 20, generator Puzzle::from_str, part1 [solve::<2>] => 1389, part2 [solve::<20>] => 1_005_068);
 
-fn solve<const RANGE: usize>(input: &str) -> usize {
-    get_cheats(input, RANGE)
-        .into_iter()
-        .filter_map(|x| (x.0 >= 100).then_some(x.1))
-        .sum()
+fn solve<const RANGE: usize>(input: &Puzzle) -> usize {
+    let ans = AtomicUsize::new(0);
+    input.get_cheats(RANGE, &|x| {
+        if x >= 100 {
+            ans.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+    });
+    ans.into_inner()
 }
-
-fn get_cheats(input: &str, range: usize) -> Vec<(usize, usize)> {
-    let g = Grid2d::from_str_as_char(input);
-    // let start = g.find(|x| x == &'S').unwrap().0;
-    let end = g.find(|x| x == &'E').unwrap().0;
-    let mut costs_g: Grid2d<Option<usize>> = Grid2d::from_elem(g.dim(), None);
-    let mut fringe = HashSet::new();
-    fringe.insert(end);
-    for step in 0usize.. {
-        let mut new_fringe = HashSet::new();
-        for &p in &fringe {
-            if costs_g[p].is_none() {
-                costs_g[p] = Some(step);
-                new_fringe.extend(g.neighbours(p).filter(|&x| g[x] != '#'));
+struct Puzzle {
+    g: Grid2d<Option<usize>>,
+}
+impl Puzzle {
+    fn from_str(input: &str) -> Self {
+        let g = Grid2d::from_str_as_char(input);
+        let end = g.find(|x| x == &'E').unwrap().0;
+        let mut costs_g: Grid2d<Option<usize>> = Grid2d::from_elem(g.dim(), None);
+        let mut fringe = HashSet::new();
+        fringe.insert(end);
+        for step in 0usize.. {
+            let mut new_fringe = HashSet::new();
+            for &p in &fringe {
+                if costs_g[p].is_none() {
+                    costs_g[p] = Some(step);
+                    new_fringe.extend(g.neighbours(p).filter(|&x| g[x] != '#'));
+                }
             }
+            if new_fringe.is_empty() {
+                break;
+            }
+            fringe = new_fringe;
         }
-        if new_fringe.is_empty() {
-            break;
-        }
-        fringe = new_fringe;
+        Self { g: costs_g }
     }
-    let mut shortcut_counts: BTreeMap<usize, usize> = BTreeMap::new();
-
-    for (p, cost) in costs_g.indexed_iter() {
-        //spot shortcuts from p.
-        if let &Some(cost) = cost {
-            costs_g
-                .nearby_within_range(p, range)
-                .filter_map(|x| {
-                    costs_g[x].and_then(|y| cost.checked_sub(y + p.manhattan_unsigned(&x)))
-                })
-                .for_each(|c| *shortcut_counts.entry(c).or_default() += 1);
-        }
+    fn get_cheats<F>(&self, range: usize, f: &F)
+    where
+        F: Fn(usize) + Sync,
+    {
+        let in_par = self.g.indexes().par_bridge();
+        in_par.for_each(|p| {
+            //spot shortcuts from p.
+            if let Some(cost) = self.g[p] {
+                for c in (1..=range)
+                    .flat_map(|r| self.g.cells_at_range(p, r))
+                    .filter_map(|x| {
+                        self.g[x].and_then(|y| cost.checked_sub(1 + y + p.manhattan_unsigned(&x)))
+                    })
+                {
+                    f(c+1);
+                }
+            }
+        });
     }
-    shortcut_counts.into_iter().collect()
 }
 
 #[cfg(test)]
 mod test {
-    use super::get_cheats;
+    use std::{collections::BTreeMap, sync::Mutex};
 
     #[test]
     fn example() {
+        let ans = Mutex::new(BTreeMap::new());
+        super::Puzzle::from_str(EG).get_cheats(2, &|c| *ans.lock().unwrap().entry(c).or_default() += 1);
+        let ans: Vec<_> = ans.into_inner().unwrap().into_iter().collect();
         assert_eq!(
-            super::get_cheats(EG, 2),
+            ans,
             [
                 (2, 14),
                 (4, 14),
@@ -72,28 +88,30 @@ mod test {
     }
     #[test]
     fn example_part_2() {
-        let a = get_cheats(EG, 20);
-        let filtered: Vec<(usize, usize)> = a
-            .into_iter()
-            .filter_map(|x| (x.0 >= 50).then_some((x.1, x.0)))
-            .collect();
+        let ans = Mutex::new(BTreeMap::new());
+        super::Puzzle::from_str(EG).get_cheats(20, &|c| {
+            if c >= 50 {
+                *ans.lock().unwrap().entry(c).or_default() += 1;
+            }
+        });
+        let ans: Vec<_> = ans.into_inner().unwrap().into_iter().collect();
         assert_eq!(
-            filtered,
+            ans,
             [
-                (32, 50),
-                (31, 52),
-                (29, 54),
-                (39, 56),
-                (25, 58),
-                (23, 60),
-                (20, 62),
-                (19, 64),
-                (12, 66),
-                (14, 68),
-                (12, 70),
-                (22, 72),
-                (4, 74),
-                (3, 76),
+                (50, 32),
+                (52, 31),
+                (54, 29),
+                (56, 39),
+                (58, 25),
+                (60, 23),
+                (62, 20),
+                (64, 19),
+                (66, 12),
+                (68, 14),
+                (70, 12),
+                (72, 22),
+                (74, 4),
+                (76, 3),
             ]
         );
     }
