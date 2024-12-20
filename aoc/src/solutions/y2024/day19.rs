@@ -101,7 +101,7 @@ fn p2_graph2(input: &str) -> usize {
     while !done {
         done = true;
         for ix in g.node_indices() {
-            if g.edges(ix).count() == 1 && g[ix] == false {
+            if g.edges(ix).count() == 1 && !g[ix] {
                 let incoming = g.edges_directed(ix, Direction::Incoming).next().unwrap();
                 let parent = incoming.source();
                 let label = g.remove_edge(incoming.id()).unwrap();
@@ -127,10 +127,10 @@ fn p2_graph2(input: &str) -> usize {
         for ix in 0..l.len() {
             let opts = options.remove(ix);
             if let Some(opts) = opts {
-                for (ni, &count) in opts.into_iter() {
+                for (ni, &count) in &opts {
                     //there are `count` ways of being at `ix` and node `ni`.
                     for e in g.edges(ni.into()) {
-                        if let Some(_) = l[ix..].strip_prefix(e.weight()) {
+                        if l[ix..].strip_prefix(e.weight()).is_some() {
                             let x = options.entry(ix + e.weight().len()).or_default();
                             if g[e.target()] {
                                 *x.entry(entry.index()).or_default() += count;
@@ -157,7 +157,7 @@ fn p2_graph2(input: &str) -> usize {
 }
 fn p2_vec(input: &str) -> usize {
     let (towels, patterns) = input.split_once("\n\n").unwrap();
-    let towels: Vec<&[u8]> = towels.split(", ").map(|x| x.as_bytes()).collect();
+    let towels: Vec<&[u8]> = towels.split(", ").map(str::as_bytes).collect();
     let mut total = 0;
     for l in patterns.lines() {
         let bs = l.as_bytes();

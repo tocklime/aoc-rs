@@ -263,6 +263,18 @@ impl<T> Grid2d<T> {
         .into_iter()
         .filter(move |x: &Coord| x.y < s.y && x.x < s.x)
     }
+    /// Returns an iterator over all cells with at most manhattan distance `range` from `p`.
+    pub fn nearby_within_range(
+        &self,
+        p: Coord,
+        range: usize,
+    ) -> impl Iterator<Item = Coord> + use<'_, T> {
+        let top_left = Point::new(p.x.saturating_sub(range), p.y.saturating_sub(range));
+        let bottom_right = Point::new(p.x.saturating_add(range), p.y.saturating_add(range));
+        let bb: Aabb<usize> = [top_left, bottom_right].into_iter().collect();
+        bb.all_points()
+            .filter(move |q| p.manhattan_unsigned(q) <= range && self.get(*q).is_some())
+    }
 
     /// Returns all values in the grid by taking steps of `relative` from `start`.
     /// Includes the value at `start`.

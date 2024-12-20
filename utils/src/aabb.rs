@@ -111,10 +111,10 @@ where
     pub fn is_valid(&self) -> bool {
         self.bottom_left.x <= self.top_right.x && self.bottom_left.y <= self.top_right.y
     }
-    pub fn all_points(&self) -> impl Iterator<Item = Point<T>> + '_ {
-        (self.bottom_left.y..=self.top_right.y).flat_map(move |y| {
-            (self.bottom_left.x..=self.top_right.x).map(move |x| Point::new(x, y))
-        })
+    pub fn all_points(&self) -> impl Iterator<Item = Point<T>> {
+        let bl = self.bottom_left;
+        let tr = self.top_right;
+        (bl.y..=tr.y).flat_map(move |y| (bl.x..=tr.x).map(move |x| Point::new(x, y)))
     }
     /// All points around the edge of the Aabb.
     pub fn perimeter(&self) -> impl Iterator<Item = Point<T>> + '_ {
