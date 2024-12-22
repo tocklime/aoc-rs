@@ -31,6 +31,7 @@ need_stdout = false
 command = [
     "cargo", "test", "--color", "always",
     "--", "--color", "always", # see https://github.com/Canop/bacon/issues/124
+    "--", "--bin", "aoc_latest"
 ]
 need_stdout = true
 
@@ -53,7 +54,8 @@ on_success = "back" # so that we don't open the browser at each change
 command = [
     "cargo", "run",
     "--color", "always",
-    "-p", "aoc_latest", "--release"
+    "-p", "aoc_latest", "--release",
+    "--", "--bypass"
     # put launch parameters for your program behind a `--` separator
 ]
 need_stdout = true

@@ -58,10 +58,10 @@ impl ButtonPad {
             all_ans.push((ARROW_PAD.estimate_cost(&ans), ans));
         }
         all_ans.sort();
-        println!("Paths from {:?} to {c_pos:?} is with cost {_cost}:", self.position);
-        for (cost, a) in &all_ans {
-            println!("  {a} - {cost}");
-        }
+        // println!("Paths from {:?} to {c_pos:?} is with cost {_cost}:", self.position);
+        // for (cost, a) in &all_ans {
+        //     println!("  {a} - {cost}");
+        // }
 
         all_ans.into_iter().min().unwrap().1
     }
@@ -101,16 +101,51 @@ lazy_static! {
     static ref ARROW_PAD : ButtonPad = ButtonPad::from_str(" ^A\n<v>");
 }
 
+fn print_ans(a: &[String], target: &str) {
+    let mut a_pos : Vec<usize> = Vec::new();
+    for l in a.iter().rev().map(|x| &x[..]).chain([target]) {
+        let mut next_a = a_pos.into_iter();
+        let mut new_as = Vec::new();
+        let mut cs = l.chars();
+        let mut pos = 0;
+        while let Some(a) = next_a.next() {
+            let c = cs.next().unwrap();
+            while pos < a {
+                print!(" ");
+                pos +=1;
+            }
+            print!("{c}");
+            if c == 'A' {
+                new_as.push(pos);
+            }
+            pos += 1;
+        }
+        //any left?
+        while let Some(c) = cs.next() {
+            print!("{c}");
+            if c == 'A' {
+                new_as.push(pos);
+            }
+            pos += 1;
+        }
+        a_pos = new_as;
+        println!();
+    }
+    println!();
+}
+
 fn p1(input: &str) -> usize {
     let mut machines = [NUM_PAD.clone(), ARROW_PAD.clone(), ARROW_PAD.clone()];
     let mut ans = 0;
     for l in input.lines() {
-        let seq = machines
+        let seq : Vec<String> = machines
             .iter_mut()
-            .fold(l.to_owned(), |acc, m| m.press_sequence(&acc));
+            .scan(l.to_owned(), |acc, m|{*acc = m.press_sequence(&acc); Some(acc.clone())}).collect();
         let num: usize = l[0..l.len() - 1].parse().unwrap();
+        println!("{l}:");
+        print_ans(&seq, l);
         // println!("ans is {seq} * {num}");
-        ans += seq.len() * num;
+        ans += seq.last().unwrap().len() * num;
     }
     ans
 }
@@ -122,15 +157,15 @@ fn p1(input: &str) -> usize {
 // <v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A
 //    <   A > A  v <<   AA >  ^ AA > A  v  AA ^ A   < v  AAA >  ^ A
 // <A>Av<<AA>^AA>AvAA^A<vAAA>^A
-//  ^ A   <<  ^^ A >> A  vvv  A
+//        ^   A         <<      ^^   A     >>   A        vvv      A
 // ^A<<^^A>>AvvvA
-//  3    7  9   A
+//            3                      7          9                 A
 // 379A
 
 // Me for 379A:
 // v<<A>>^AvA^Av<<A>>^AAv<A<A>>^AAvAA^<A>Av<A^>AA<A>Av<A<A>>^AAA<A>vA^A
 //    <   A > A   <   AA  v <   AA >>  ^ A  v  AA ^ A  v <   AAA ^  > A
-// <A>A<AAv<AA>>^AvAA^Av<AAA^>A
+// <A>A<AAv<AA>>^AvAA^Av<AAA^>Agg
 //  ^ A ^^  <<   A >> A  vvv  A
 // ^A^^<<A>>AvvvA
 // 379A
@@ -143,9 +178,9 @@ fn p1(input: &str) -> usize {
 
 // Correct for 029A
 // <vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A
-// v<<A>>^A<A>AvA<^AA>A<vAAA>^A
-// <A^A>^^AvvvA
-// 029A
+//   v <<   A >>  ^ A   <   A > A  v  A   <  ^ AA > A   < v  AAA >  ^ A
+//          <       A       ^   A     >        ^^   A        vvv      A
+//                  0           2                   9                 A
 
 // Me for 029A
 // v<A<AA>^>AvA<^Av>A^Av<<A>^>AvA^Av<<A>^>AAv<A>A^A<A>Av<A<A>^>AAA<Av>A^A * 29   
