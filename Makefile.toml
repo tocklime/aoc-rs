@@ -18,7 +18,7 @@ workspace = false
 description = "Generate flamegraph for aoc_latest"
 install_crate = "flamegraph"
 script = '''
-    sudo cargo flamegraph -p aoc_latest -F4294967295 --open -- -r30 -b
+    cargo flamegraph -p aoc_latest -F4294967295 --open --release -- 
 '''
 workspace = false
 

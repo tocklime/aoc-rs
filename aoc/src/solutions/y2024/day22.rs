@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use itertools::Itertools;
 
 aoc_harness::aoc_main!(2024 day 22, part1 [p1] => 19458130434, part2 [p2] => 2130,
@@ -38,25 +36,34 @@ fn p1(input: &str) -> u64 {
         .map(|l| SecretNumber::from_str(l).nth(2000).unwrap())
         .sum()
 }
+fn hash(k: [i8;4]) -> u32 {
+    //values in k are in -9..=9.
+    k.into_iter().fold(0, |acc, n| (acc << 5) | (n + 9) as u32)
+    //max val is ... complicated, but bounded by 2^20.
+}
 fn p2(input: &str) -> u64 {
-    let mut map: HashMap<[i8; 4], u64> = HashMap::new();
+    let mut map = vec![0;1<<20];
+    let mut best = 0;
     input.lines().for_each(|l| {
         let sn = SecretNumber::from_str(l);
-        let mut this_map = HashMap::new();
-        for (a, b, c, d, e) in sn
+        let mut seen = vec![false;1<<20];
+        for ((a,_), (b,_), (c,_), (d,e)) in sn
             .map(|x| i8::try_from(x % 10).unwrap())
-            .take(2001)
+            .tuple_windows()
+            .map(|(a,b) | (b-a, b))
+            .take(2000)
             .tuple_windows()
         {
-            let diffs = [b - a, c - b, d - c, e - d];
-            this_map.entry(diffs).or_insert(e);
-        }
-        for (k, v) in this_map {
-            let m = map.entry(k).or_default();
-            *m += u64::try_from(v).unwrap();
+            let diffs = [a,b,c,d];
+            let h = hash(diffs) as usize;
+            if !seen[h] {
+                seen[h] = true;
+                map[h] += u64::try_from(e).unwrap();
+                best = best.max(map[h]);
+            }
         }
     }); 
-    *map.values().max().unwrap()
+    best
 }
 
 const EG: &str = "1
