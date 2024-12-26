@@ -86,10 +86,10 @@ impl Dir {
     }
     #[must_use]
     pub const fn to_udlr(self) -> char {
-        self.to_x(['U','D','L','R'])
+        self.to_x(['U', 'D', 'L', 'R'])
     }
     #[must_use]
-    pub const fn to_x(self, labels: [char;4]) -> char {
+    pub const fn to_x(self, labels: [char; 4]) -> char {
         labels[self as usize]
     }
     pub fn turn_right_n(self, n: u8) -> Self {
@@ -124,18 +124,18 @@ impl Dir {
 
 #[derive(Debug)]
 pub enum PointToDirError {
-    NotASingleStep(Point<isize>)
+    NotASingleStep(Point<isize>),
 }
 impl TryFrom<Point<isize>> for Dir {
     type Error = PointToDirError;
 
     fn try_from(value: Point<isize>) -> Result<Self, Self::Error> {
         match value {
-            Point {x: 1, y: 0} => Ok(Dir::Right),
-            Point {x: 0, y: 1} => Ok(Dir::Up),
-            Point {x: -1, y: 0} => Ok(Dir::Left),
-            Point {x: 0, y: -1} => Ok(Dir::Down),
-            _ => Err(PointToDirError::NotASingleStep(value))
+            Point { x: 1, y: 0 } => Ok(Dir::Right),
+            Point { x: 0, y: 1 } => Ok(Dir::Up),
+            Point { x: -1, y: 0 } => Ok(Dir::Left),
+            Point { x: 0, y: -1 } => Ok(Dir::Down),
+            _ => Err(PointToDirError::NotASingleStep(value)),
         }
     }
 }

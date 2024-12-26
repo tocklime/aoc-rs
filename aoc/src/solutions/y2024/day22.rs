@@ -1,7 +1,7 @@
 use itertools::Itertools;
 
-aoc_harness::aoc_main!(2024 day 22, part1 [p1] => 19458130434, part2 [p2] => 2130,
-    example part1 EG => 37327623,
+aoc_harness::aoc_main!(2024 day 22, part1 [p1] => 19_458_130_434, part2 [p2] => 2130,
+    example part1 EG => 37_327_623,
     example part2 EG2 => 23,
 );
 
@@ -25,14 +25,12 @@ impl SecretNumber {
 fn step(n: u64) -> u64 {
     let n = ((n << 6) ^ n) & 0xFF_FFFF;
     let n = ((n >> 5) ^ n) & 0xFF_FFFF;
-    let n = ((n << 11) ^ n) & 0xFF_FFFF;
-    n
+    ((n << 11) ^ n) & 0xFF_FFFF
 }
 
 fn p1(input: &str) -> u64 {
     input
         .lines()
-        .into_iter()
         .map(|l| SecretNumber::from_str(l).nth(2000).unwrap())
         .sum()
 }

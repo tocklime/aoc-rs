@@ -28,7 +28,7 @@ type Cache = VecLookup<HashMap<(char,char),usize>>;
 fn summarise_cache(cache: &Cache) {
     print!("\r");
     for i in 1..=26 {
-        print!("{:02} ", cache.get(i).map(|x| x.len()).unwrap_or_default());
+        print!("{:02} ", cache.get(i).map(HashMap::len).unwrap_or_default());
     }
 }
 impl ButtonPad {
@@ -95,7 +95,7 @@ impl ButtonPad {
             |(prev_button, prev_dir)| {
                 const DIRS: [char; 4] = ['<', 'v', '>', '^'];
                 let p = self.lookup(*prev_button);
-                let foo: Vec<_> = DIRS
+                DIRS
                     .iter()
                     .filter_map(move |d| {
                         let x = self
@@ -113,8 +113,7 @@ impl ButtonPad {
                         }
                         ((*new_sym, *dir), cost)
                     })
-                    .collect();
-                foo
+                    .collect::<Vec<_>>()
             },
             |(ch, _)| *ch == c ,
         )
@@ -151,11 +150,11 @@ lazy_static! {
 fn print_ans(a: &[String], target: &str) {
     let mut a_pos: Vec<usize> = Vec::new();
     for l in a.iter().rev().map(|x| &x[..]).chain([target]) {
-        let mut next_a = a_pos.into_iter();
+        let next_a = a_pos.into_iter();
         let mut new_as = Vec::new();
         let mut cs = l.chars();
         let mut pos = 0;
-        while let Some(a) = next_a.next() {
+        for a in next_a {
             let c = cs.next().unwrap();
             while pos < a {
                 print!(" ");
@@ -168,7 +167,7 @@ fn print_ans(a: &[String], target: &str) {
             pos += 1;
         }
         //any left?
-        while let Some(c) = cs.next() {
+        for c in cs {
             print!("{c}");
             if c == 'A' {
                 new_as.push(pos);
@@ -183,15 +182,15 @@ fn print_ans(a: &[String], target: &str) {
 
 #[allow(dead_code)]
 fn breakdown(line: &str, depth: usize) {
-    let mut foo = line.to_string();
-    println!("{foo}");
+    let mut owned_line = line.to_string();
+    println!("{owned_line}");
     for l in (0..depth).rev() {
         if l > 0 {
-            foo = ARROW_PAD.evaluate(&foo, true);
+            owned_line = ARROW_PAD.evaluate(&owned_line, true);
         } else {
-            foo = NUM_PAD.evaluate(&foo, true);
+            owned_line = NUM_PAD.evaluate(&owned_line, true);
         }
-        println!("{foo}");
+        println!("{owned_line}");
     }
 }
 fn p1<const ROBOTS: usize>(input: &str) -> usize {
