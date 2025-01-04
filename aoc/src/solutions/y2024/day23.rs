@@ -41,7 +41,7 @@ fn bron_kerbosch_rec<F: FnMut(HashSet<NodeIndex>)>(g: &G, report: &mut F, r: Has
 }
 fn bron_kerbosch<F: FnMut(HashSet<NodeIndex>)>(g: &G, report: &mut F) {
     let p = g.node_indices().collect();
-    bron_kerbosch_rec(g, report, HashSet::new(), p, HashSet::new())
+    bron_kerbosch_rec(g, report, HashSet::new(), p, HashSet::new());
 }
 
 fn p2(input: &str) -> String {
