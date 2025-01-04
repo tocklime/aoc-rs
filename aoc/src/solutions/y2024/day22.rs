@@ -42,9 +42,9 @@ fn hash(k: [i8;4]) -> u32 {
 fn p2(input: &str) -> u64 {
     let mut map = vec![0;1<<20];
     let mut best = 0;
-    input.lines().for_each(|l| {
+    let mut seen = vec![0;1<<20];
+    input.lines().zip(1..).for_each(|(l,ix)| {
         let sn = SecretNumber::from_str(l);
-        let mut seen = vec![false;1<<20];
         for ((a,_), (b,_), (c,_), (d,e)) in sn
             .map(|x| i8::try_from(x % 10).unwrap())
             .tuple_windows()
@@ -54,8 +54,8 @@ fn p2(input: &str) -> u64 {
         {
             let diffs = [a,b,c,d];
             let h = hash(diffs) as usize;
-            if !seen[h] {
-                seen[h] = true;
+            if seen[h] != ix{
+                seen[h] = ix;
                 map[h] += u64::try_from(e).unwrap();
                 best = best.max(map[h]);
             }
