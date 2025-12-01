@@ -28,7 +28,7 @@ enum ModuleType {
     Conjunction(VecLookup<bool>),
 }
 impl ModuleType {
-    fn parse(input: &str) -> IResult<Self> {
+    fn parse(input: &str) -> IResult<'_, Self> {
         alt((
             value(ModuleType::FlipFlop(false), tag("%")),
             value(ModuleType::Conjunction(VecLookup::default()), tag("&")),
@@ -60,7 +60,7 @@ struct Module {
     targets: Vec<usize>,
 }
 impl Module {
-    fn parse(input: &str) -> IResult<Self> {
+    fn parse(input: &str) -> IResult<'_, Self> {
         let (input, (typ, name, targets)) = (
             ModuleType::parse,
             terminated(alpha1, tag(" -> ")),

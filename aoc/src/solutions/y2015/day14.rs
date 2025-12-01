@@ -24,7 +24,7 @@ impl Line<'_> {
     }
 }
 
-fn gen(input: &str) -> Vec<Line> {
+fn gen(input: &str) -> Vec<Line<'_>> {
     input.lines().map(|x| Line::parse(x).unwrap()).collect()
 }
 

@@ -51,7 +51,7 @@ impl Card {
             .map(|x| 1 << x)
             .unwrap_or_default()
     }
-    fn parse(input: &str) -> IResult<Self> {
+    fn parse(input: &str) -> IResult<'_, Self> {
         use nom::Parser;
         let (input, _id) = (tag("Card "), complete::u32, tag(":"), space1).map(|(_,id,_,_)| id).parse(input)?;
         let (input, winning) =

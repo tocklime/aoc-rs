@@ -1,7 +1,5 @@
 use std::{fmt::Debug, str::FromStr};
 
-use nom::InputIter;
-
 #[allow(clippy::missing_errors_doc)]
 pub fn try_parse_many<T, E>(input: &str, sep: &str) -> Result<Vec<T>, E>
 where
@@ -31,21 +29,20 @@ struct NumParser<'a> {
     input: &'a str,
 }
 
-struct ThingParser<'a, N> {
+pub struct ThingParser<'a, P> {
     input: &'a str,
-    parser: Box<dyn nom::Parser<&'a str, N, ()> + 'a>,
+    parser: P
 }
 
-pub fn find_things<'a, N, F>(input: &'a str, parser: F) -> impl Iterator<Item = N> + use<'a, N, F>
-where
-    F: nom::Parser<&'a str, N, ()> + 'a,
-{
-    ThingParser {
-        input,
-        parser: Box::new(parser),
+impl<'a, N, P: nom::Parser<&'a str, Output = N, Error = ()> + 'a,> ThingParser<'a, P> {
+    pub fn new(input: &'a str, parser: P) -> Self {
+        Self {
+            input, parser
+        }
     }
 }
-impl<N> Iterator for ThingParser<'_, N> {
+
+impl<'a, N, P: nom::Parser<&'a str, Output = N, Error = ()> + 'a,> Iterator for ThingParser<'a, P> {
     type Item = N;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -72,9 +69,10 @@ impl Iterator for NumParser<'_> {
 
     fn next(&mut self) -> Option<Self::Item> {
         //find first digit.
-        let ix = self.input.position(|c| char::is_ascii_digit(&c))?;
+        let ix = self.input.chars().position(|c| char::is_ascii_digit(&c))?;
         let end_ix = ix
             + (&self.input[ix..])
+                .chars()
                 .position(|c| !char::is_ascii_digit(&c))
                 .unwrap_or_else(|| self.input.len() - ix);
         let num = u64::from_str(&self.input[ix..end_ix]).unwrap();

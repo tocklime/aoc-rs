@@ -122,7 +122,7 @@ impl PartConstraints {
     }
 }
 
-fn parse_quality(input: &str) -> IResult<usize> {
+fn parse_quality(input: &str) -> IResult<'_, usize> {
     one_of("xmas")
         .map(|x| "xmas".chars().position(|t| t == x).unwrap())
         .parse(input)
@@ -169,7 +169,7 @@ struct Part {
 }
 
 impl Part {
-    fn parse(input: &str) -> IResult<Self> {
+    fn parse(input: &str) -> IResult<'_, Self> {
         let (input, values) = 
         (
             tag("{"),

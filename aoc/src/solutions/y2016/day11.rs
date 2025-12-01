@@ -34,14 +34,6 @@ enum Item {
     Generator(Element),
 }
 
-#[derive(Reformation, Debug, Hash, PartialEq, Eq, Clone, Copy)]
-enum GiveTarget {
-    #[reformation("output {}")]
-    Output(usize),
-    #[reformation("bot {}")]
-    Bot(usize),
-}
-
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 struct World {
     elevator: usize,

@@ -15,7 +15,6 @@ use answers::AnswerAll;
 use answertype::AnswerType;
 pub use aoc_harness_macros::*;
 use chrono::TimeZone;
-use clap::arg;
 pub use itertools::Itertools;
 
 #[derive(clap::Parser, Debug)]

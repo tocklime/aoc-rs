@@ -26,7 +26,7 @@ struct Hailstone {
 }
 
 impl Hailstone {
-    fn parse(input: &str) -> IResult<Self> {
+    fn parse(input: &str) -> IResult<'_, Self> {
         let (input, (pos, vel)) = separated_pair(
             separated_list1((tag(","), space1), complete::i128),
             (space1, tag("@"), space1),

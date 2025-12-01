@@ -327,10 +327,10 @@ impl<T> Grid2d<T> {
         let w = self.size.x;
         &mut self.data[y * w..(y + 1) * w]
     }
-    pub fn get_col_mut(&mut self, column: usize) -> ColIteratorMut<T> {
+    pub fn get_col_mut(&mut self, column: usize) -> ColIteratorMut<'_, T> {
         ColIteratorMut::new(self, column)
     }
-    pub fn rows_mut(&mut self) -> RowMajorIteratorMut<T> {
+    pub fn rows_mut(&mut self) -> RowMajorIteratorMut<'_, T> {
         RowMajorIteratorMut::new(self)
     }
     #[must_use]

@@ -21,7 +21,7 @@ impl Hand {
             bid,
         }
     }
-    fn parse<const J_IS_JOKER: bool>(input: &str) -> IResult<Self> {
+    fn parse<const J_IS_JOKER: bool>(input: &str) -> IResult<'_, Self> {
         let (input, (cards, bid)) = separated_pair(alphanumeric1, tag(" "), complete::u32).parse(input)?;
         Ok((
             input,

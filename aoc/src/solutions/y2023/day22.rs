@@ -95,7 +95,7 @@ impl World {
         total_moves
     }
 }
-fn parse_brick(input: &str) -> IResult<Brick> {
+fn parse_brick(input: &str) -> IResult<'_, Brick> {
     let (input, (a, b)): (&str, ([usize; 3], [usize; 3])) = separated_pair(
         separated_list1(tag(","), complete::u32.map(|x| x as usize)).map(|x| x.try_into().unwrap()),
         tag("~"),
@@ -107,7 +107,7 @@ fn parse_brick(input: &str) -> IResult<Brick> {
     let to = b.into_dimension();
     Ok((input, Brick { id: 0, from, to }))
 }
-fn parse_bricks(input: &str) -> IResult<Vec<Brick>> {
+fn parse_bricks(input: &str) -> IResult<'_, Vec<Brick>> {
     terminated(separated_list1(newline, parse_brick), newline).parse(input)
 }
 

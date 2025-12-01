@@ -70,7 +70,7 @@ impl Game {
             self.step();
         }
     }
-    pub const fn iterate_from(&self, from: u32) -> GameIter {
+    pub const fn iterate_from(&self, from: u32) -> GameIter<'_> {
         GameIter {
             g: self,
             cursor: from,

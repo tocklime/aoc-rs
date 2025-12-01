@@ -97,16 +97,16 @@ impl Tile {
             x.iter()
                 .rev()
                 .enumerate()
-                .map(|(ix, val)| ((*val as usize) << ix))
+                .map(|(ix, val)| (*val as usize) << ix)
                 .sum()
         } else {
             x.iter()
                 .enumerate()
-                .map(|(ix, val)| ((*val as usize) << ix))
+                .map(|(ix, val)| (*val as usize) << ix)
                 .sum()
         }
     }
-    fn get_all_possible_ids(&self) -> impl Iterator<Item = (usize, Placement)> {
+    fn get_all_possible_ids(&self) -> impl Iterator<Item = (usize, Placement<'_>)> {
         [false, true].iter().flat_map(move |&flip| {
             (0..4).map(move |rotations| {
                 (

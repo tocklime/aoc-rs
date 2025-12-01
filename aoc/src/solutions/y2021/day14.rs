@@ -76,9 +76,6 @@ impl Day14 {
 
 fn solve<const ITERS: usize>(input: &Day14) -> usize {
     let curr = (0..ITERS).fold(input.start, |x, _| input.step(&x));
-    let mut counts = [0; CHAR_COUNT];
-    //we initialise the first to 1, because that was the first elem, and we're about to start only counting the 2nd of each pair.
-    counts[0] = 1;
     let minmax = (0..CHAR_COUNT)
         .map(|x| (x == 0) as usize + curr.iter().skip(x).step_by(CHAR_COUNT).sum::<usize>())
         .filter(|&x| x > 0)

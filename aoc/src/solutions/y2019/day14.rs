@@ -20,7 +20,7 @@ pub fn parse_item(i: &str) -> (usize, &str) {
     let (a, b) = split_pair(" ", i.trim());
     (a.parse().unwrap(), b)
 }
-pub fn mk_rb(input: &str) -> RecipeBook {
+pub fn mk_rb(input: &str) -> RecipeBook<'_> {
     input
         .trim()
         .lines()

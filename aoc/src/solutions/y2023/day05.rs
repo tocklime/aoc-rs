@@ -24,7 +24,7 @@ struct Almanac {
 }
 
 impl Map {
-    fn parse(input: &str) -> IResult<Self> {
+    fn parse(input: &str) -> IResult<'_, Self> {
         let (input, (from, to)) = separated_pair(alpha1::<&str, _>, tag("-to-"), alpha1)
             .map(|(a, b)| (a.to_owned(), b.to_owned()))
             .parse(input)?;
@@ -47,7 +47,7 @@ impl Map {
     }
 }
 impl Almanac {
-    fn parse(input: &str) -> IResult<Self> {
+    fn parse(input: &str) -> IResult<'_, Self> {
         let (input, seeds) = (tag("seeds: "), separated_list1(space1, complete::i64))
             .map(|x| x.1)
             .parse(input)?;

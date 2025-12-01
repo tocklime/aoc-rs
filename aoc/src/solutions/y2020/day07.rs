@@ -9,7 +9,7 @@ use petgraph::{
 };
 type G<'a> = DiGraphMap<&'a str, usize>;
 
-fn gen(inp: &str) -> G {
+fn gen(inp: &str) -> G<'_> {
     let mut g: DiGraphMap<&str, usize> = DiGraphMap::new();
     for l in inp.lines() {
         let (container, bags): (&str, &str) = l.split(" bags contain ").next_tuple().unwrap();

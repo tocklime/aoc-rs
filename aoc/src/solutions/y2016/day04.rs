@@ -42,7 +42,7 @@ impl Room<'_> {
     }
 }
 
-fn gen(input: &str) -> Vec<Room> {
+fn gen(input: &str) -> Vec<Room<'_>> {
     input.lines().map(|l| Room::parse(l).unwrap()).collect()
 }
 

@@ -9,7 +9,7 @@ use utils::nom::IResult;
 
 aoc_harness::aoc_main!(2023 day 6, part1 [p::<false>] => 2_756_160, part2 [p::<true>] => 34_788_142, example both EG => (288, 71503));
 
-fn parse(input: &str) -> IResult<Vec<(u64, u64)>> {
+fn parse(input: &str) -> IResult<'_, Vec<(u64, u64)>> {
     let (input, times) = (
         tag("Time:"),
         space0,

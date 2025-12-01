@@ -162,7 +162,7 @@ impl Cube {
     fn octants(&self) -> Vec<Self> {
         let new_w = self.size() / 2;
         (0..3)
-            .map(|_| (0..=1))
+            .map(|_| 0..=1)
             .multi_cartesian_product()
             .map(|v| {
                 let new_lo: Vec<i64> = self

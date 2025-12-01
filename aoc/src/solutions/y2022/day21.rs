@@ -91,7 +91,7 @@ impl<'a> Monkeys<'a> {
         }
     }
 }
-fn parse_action(input: &str) -> IResult<&str, Action> {
+fn parse_action(input: &str) -> IResult<&str, Action<'_>> {
     alt((
         map(complete::u64, Action::Lit),
         map(

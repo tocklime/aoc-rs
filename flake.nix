@@ -30,10 +30,7 @@
             hyperfine
             cargo-flamegraph
             cargo-make
-            cargo-watch
             bashInteractive
-            perf-tools
-            linuxKernel.packages.linux_zen.perf
           ];
         };
       }

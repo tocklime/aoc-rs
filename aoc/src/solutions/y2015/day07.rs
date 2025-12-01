@@ -8,49 +8,49 @@ use nom::combinator::all_consuming;
 use nom::{IResult, Parser};
 use std::collections::HashMap;
 
-fn item(i: &str) -> IResult<&str, Item> {
+fn item(i: &str) -> IResult<&str, Item<'_>> {
     alt((item_const, item_name)).parse(i)
 }
 
-fn item_const(i: &str) -> IResult<&str, Item> {
+fn item_const(i: &str) -> IResult<&str, Item<'_>> {
     digit1(i).map(|(i, a)| (i, Item::Const(a.parse().unwrap())))
 }
 
-fn item_name(i: &str) -> IResult<&str, Item> {
+fn item_name(i: &str) -> IResult<&str, Item<'_>> {
     alpha1(i).map(|(i, a)| (i, Item::Ref(a)))
 }
 
-fn lhs_not(i: &str) -> IResult<&str, LineOp> {
+fn lhs_not(i: &str) -> IResult<&str, LineOp<'_>> {
     let (i, _) = tag("NOT ")(i)?;
     let (i, item) = item(i)?;
     Ok((i, LineOp::Not(item)))
 }
 
-fn lhs_lshift(i: &str) -> IResult<&str, LineOp> {
+fn lhs_lshift(i: &str) -> IResult<&str, LineOp<'_>> {
     (item, tag(" LSHIFT "), item).parse(i).map(|(i, (a, _, b))| (i, LineOp::LShift(a, b)))
 }
 
-fn lhs_rshift(i: &str) -> IResult<&str, LineOp> {
+fn lhs_rshift(i: &str) -> IResult<&str, LineOp<'_>> {
     (item, tag(" RSHIFT "), item).parse(i).map(|(i, (a, _, b))| (i, LineOp::RShift(a, b)))
 }
 
-fn lhs_or(i: &str) -> IResult<&str, LineOp> {
+fn lhs_or(i: &str) -> IResult<&str, LineOp<'_>> {
     (item, tag(" OR "), item).parse(i).map(|(i, (a, _, b))| (i, LineOp::Or(a, b)))
 }
 
-fn lhs_and(i: &str) -> IResult<&str, LineOp> {
+fn lhs_and(i: &str) -> IResult<&str, LineOp<'_>> {
     (item, tag(" AND "), item).parse(i).map(|(i, (a, _, b))| (i, LineOp::And(a, b)))
 }
 
-fn lhs_const(i: &str) -> IResult<&str, LineOp> {
+fn lhs_const(i: &str) -> IResult<&str, LineOp<'_>> {
     item(i).map(|(i, a)| (i, LineOp::Const(a)))
 }
 
-fn lhs(i: &str) -> IResult<&str, LineOp> {
+fn lhs(i: &str) -> IResult<&str, LineOp<'_>> {
     alt((lhs_and, lhs_or, lhs_not, lhs_lshift, lhs_rshift, lhs_const)).parse(i)
 }
 
-fn line(i: &str) -> IResult<&str, Line> {
+fn line(i: &str) -> IResult<&str, Line<'_>> {
     all_consuming((lhs, tag(" -> "), alpha1)).parse(i)
         .map(|(i, (lhs, _, rhs))| (i, Line { lhs, rhs }))
 }
@@ -77,7 +77,7 @@ pub struct Line<'a> {
     rhs: &'a str,
 }
 
-fn gen(input: &str) -> Vec<Line> {
+fn gen(input: &str) -> Vec<Line<'_>> {
     input.lines().map(|x| line(x).unwrap().1).collect()
 }
 

@@ -10,7 +10,7 @@ use utils::{cartesian::Dir, nom::IResult};
 aoc_harness::aoc_main!(2023 day 18, part1 [solve::<0>], part2 [solve::<1>], example both EG => (62, 952_408_144_115));
 
 const DIRS: [Dir; 4] = [Dir::Right, Dir::Down, Dir::Left, Dir::Up];
-fn parse_line(input: &str) -> IResult<[(Dir, isize); 2]> {
+fn parse_line(input: &str) -> IResult<'_, [(Dir, isize); 2]> {
     let (input, p1) = (
         terminated(one_of("UDLR").map(|x| Dir::from_x("UDLR", x)), space1),
         complete::u32,
