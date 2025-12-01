@@ -169,10 +169,10 @@ impl<'a, T> Iterator for VecLookupIter<'a, T> {
     type Item = (usize, &'a T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        while self.1 < self.0 .0.len() {
+        while self.1 < self.0.0.len() {
             let here = self.1;
             self.1 += 1;
-            match &self.0 .0[here] {
+            match &self.0.0[here] {
                 None => (),
                 Some(x) => {
                     return Some((here, x));

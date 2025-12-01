@@ -1,7 +1,7 @@
 use num::Num;
 use parse_display::{Display, FromStr};
 use std::{
-    cmp::{max, min, Ordering},
+    cmp::{Ordering, max, min},
     ops::{Add, Range, RangeBounds},
 };
 

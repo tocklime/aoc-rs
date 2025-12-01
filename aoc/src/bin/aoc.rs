@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, time::Duration};
 
-use aoc_harness::{aoc_all_main, dayresult::DayResult, Itertools, Opts};
+use aoc_harness::{Itertools, Opts, aoc_all_main, dayresult::DayResult};
 use clap::Parser;
 type Day = ((i32, u8), fn(&mut DayResult, &mut Opts));
 

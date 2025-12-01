@@ -3,17 +3,17 @@ use std::fmt::Display;
 use quote::quote;
 
 use proc_macro2::TokenStream;
+use syn::Expr;
+use syn::ExprLit;
+use syn::LitInt;
+use syn::Result;
+use syn::Token;
 use syn::bracketed;
 use syn::parenthesized;
 use syn::parse::Parse;
 use syn::parse::ParseStream;
 use syn::parse_quote;
 use syn::punctuated::Punctuated;
-use syn::Expr;
-use syn::ExprLit;
-use syn::LitInt;
-use syn::Result;
-use syn::Token;
 
 pub mod all;
 pub mod latest;

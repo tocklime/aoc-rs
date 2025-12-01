@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use proc_macro2::{Literal, TokenStream};
 use quote::quote;
-use syn::{parse::Parse, Token};
+use syn::{Token, parse::Parse};
 use walkdir::WalkDir;
 pub struct FindLatestInput {
     dir: Literal,

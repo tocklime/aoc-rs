@@ -46,11 +46,7 @@ where
         .indexed_iter()
         .filter_map(|(p, curr)| {
             let new = f(g, curr, p);
-            if curr == &new {
-                None
-            } else {
-                Some((p, new))
-            }
+            if curr == &new { None } else { Some((p, new)) }
         })
         .collect::<Vec<_>>();
     deltas.into_iter().map(|(p, new)| g[p] = new).count()

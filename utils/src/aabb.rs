@@ -1,5 +1,5 @@
 use crate::cartesian::Point;
-use num::{traits::WrappingSub, Num};
+use num::{Num, traits::WrappingSub};
 use std::cmp::{max, min};
 use std::convert::TryInto;
 use std::fmt::Debug;
