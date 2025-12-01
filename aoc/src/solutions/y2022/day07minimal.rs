@@ -63,7 +63,7 @@ fn rest_of_line(input: &str) -> IResult<&str, &str> {
 fn parse_dir(input: &str) -> IResult<&str, Dirs> {
     let (input, (_, dir, _)) = (tag("$ cd "), rest_of_line, rest_of_line).parse(input)?;
     if dir == ".." {
-        return Err(Err::Failure(Error {
+        return Err(Err::Error(Error {
             input,
             code: ErrorKind::Fail,
         }));

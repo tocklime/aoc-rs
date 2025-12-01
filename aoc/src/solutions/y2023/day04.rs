@@ -1,6 +1,6 @@
 
 use nom::{
-    bytes::complete::tag, character::complete::{self, space1}, multi::separated_list1
+    bytes::complete::tag, character::complete::{self, newline, space1}, combinator::all_consuming, multi::{many1, separated_list1}
 };
 use utils::{
     nom::IResult,
@@ -11,11 +11,7 @@ aoc_harness::aoc_main!(2023 day 4, generator gen, part1 [p1] => 18619, part2 [p2
 
 fn gen(input: &str) -> Vec<Card> {
     use nom::Parser;
-
-    nom::multi::many1(Card::parse)
-        .parse(input)
-        .expect("Parse")
-        .1
+    all_consuming(separated_list1(newline, Card::parse)).parse(input.trim_end()).expect("parse").1
 }
 fn p1(cards: &[Card]) -> u32 {
     cards.iter().map(Card::score).sum()
@@ -53,10 +49,10 @@ impl Card {
     }
     fn parse(input: &str) -> IResult<'_, Self> {
         use nom::Parser;
-        let (input, _id) = (tag("Card "), complete::u32, tag(":"), space1).map(|(_,id,_,_)| id).parse(input)?;
+        let (input, _id) = ((tag("Card"), space1), complete::u32, tag(":"), space1).map(|(_,id,_,_)| id).parse(input)?;
         let (input, winning) =
             separated_list1(space1, complete::u8).parse(input)?;
-        let (input, _) = tag(" | ").parse(input)?;
+        let (input, _) = (space1, tag("|"), space1).parse(input)?;
         let (input, have) =
             separated_list1(space1, complete::u8).parse(input)?;
         Ok((input, Self { _id, winning: winning.into_iter().collect(), have: have.into_iter().collect() }))

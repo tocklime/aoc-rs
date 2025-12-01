@@ -28,7 +28,7 @@ impl Map {
         let (input, (from, to)) = separated_pair(alpha1::<&str, _>, tag("-to-"), alpha1)
             .map(|(a, b)| (a.to_owned(), b.to_owned()))
             .parse(input)?;
-        let (input, _) = tag(" map:").parse(input)?;
+        let (input, _) = tag(" map:\n").parse(input)?;
         let (input, mut ranges) = nom::multi::separated_list1(
             newline,
             (complete::i64, space1, complete::i64, space1, complete::i64)
