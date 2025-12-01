@@ -37,7 +37,7 @@ impl AnswerAll {
     #[must_use]
     pub fn from_file() -> Self {
         let data = match std::fs::File::open("answers.yaml") {
-            Ok(f) => match serde_yaml::from_reader(f) {
+            Ok(f) => match serde_yml::from_reader(f) {
                 Ok(r) => r,
                 Err(err) => {
                     eprintln!("Failed to parse existing answers.yaml, will overwrite: {err}");
@@ -99,7 +99,7 @@ impl Drop for AnswerAll {
                 .create(true)
                 .open("answers.new.yaml")
                 .expect("could not open answers.new.yaml");
-            serde_yaml::to_writer(f, &self.data).expect("Failed serializing answers.new.yaml");
+            serde_yml::to_writer(f, &self.data).expect("Failed serializing answers.new.yaml");
             std::fs::rename("answers.new.yaml", "answers.yaml")
                 .expect("Failed to move answers.new.yaml to answers.yaml");
         }

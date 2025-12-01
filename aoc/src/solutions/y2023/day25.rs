@@ -8,11 +8,11 @@ aoc_harness::aoc_main!(2023 day 25, part1 [p1] => 538_560);
 
 fn karger(g: &Graph<&str, (), Undirected>) -> (usize, usize, usize) {
     let mut g = g.clone();
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let mut weights: HashMap<&str, usize> = HashMap::new();
     while g.node_count() > 2 {
         //find random edge
-        let r = EdgeIndex::new(rng.gen_range(0..g.edge_count()));
+        let r = EdgeIndex::new(rng.random_range(0..g.edge_count()));
         let (a, b) = g.edge_endpoints(r).unwrap();
         let mut walker = g.neighbors(b).detach();
         while let Some((_, t)) = walker.next(&g) {

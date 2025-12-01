@@ -145,8 +145,8 @@ impl Opts {
                     std::fs::create_dir_all(p.parent().unwrap())
                         .map_err(|_| InputFetchFailure::CantCreateDirectoryForYear)?;
                     let i = ureq::get(&format!("https://adventofcode.com/{year}/day/{day}/input"))
-                        .set("User-Agent", user_agent())
-                        .set(
+                        .header("User-Agent", user_agent())
+                        .header(
                             "cookie",
                             &format!(
                                 "session={}",
@@ -155,18 +155,19 @@ impl Opts {
                         )
                         .call()
                         .map_err(|e| match e {
-                            ureq::Error::Status(s, r) => match s {
+                            ureq::Error::StatusCode(s) => match s {
                                 404 => InputFetchFailure::HttpNotFound,
                                 403 => InputFetchFailure::Unauthorized,
                                 _ => InputFetchFailure::SomethingElse(format!(
-                                    "HTTP Error {s} fetching input: {r:?}"
+                                    "HTTP Error {s} fetching input"
                                 )),
                             },
-                            ureq::Error::Transport(t) => InputFetchFailure::SomethingElse(format!(
+                            t => InputFetchFailure::SomethingElse(format!(
                                 "HTTP Transport error: {t}"
                             )),
                         })?
-                        .into_string()
+                        .into_body()
+                        .read_to_string()
                         .expect("Failed to convert HTTP response to string");
                     std::fs::write(p, &i).map_err(|_| InputFetchFailure::CantWriteCachedFile)?;
                     Ok(i)

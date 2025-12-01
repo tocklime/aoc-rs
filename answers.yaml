@@ -80,7 +80,7 @@
     part2: !Checked '182'
   2:
     part1: !Checked '52981'
-    part2: !Checked 74CD2
+    part2: !Checked '74CD2'
   3:
     part1: !Checked '1050'
     part2: !Checked '1921'
@@ -88,8 +88,8 @@
     part1: !Checked '245102'
     part2: !Checked '324'
   5:
-    part1: !Checked 2414bc77
-    part2: !Checked 437e60fc
+    part1: !Checked '2414bc77'
+    part2: !Checked '437e60fc'
   6:
     part1: !Checked qrqlznrl
     part2: !Checked kgzdfaon
@@ -258,14 +258,14 @@
     part1: !Observed NBHEZHCJ
     part2: !Observed '10558'
   11:
-    part1: !Observed 243,34
-    part2: !Observed 90,214,15
+    part1: !Observed '243,34'
+    part2: !Observed '90,214,15'
   12:
     part1: !Observed '2045'
     part2: !Observed '2100000000428'
   13:
-    part1: !Observed 83,121
-    part2: !Observed 102,144
+    part1: !Observed '83,121'
+    part2: !Observed '102,144'
   14:
     part1: !Observed '2103141159'
     part2: !Observed '20165733'
@@ -604,7 +604,7 @@
     part1: !Checked '373'
     part2: !Checked '997'
   25:
-    part1: !Checked 2=0--0---11--01=-100
+    part1: !Checked '2=0--0---11--01=-100'
     part2: Unknown
 2023:
   1:
@@ -732,11 +732,11 @@
     part1: !Checked '95444'
     part2: !Checked '513'
   17:
-    part1: !Checked 2,7,4,7,2,1,7,5,1
+    part1: !Checked '2,7,4,7,2,1,7,5,1'
     part2: !Checked '37221274271220'
   18:
     part1: !Checked '356'
-    part2: !Checked 22,33
+    part2: !Checked '22,33'
   19:
     part1: !Checked '228'
     part2: !Checked '584553405070389'
@@ -754,7 +754,7 @@
     part2: !Checked av,fr,gj,hk,ii,je,jo,lq,ny,qd,uq,wq,xc
   24:
     part1: !Checked '43559017878162'
-    part2: !Checked fhc,ggt,hqk,mwh,qhj,z06,z11,z35
+    part2: Unknown
   25:
     part1: !Checked '2691'
     part2: Unknown
