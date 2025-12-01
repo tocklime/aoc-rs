@@ -3,7 +3,6 @@
 aoc_harness::aoc_main!(2015 day 20, part1 [p1] => 786_240, part2 [p2] => 831_600);
 use itertools::Itertools;
 use std::collections::HashSet;
-use std::iter;
 
 fn presents(s: &primal::Sieve, n: usize) -> usize {
     let f = s.factor(n).unwrap();
@@ -25,7 +24,7 @@ fn presents2(s: &primal::Sieve, n: usize) -> usize {
     let f = s.factor(n).unwrap();
     let factors = f
         .iter()
-        .flat_map(|&(a, b)| iter::repeat(a).take(b))
+        .flat_map(|&(a, b)| std::iter::repeat_n(a, b))
         .collect_vec();
     let all_divs: HashSet<usize> = (0..=factors.len())
         .flat_map(|s| {

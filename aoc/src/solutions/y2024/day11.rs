@@ -11,7 +11,7 @@ fn blink(n: usize) -> Vec<usize> {
         vec![1]
     } else {
         let dc = digit_count(n);
-        if dc % 2 == 0 {
+        if dc.is_multiple_of(2) {
             let m = 10.pow((dc / 2) as u32);
             let (left,right) = n.div_mod_floor(&m);
             vec![left, right]

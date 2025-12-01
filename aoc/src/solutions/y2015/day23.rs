@@ -44,7 +44,7 @@ impl Comp {
             Instr::Tpl(c) => { self.regs.entry(c).and_modify(|x| *x *= 3); }
             Instr::Inc(c) => { self.regs.entry(c).and_modify(|x| *x += 1); }
             Instr::Jmp(i) => new_ip = self.ip + i,
-            Instr::Jie(c, i) => if self.regs[&c] % 2 == 0 { new_ip = self.ip + i }
+            Instr::Jie(c, i) => if self.regs[&c].is_multiple_of(2) { new_ip = self.ip + i }
             Instr::Jio(c, i) => if self.regs[&c] == 1 { new_ip = self.ip + i }
         }
         self.ip = new_ip;

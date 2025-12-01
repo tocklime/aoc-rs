@@ -61,11 +61,7 @@ enum Location {
     Hallway(usize),
 }
 fn abs_diff(a: usize, b: usize) -> usize {
-    if a > b {
-        a - b
-    } else {
-        b - a
-    }
+    a.abs_diff(b)
 }
 impl X {
     #[inline]

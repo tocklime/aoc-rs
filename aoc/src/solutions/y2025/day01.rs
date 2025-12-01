@@ -21,7 +21,7 @@ fn gen(input: &str)-> Vec<i64> {
 }
 
 fn p1(ns: &[i64]) -> usize {
-    ns.into_iter().scan(50,|state, dir| {
+    ns.iter().scan(50,|state, dir| {
         *state += dir;
         *state %= 100;
         Some(*state)
@@ -43,7 +43,7 @@ fn turn_dial_slow(mut state: i64, direction: i64) -> (usize, i64) {
 fn turn_dial(state: i64, direction: i64) -> (usize, i64) {
     let new_s = state + direction;
     let (wraps, remmed) = new_s.div_rem_euclid(&100);
-    let mut wraps = wraps.abs() as usize;
+    let mut wraps = wraps.unsigned_abs() as usize;
     if direction < 0 {
         if remmed == 0 {
             //ended at zero, but it won't have been counted.
@@ -57,14 +57,14 @@ fn turn_dial(state: i64, direction: i64) -> (usize, i64) {
     (wraps, remmed)
 }
 fn p2_slow(ns:&[i64]) -> usize {
-    ns.into_iter().scan(50,|state, &dir| {
+    ns.iter().scan(50,|state, &dir| {
         let (wraps, new_s) = turn_dial_slow(*state, dir);
         *state = new_s;
         Some(wraps)
     }).sum()
 }
 fn p2(ns:&[i64]) -> usize {
-    ns.into_iter().scan(50,|state, &dir| {
+    ns.iter().scan(50,|state, &dir| {
         let (wraps, new_s) = turn_dial(*state, dir);
         *state = new_s;
         Some(wraps)

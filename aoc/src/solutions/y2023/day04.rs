@@ -1,6 +1,6 @@
 
 use nom::{
-    bytes::complete::tag, character::complete::{self, newline, space1}, combinator::all_consuming, multi::{many1, separated_list1}
+    bytes::complete::tag, character::complete::{self, newline, space1}, combinator::all_consuming, multi::separated_list1
 };
 use utils::{
     nom::IResult,

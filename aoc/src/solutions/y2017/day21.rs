@@ -131,7 +131,7 @@ fn run(input: &str, iter_count: usize) -> usize {
     let mut block = Block::from_str(".#./..#/###");
     for _ in 0..iter_count {
         let s = block.0.len();
-        let split_into = (2..=3).find(|n| s % n == 0).unwrap();
+        let split_into = (2..=3).find(|n| s.is_multiple_of(*n)).unwrap();
         let split = block.split(split_into);
         let mapped = split.map(|c| hm.get(c).unwrap().clone());
         block = mapped.join();

@@ -53,7 +53,7 @@ impl Op {
                 arr.rotate_left(dist);
             }
             Self::ReverseRange(a, b) => {
-                for x in 0..(b - a + 1) / 2 {
+                for x in 0..(b - a).div_ceil(2) {
                     arr.swap(a + x, b - x);
                 }
             }
@@ -94,7 +94,7 @@ impl Op {
                 arr.rotate_right(dist);
             }
             Self::ReverseRange(a, b) => {
-                for x in 0..(b - a + 1) / 2 {
+                for x in 0..(b - a).div_ceil(2) {
                     arr.swap(a + x, b - x);
                 }
             }

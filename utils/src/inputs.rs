@@ -69,7 +69,7 @@ impl Iterator for NumParser<'_> {
         //find first digit.
         let ix = self.input.chars().position(|c| char::is_ascii_digit(&c))?;
         let end_ix = ix
-            + (&self.input[ix..])
+            + self.input[ix..]
                 .chars()
                 .position(|c| !char::is_ascii_digit(&c))
                 .unwrap_or_else(|| self.input.len() - ix);

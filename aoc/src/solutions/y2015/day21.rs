@@ -118,7 +118,7 @@ struct Fighter {
 fn hits_to_kill(hitter: &Fighter, hittee: &Fighter) -> usize {
     let per_hit = hitter.damage - hittee.armor;
     let base = hittee.hit_points / per_hit;
-    if hittee.hit_points % per_hit == 0 {
+    if hittee.hit_points.is_multiple_of(per_hit) {
         base
     } else {
         base + 1

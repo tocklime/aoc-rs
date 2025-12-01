@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-aoc_harness::aoc_main!(2024 day 24, part1 [p1] => 43559017878162, example part1 EG => 4, example part1 EG2 => 2024);
+aoc_harness::aoc_main!(2024 day 24, part1 [p1] => 43_559_017_878_162, example part1 EG => 4, example part1 EG2 => 2024);
 
 fn p1(input: &str) -> u64 {
     let mut values : HashMap<&str, bool> = HashMap::new();
@@ -34,7 +34,7 @@ fn p1(input: &str) -> u64 {
         });
     }
     let mut ans = 0;
-    for (k,v) in values.into_iter() {
+    for (k,v) in values {
         if v && k.starts_with('z') {
             let n : usize = k[1..].parse().unwrap();
             ans |= 1 << n;

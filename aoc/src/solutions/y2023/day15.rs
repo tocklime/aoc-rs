@@ -10,7 +10,7 @@ fn hash(input: &str) -> usize {
     current_value
 }
 fn p1(input: &str) -> usize {
-    input.trim().split(',').map(hash).map(usize::from).sum()
+    input.trim().split(',').map(hash).sum()
 }
 
 fn p2(input: &str) -> usize {

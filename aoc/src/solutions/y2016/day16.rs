@@ -33,7 +33,7 @@ fn solve(input: &str, size: usize) -> String {
         expand(&mut a);
     }
     let mut check = collapse(&a[0..size]);
-    while check.len() % 2 == 0 {
+    while check.len().is_multiple_of(2) {
         check = collapse(&check);
     }
     check.iter().collect()

@@ -7,7 +7,7 @@ use utils::cartesian::{Dir, Point};
 fn p1(input: &str) -> u32 {
     let n = input.trim().parse::<u32>().unwrap();
     let mut sqrt = (f64::from(n)).sqrt() as u32;
-    if sqrt % 2 == 0 {
+    if sqrt.is_multiple_of(2) {
         sqrt -= 1;
     }
     let lowest_on_ring = sqrt * sqrt + 1;

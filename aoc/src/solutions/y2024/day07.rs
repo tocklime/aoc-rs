@@ -37,7 +37,7 @@ impl Op {
     fn ap_rev(self, a: u64, b: u64) -> Option<u64> {
         match self {
             Op::Add => a.checked_sub(b),
-            Op::Mul => (a % b == 0).then_some(a / b),
+            Op::Mul => a.is_multiple_of(b).then_some(a / b),
             Op::Concat => {
                 let m = 10u64.pow(nums::digit_count(b) as u32);
                 let c = a.checked_sub(b)?;
@@ -103,8 +103,7 @@ fn cartesian_product<const PART: u8>(input: &[(u64, Vec<u64>)]) -> u64 {
         .iter()
         .filter_map(|(target, nums)| {
             let gap_count = nums.len() - 1;
-            std::iter::repeat(ops)
-                .take(gap_count)
+            std::iter::repeat_n(ops, gap_count)
                 .multi_cartesian_product()
                 .any(|s| check_p2(*target, nums, &s))
                 .then_some(target)

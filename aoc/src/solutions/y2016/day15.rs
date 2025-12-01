@@ -15,7 +15,7 @@ struct Disc {
 
 impl Disc {
     fn can_pass_at(&self, t: usize) -> bool {
-        (self.offset + t + self.id) % self.positions == 0
+        (self.offset + t + self.id).is_multiple_of(self.positions)
     }
 }
 

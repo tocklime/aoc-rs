@@ -67,7 +67,7 @@ impl Sensor {
     }
 }
 fn parse_sensor(input: &str) -> IResult<&str, Sensor> {
-    let (input, (_, xa, _, ya, _, xb, _, yb, _)) = ((
+    let (input, (_, xa, _, ya, _, xb, _, yb, _)) = (
         tag("Sensor at x="),
         complete::i64,
         tag(", y="),
@@ -77,7 +77,7 @@ fn parse_sensor(input: &str) -> IResult<&str, Sensor> {
         tag(", y="),
         complete::i64,
         newline,
-    ))
+    )
         .parse(input)?;
     let location = Point::new(xa, ya);
     let closest_beacon = Point::new(xb, yb);

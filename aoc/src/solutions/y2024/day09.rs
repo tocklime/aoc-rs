@@ -14,9 +14,9 @@ fn p1(input: &str) -> usize {
     let mut disk = Vec::new();
     for (index, v) in input.trim().as_bytes().chunks(2).enumerate() {
         let file_size = v[0] - b'0';
-        disk.extend(std::iter::repeat(Some(index)).take(file_size.into()));
+        disk.extend(std::iter::repeat_n(Some(index), file_size.into()));
         if let Some(&x) = v.get(1) {
-            disk.extend(std::iter::repeat(None).take((x - b'0').into()));
+            disk.extend(std::iter::repeat_n(None, (x - b'0').into()));
         }
     }
     let mut gap = disk.iter().position(Option::is_none);
