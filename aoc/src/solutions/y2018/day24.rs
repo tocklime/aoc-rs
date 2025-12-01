@@ -74,24 +74,25 @@ impl AttackGroup {
             alpha1,
             tag(" damage at initiative "),
             digit1,
-        ).parse(i)
-        .map(|(i, (s, _, h, _, st, _, a, _, at, _, init))| {
-            let st = st.unwrap_or((Vec::new(), Vec::new()));
-            let size = s.parse().unwrap();
-            (
-                i,
-                Self {
-                    full_size: size,
-                    size: Cell::new(size),
-                    hp: h.parse().unwrap(),
-                    immunities: st.0,
-                    weaknesses: st.1,
-                    attack_strength: a.parse().unwrap(),
-                    attack_type: at.to_string(),
-                    initiative: init.parse().unwrap(),
-                },
-            )
-        })
+        )
+            .parse(i)
+            .map(|(i, (s, _, h, _, st, _, a, _, at, _, init))| {
+                let st = st.unwrap_or((Vec::new(), Vec::new()));
+                let size = s.parse().unwrap();
+                (
+                    i,
+                    Self {
+                        full_size: size,
+                        size: Cell::new(size),
+                        hp: h.parse().unwrap(),
+                        immunities: st.0,
+                        weaknesses: st.1,
+                        attack_strength: a.parse().unwrap(),
+                        attack_type: at.to_string(),
+                        initiative: init.parse().unwrap(),
+                    },
+                )
+            })
     }
 }
 
@@ -122,11 +123,11 @@ fn assign_targets<'a>(
                 (dam, def_pow, def_init, d_ix)
             })
             .max();
-        if let Some((dam, _, _, d_ix)) = best_t {
-            if dam > 0 {
-                available.remove(&d_ix);
-                targets.push((ix, d_ix));
-            }
+        if let Some((dam, _, _, d_ix)) = best_t
+            && dam > 0
+        {
+            available.remove(&d_ix);
+            targets.push((ix, d_ix));
         }
     }
     targets

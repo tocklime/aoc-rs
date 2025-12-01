@@ -5,8 +5,8 @@ use std::str::FromStr;
 use aoc_harness::*;
 
 use pathfinding::prelude::dijkstra;
-use smallvec::smallvec;
 use smallvec::SmallVec;
+use smallvec::smallvec;
 use utils::cartesian::Point;
 
 aoc_harness::aoc_main!(2021 day 23, generator whole_input_is::<X>,
@@ -88,8 +88,8 @@ impl X {
             .iter()
             .map(|&x| self.room_depth - x)
             .collect_vec();
-        let room_moves = self
-            .rooms
+
+        self.rooms
             .iter()
             .enumerate()
             .map(|(room_ix, v)| {
@@ -110,8 +110,7 @@ impl X {
                     })
                     .sum::<usize>()
             })
-            .sum::<usize>();
-        room_moves
+            .sum::<usize>()
     }
     fn do_move(&self, from: Location, to: Location) -> Self {
         let mut new = self.clone();

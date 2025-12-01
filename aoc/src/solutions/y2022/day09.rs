@@ -65,7 +65,7 @@ fn solve<const SIZE: usize>(input: &str) -> usize {
 }
 
 fn get_bb(input: &str) -> Aabb<isize> {
-    let a = input
+    input
         .lines()
         .scan(Point::new(0, 0), |p, l| {
             let count: isize = l[2..].parse().unwrap();
@@ -73,8 +73,7 @@ fn get_bb(input: &str) -> Aabb<isize> {
             *p += dir * count;
             Some(*p)
         })
-        .collect();
-    a
+        .collect()
 }
 fn both(input: &str) -> (usize, usize) {
     const SIZE: usize = 10;

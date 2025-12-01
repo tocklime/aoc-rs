@@ -1,4 +1,4 @@
-use std::collections::{hash_map::Entry, HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque, hash_map::Entry};
 
 use utils::{
     cartesian::Point,
@@ -57,7 +57,6 @@ fn draw_digraph(g: &Graph) {
         }
     }
     println!("}}");
-
 }
 
 fn p2(input: &str) -> usize {
@@ -167,16 +166,16 @@ fn p1(input: &str) -> usize {
     dist.insert(start, 0);
     let mut stack = topo_order(&joints, start);
     while let Some(u) = stack.pop() {
-        if let Some(&to_here) = dist.get(&u) {
-            if let Some(nexts) = joints.get(&u) {
-                for (next, cost) in nexts {
-                    match dist.entry(*next) {
-                        Entry::Occupied(mut x) => {
-                            *x.get_mut() = (*x.get()).max(to_here + cost);
-                        }
-                        Entry::Vacant(x) => {
-                            let _ = *x.insert(to_here + cost);
-                        }
+        if let Some(&to_here) = dist.get(&u)
+            && let Some(nexts) = joints.get(&u)
+        {
+            for (next, cost) in nexts {
+                match dist.entry(*next) {
+                    Entry::Occupied(mut x) => {
+                        *x.get_mut() = (*x.get()).max(to_here + cost);
+                    }
+                    Entry::Vacant(x) => {
+                        let _ = *x.insert(to_here + cost);
                     }
                 }
             }

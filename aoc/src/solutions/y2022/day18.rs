@@ -2,12 +2,12 @@ use ndarray::prelude::*;
 use std::collections::HashSet;
 
 use nom::{
+    IResult, Parser,
     bytes::complete::tag,
     character::complete::{self, newline},
     combinator::{all_consuming, map, opt},
     multi::many1,
     sequence::terminated,
-    IResult, Parser,
 };
 
 aoc_harness::aoc_main!(2022 day 18, both [fixed_arrays] => (3432,2042),
@@ -35,7 +35,8 @@ fn parse_line(input: &str) -> IResult<&str, (usize, usize, usize)> {
         terminated(map(complete::u32, |x| x as usize), tag(",")),
         terminated(map(complete::u32, |x| x as usize), tag(",")),
         terminated(map(complete::u32, |x| x as usize), opt(newline)),
-    ).parse(input)
+    )
+        .parse(input)
 }
 const WORLD_SIZE: usize = 21;
 fn neighbours(c: &(usize, usize, usize)) -> impl Iterator<Item = Option<(usize, usize, usize)>> {
@@ -95,11 +96,11 @@ fn fixed_arrays(input: &str) -> (usize, usize) {
     let mut fringe = vec![(0, 0, 0)];
     while let Some(p) = fringe.pop() {
         for n in neighbours(&p).flatten() {
-            if let Some(p) = world.get_mut(n) {
-                if Air == *p {
-                    *p = OpenAir;
-                    fringe.push(n);
-                }
+            if let Some(p) = world.get_mut(n)
+                && Air == *p
+            {
+                *p = OpenAir;
+                fringe.push(n);
             }
         }
     }

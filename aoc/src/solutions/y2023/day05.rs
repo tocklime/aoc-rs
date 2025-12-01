@@ -1,6 +1,6 @@
 use itertools::Itertools;
-use nom::bytes::complete::tag;
 use nom::Parser;
+use nom::bytes::complete::tag;
 use nom::combinator::all_consuming;
 use nom::{
     character::complete::{self, alpha1, newline, space1},
@@ -92,22 +92,17 @@ impl Almanac {
     }
     fn convert(&self, input: i64) -> i64 {
         self.maps.iter().fold(input, |x, m| {
-            let output = m
-                .ranges
+            m.ranges
                 .iter()
                 .find_map(|&(from, delta)| from.contains(x).then_some(x + delta))
-                .unwrap_or(x);
-            output
+                .unwrap_or(x)
         })
     }
 }
 
 fn gen_(input: &str) -> Almanac {
     use nom::Parser;
-    all_consuming(Almanac::parse)
-        .parse(input)
-        .expect("Parse")
-        .1
+    all_consuming(Almanac::parse).parse(input).expect("Parse").1
 }
 
 fn p1(almanac: &Almanac) -> i64 {

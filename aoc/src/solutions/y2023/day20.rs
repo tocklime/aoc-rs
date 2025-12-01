@@ -1,16 +1,16 @@
 use std::{
     cell::RefCell,
-    collections::{hash_map::Entry, HashMap, VecDeque},
+    collections::{HashMap, VecDeque, hash_map::Entry},
 };
 
 use nom::{
+    Parser,
     branch::alt,
     bytes::complete::tag,
     character::complete::{alpha1, newline},
     combinator::{all_consuming, success, value},
     multi::separated_list1,
     sequence::terminated,
-    Parser,
 };
 use utils::{collections::VecLookup, nom::IResult};
 
@@ -180,11 +180,11 @@ impl System {
     fn step(&mut self) {
         let (source, value, target) = self.next_signal().unwrap();
         self.signal_counts[usize::from(value)] += 1;
-        if let Some(me) = self.modules.get_mut(target) {
-            if let Some(value) = me.handle_pulse(source, value) {
-                for out in &me.targets {
-                    self.pending_signals.push_back((Some(me.name), value, *out));
-                }
+        if let Some(me) = self.modules.get_mut(target)
+            && let Some(value) = me.handle_pulse(source, value)
+        {
+            for out in &me.targets {
+                self.pending_signals.push_back((Some(me.name), value, *out));
             }
         }
     }

@@ -1,4 +1,4 @@
-use utils::points::{as_point_map, Point};
+use utils::points::{Point, as_point_map};
 
 use std::cmp::min;
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -25,19 +25,19 @@ pub fn search2<S: BuildHasher>(
             .iter()
             .filter(|&p| !been.contains(p))
             .for_each(|&p2| {
-                if let Some(here) = map.get(&p2) {
-                    if here != &'#' && (here == &'.' || !min_dist_map.contains_key(&p2))
-                    //&& (!here.is_uppercase() || keys.contains(&here.to_ascii_lowercase()))
-                    {
-                        let mut new_keys = keys.clone();
-                        if here.is_lowercase() {
-                            min_dist_map.insert(p2, (*here, count + 1, new_keys.clone()));
-                        }
-                        if here.is_alphabetic() {
-                            new_keys.insert(*here);
-                        }
-                        points.push_back((p2, count + 1, new_keys));
+                if let Some(here) = map.get(&p2)
+                    && here != &'#'
+                    && (here == &'.' || !min_dist_map.contains_key(&p2))
+                //&& (!here.is_uppercase() || keys.contains(&here.to_ascii_lowercase()))
+                {
+                    let mut new_keys = keys.clone();
+                    if here.is_lowercase() {
+                        min_dist_map.insert(p2, (*here, count + 1, new_keys.clone()));
                     }
+                    if here.is_alphabetic() {
+                        new_keys.insert(*here);
+                    }
+                    points.push_back((p2, count + 1, new_keys));
                 }
             });
     }

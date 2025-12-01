@@ -65,20 +65,20 @@ impl AnswerAll {
             .or_default()
             .entry(dr.day)
             .or_default();
-        if let (AnswerPart::Checked(f), Some(e)) = (&me.part1, &dr.part1_ans) {
-            if f != e {
-                return Err(format!(
-                    "actual part 1 result {e} doesn't match expected {f}"
-                ));
-            }
+        if let (AnswerPart::Checked(f), Some(e)) = (&me.part1, &dr.part1_ans)
+            && f != e
+        {
+            return Err(format!(
+                "actual part 1 result {e} doesn't match expected {f}"
+            ));
         }
         me.part1 = AnswerPart::from_option(&dr.part1_ans, dr.part1_confirmed);
-        if let (AnswerPart::Checked(f), Some(e)) = (&me.part2, &dr.part2_ans) {
-            if f != e {
-                return Err(format!(
-                    "actual part 2 result {e} doesn't match expected {f}"
-                ));
-            }
+        if let (AnswerPart::Checked(f), Some(e)) = (&me.part2, &dr.part2_ans)
+            && f != e
+        {
+            return Err(format!(
+                "actual part 2 result {e} doesn't match expected {f}"
+            ));
         }
         me.part2 = AnswerPart::from_option(&dr.part2_ans, dr.part2_confirmed);
         Ok(())
