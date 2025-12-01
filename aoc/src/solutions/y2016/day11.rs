@@ -3,12 +3,10 @@
 aoc_harness::aoc_main!(2016 day 11, generator gen_, part1 [p1] => 33, part2 [p2] => 57);
 
 use bitintr::*;
-use num::traits::ToPrimitive;
-use num_derive::ToPrimitive;
 use pathfinding::directed::astar::astar;
 use reformation::Reformation;
 
-#[derive(Reformation, Copy, Clone, Eq, Hash, PartialEq, Debug, PartialOrd, Ord, ToPrimitive)]
+#[derive(Reformation, Copy, Clone, Eq, Hash, PartialEq, Debug, PartialOrd, Ord)]
 enum Element {
     #[reformation("promethium")]
     Promethium,
@@ -24,6 +22,19 @@ enum Element {
     Elerium,
     #[reformation("dilithium")]
     Dilithium,
+}
+impl Element {
+    fn to_u8(self) -> u8 {
+        match self {
+            Element::Promethium => 0,
+            Element::Cobalt => 1,
+            Element::Curium => 2,
+            Element::Ruthenium => 3,
+            Element::Plutonium => 4,
+            Element::Elerium => 5,
+            Element::Dilithium => 6,
+        }
+    }
 }
 
 #[derive(Reformation, Copy, Clone, Eq, Hash, PartialEq, Debug, PartialOrd, Ord)]
@@ -44,8 +55,8 @@ struct World {
 impl World {
     fn add(&mut self, i: Item, f: usize) {
         match i {
-            Item::Microchip(i) => self.chips[f] |= 1 << i.to_u8().unwrap(),
-            Item::Generator(i) => self.gens[f] |= 1 << i.to_u8().unwrap(),
+            Item::Microchip(i) => self.chips[f] |= 1 << i.to_u8(),
+            Item::Generator(i) => self.gens[f] |= 1 << i.to_u8(),
         }
     }
 
