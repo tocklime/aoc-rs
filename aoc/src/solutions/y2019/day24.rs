@@ -6,10 +6,10 @@ use num::pow;
 use std::collections::HashSet;
 use std::convert::TryInto;
 
-aoc_harness::aoc_main!(2019 day 24, generator gen, part1 [p1] => 32_509_983, part2 [p2m,p2c] => 2012);
+aoc_harness::aoc_main!(2019 day 24, generator gen_, part1 [p1] => 32_509_983, part2 [p2m,p2c] => 2012);
 
 #[must_use]
-pub fn gen(input: &str) -> HashSet<Point> {
+pub fn gen_(input: &str) -> HashSet<Point> {
     let hm = utils::points::as_point_map(input);
     hm.iter()
         .filter_map(|(a, b)| if b == &'#' { Some(*a) } else { None })
@@ -101,6 +101,6 @@ pub fn d24p1() {
 #....
 .#...
 ";
-    let btm = gen(i);
+    let btm = gen_(i);
     assert_eq!(biodiversity(&btm), 2_129_920);
 }

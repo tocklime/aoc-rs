@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 10, generator gen, part1 [p1] => 101, part2 [p2] => 37789);
+aoc_harness::aoc_main!(2016 day 10, generator gen_, part1 [p1] => 101, part2 [p2] => 37789);
 
 use reformation::Reformation;
 use nom::lib::std::collections::{HashMap, VecDeque};
@@ -38,7 +38,7 @@ enum Line {
 }
 
 
-fn gen(input: &str) -> Vec<Line> {
+fn gen_(input: &str) -> Vec<Line> {
     input.lines().map(|x| Line::parse(x).unwrap()).collect()
 }
 

@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2020 day 13, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2020 day 13, generator gen_, part1 [p1], part2 [p2]);
 use utils::nums::chinese_remainder_theorem;
 pub struct Bus {
     id: i64,
@@ -20,7 +20,7 @@ impl Bus {
     }
 }
 
-fn gen(input: &str) -> (i64, Vec<Bus>) {
+fn gen_(input: &str) -> (i64, Vec<Bus>) {
     let mut l = input.lines();
     let t = l.next().unwrap().parse().unwrap();
     let ns = l.next().unwrap().split(',').zip(0..).filter_map(Bus::parse).collect();
@@ -42,7 +42,7 @@ mod test {
 
     fn test(input: &str) -> i64 {
         let p = format!("0\n{input}");
-        p2(&gen(&p))
+        p2(&gen_(&p))
     }
     #[test]
 

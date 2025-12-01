@@ -51,7 +51,7 @@ fn p1(input: &str) -> usize {
 fn step(a: &HashSet<Point<i32>>) -> HashSet<Point<i32>> {
     let cs: Counter<Point<i32>> = a.iter().flat_map(Point::hex_neighbours).collect();
     cs.iter()
-        .filter(|(p, &c)| c == 2 || (a.contains(p) && c == 1))
+        .filter(|&(p, c)| c == &2 || (a.contains(p) && c == &1))
         .map(|(a, _)| *a)
         .collect()
 }

@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 9, generator gen, part1 [p1] => 207, part2 [p2] => 804);
+aoc_harness::aoc_main!(2015 day 9, generator gen_, part1 [p1] => 207, part2 [p2] => 804);
 
 use reformation::Reformation;
 use itertools::Itertools;
@@ -16,7 +16,7 @@ struct Step<'a> {
 
 type DistMap<'a> = HashMap<&'a str, HashMap<&'a str, u32>>;
 
-fn gen(input: &str) -> DistMap<'_> {
+fn gen_(input: &str) -> DistMap<'_> {
     let mut dist_map: DistMap = HashMap::new();
     for s in input.trim().lines().map(|x| Step::parse(x).unwrap()) {
         dist_map.entry(s.from).or_default().insert(s.to, s.distance);

@@ -1,10 +1,10 @@
 
 
-aoc_harness::aoc_main!(2020 day 3, generator gen, part1 [p1] => 242, part2 [p2] => 2_265_549_792);
+aoc_harness::aoc_main!(2020 day 3, generator gen_, part1 [p1] => 242, part2 [p2] => 2_265_549_792);
 
 use utils::inputs::input_from_str_sep_by;
 
-fn gen(input: &str) -> Vec<Vec<bool>> {
+fn gen_(input: &str) -> Vec<Vec<bool>> {
     input_from_str_sep_by(input, "\n", |x| x.chars().map(|c| c == '#').collect())
 }
 fn solve(tm: &[Vec<bool>], x: usize, y: usize) -> usize {

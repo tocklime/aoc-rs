@@ -4,7 +4,7 @@ use itertools::{FoldWhile, Itertools};
 use num::Integer;
 use rayon::prelude::*;
 
-aoc_harness::aoc_main!(2023 day 8, generator gen, part1 [p1] => 13019, part2 [p2, p2_rayon] => 13_524_038_372_771,
+aoc_harness::aoc_main!(2023 day 8, generator gen_, part1 [p1] => 13019, part2 [p2, p2_rayon] => 13_524_038_372_771,
     example part1 EG => 2, example part1 EG2 => 6, example part2 EG3 => 6);
 
 struct Prob {
@@ -45,7 +45,7 @@ enum NodeType {
     End,
 }
 
-fn gen(input: &str) -> Prob {
+fn gen_(input: &str) -> Prob {
     let mut l = input.lines();
     let rls = l.next().unwrap();
     let _ = l.next().unwrap();

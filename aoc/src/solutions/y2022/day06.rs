@@ -18,7 +18,7 @@ fn solve_by_strides<const WINDOW_SIZE: usize>(input: &str) -> usize {
     let mut candidate = 0;
     while candidate < bytes.len() {
         let mut set = NumSet::<u32>::new();
-        let found_duplicate = bytes[candidate..candidate+WINDOW_SIZE].iter().enumerate().rev().find(|(_, &c)| !set.insert(c - b'a'));
+        let found_duplicate = bytes[candidate..candidate+WINDOW_SIZE].iter().enumerate().rev().find(|&(_, c)| !set.insert(*c - b'a'));
         if let Some((ix,_)) = found_duplicate {
             candidate += ix + 1; //move the window to just after the found duplicate.
         } else {

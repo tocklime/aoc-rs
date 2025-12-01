@@ -1,4 +1,4 @@
-aoc_harness::aoc_main!(2018 day 15, generator gen, part1 [p1] => 237_996, part2 [p2] => 69700,
+aoc_harness::aoc_main!(2018 day 15, generator gen_, part1 [p1] => 237_996, part2 [p2] => 69700,
     example part1 EG1 => 27730);
 use itertools::Itertools;
 use pathfinding::prelude::astar_bag;
@@ -183,7 +183,7 @@ impl State {
     }
 }
 
-fn gen(input: &str) -> State {
+fn gen_(input: &str) -> State {
     let map = as_point_map(input, false);
     let walls = map
         .iter()

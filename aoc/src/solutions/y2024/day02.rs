@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-aoc_harness::aoc_main!(2024 day 2, generator gen, part1 [p1] => 463, part2 [p2] => 514, example part1 EG => 2, example part2 EG => 4);
+aoc_harness::aoc_main!(2024 day 2, generator gen_, part1 [p1] => 463, part2 [p2] => 514, example part1 EG => 2, example part2 EG => 4);
 
 fn p1(input: &[Vec<usize>]) -> usize {
     input.iter().filter(|l|find_error_ix(l.iter()).is_none()).count()
@@ -10,7 +10,7 @@ fn p2(input: &[Vec<usize>]) -> usize {
     input.iter().filter(|x| is_safe_by_skipping(x)).count()
 }
 
-fn gen(input: &str) -> Vec<Vec<usize>> {
+fn gen_(input: &str) -> Vec<Vec<usize>> {
     input
         .lines()
         .map(|l| {

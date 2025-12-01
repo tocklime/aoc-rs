@@ -1,7 +1,7 @@
 
 use utils::{aabb::Aabb, cartesian::Point, grid2d::Grid2d};
 
-aoc_harness::aoc_main!(2023 day 3, generator gen, part1 [p1] => 527_364, part2 [p2] => 79_026_871, example both EG => (4361, 467_835));
+aoc_harness::aoc_main!(2023 day 3, generator gen_, part1 [p1] => 527_364, part2 [p2] => 79_026_871, example both EG => (4361, 467_835));
 
 #[derive(Debug)]
 struct FoundNum {
@@ -21,7 +21,7 @@ impl FoundNum {
     }
 }
 
-fn gen(input: &str) -> Grid2d<char> {
+fn gen_(input: &str) -> Grid2d<char> {
     Grid2d::from_str(input, |x| x)
 }
 

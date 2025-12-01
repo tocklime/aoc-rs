@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2020 day 8, generator gen, part1 [p1], part2 [p2, p2d, p2_optimal]);
+aoc_harness::aoc_main!(2020 day 8, generator gen_, part1 [p1], part2 [p2, p2d, p2_optimal]);
 use parse_display::{Display, FromStr};
 use pathfinding::prelude::bfs;
 use std::collections::HashSet;
@@ -76,7 +76,7 @@ fn go(prog: &[Inst], change: Option<usize>) -> (i64, bool) {
     (state.acc, state.pc == prog.len())
 }
 
-fn gen(input: &str) -> Vec<Inst> {
+fn gen_(input: &str) -> Vec<Inst> {
     input.trim().lines().map(|x| x.parse().unwrap()).collect()
 }
 fn p1(input: &[Inst]) -> i64 {

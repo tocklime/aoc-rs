@@ -32,7 +32,7 @@ fn light_corners(hm: &mut HashMap<Point<u32>, char>) {
 fn p1(input: &str) -> usize {
     let mut hm = as_point_map::<u32>(input, false);
     (0..100).for_each(|_| hm = step(&hm));
-    hm.iter().filter(|(_, &x)| x == '#').count()
+    hm.iter().filter(|&(_, x)| x == &'#').count()
 }
 
 fn p2(input: &str) -> usize {
@@ -42,5 +42,5 @@ fn p2(input: &str) -> usize {
         hm = step(&hm);
         light_corners(&mut hm);
     });
-    hm.iter().filter(|(_, &x)| x == '#').count()
+    hm.iter().filter(|&(_, x)| x == &'#').count()
 }

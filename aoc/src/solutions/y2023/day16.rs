@@ -3,7 +3,7 @@ use utils::{
     grid2d::{Coord, Grid2d},
 };
 
-aoc_harness::aoc_main!(2023 day 16, generator gen, part1 [p1] => 7884, part2 [p2] => 8185, example both EG => (46, 51));
+aoc_harness::aoc_main!(2023 day 16, generator gen_, part1 [p1] => 7884, part2 [p2] => 8185, example both EG => (46, 51));
 
 fn dir_to_n(d: Dir) -> u8 {
     match d {
@@ -49,7 +49,7 @@ fn run_sim(g: &Grid2d<char>, beam_start: Point<usize>, beam_dir: Dir) -> usize {
     }
     energised.iter().filter(|&&x| x > 0).count()
 }
-fn gen(input: &str) -> Grid2d<char> {
+fn gen_(input: &str) -> Grid2d<char> {
     Grid2d::from_str(input, |x| x)
 }
 fn p1(g: &Grid2d<char>) -> usize {

@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 4, generator gen, part1 [p1] => 245_102, part2 [p2] => 324);
+aoc_harness::aoc_main!(2016 day 4, generator gen_, part1 [p1] => 245_102, part2 [p2] => 324);
 
 use counter::Counter;
 use reformation::Reformation;
@@ -42,7 +42,7 @@ impl Room<'_> {
     }
 }
 
-fn gen(input: &str) -> Vec<Room<'_>> {
+fn gen_(input: &str) -> Vec<Room<'_>> {
     input.lines().map(|l| Room::parse(l).unwrap()).collect()
 }
 

@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2020 day 4, generator gen, part1 [p1] => 233, part2 [p2] => 111);
+aoc_harness::aoc_main!(2020 day 4, generator gen_, part1 [p1] => 233, part2 [p2] => 111);
 use itertools::Itertools;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
@@ -39,7 +39,7 @@ fn validate(k: &str, v: &str) -> Option<bool> {
     Some(a)
 }
 
-fn gen(input: &str) -> Vec<HashMap<&str, &str>> {
+fn gen_(input: &str) -> Vec<HashMap<&str, &str>> {
     input_from_str_sep_by(input, "\n\n", |p| {
         p.split_whitespace()
             .flat_map(move |p| p.split(':'))

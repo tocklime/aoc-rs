@@ -1,11 +1,11 @@
 use rayon::prelude::*;
 use utils::polynomials::PolynomialDetector;
 
-aoc_harness::aoc_main!(2023 day 9, generator gen, both [with_poly_detector, single_thread, multi_thread] => (1_877_825_184, 1108), example both EG => (114,2));
+aoc_harness::aoc_main!(2023 day 9, generator gen_, both [with_poly_detector, single_thread, multi_thread] => (1_877_825_184, 1108), example both EG => (114,2));
 
 
 
-fn gen(input: &str) -> Vec<Vec<i64>> {
+fn gen_(input: &str) -> Vec<Vec<i64>> {
     let parse_line = |l: &str| l.split_whitespace().map(|x| x.parse().unwrap()).collect();
     input.lines().map(parse_line).collect()
 }

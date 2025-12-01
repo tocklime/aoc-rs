@@ -46,13 +46,13 @@ pub fn search2<S: BuildHasher>(
 
 pub fn p1(input: &str) -> usize {
     let map = as_point_map(input);
-    let at_sym = *map.iter().find(|(_, &v)| v == '@').expect("No @").0;
+    let at_sym = *map.iter().find(|&(_, v)| v == &'@').expect("No @").0;
     solve(&map, &[at_sym])
 }
 
 pub fn p2(input: &str) -> usize {
     let mut map = as_point_map(input);
-    let at_sym = *map.iter().find(|(_, &v)| v == '@').expect("No @").0;
+    let at_sym = *map.iter().find(|&(_, v)| v == &'@').expect("No @").0;
 
     map.insert(at_sym, '#');
     map.insert(at_sym.up(), '#');

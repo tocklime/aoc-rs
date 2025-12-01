@@ -1,9 +1,9 @@
 
 
-aoc_harness::aoc_main!(2017 day 13, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2017 day 13, generator gen_, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 
-fn gen(input: &str) -> Vec<(usize, usize)> {
+fn gen_(input: &str) -> Vec<(usize, usize)> {
     input
         .lines()
         .map(|l| {

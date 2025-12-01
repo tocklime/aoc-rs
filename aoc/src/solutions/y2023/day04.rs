@@ -7,9 +7,9 @@ use utils::{
     numset::NumSet,
 };
 
-aoc_harness::aoc_main!(2023 day 4, generator gen, part1 [p1] => 18619, part2 [p2] => 8_063_216, example both EG => (13, 30));
+aoc_harness::aoc_main!(2023 day 4, generator gen_, part1 [p1] => 18619, part2 [p2] => 8_063_216, example both EG => (13, 30));
 
-fn gen(input: &str) -> Vec<Card> {
+fn gen_(input: &str) -> Vec<Card> {
     use nom::Parser;
     all_consuming(separated_list1(newline, Card::parse)).parse(input.trim_end()).expect("parse").1
 }

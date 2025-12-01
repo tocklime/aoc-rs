@@ -1,10 +1,10 @@
-aoc_harness::aoc_main!(2018 day 6, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2018 day 6, generator gen_, part1 [p1], part2 [p2]);
 
 use std::collections::HashMap;
 use utils::aabb::Aabb;
 use utils::cartesian::Point;
 
-fn gen(input: &str) -> Vec<Point<i32>> {
+fn gen_(input: &str) -> Vec<Point<i32>> {
     input
         .trim()
         .lines()

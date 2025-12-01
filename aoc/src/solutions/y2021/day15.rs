@@ -3,7 +3,7 @@ use num::Integer;
 use pathfinding::prelude::dijkstra;
 use utils::grid2d::{Coord, Grid2d};
 
-aoc_harness::aoc_main!(2021 day 15, generator gen, 
+aoc_harness::aoc_main!(2021 day 15, generator gen_, 
     part1 [solve::<1>] => 717, example part1 EG => 40, 
     part2 [solve::<5>] => 2993, example part2 EG => 315);
 
@@ -50,7 +50,7 @@ impl RepeatingGrid<'_> {
     }
 }
 
-fn gen(input: &str) -> Grid2d<u8> {
+fn gen_(input: &str) -> Grid2d<u8> {
     Grid2d::from_str(input.trim(), |c| u8::try_from(c as u32).unwrap() - b'0')
 }
 fn solve<const REPEATS: usize>(input: &Grid2d<u8>) -> usize {

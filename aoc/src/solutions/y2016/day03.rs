@@ -1,10 +1,10 @@
 
 
-aoc_harness::aoc_main!(2016 day 3, generator gen, part1 [p1] => 1050, part2 [p2] => 1921);
+aoc_harness::aoc_main!(2016 day 3, generator gen_, part1 [p1] => 1050, part2 [p2] => 1921);
 use itertools::Itertools;
 use regex::Regex;
 
-fn gen(input: &str) -> Vec<Vec<usize>> {
+fn gen_(input: &str) -> Vec<Vec<usize>> {
     let re = Regex::new(r"\d+").unwrap();
     input
         .lines()

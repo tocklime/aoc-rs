@@ -1,7 +1,7 @@
 
 use utils::take_upto_n::TakeUpToN;
 
-aoc_harness::aoc_main!(2021 day 16, generator gen, part1 [p1] => 883, part2 [p2] => 1_675_198_555_015, example part1 EG => 16);
+aoc_harness::aoc_main!(2021 day 16, generator gen_, part1 [p1] => 883, part2 [p2] => 1_675_198_555_015, example part1 EG => 16);
 
 const EG: &str = "8A004A801A8002F478";
 
@@ -103,7 +103,7 @@ fn read_n_packets(iter: &mut NumIter, n: usize) -> Result<Vec<Packet>, PacketErr
     (0..n).map(|_| read_one_packet(iter)).collect()
 }
 
-fn gen(input: &str) -> Packet {
+fn gen_(input: &str) -> Packet {
     let mut bits_iter = input.trim().chars().flat_map(|c| {
         let n = c.to_digit(16).unwrap();
         [

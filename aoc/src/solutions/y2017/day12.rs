@@ -1,12 +1,12 @@
 
 
-aoc_harness::aoc_main!(2017 day 12, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2017 day 12, generator gen_, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
 type Prob = HashMap<usize, HashSet<usize>>;
 
-fn gen(input: &str) -> Prob {
+fn gen_(input: &str) -> Prob {
     let mut hm: Prob = HashMap::new();
     for l in input.lines() {
         let s: Vec<&str> = l.split(" <-> ").collect_vec();

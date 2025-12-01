@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2020 day 7, generator gen, part1 [p1], part2 [p2_graph]);
+aoc_harness::aoc_main!(2020 day 7, generator gen_, part1 [p1], part2 [p2_graph]);
 
 use itertools::Itertools;
 use petgraph::{
@@ -9,7 +9,7 @@ use petgraph::{
 };
 type G<'a> = DiGraphMap<&'a str, usize>;
 
-fn gen(inp: &str) -> G<'_> {
+fn gen_(inp: &str) -> G<'_> {
     let mut g: DiGraphMap<&str, usize> = DiGraphMap::new();
     for l in inp.lines() {
         let (container, bags): (&str, &str) = l.split(" bags contain ").next_tuple().unwrap();

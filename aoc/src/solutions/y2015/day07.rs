@@ -77,7 +77,7 @@ pub struct Line<'a> {
     rhs: &'a str,
 }
 
-fn gen(input: &str) -> Vec<Line<'_>> {
+fn gen_(input: &str) -> Vec<Line<'_>> {
     input.lines().map(|x| line(x).unwrap().1).collect()
 }
 
@@ -117,13 +117,13 @@ fn find_value<'a>(
 }
 
 fn p1(input: &str) -> u16 {
-    let parsed = gen(input);
+    let parsed = gen_(input);
     let by_name = parsed.into_iter().map(|l| (l.rhs, l)).collect();
     find_value(&by_name, &mut HashMap::new(), &Item::Ref("a"))
 }
 
 fn p2(input: &str) -> u16 {
-    let parsed = gen(input);
+    let parsed = gen_(input);
     let by_name = parsed.into_iter().map(|l| (l.rhs, l)).collect();
     let a_val = find_value(&by_name, &mut HashMap::new(), &Item::Ref("a"));
     let mut values = HashMap::new();

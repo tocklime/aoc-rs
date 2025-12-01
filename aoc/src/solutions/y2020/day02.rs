@@ -2,7 +2,7 @@ use parse_display::{Display, FromStr};
 
 
 
-aoc_harness::aoc_main!(2020 day 2, generator gen, part1 [p1] => 620, part2 [p2] => 727);
+aoc_harness::aoc_main!(2020 day 2, generator gen_, part1 [p1] => 620, part2 [p2] => 727);
 
 use utils::inputs::parse_input_from_str_sep_by;
 
@@ -32,7 +32,7 @@ impl Password {
     }
 }
 
-fn gen(input: &str) -> Vec<Password> {
+fn gen_(input: &str) -> Vec<Password> {
     parse_input_from_str_sep_by(input, "\n")
 }
 fn p1(input: &[Password]) -> usize {

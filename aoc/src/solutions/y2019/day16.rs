@@ -2,7 +2,7 @@
 use rayon::prelude::*;
 use std::cmp::{max, min};
 
-aoc_harness::aoc_main!(2019 day 16, generator gen, part1 [p1] => 63_794_407, part2 [p2] => 77_247_538,
+aoc_harness::aoc_main!(2019 day 16, generator gen_, part1 [p1] => 63_794_407, part2 [p2] => 77_247_538,
     example part1 "80871224585914546619083218645595" => 24_176_176,
     example part1 "19617804207202209144916044189917" => 73_745_418,
     example part1 "69317163492948606335995924319873" => 52_432_133,
@@ -11,7 +11,7 @@ aoc_harness::aoc_main!(2019 day 16, generator gen, part1 [p1] => 63_794_407, par
     example part2 "03081770884921959731165446850517" => 53_553_731
 );
 
-pub fn gen(input: &str) -> Vec<usize> {
+pub fn gen_(input: &str) -> Vec<usize> {
     input
         .trim()
         .bytes()

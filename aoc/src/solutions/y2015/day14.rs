@@ -24,19 +24,19 @@ impl Line<'_> {
     }
 }
 
-fn gen(input: &str) -> Vec<Line<'_>> {
+fn gen_(input: &str) -> Vec<Line<'_>> {
     input.lines().map(|x| Line::parse(x).unwrap()).collect()
 }
 
 
 fn p1(input: &str) -> u32 {
-    let l = gen(input);
+    let l = gen_(input);
     l.into_iter().map(|x| x.distance_after(2503)).max().unwrap()
 }
 
 
 fn p2(input: &str) -> u32 {
-    let l = gen(input);
+    let l = gen_(input);
     let mut scores: HashMap<&str, u32> = HashMap::new();
     for s in 1..=2503 {
         let distances: HashMap<_, _> = l.iter().map(|x| (x.name, x.distance_after(s))).collect();

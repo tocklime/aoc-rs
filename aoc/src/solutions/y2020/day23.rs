@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2020 day 23, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2020 day 23, generator gen_, part1 [p1], part2 [p2]);
 use std::convert::TryInto;
 struct Game {
     /// next_map is a lookup table mapping cups to their next neighbour on the right.
@@ -103,7 +103,7 @@ impl Iterator for GameIter<'_> {
     }
 }
 
-fn gen(input: &str) -> Vec<u32> {
+fn gen_(input: &str) -> Vec<u32> {
     input.trim().chars().map(|x| x.to_digit(10).unwrap()).collect()
 }
 fn p1(input: &[u32]) -> String {

@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 11, generator gen, part1 [p1] => 33, part2 [p2] => 57);
+aoc_harness::aoc_main!(2016 day 11, generator gen_, part1 [p1] => 33, part2 [p2] => 57);
 
 use bitintr::*;
 use num::traits::ToPrimitive;
@@ -84,9 +84,9 @@ impl World {
     }
 
     //options to take
-    //1: any chip or gen
+    //1: any chip or gen_
     //2: any pair of lone chips or lone gens (not one of each)
-    //2: Any arbitrary... matching chip/gen pair.
+    //2: Any arbitrary... matching chip/gen_ pair.
 
     fn neighbours(&self) -> Vec<(Self, usize)> {
         let f = self.elevator;
@@ -99,11 +99,11 @@ impl World {
             x = opt.andn(x);
             opts.push((opt, 0));
         }
-        //any gen
-        let mut gen = self.gens[f];
-        while gen != 0 {
-            let opt = gen.blsi();
-            gen = opt.andn(gen);
+        //any gen_
+        let mut gen_ = self.gens[f];
+        while gen_ != 0 {
+            let opt = gen_.blsi();
+            gen_ = opt.andn(gen_);
             opts.push((0, opt));
         }
         //an arbitrary pair.
@@ -152,7 +152,7 @@ impl World {
     }
 }
 
-fn gen(input: &str) -> World {
+fn gen_(input: &str) -> World {
     let fs: Vec<Vec<Item>> = input
         .lines()
         .map(|f| f.split(" a ").filter_map(|x| Item::parse(x).ok()).collect())

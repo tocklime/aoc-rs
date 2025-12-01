@@ -1,7 +1,7 @@
 
 use utils::span::Span;
 
-aoc_harness::aoc_main!(2022 day 4, generator gen, part1 [p1], part2 [p2], example part1 EG => 2);
+aoc_harness::aoc_main!(2022 day 4, generator gen_, part1 [p1], part2 [p2], example part1 EG => 2);
 
 const EG: &str = "2-4,6-8
 2-3,4-5
@@ -11,7 +11,7 @@ const EG: &str = "2-4,6-8
 2-6,4-8
 ";
 type T = u8;
-fn gen(input: &str) -> Vec<(Span<T>, Span<T>)> {
+fn gen_(input: &str) -> Vec<(Span<T>, Span<T>)> {
     input
         .lines()
         .map(|l| {

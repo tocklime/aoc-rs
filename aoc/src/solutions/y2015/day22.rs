@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 22, generator gen, part1 [p1] => 953, part2 [p2] => 1289);
+aoc_harness::aoc_main!(2015 day 22, generator gen_, part1 [p1] => 953, part2 [p2] => 1289);
 use itertools::Itertools;
 use pathfinding::directed::dijkstra::dijkstra;
 
@@ -144,7 +144,7 @@ impl State {
     }
 }
 
-fn gen(input: &str) -> State {
+fn gen_(input: &str) -> State {
     let data = input
         .lines()
         .map(|x| {

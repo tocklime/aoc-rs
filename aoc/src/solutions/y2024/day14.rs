@@ -34,7 +34,7 @@ impl BunnyRobot {
     }
 }
 
-fn gen(input: &str, max: Point<isize>) -> Vec<BunnyRobot> {
+fn gen_(input: &str, max: Point<isize>) -> Vec<BunnyRobot> {
     utils::inputs::ThingParser::new(input, nom::character::complete::i32)
         .chunks(4)
         .into_iter()
@@ -52,7 +52,7 @@ fn p1(input: &str) -> usize {
     } else {
         Point::new(101, 103)
     };
-    let bs = gen(input, max);
+    let bs = gen_(input, max);
     let mut quads = Grid2d::from_elem((2, 2), 0);
     for b in &bs {
         if let Some(q) = b.quadrant_after_n(100) {
@@ -64,7 +64,7 @@ fn p1(input: &str) -> usize {
 
 fn p2(input: &str) -> isize {
     let max = Point::new(101, 103);
-    let bs = gen(input, max);
+    let bs = gen_(input, max);
     //for each axis, find the index in the cycle that has the fewest distinct values represented.
     let best_x = (0..max.x)
         .map(|t| {

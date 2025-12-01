@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2015 day 6, generator gen, part1 [p1] => 569_999, part2 [p2] => 17_836_115);
+aoc_harness::aoc_main!(2015 day 6, generator gen_, part1 [p1] => 569_999, part2 [p2] => 17_836_115);
 use itertools::Itertools;
 use utils::cartesian::Point;
 
@@ -17,7 +17,7 @@ pub struct Line {
 }
 
 
-fn gen(input: &str) -> Vec<Line> {
+fn gen_(input: &str) -> Vec<Line> {
     let re = regex::Regex::new("(turn on|turn off|toggle) (\\d+),(\\d+) through (\\d+),(\\d+)").unwrap();
     input.lines().map(|l| {
 //turn on 489,959 through 759,964

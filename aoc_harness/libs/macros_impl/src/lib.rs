@@ -196,7 +196,7 @@ impl Parse for Parts {
 }
 pub struct AocMainInput {
     day: DayInput,
-    gen: Option<GeneratorPart>,
+    gen_: Option<GeneratorPart>,
     solutions: Vec<SolutionPart>,
     bench: bool,
     examples: Vec<ExamplePart>,
@@ -207,7 +207,7 @@ impl Parse for AocMainInput {
         let punct: Punctuated<Parts, Token![,]> =
             input.parse_terminated(Parts::parse, Token![,])?;
         let mut day = None;
-        let mut gen = None;
+        let mut gen_ = None;
         let mut solutions = Vec::new();
         let mut bench = false;
         let mut examples = Vec::new();
@@ -221,8 +221,8 @@ impl Parse for AocMainInput {
                     }
                 }
                 Parts::Gen(g) => {
-                    if gen.is_none() {
-                        gen = Some(g);
+                    if gen_.is_none() {
+                        gen_ = Some(g);
                     } else {
                         return Err(input.error("Multiple generators given"));
                     }
@@ -239,7 +239,7 @@ impl Parse for AocMainInput {
         }
         Ok(Self {
             day: day.unwrap(),
-            gen,
+            gen_,
             solutions,
             bench,
             examples,
@@ -356,7 +356,7 @@ impl AocMainInput {
         func_select_result: Option<&ExprLit>,
     ) -> TokenStream {
         let mut ans = TokenStream::new();
-        if let Some(g) = self.gen.as_ref().map(|x| &x.gen_fn) {
+        if let Some(g) = self.gen_.as_ref().map(|x| &x.gen_fn) {
             ans.extend(quote! { let found = #func(&#g(#input)); });
         } else {
             ans.extend(quote! { let found = #func(#input); });
@@ -502,7 +502,7 @@ impl AocMainInput {
                 }
             };
         };
-        match self.gen.as_ref().map(|z| &z.gen_fn) {
+        match self.gen_.as_ref().map(|z| &z.gen_fn) {
             Some(g) => setup.extend(quote! {
                 let (t, generated) = opts.time_fn(||#g(&s));
                 results.record_generator(t);

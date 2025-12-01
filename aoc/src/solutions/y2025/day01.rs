@@ -7,9 +7,9 @@ use nom::{
 use num_traits::Euclid;
 use utils::nom::NomError;
 
-aoc_harness::aoc_main!(2025 day 1, generator gen, part1 [p1], part2 [p2_slow, p2], example part1 EG => 3, example part2 EG => 6, example part2 EG2 => 4);
+aoc_harness::aoc_main!(2025 day 1, generator gen_, part1 [p1], part2 [p2_slow, p2], example part1 EG => 3, example part2 EG => 6, example part2 EG2 => 4);
 
-fn gen(input: &str)-> Vec<i64> {
+fn gen_(input: &str)-> Vec<i64> {
     all_consuming::<_, NomError, _>(separated_list1(
         newline,
         (

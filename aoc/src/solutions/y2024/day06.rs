@@ -5,9 +5,9 @@ use utils::{
     numset::NumSet,
 };
 
-aoc_harness::aoc_main!(2024 day 6, generator gen, part1 [p1] => 4696, part2 [bruteforce,p2,rayon] => 1443, example part1 EG => 41, example part2 EG => 6);
+aoc_harness::aoc_main!(2024 day 6, generator gen_, part1 [p1] => 4696, part2 [bruteforce,p2,rayon] => 1443, example part1 EG => 41, example part2 EG => 6);
 
-fn gen(input: &str) -> Grid2d<char> {
+fn gen_(input: &str) -> Grid2d<char> {
     Grid2d::from_str_as_char(input).flip_y()
 }
 

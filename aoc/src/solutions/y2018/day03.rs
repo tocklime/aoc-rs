@@ -1,4 +1,4 @@
-aoc_harness::aoc_main!(2018 day 3, generator gen, part1 [part1, part1_vec, part1_hm], part2 [part2, part2_map]);
+aoc_harness::aoc_main!(2018 day 3, generator gen_, part1 [part1, part1_vec, part1_hm], part2 [part2, part2_map]);
 use parse_display::{Display, FromStr};
 use std::collections::HashMap;
 
@@ -29,7 +29,7 @@ impl Claim {
     }
 }
 
-fn gen(input: &str) -> Vec<Claim> {
+fn gen_(input: &str) -> Vec<Claim> {
     input
         .lines()
         .map(|l| l.parse().expect("Bad line"))
@@ -123,5 +123,5 @@ const HINT_INPUT: &str = "
 
 #[test]
 fn test_example() {
-    assert_eq!(part1(&gen(HINT_INPUT.trim())), 4);
+    assert_eq!(part1(&gen_(HINT_INPUT.trim())), 4);
 }

@@ -1,10 +1,10 @@
-aoc_harness::aoc_main!(2018 day 14, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2018 day 14, generator gen_, part1 [p1], part2 [p2]);
 use std::string::ToString;
 
 use itertools::Itertools;
 use utils::nums::digits;
 
-fn gen(input: &str) -> usize {
+fn gen_(input: &str) -> usize {
     input.trim().parse().unwrap()
 }
 

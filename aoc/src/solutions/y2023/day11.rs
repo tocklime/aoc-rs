@@ -1,10 +1,10 @@
 use itertools::Itertools;
 use utils::grid2d::{Coord, Grid2d};
 
-aoc_harness::aoc_main!(2023 day 11, generator gen, part1 [solve::<2>, solve_by_dimensions::<2>] => 9_623_138, 
+aoc_harness::aoc_main!(2023 day 11, generator gen_, part1 [solve::<2>, solve_by_dimensions::<2>] => 9_623_138, 
     part2 [solve::<1_000_000>, solve_by_dimensions::<1_000_000>] => 726_820_169_514, example part1 EG => 374);
 
-fn gen(input: &str) -> Grid2d<u8> {
+fn gen_(input: &str) -> Grid2d<u8> {
     Grid2d::from_iter(input.as_bytes().iter(), |x| *x, &b'\n')
 }
 
@@ -103,7 +103,7 @@ mod test {
     use super::*;
     #[test]
     fn tests() {
-        assert_eq!(solve::<10>(&gen(EG)), 1030);
-        assert_eq!(solve::<100>(&gen(EG)), 8410);
+        assert_eq!(solve::<10>(&gen_(EG)), 1030);
+        assert_eq!(solve::<100>(&gen_(EG)), 8410);
     }
 }

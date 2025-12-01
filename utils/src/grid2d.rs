@@ -186,7 +186,7 @@ impl<T> Grid2d<T> {
     pub fn dim(&self) -> Coord {
         self.size
     }
-    pub fn indexes(&'_ self) -> impl DoubleEndedIterator<Item = Coord> {
+    pub fn indexes(&'_ self) -> impl DoubleEndedIterator<Item = Coord> + use<T> {
         let max = self.size;
         (0..max.y).flat_map(move |y| (0..max.x).map(move |x| Point::new(x, y)))
     }
@@ -229,7 +229,7 @@ impl<T> Grid2d<T> {
         ]
         .map(|x| x.map(Into::into))
     }
-    pub fn neighbours_with_diagonals(&'_ self, p: Coord) -> impl Iterator<Item = Coord> {
+    pub fn neighbours_with_diagonals(&'_ self, p: Coord) -> impl Iterator<Item = Coord> + use<T> {
         let s = self.dim();
         [
             (p.y.wrapping_sub(1), p.x),

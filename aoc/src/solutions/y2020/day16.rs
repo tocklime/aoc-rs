@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2020 day 16, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2020 day 16, generator gen_, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 use std::{num::ParseIntError, str::FromStr};
 use utils::inputs::try_parse_many;
@@ -57,7 +57,7 @@ impl FromStr for Prob {
         })
     }
 }
-fn gen(input: &str) -> Prob {
+fn gen_(input: &str) -> Prob {
     input.replace('\r', "").trim().parse().expect("Bad input")
 }
 fn p1(input: &Prob) -> u32 {

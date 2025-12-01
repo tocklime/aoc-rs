@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use itertools::Itertools;
 use utils::{collections::VecLookup, inputs::parse_input_from_str_sep_by, numset::NumSet};
 
-aoc_harness::aoc_main!(2024 day 5, generator gen, both [checks,sort] => (5329, 5833), example both EG => (143,123));
+aoc_harness::aoc_main!(2024 day 5, generator gen_, both [checks,sort] => (5329, 5833), example both EG => (143,123));
 
 fn check_line(line: &[u8], rules: &Rules) -> bool {
     for (ix, n) in line.iter().enumerate() {
@@ -25,10 +25,10 @@ fn find_mid(line: &[u8], rules: &Rules) -> u8 {
         let x = remain
             .iter()
             .enumerate()
-            .find(|(_, &n)| {
+            .find(|&(_, n)| {
                 remain
                     .iter()
-                    .all(|o| rules.get(usize::from(*o)).map(|x| !x.contains(n)).unwrap_or(true))
+                    .all(|o| rules.get(usize::from(*o)).map(|x| !x.contains(*n)).unwrap_or(true))
             })
             .unwrap();
         if placed == line.len()/2 {
@@ -61,7 +61,7 @@ impl P {
     }
 }
 
-fn gen(input: &str) -> P {
+fn gen_(input: &str) -> P {
     let (rules, updates) = input.split_once("\n\n").unwrap();
     let mut rules_map: Rules = Rules::default();
     for r in rules.lines() {

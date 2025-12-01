@@ -25,7 +25,7 @@ impl Day11 {
     fn step(&mut self) -> usize {
         self.flashing.clear();
         self.flashing
-            .extend(self.grid.indexes().filter(|&x| incr(&mut self.grid[x])));
+            .extend(self.grid.indexes().filter(|x| incr(&mut self.grid[*x])));
         let mut flash_count = 0;
         while let Some(&p) = self.flashing.get(flash_count) {
             flash_count += 1;

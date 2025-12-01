@@ -3,7 +3,7 @@ use nom::{
     IResult, Parser, branch::alt, bytes::complete::tag, character::complete::{newline, u64}, combinator::{all_consuming, map, value}, multi::separated_list1, sequence::{delimited, terminated}
 };
 
-aoc_harness::aoc_main!(2022 day 11, generator gen, part1 [solve::<3, 20>] => 110_885, part2 [solve::<1, 10000>] => 25_272_176_808, example both EG => (10605, 2_713_310_158));
+aoc_harness::aoc_main!(2022 day 11, generator gen_, part1 [solve::<3, 20>] => 110_885, part2 [solve::<1, 10000>] => 25_272_176_808, example both EG => (10605, 2_713_310_158));
 
 const EG: &str = "Monkey 0:
   Starting items: 79, 98
@@ -87,7 +87,7 @@ fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
     Ok((input, monkey))
 }
 
-fn gen(input: &str) -> Vec<Monkey> {
+fn gen_(input: &str) -> Vec<Monkey> {
     all_consuming(separated_list1(newline, parse_monkey)).parse(input)
         .unwrap()
         .1

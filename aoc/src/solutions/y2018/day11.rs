@@ -1,4 +1,4 @@
-aoc_harness::aoc_main!(2018 day 11, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2018 day 11, generator gen_, part1 [p1], part2 [p2]);
 use utils::grid2d::Grid2d;
 
 fn as_i(n: usize) -> isize {
@@ -18,7 +18,7 @@ fn level(sn: usize, x: usize, y: usize) -> isize {
 
 const SIZE: usize = 300;
 
-fn gen(input: &str) -> Grid2d<isize> {
+fn gen_(input: &str) -> Grid2d<isize> {
     let n: usize = input.trim().parse().unwrap();
     //TODO: This entire solution seems to have x and y swapped.
     let g = Grid2d::from_fn((SIZE, SIZE), |p| level(n, p.y + 1, p.x+ 1));
@@ -84,8 +84,8 @@ mod tests {
         assert_eq!(level(39, 217, 196), 0);
         assert_eq!(level(71, 101, 153), 4);
         assert_eq!(level(18, 33, 45), 4);
-        let g = gen("18");
+        let g = gen_("18");
         assert_eq!(window_sum_at(&g, 3, 32, 44), 29);
-        assert_eq!(p1(&gen("18")), "33,45");
+        assert_eq!(p1(&gen_("18")), "33,45");
     }
 }

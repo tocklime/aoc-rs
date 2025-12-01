@@ -4,7 +4,7 @@ use num::integer::lcm;
 use regex::Regex;
 use std::str::FromStr;
 
-aoc_harness::aoc_main!(2019 day 12, generator gen, part1 [p1] => 7098, part2 [p2] => 400_128_139_852_752);
+aoc_harness::aoc_main!(2019 day 12, generator gen_, part1 [p1] => 7098, part2 [p2] => 400_128_139_852_752);
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct Moon {
@@ -40,7 +40,7 @@ impl Moon {
     }
 }
 
-pub fn gen(input: &str) -> Vec<Moon> {
+pub fn gen_(input: &str) -> Vec<Moon> {
     input.lines().map(|l| l.parse::<Moon>().unwrap()).collect()
 }
 

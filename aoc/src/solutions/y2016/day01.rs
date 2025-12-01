@@ -1,12 +1,12 @@
 
 
-aoc_harness::aoc_main!(2016 day 1, generator gen, part1 [p1] => 236, part2 [p2] => 182);
+aoc_harness::aoc_main!(2016 day 1, generator gen_, part1 [p1] => 236, part2 [p2] => 182);
 use itertools::Itertools;
 use regex::Regex;
 use std::collections::HashSet;
 use utils::cartesian::{Dir, Point};
 
-fn gen(input: &str) -> Vec<Point<i32>> {
+fn gen_(input: &str) -> Vec<Point<i32>> {
     let re = Regex::new(r"([RL])(\d+)").unwrap();
     re.captures_iter(input)
         .scan((Dir::Up, Point::new(0, 0)), |a, b| {

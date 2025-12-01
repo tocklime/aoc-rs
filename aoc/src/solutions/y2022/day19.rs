@@ -3,7 +3,7 @@ use nom::{
     IResult, Parser, branch::alt, bytes::complete::tag, character::complete::{self, newline}, combinator::value, multi::separated_list1, sequence::{delimited, separated_pair}
 };
 
-aoc_harness::aoc_main!(2022 day 19, generator gen, part1 [p1] => 1199, part2 [p2] => 3510, example part1 EG => 33);
+aoc_harness::aoc_main!(2022 day 19, generator gen_, part1 [p1] => 1199, part2 [p2] => 3510, example part1 EG => 33);
 
 const EG: &str = "Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
 Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian.
@@ -188,7 +188,7 @@ impl Blueprint {
     }
 }
 
-fn gen(input: &str) -> Vec<Blueprint> {
+fn gen_(input: &str) -> Vec<Blueprint> {
     separated_list1(newline, parse_blueprint).parse(input).unwrap().1
 }
 fn p1(blueprints: &[Blueprint]) -> u32 {

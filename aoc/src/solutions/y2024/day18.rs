@@ -1,6 +1,6 @@
 use utils::{cartesian::Point, grid2d::Grid2d};
 
-aoc_harness::aoc_main!(2024 day 18, generator gen, part1 [p1] => 356, part2 [p2_binsearch, p2_pathinfo] => "22,33", example both EG => (22,"6,1"));
+aoc_harness::aoc_main!(2024 day 18, generator gen_, part1 [p1] => 356, part2 [p2_binsearch, p2_pathinfo] => "22,33", example both EG => (22,"6,1"));
 
 struct Memory {
     g: Grid2d<Option<usize>>,
@@ -8,7 +8,7 @@ struct Memory {
     is_test: bool,
 }
 
-fn gen(input: &str) -> Memory {
+fn gen_(input: &str) -> Memory {
     let is_test = input == EG;
     let s = if is_test { 7 } else { 71 };
     let mut g = Grid2d::from_elem((s, s), None);

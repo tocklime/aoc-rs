@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use utils::{grid2d::{Grid2d, ICoord}, cartesian::Point};
 
-aoc_harness::aoc_main!(2021 day 20, generator gen, part1 [solve::<1>] => 5786, part2 [solve::<25>] => 16757, example both EG => (35,3351));
+aoc_harness::aoc_main!(2021 day 20, generator gen_, part1 [solve::<1>] => 5786, part2 [solve::<25>] => 16757, example both EG => (35,3351));
 
 const EG: &str = "
 ..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#.
@@ -54,7 +54,7 @@ impl Picture {
         };
     }
 }
-fn gen(input: &str) -> Picture {
+fn gen_(input: &str) -> Picture {
     let mut map = [false; 512];
     let mut s = input.split("\n\n");
     s.next()

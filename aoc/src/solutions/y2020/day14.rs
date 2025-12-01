@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2020 day 14, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2020 day 14, generator gen_, part1 [p1], part2 [p2]);
 use bitvec::{order::Lsb0, prelude::*, view::BitView};
 use std::{collections::HashMap, num::ParseIntError, str::FromStr};
 
@@ -36,7 +36,7 @@ impl FromStr for Line {
     }
 }
 
-fn gen(input: &str) -> Vec<Line> {
+fn gen_(input: &str) -> Vec<Line> {
     input.lines().map(|x| x.parse().unwrap()).collect()
 }
 

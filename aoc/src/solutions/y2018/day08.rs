@@ -1,6 +1,6 @@
-aoc_harness::aoc_main!(2018 day 8, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2018 day 8, generator gen_, part1 [p1], part2 [p2]);
 
-fn gen(input: &str) -> Vec<usize> {
+fn gen_(input: &str) -> Vec<usize> {
     input
         .trim()
         .split(' ')

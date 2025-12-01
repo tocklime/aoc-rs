@@ -5,13 +5,13 @@ use utils::{
 };
 
 aoc_harness::aoc_main!(2023 day 17,
-    generator gen,
+    generator gen_,
     part1 [manual_astar_no_hash::<1,3>, pf_astar::<1,3>, pf_dijk::<1, 3>] => 1110,
     part2 [manual_astar_no_hash::<4,10>, pf_astar::<4,10>, pf_dijk::<4,10>] => 1294,
     example both EG => (102, 94), example part2 EG2 => 71);
 
 type Grid = Grid2d<u8>;
-fn gen(input: &str) -> Grid {
+fn gen_(input: &str) -> Grid {
     Grid2d::from_iter(input.as_bytes().iter(), |&x| x - b'0', &b'\n')
 }
 

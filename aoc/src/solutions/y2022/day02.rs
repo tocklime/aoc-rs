@@ -1,8 +1,8 @@
 
 
-aoc_harness::aoc_main!(2022 day 2, generator gen, part1 [p1] => 11150, part2 [p2] => 8295, example both EG => (15, 12));
+aoc_harness::aoc_main!(2022 day 2, generator gen_, part1 [p1] => 11150, part2 [p2] => 8295, example both EG => (15, 12));
 
-fn gen(input: &str) -> Vec<(usize, usize)> {
+fn gen_(input: &str) -> Vec<(usize, usize)> {
     input
         .lines()
         .map(|l| {

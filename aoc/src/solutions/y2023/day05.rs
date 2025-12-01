@@ -9,7 +9,7 @@ use nom::{
 };
 use utils::{nom::IResult, span::Span};
 
-aoc_harness::aoc_main!(2023 day 5, generator gen, part1 [p1] => 289_863_851, part2 [p2] => 60_568_880, example both EG => (35,46));
+aoc_harness::aoc_main!(2023 day 5, generator gen_, part1 [p1] => 289_863_851, part2 [p2] => 60_568_880, example both EG => (35,46));
 
 #[derive(Debug)]
 struct Map {
@@ -102,7 +102,7 @@ impl Almanac {
     }
 }
 
-fn gen(input: &str) -> Almanac {
+fn gen_(input: &str) -> Almanac {
     use nom::Parser;
     all_consuming(Almanac::parse)
         .parse(input)

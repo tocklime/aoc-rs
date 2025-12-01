@@ -9,7 +9,7 @@ fn manhattan(a: &[i64], b: &[i64]) -> i64 {
 }
 
 fn p1(input: &str) -> usize {
-    let neighbours = gen(input);
+    let neighbours = gen_(input);
     let mut root_to_members: HashMap<usize, HashSet<usize>> = (0..neighbours.len())
         .map(|x| (x, [x].iter().copied().collect::<HashSet<usize>>()))
         .collect();
@@ -39,7 +39,7 @@ fn p1(input: &str) -> usize {
     }
     root_to_members.len()
 }
-fn gen(input: &str) -> Vec<HashSet<usize>> {
+fn gen_(input: &str) -> Vec<HashSet<usize>> {
     let coords: Vec<Vec<i64>> = input
         .lines()
         .map(|l| l.split(',').map(|n| n.parse().unwrap()).collect())
@@ -55,7 +55,7 @@ fn gen(input: &str) -> Vec<HashSet<usize>> {
 }
 
 fn p1b(input: &str) -> usize {
-    let neighbours = gen(input);
+    let neighbours = gen_(input);
     let mut visited = HashSet::new();
     let mut count = 0;
     for c in 0..neighbours.len() {

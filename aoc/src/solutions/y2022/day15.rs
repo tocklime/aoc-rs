@@ -13,7 +13,7 @@ use nom::{
 };
 use utils::{aabb::Aabb, cartesian::Point, span::Span};
 
-aoc_harness::aoc_main!(2022 day 15, generator gen, part1 [p1] => 5_607_466, part2 [scanning_axes, dividing_quadrants, analysing_edges] => 12_543_202_766_584, example both EG => (26, 56_000_011));
+aoc_harness::aoc_main!(2022 day 15, generator gen_, part1 [p1] => 5_607_466, part2 [scanning_axes, dividing_quadrants, analysing_edges] => 12_543_202_766_584, example both EG => (26, 56_000_011));
 
 const EG: &str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
 Sensor at x=9, y=16: closest beacon is at x=10, y=16
@@ -90,7 +90,7 @@ fn parse_sensor(input: &str) -> IResult<&str, Sensor> {
         },
     ))
 }
-fn gen(input: &str) -> X {
+fn gen_(input: &str) -> X {
     let sensors = all_consuming(many1(parse_sensor)).parse(input).unwrap().1;
     X {
         sensors,

@@ -22,7 +22,7 @@ fn p1(input: &str) -> usize {
         let mut curr: usize = mem
             .iter()
             .enumerate()
-            .max_by_key(|(a, &b)| (b, len - a))
+            .max_by_key(|&(a, b)| (b, len - a))
             .unwrap()
             .0;
         let mut in_hand = mem[curr];
@@ -53,7 +53,7 @@ fn p2(input: &str) -> usize {
         let mut curr: usize = mem
             .iter()
             .enumerate()
-            .max_by_key(|(a, &b)| (b, len - a))
+            .max_by_key(|&(a, b)| (b, len - a))
             .unwrap()
             .0;
         let mut in_hand = mem[curr];

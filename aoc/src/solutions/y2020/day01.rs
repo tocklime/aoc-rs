@@ -3,10 +3,10 @@ use std::collections::HashSet;
 
 
 
-aoc_harness::aoc_main!(2020 day 1, generator gen, part1 [p1, p1_sets] => 802_011, part2 [p2,p2_sets] => 248_607_374);
+aoc_harness::aoc_main!(2020 day 1, generator gen_, part1 [p1, p1_sets] => 802_011, part2 [p2,p2_sets] => 248_607_374);
 
 use utils::inputs::parse_input_from_str_sep_by;
-fn gen(input: &str) -> Vec<i64> {
+fn gen_(input: &str) -> Vec<i64> {
     parse_input_from_str_sep_by(input, "\n")
 }
 fn solve(input: &[i64], size: usize) -> i64 {

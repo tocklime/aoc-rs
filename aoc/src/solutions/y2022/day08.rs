@@ -5,7 +5,7 @@ use utils::{
     grid2d::{Coord, Grid2d, ICoord},
 };
 
-aoc_harness::aoc_main!(2022 day 8, generator gen, part1 [p1,p1a] => 1835, part2 [p2, p2a] => 263_670, example both EG => (21,8));
+aoc_harness::aoc_main!(2022 day 8, generator gen_, part1 [p1,p1a] => 1835, part2 [p2, p2a] => 263_670, example both EG => (21,8));
 
 const EG: &str = "30373
 25512
@@ -37,7 +37,7 @@ const ALL_DIRS: [ICoord; 4] = [
     Point::new(0, -1),
     Point::new(-1, 0),
 ];
-fn gen(input: &str) -> Grid2d<char> {
+fn gen_(input: &str) -> Grid2d<char> {
     Grid2d::from_str(input, |c| c)
 }
 fn p1(grid: &Grid2d<char>) -> usize {

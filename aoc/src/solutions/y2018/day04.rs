@@ -1,4 +1,4 @@
-aoc_harness::aoc_main!(2018 day 4, generator gen, part1 [part1], part2 [part2]);
+aoc_harness::aoc_main!(2018 day 4, generator gen_, part1 [part1], part2 [part2]);
 
 use utils::nums::de_prefixsum;
 #[allow(clippy::trivial_regex)]
@@ -40,7 +40,7 @@ const HINT_INPUT: &str = r#"[1518-11-01 00:00] Guard #10 begins shift
 [1518-11-05 00:55] wakes up
 "#;
 
-fn gen(input: &str) -> Vec<LogLine> {
+fn gen_(input: &str) -> Vec<LogLine> {
     let mut v: Vec<LogLine> = input
         .lines()
         .map(|x| x.parse().expect("Bad line"))
@@ -51,7 +51,7 @@ fn gen(input: &str) -> Vec<LogLine> {
 
 #[test]
 fn test_parse() {
-    assert_eq!(gen(HINT_INPUT).len(), 17);
+    assert_eq!(gen_(HINT_INPUT).len(), 17);
 }
 
 fn part1(input: &[LogLine]) -> usize {
@@ -109,10 +109,10 @@ fn part2(input: &[LogLine]) -> usize {
 
 #[test]
 fn test_part1() {
-    assert_eq!(part1(&gen(HINT_INPUT)), 10 * 24);
+    assert_eq!(part1(&gen_(HINT_INPUT)), 10 * 24);
 }
 
 #[test]
 fn test_part2() {
-    assert_eq!(part2(&gen(HINT_INPUT)), 99 * 45);
+    assert_eq!(part2(&gen_(HINT_INPUT)), 99 * 45);
 }

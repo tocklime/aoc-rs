@@ -18,7 +18,7 @@ struct Line<'a> {
     direction: &'a str,
 }
 
-fn gen(input: &str) -> HashMap<&str, HashMap<&str, i32>> {
+fn gen_(input: &str) -> HashMap<&str, HashMap<&str, i32>> {
     let lines = input.lines().map(|l| Line::parse(l).unwrap()).collect_vec();
     let mut info: HashMap<&str, HashMap<&str, i32>> = HashMap::new();
     for l in lines {
@@ -35,7 +35,7 @@ fn gen(input: &str) -> HashMap<&str, HashMap<&str, i32>> {
 }
 
 fn p1(input: &str) -> i32 {
-    let info = gen(input);
+    let info = gen_(input);
     info.keys()
         .permutations(info.keys().len())
         .map(|p| {
@@ -50,7 +50,7 @@ fn p1(input: &str) -> i32 {
 }
 
 fn p2(input: &str) -> i32 {
-    let mut info = gen(input);
+    let mut info = gen_(input);
     let mut my_prefs: HashMap<&str, i32> = HashMap::new();
     for (k, v) in &mut info {
         my_prefs.insert(k, 0);

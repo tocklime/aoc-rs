@@ -1,4 +1,4 @@
-aoc_harness::aoc_main!(2018 day 13, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2018 day 13, generator gen_, part1 [p1], part2 [p2]);
 use std::collections::{BTreeMap, HashMap, HashSet};
 use utils::cartesian::{as_point_map, Dir, Point};
 
@@ -50,7 +50,7 @@ impl State {
     }
 }
 
-fn gen(input: &str) -> State {
+fn gen_(input: &str) -> State {
     let map = as_point_map(input, false);
     let carts = map
         .iter()

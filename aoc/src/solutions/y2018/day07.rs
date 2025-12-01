@@ -1,4 +1,4 @@
-aoc_harness::aoc_main!(2018 day 7, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2018 day 7, generator gen_, part1 [p1], part2 [p2]);
 // Step P must be finished before step Z can begin.
 use std::collections::{HashSet, BTreeMap, HashMap};
 #[derive(Debug)]
@@ -7,7 +7,7 @@ struct Step {
     post: char
 }
 
-fn gen(input: &str) -> Vec<Step> {
+fn gen_(input: &str) -> Vec<Step> {
     input.trim().lines().map(|l|
         Step {
             pre: l.chars().nth(5).unwrap(),

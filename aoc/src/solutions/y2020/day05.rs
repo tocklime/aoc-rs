@@ -1,9 +1,9 @@
 
 
-aoc_harness::aoc_main!(2020 day 5, generator gen, part1 [p1] => 922, part2 [p2] => 747);
+aoc_harness::aoc_main!(2020 day 5, generator gen_, part1 [p1] => 922, part2 [p2] => 747);
 use std::collections::HashSet;
 
-fn gen(input: &str) -> HashSet<usize> {
+fn gen_(input: &str) -> HashSet<usize> {
     input
         .lines()
         .map(|c| {

@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2017 day 16, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2017 day 16, generator gen_, part1 [p1], part2 [p2]);
 use itertools::Itertools;
 use reformation::Reformation;
 use std::collections::VecDeque;
@@ -37,7 +37,7 @@ fn dance(pos: &mut VecDeque<char>, ms: &[Move]) {
     }
 }
 
-fn gen(input: &str) -> Vec<Move> {
+fn gen_(input: &str) -> Vec<Move> {
     input
         .trim()
         .split(',')

@@ -1,7 +1,7 @@
 
 use utils::{grid2d::{Coord, Grid2d}, cartesian::Point};
 
-aoc_harness::aoc_main!(2022 day 12, generator gen, part1 [p1_astar, p1_bfs] => 412, part2 [p2] => 402, example both EG => (31,29));
+aoc_harness::aoc_main!(2022 day 12, generator gen_, part1 [p1_astar, p1_bfs] => 412, part2 [p2] => 402, example both EG => (31,29));
 
 const EG: &str = "Sabqponm
 abcryxxl
@@ -15,14 +15,13 @@ struct X {
     e_location: Coord,
 }
 impl X {
-    fn neighbours(&self, p: &Coord) -> impl IntoIterator<Item = Coord> + '_ {
-        let p = *p;
+    fn neighbours(&self, p: Coord) -> impl IntoIterator<Item = Coord> {
         self.grid
             .neighbours(p)
             .filter(move|n| self.grid[*n] + 1 >= self.grid[p])
     }
 }
-fn gen(input: &str) -> X {
+fn gen_(input: &str) -> X {
     let mut s_location = Point::new(0, 0);
     let mut e_location = Point::new(0, 0);
     let s = &mut s_location;
@@ -48,7 +47,7 @@ fn gen(input: &str) -> X {
 fn p1_astar(input: &X) -> usize {
     pathfinding::directed::astar::astar(
         &input.e_location,
-        |p| input.neighbours(p).into_iter().map(|x| (x, 1)),
+        |&p| input.neighbours(p).into_iter().map(move |x| (x, 1)),
         |c: &Coord| {
             usize::abs_diff(c.y, input.s_location.y) + usize::abs_diff(c.x, input.s_location.x)
         },
@@ -60,7 +59,7 @@ fn p1_astar(input: &X) -> usize {
 fn p1_bfs(input: &X) -> usize {
     pathfinding::directed::bfs::bfs(
         &input.e_location,
-        |p| input.neighbours(p),
+        |&p| input.neighbours(p),
         |&p| p == input.s_location,
     )
     .unwrap()
@@ -71,7 +70,7 @@ fn p1_bfs(input: &X) -> usize {
 fn p2(input: &X) -> usize {
     pathfinding::directed::bfs::bfs(
         &input.e_location,
-        |p| input.neighbours(p),
+        |&p| input.neighbours(p),
         |p| input.grid[*p] == b'a',
     )
     .unwrap()

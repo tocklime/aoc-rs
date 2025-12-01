@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2020 day 19, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2020 day 19, generator gen_, part1 [p1], part2 [p2]);
 use std::{num::ParseIntError, str::FromStr};
 
 use pathfinding::prelude::dfs;
@@ -76,7 +76,7 @@ fn matches(s: &str, rules: &[Rule]) -> bool {
     .is_some()
 }
 
-fn gen(input: &str) -> (Vec<Rule>, Vec<String>) {
+fn gen_(input: &str) -> (Vec<Rule>, Vec<String>) {
     let mut sp = input.split("\n\n");
     let mut rules: Vec<Rule> = sp.next().unwrap().lines().map(|l| l.parse::<Rule>().unwrap()).collect();
     rules.sort_by_key(|x| x.id);

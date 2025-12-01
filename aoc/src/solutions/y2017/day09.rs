@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2017 day 9, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2017 day 9, generator gen_, part1 [p1], part2 [p2]);
 #[derive(Debug)]
 struct State {
     depth: u32,
@@ -10,7 +10,7 @@ struct State {
     total_garbage: u32,
 }
 
-fn gen(input: &str) -> State {
+fn gen_(input: &str) -> State {
     let mut st = State {
         depth: 0,
         in_garbage: false,
@@ -54,19 +54,19 @@ fn p2(input: &State) -> u32 {
 
 #[test]
 fn day9p1() {
-    assert_eq!(p1(&gen("{}")), 1);
-    assert_eq!(p1(&gen("{{{}}}")), 6);
-    assert_eq!(p1(&gen("{{},{}}")), 5);
-    assert_eq!(p1(&gen("{{{},{},{{}}}}")), 16);
-    assert_eq!(p1(&gen("{<a>,<a>,<a>,<a>}")), 1);
-    assert_eq!(p1(&gen("{{<ab>},{<ab>},{<ab>},{<ab>}}")), 9);
-    assert_eq!(p1(&gen("{{<!!>},{<!!>},{<!!>},{<!!>}}")), 9);
-    assert_eq!(p1(&gen("{{<a!>},{<a!>},{<a!>},{<ab>}}")), 3);
-    assert_eq!(p2(&gen("<>")), 0);
-    assert_eq!(p2(&gen("<random characters>")), 17);
-    assert_eq!(p2(&gen("<<<<>")), 3);
-    assert_eq!(p2(&gen("<{!>}>")), 2);
-    assert_eq!(p2(&gen("<!!>")), 0);
-    assert_eq!(p2(&gen("<!!!>>")), 0);
-    assert_eq!(p2(&gen("<{o\"i!a,<{i<a>")), 10);
+    assert_eq!(p1(&gen_("{}")), 1);
+    assert_eq!(p1(&gen_("{{{}}}")), 6);
+    assert_eq!(p1(&gen_("{{},{}}")), 5);
+    assert_eq!(p1(&gen_("{{{},{},{{}}}}")), 16);
+    assert_eq!(p1(&gen_("{<a>,<a>,<a>,<a>}")), 1);
+    assert_eq!(p1(&gen_("{{<ab>},{<ab>},{<ab>},{<ab>}}")), 9);
+    assert_eq!(p1(&gen_("{{<!!>},{<!!>},{<!!>},{<!!>}}")), 9);
+    assert_eq!(p1(&gen_("{{<a!>},{<a!>},{<a!>},{<ab>}}")), 3);
+    assert_eq!(p2(&gen_("<>")), 0);
+    assert_eq!(p2(&gen_("<random characters>")), 17);
+    assert_eq!(p2(&gen_("<<<<>")), 3);
+    assert_eq!(p2(&gen_("<{!>}>")), 2);
+    assert_eq!(p2(&gen_("<!!>")), 0);
+    assert_eq!(p2(&gen_("<!!!>>")), 0);
+    assert_eq!(p2(&gen_("<{o\"i!a,<{i<a>")), 10);
 }

@@ -1,4 +1,4 @@
-aoc_harness::aoc_main!(2018 day 10, generator gen, both [p]);
+aoc_harness::aoc_main!(2018 day 10, generator gen_, both [p]);
 use itertools::Itertools;
 use regex::Regex;
 use std::{collections::HashMap, str::FromStr};
@@ -42,7 +42,7 @@ impl Star {
     }
 }
 
-fn gen(input: &str) -> Vec<Star> {
+fn gen_(input: &str) -> Vec<Star> {
     input
         .trim()
         .lines()

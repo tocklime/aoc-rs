@@ -7,7 +7,7 @@ use utils::{
     cartesian::{as_point_map, Point},
 };
 
-aoc_harness::aoc_main!(2022 day 23, generator gen, part1 [p1] => 3990, part2 [p2] => 1057, example both EG0 => (25,4), example both EG => (110,20));
+aoc_harness::aoc_main!(2022 day 23, generator gen_, part1 [p1] => 3990, part2 [p2] => 1057, example both EG0 => (25,4), example both EG => (110,20));
 
 const EG: &str = "....#..
 ..###.#
@@ -62,7 +62,7 @@ fn step_world(world: &mut HashSet<Point<i64>>, round_num: usize) -> usize {
     moves
 }
 
-fn gen(input: &str) -> HashSet<Point<i64>> {
+fn gen_(input: &str) -> HashSet<Point<i64>> {
     as_point_map::<i64>(input, true)
         .into_iter()
         .filter_map(|(p, c)| (c == '#').then_some(p))

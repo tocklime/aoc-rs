@@ -1,9 +1,9 @@
 use itertools::Itertools;
 
-aoc_harness::aoc_main!(2024 day 1, generator gen, part1 [p1] => 2_196_996, part2 [p2] => 23_655_822, example part1 EG => 11, example part2 EG => 31);
+aoc_harness::aoc_main!(2024 day 1, generator gen_, part1 [p1] => 2_196_996, part2 [p2] => 23_655_822, example part1 EG => 11, example part2 EG => 31);
 
 
-fn gen(input: &str) -> (Vec<usize>, Vec<usize>) {
+fn gen_(input: &str) -> (Vec<usize>, Vec<usize>) {
     let mut left: Vec<usize> = Vec::new();
     let mut right: Vec<usize> = Vec::new();
     for l in input.lines() {

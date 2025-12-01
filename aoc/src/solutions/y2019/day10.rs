@@ -5,10 +5,10 @@ use std::convert::TryInto;
 use std::f64::consts::FRAC_PI_2;
 use utils::points::{Point, PolarCoord};
 
-aoc_harness::aoc_main!(2019 day 10, generator gen, part1 [p1a] => 288, part2 [p2a] => 616);
+aoc_harness::aoc_main!(2019 day 10, generator gen_, part1 [p1a] => 288, part2 [p2a] => 616);
 type AsteroidSet = HashSet<Point>;
 
-pub fn gen(input: &str) -> AsteroidSet {
+pub fn gen_(input: &str) -> AsteroidSet {
     input
         .lines()
         .enumerate()
@@ -109,31 +109,31 @@ const LARGE: &str = "\
 #[test]
 pub fn tests() {
     assert_eq!(
-        get_best_station(&gen(".#..#\n.....\n#####\n....#\n...##")),
+        get_best_station(&gen_(".#..#\n.....\n#####\n....#\n...##")),
         (8, Point(3, 4))
     );
-    assert_eq!(get_best_station(&gen("......#.#.\n#..#.#....\n..#######.\n.#.#.###..\n.#..#.....\n..#....#.#\n#..#....#.\n.##.#..###\n##...#..#.\n.#....####\n")),(33,Point(5,8)));
-    assert_eq!(get_best_station(&gen("#.#...#.#.\n.###....#.\n.#....#...\n##.#.#.#.#\n....#.#.#.\n.##..###.#\n..#...##..\n..##....##\n......#...\n.####.###.")),(35,Point(1,2)));
-    assert_eq!(get_best_station(&gen(".#..#..###\n####.###.#\n....###.#.\n..###.##.#\n##.##.#.#.\n....###..#\n..#.#..#.#\n#..#.#.###\n.##...##.#\n.....#.#..\n")),(41, Point(6,3)));
-    assert_eq!(get_best_station(&gen(LARGE)), (210, Point(11, 13)));
+    assert_eq!(get_best_station(&gen_("......#.#.\n#..#.#....\n..#######.\n.#.#.###..\n.#..#.....\n..#....#.#\n#..#....#.\n.##.#..###\n##...#..#.\n.#....####\n")),(33,Point(5,8)));
+    assert_eq!(get_best_station(&gen_("#.#...#.#.\n.###....#.\n.#....#...\n##.#.#.#.#\n....#.#.#.\n.##..###.#\n..#...##..\n..##....##\n......#...\n.####.###.")),(35,Point(1,2)));
+    assert_eq!(get_best_station(&gen_(".#..#..###\n####.###.#\n....###.#.\n..###.##.#\n##.##.#.#.\n....###..#\n..#.#..#.#\n#..#.#.###\n.##...##.#\n.....#.#..\n")),(41, Point(6,3)));
+    assert_eq!(get_best_station(&gen_(LARGE)), (210, Point(11, 13)));
 }
 
 #[test]
 pub fn t2() {
     let e = ".#....#####...#..\n##...##.#####..##\n##...#...#.#####.\n..#.....#...###..\n..#.#.....#....##";
-    assert_eq!(p2(&gen(e), Point(8, 3), 1), 801);
-    assert_eq!(p2(&gen(e), Point(8, 3), 36), 1403);
-    assert_eq!(p2(&gen(LARGE), Point(11, 13), 1), 1112);
-    assert_eq!(p2(&gen(LARGE), Point(11, 13), 2), 1201);
-    assert_eq!(p2(&gen(LARGE), Point(11, 13), 3), 1202);
-    assert_eq!(p2(&gen(LARGE), Point(11, 13), 10), 1208);
-    assert_eq!(p2(&gen(LARGE), Point(11, 13), 20), 1600);
-    assert_eq!(p2(&gen(LARGE), Point(11, 13), 50), 1609);
-    assert_eq!(p2(&gen(LARGE), Point(11, 13), 100), 1016);
-    assert_eq!(p2(&gen(LARGE), Point(11, 13), 199), 906);
-    assert_eq!(p2(&gen(LARGE), Point(11, 13), 200), 802);
-    assert_eq!(p2(&gen(LARGE), Point(11, 13), 201), 1009);
-    assert_eq!(p2(&gen(LARGE), Point(11, 13), 299), 1101);
+    assert_eq!(p2(&gen_(e), Point(8, 3), 1), 801);
+    assert_eq!(p2(&gen_(e), Point(8, 3), 36), 1403);
+    assert_eq!(p2(&gen_(LARGE), Point(11, 13), 1), 1112);
+    assert_eq!(p2(&gen_(LARGE), Point(11, 13), 2), 1201);
+    assert_eq!(p2(&gen_(LARGE), Point(11, 13), 3), 1202);
+    assert_eq!(p2(&gen_(LARGE), Point(11, 13), 10), 1208);
+    assert_eq!(p2(&gen_(LARGE), Point(11, 13), 20), 1600);
+    assert_eq!(p2(&gen_(LARGE), Point(11, 13), 50), 1609);
+    assert_eq!(p2(&gen_(LARGE), Point(11, 13), 100), 1016);
+    assert_eq!(p2(&gen_(LARGE), Point(11, 13), 199), 906);
+    assert_eq!(p2(&gen_(LARGE), Point(11, 13), 200), 802);
+    assert_eq!(p2(&gen_(LARGE), Point(11, 13), 201), 1009);
+    assert_eq!(p2(&gen_(LARGE), Point(11, 13), 299), 1101);
 }
 
 /*           1111111

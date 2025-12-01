@@ -57,7 +57,10 @@ pub unsafe fn slice_get_mut_two_unchecked<T>(
     index1: usize,
 ) -> (&mut T, &mut T) {
     let ptr = slice.as_mut_ptr();
-    let one = &mut *ptr.add(index0);
-    let two = &mut *ptr.add(index1);
-    (one, two)
+    // SAFETY: index0 and index1 are not the same, by contract of this function.
+    unsafe {
+        let one = &mut *ptr.add(index0);
+        let two = &mut *ptr.add(index1);
+        (one, two)
+    }
 }

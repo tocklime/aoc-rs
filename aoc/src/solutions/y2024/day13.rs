@@ -3,7 +3,7 @@ use nalgebra::{matrix, vector};
 use utils::{cartesian::Point, inputs::parse_numbers};
 
 aoc_harness::aoc_main!(2024 day 13, 
-    generator gen, 
+    generator gen_, 
     part1 [solve::<0>, solve_mat::<0>] => 27157, 
     part2[solve::<10_000_000_000_000>,solve_mat::<10_000_000_000_000>] => 104_015_411_578_548, 
     example part1 EG => 480);
@@ -60,7 +60,7 @@ impl Machine {
     }
 }
 
-fn gen(input: &str) -> Vec<Machine> {
+fn gen_(input: &str) -> Vec<Machine> {
     parse_numbers(input)
         .chunks(6)
         .into_iter()

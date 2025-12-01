@@ -3,7 +3,7 @@ use nom::{
     IResult, Parser, branch::alt, bytes::complete::tag, character::complete::{self, newline}, combinator::{all_consuming, map}, multi::{many1, separated_list1}, sequence::{preceded, terminated}
 };
 
-aoc_harness::aoc_main!(2023 day 2, generator gen, part1 [p1] => 2771, part2 [p2] => 70924, example both EG => (8, 2286));
+aoc_harness::aoc_main!(2023 day 2, generator gen_, part1 [p1] => 2771, part2 [p2] => 70924, example both EG => (8, 2286));
 
 #[derive(Debug, Default, PartialEq)]
 struct Colours {
@@ -62,7 +62,7 @@ fn parse_line(input: &str) -> IResult<&str, Game> {
     Ok((input, Game { id, shows }))
 }
 
-fn gen(input: &str) -> Vec<Game> {
+fn gen_(input: &str) -> Vec<Game> {
     all_consuming(many1(terminated(parse_line, newline))).parse(input)
         .unwrap()
         .1

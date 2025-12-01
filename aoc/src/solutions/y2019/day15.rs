@@ -104,7 +104,7 @@ pub fn explore(input: &str) -> HashMap<Point, char> {
 pub fn p1(input: &HashMap<Point, char>) -> u32 {
     let (o_pos, _) = input
         .iter()
-        .find(|(_, &v)| v == OXYGEN)
+        .find(|&(_, v)| v == &OXYGEN)
         .expect("No oxygen!");
     bfs_depth(input, Point(0, 0))[o_pos]
 }
@@ -112,7 +112,7 @@ pub fn p1(input: &HashMap<Point, char>) -> u32 {
 pub fn p2(input: &HashMap<Point, char>) -> u32 {
     let (&o_pos, _) = input
         .iter()
-        .find(|(_, &v)| v == OXYGEN)
+        .find(|&(_, v)| v == &OXYGEN)
         .expect("No oxygen!");
     *bfs_depth(input, o_pos).values().max().unwrap()
 }

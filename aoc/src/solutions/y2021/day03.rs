@@ -1,14 +1,14 @@
 
 use utils::nums::NumBitExt;
 
-aoc_harness::aoc_main!(2021 day 3, generator gen, part1 [p1] => 4_001_724, part2 [p2] => 587_895,
+aoc_harness::aoc_main!(2021 day 3, generator gen_, part1 [p1] => 4_001_724, part2 [p2] => 587_895,
           example both EG => (198, 230));
 
 struct Day3 {
     width: usize,
     nums: Vec<usize>,
 }
-fn gen(input: &str) -> Day3 {
+fn gen_(input: &str) -> Day3 {
     let nums = input
         .lines()
         .map(|x| usize::from_str_radix(x, 2).unwrap())

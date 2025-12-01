@@ -4,7 +4,7 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use utils::{inputs::parse_input_from_str_sep_by, nums};
 
 aoc_harness::aoc_main!(2024 day 7, 
-    generator gen, 
+    generator gen_, 
     part1 [integer_bits::<1>, cartesian_product::<1>, pathfinding_dfs::<1>, manual_dfs::<1>, manual_dfs_backward::<1>] => 2_299_996_598_890, 
     part2 [integer_bits::<2>, cartesian_product::<2>, pathfinding_dfs::<2>, manual_dfs::<2>,manual_dfs_backward::<2>] => 362_646_859_298_554, 
     example part1 EG => 3749, example part2 EG => 11387);
@@ -82,7 +82,7 @@ fn integer_bits<const PART: u64>(input: &[(u64, Vec<u64>)]) -> u64 {
 }
 const OPS: [Op; 2] = [Op::Add, Op::Mul];
 const OPS2: [Op; 3] = [Op::Add, Op::Mul, Op::Concat];
-fn gen(input: &str) -> Vec<(u64, Vec<u64>)> {
+fn gen_(input: &str) -> Vec<(u64, Vec<u64>)> {
     input
         .lines()
         .map(|l| {

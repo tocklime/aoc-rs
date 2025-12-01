@@ -1,13 +1,13 @@
 
 
-aoc_harness::aoc_main!(2020 day 10, generator gen, part1 [p1], part2 [p2, p2_dp, p2_dp_by_value, p2_dp_deque, p2_dp_fold]);
+aoc_harness::aoc_main!(2020 day 10, generator gen_, part1 [p1], part2 [p2, p2_dp, p2_dp_by_value, p2_dp_deque, p2_dp_fold]);
 use itertools::Itertools;
 use std::{
     cmp::Ordering,
     collections::{HashMap, HashSet, VecDeque},
 };
 
-fn gen(input: &str) -> Vec<usize> {
+fn gen_(input: &str) -> Vec<usize> {
     let mut a: Vec<usize> = input.lines().map(|x| x.parse::<usize>().unwrap()).collect();
     a.push(0);
     a.sort_unstable();

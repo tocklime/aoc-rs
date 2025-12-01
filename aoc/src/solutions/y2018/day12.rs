@@ -1,4 +1,4 @@
-aoc_harness::aoc_main!(2018 day 12, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2018 day 12, generator gen_, part1 [p1], part2 [p2]);
 use std::collections::{BTreeSet, HashSet};
 
 fn step(plants: &BTreeSet<i64>, rules: &HashSet<u8>) -> BTreeSet<i64> {
@@ -25,7 +25,7 @@ struct Prob {
     rules: HashSet<u8>,
 }
 
-fn gen(input: &str) -> Prob {
+fn gen_(input: &str) -> Prob {
     let init_state = &input.lines().next().unwrap()[15..];
     let initial_plants: BTreeSet<i64> = init_state
         .chars()

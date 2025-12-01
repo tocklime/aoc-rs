@@ -1,6 +1,6 @@
 
 
-aoc_harness::aoc_main!(2016 day 22, generator gen, part1 [p1] => 1003, part2 [p2] => 192);
+aoc_harness::aoc_main!(2016 day 22, generator gen_, part1 [p1] => 1003, part2 [p2] => 192);
 use itertools::Itertools;
 use pathfinding::directed::astar::astar;
 use reformation::Reformation;
@@ -24,7 +24,7 @@ impl Node {
     }
 }
 
-fn gen(input: &str) -> Vec<Node> {
+fn gen_(input: &str) -> Vec<Node> {
     input
         .lines()
         .skip(2)

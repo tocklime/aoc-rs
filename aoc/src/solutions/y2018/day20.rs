@@ -1,8 +1,8 @@
-aoc_harness::aoc_main!(2018 day 20, generator gen, part1 [p1], part2 [p2]);
+aoc_harness::aoc_main!(2018 day 20, generator gen_, part1 [p1], part2 [p2]);
 use std::collections::HashMap;
 use utils::cartesian::{Dir, Point};
 
-fn gen(input: &str) -> HashMap<Point<i64>, usize> {
+fn gen_(input: &str) -> HashMap<Point<i64>, usize> {
     let mut hm = HashMap::new();
     let mut shortests = HashMap::new();
     let mut stack = Vec::new();

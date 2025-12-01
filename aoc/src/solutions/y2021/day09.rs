@@ -3,7 +3,7 @@ use std::collections::BinaryHeap;
 
 use utils::grid2d::Grid2d;
 
-aoc_harness::aoc_main!(2021 day 9, generator gen, part1 [p1] => 633, part2 [p2] => 1_050_192,
+aoc_harness::aoc_main!(2021 day 9, generator gen_, part1 [p1] => 633, part2 [p2] => 1_050_192,
           example part1 EG => 15, example part2 EG => 1134);
 const EG: &str = "
 2199943210
@@ -12,7 +12,7 @@ const EG: &str = "
 8767896789
 9899965678";
 
-fn gen(input: &str) -> Grid2d<u8> {
+fn gen_(input: &str) -> Grid2d<u8> {
     Grid2d::from_str(input.trim(), |c| (c as u8) - b'0')
 }
 fn p1(grid: &Grid2d<u8>) -> usize {
