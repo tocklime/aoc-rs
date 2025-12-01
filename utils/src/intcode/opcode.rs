@@ -29,7 +29,7 @@ impl TryFrom<isize> for OpCode {
             8 => Ok(OpCode::Equals),
             9 => Ok(OpCode::MoveRelativeBase),
             99 => Ok(OpCode::Halt),
-            _ => Err(value)
+            _ => Err(value),
         }
     }
 }
