@@ -1,6 +1,6 @@
-use std::collections::BTreeMap;
 use ron::ser::PrettyConfig;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 use crate::dayresult::DayResult;
 
@@ -101,7 +101,8 @@ impl Drop for AnswerAll {
                 .expect("could not open answers.new.ron");
             let pc = PrettyConfig::new().depth_limit(2);
             let o = ron::options::Options::default();
-            o.to_io_writer_pretty(f, &self.data, pc).expect("Failed serialising answers.new.ron");
+            o.to_io_writer_pretty(f, &self.data, pc)
+                .expect("Failed serialising answers.new.ron");
             std::fs::rename("answers.new.ron", "answers.ron")
                 .expect("Failed to move answers.new.ron to answers.ron");
         }
