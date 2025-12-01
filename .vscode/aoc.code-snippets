@@ -19,10 +19,10 @@
     "scope": "rust",
     "prefix": "aoc",
     "body": [
-      "aoc_harness::aoc_main!(2024 day ${1:1}, part1 [p1], example part1 EG => ${3:0});",
+      "aoc_harness::aoc_main!(2025 day ${1:1}, part1 [p1], example part1 EG => ${3:0});",
       "",
       "fn p1(input: &str) -> u32 {",
-      "    ${0:todo!(\"Solve 2024 day $1\")}",
+      "    ${0:todo!(\"Solve 2025 day $1\")}",
       "}",
       "",
       "const EG: &str = \"$2\";"

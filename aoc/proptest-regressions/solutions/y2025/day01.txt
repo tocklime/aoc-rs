@@ -1,0 +1,10 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 2fe677e5505548bd57580276dbe923719a43f90b26094e581543ec65fcf2f6c9 # shrinks to dial = 35, direction = 365
+cc 06d61d1de72730eff7e6705d7b4d6f3dd010e176680990c644dfdb923cfe114e # shrinks to dial = 0, direction = -1
+cc 946fc353ae440f7259ac55e53a6a07ac46f6961ef08d942693b3d99b19810894 # shrinks to dial = 0, direction = -1
+cc 142f4d3038af14d56f52d4d08b12becf7d77b411961757122516f3d1c9a1787a # shrinks to dial = 20, direction = -420
