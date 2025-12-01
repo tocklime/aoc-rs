@@ -24,7 +24,7 @@ jobs:
           toolchain: stable
           override: true
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
+      #- uses: Swatinem/rust-cache@v2
       - name: build
         continue-on-error: true
         id: build
@@ -46,7 +46,7 @@ jobs:
           toolchain: stable
           override: true
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
+      #- uses: Swatinem/rust-cache@v2
       - name: Check clippy
         run: cargo clippy
       - name: Check formatting
@@ -65,7 +65,7 @@ jobs:
           toolchain: stable
           override: true
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
+      #- uses: Swatinem/rust-cache@v2
       - name: Run tests
         run: cargo test --lib --release
   clippy_check:
@@ -79,7 +79,7 @@ jobs:
           toolchain: stable
           override: true
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
+      #- uses: Swatinem/rust-cache@v2
       - run: rustup component add clippy
       - uses: clechasseur/rs-clippy-check@v3
         with:
