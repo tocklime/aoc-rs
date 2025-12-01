@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-
+use ron::ser::PrettyConfig;
 use serde::{Deserialize, Serialize};
 
 use crate::dayresult::DayResult;
@@ -36,11 +36,11 @@ pub struct AnswerAll {
 impl AnswerAll {
     #[must_use]
     pub fn from_file() -> Self {
-        let data = match std::fs::File::open("answers.yaml") {
-            Ok(f) => match serde_yml::from_reader(f) {
+        let data = match std::fs::File::open("answers.ron") {
+            Ok(f) => match ron::de::from_reader(&f) {
                 Ok(r) => r,
                 Err(err) => {
-                    eprintln!("Failed to parse existing answers.yaml, will overwrite: {err}");
+                    eprintln!("Failed to parse existing answers.ron, will overwrite: {err}");
                     BTreeMap::new()
                 }
             },
@@ -97,11 +97,13 @@ impl Drop for AnswerAll {
                 .write(true)
                 .truncate(true)
                 .create(true)
-                .open("answers.new.yaml")
-                .expect("could not open answers.new.yaml");
-            serde_yml::to_writer(f, &self.data).expect("Failed serializing answers.new.yaml");
-            std::fs::rename("answers.new.yaml", "answers.yaml")
-                .expect("Failed to move answers.new.yaml to answers.yaml");
+                .open("answers.new.ron")
+                .expect("could not open answers.new.ron");
+            let pc = PrettyConfig::new().depth_limit(2);
+            let o = ron::options::Options::default();
+            o.to_io_writer_pretty(f, &self.data, pc).expect("Failed serialising answers.new.ron");
+            std::fs::rename("answers.new.ron", "answers.ron")
+                .expect("Failed to move answers.new.ron to answers.ron");
         }
     }
 }
