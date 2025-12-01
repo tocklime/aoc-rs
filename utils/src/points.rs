@@ -1,12 +1,11 @@
 use num::integer::gcd;
-use num_enum::TryFromPrimitive;
 use std::cmp::{max, min};
 use std::convert::TryInto;
 use std::f64::consts::PI;
 use std::hash::BuildHasher;
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
-#[derive(PartialEq, Eq, Debug, Clone, Copy, TryFromPrimitive)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 #[repr(u8)]
 #[must_use]
 pub enum Dir {

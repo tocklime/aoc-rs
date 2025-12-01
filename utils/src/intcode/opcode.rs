@@ -1,7 +1,6 @@
-use num_enum::TryFromPrimitive;
 use std::fmt;
 
-#[derive(Clone, Copy, TryFromPrimitive, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 #[repr(isize)]
 pub enum OpCode {
     Add = 1,
@@ -14,6 +13,25 @@ pub enum OpCode {
     Equals = 8,
     MoveRelativeBase = 9,
     Halt = 99,
+}
+impl TryFrom<isize> for OpCode {
+    type Error = isize;
+
+    fn try_from(value: isize) -> Result<Self, Self::Error> {
+        match value {
+            1 => Ok(OpCode::Add),
+            2 => Ok(OpCode::Mult),
+            3 => Ok(OpCode::Input),
+            4 => Ok(OpCode::Output),
+            5 => Ok(OpCode::JumpIfTrue),
+            6 => Ok(OpCode::JumpIfFalse),
+            7 => Ok(OpCode::LessThan),
+            8 => Ok(OpCode::Equals),
+            9 => Ok(OpCode::MoveRelativeBase),
+            99 => Ok(OpCode::Halt),
+            _ => Err(value)
+        }
+    }
 }
 impl fmt::Display for OpCode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
