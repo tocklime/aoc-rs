@@ -17,6 +17,13 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.INPUTS_PAT }}
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - name: build
         continue-on-error: true
@@ -32,6 +39,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - name: Check clippy
         run: cargo clippy
@@ -44,6 +58,13 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.INPUTS_PAT }}
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - name: Run tests
         run: cargo test --lib --release
@@ -51,6 +72,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - run: rustup component add clippy
       - uses: clechasseur/rs-clippy-check@v3
