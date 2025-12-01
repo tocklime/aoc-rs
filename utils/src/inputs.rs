@@ -31,18 +31,16 @@ struct NumParser<'a> {
 
 pub struct ThingParser<'a, P> {
     input: &'a str,
-    parser: P
+    parser: P,
 }
 
-impl<'a, N, P: nom::Parser<&'a str, Output = N, Error = ()> + 'a,> ThingParser<'a, P> {
+impl<'a, N, P: nom::Parser<&'a str, Output = N, Error = ()> + 'a> ThingParser<'a, P> {
     pub fn new(input: &'a str, parser: P) -> Self {
-        Self {
-            input, parser
-        }
+        Self { input, parser }
     }
 }
 
-impl<'a, N, P: nom::Parser<&'a str, Output = N, Error = ()> + 'a,> Iterator for ThingParser<'a, P> {
+impl<'a, N, P: nom::Parser<&'a str, Output = N, Error = ()> + 'a> Iterator for ThingParser<'a, P> {
     type Item = N;
 
     fn next(&mut self) -> Option<Self::Item> {

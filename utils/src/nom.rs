@@ -15,7 +15,7 @@ pub type IResult<'a, T> = nom::IResult<&'a str, T, NomError<'a>>;
 pub fn parse_all<'a, F, O, E>(input: &'a str, mut inner: F) -> O
 where
     F: Parser<&'a str, Output = O, Error = E>,
-    E : std::fmt::Debug
+    E: std::fmt::Debug,
 {
     let x = &mut inner;
     let (x, o) = x.parse_complete(input).expect("Parse OK");
