@@ -1,15 +1,8 @@
 use std::{cmp::Ordering, collections::HashMap};
 
 use nom::{
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{self, alpha1, newline, one_of},
-    combinator::value,
-    multi::{many1, separated_list1},
-    sequence::tuple,
-    Parser,
+    Parser, branch::alt, bytes::complete::tag, character::complete::{self, alpha1, newline, one_of}, combinator::{all_consuming, value}, multi::{many1, separated_list1}
 };
-use nom_supreme::{multi::collect_separated_terminated, ParserExt};
 use utils::{nom::IResult, span::Span};
 
 aoc_harness::aoc_main!(2023 day 19,
@@ -25,19 +18,17 @@ struct X<'a> {
 }
 impl<'a> X<'a> {
     fn parse_all(input: &'a str) -> Self {
-        X::parse
-            .all_consuming()
-            .complete()
+        all_consuming(X::parse)
             .parse(input)
             .expect("parse")
             .1
     }
     fn parse(input: &'a str) -> IResult<'a, Self> {
-        let (input, (workflows, _, parts)) = tuple((
+        let (input, (workflows, _, parts)) = (
             separated_list1(newline, Workflow::parse),
             tag("\n\n"),
             many1(Part::parse),
-        ))(input)?;
+        ).parse(input)?;
         let workflows = workflows.into_iter().map(|x| (x.name, x)).collect();
         Ok((input, Self { workflows, parts }))
     }
@@ -74,14 +65,14 @@ struct Workflow<'a> {
 }
 impl<'a> Workflow<'a> {
     fn parse(input: &'a str) -> IResult<'a, Self> {
-        let (input, (name, _, rules, _, default, _)) = tuple((
+        let (input, (name, _, rules, _, default, _)) = (
             alpha1,
             tag("{"),
             separated_list1(tag(","), Rule::parse),
             tag(","),
             alpha1,
             tag("}"),
-        ))(input)?;
+        ).parse(input)?;
         Ok((
             input,
             Self {
@@ -150,7 +141,7 @@ impl<'a> Rule<'a> {
         (part.values[self.quality].cmp(&self.value) == self.check).then_some(self.target)
     }
     fn parse(input: &'a str) -> IResult<'a, Self> {
-        let (input, (quality, check, value, _, target)) = tuple((
+        let (input, (quality, check, value, _, target)) = (
             parse_quality,
             alt((
                 value(Ordering::Less, tag("<")),
@@ -159,7 +150,7 @@ impl<'a> Rule<'a> {
             complete::u16,
             tag(":"),
             alpha1,
-        ))(input)?;
+        ).parse(input)?;
         Ok((
             input,
             Self {
@@ -179,13 +170,16 @@ struct Part {
 
 impl Part {
     fn parse(input: &str) -> IResult<Self> {
-        let (input, values): (_, Vec<u16>) = collect_separated_terminated(
-            parse_quality.precedes(tag("=")).precedes(complete::u16),
-            tag(","),
-            tag("}\n"),
-        )
-        .preceded_by(tag("{"))
-        .parse(input)?;
+        let (input, values) = 
+        (
+            tag("{"),
+            separated_list1(tag(","), (
+                parse_quality,
+                tag("="),
+                complete::u16
+            ).map(|x| x.2)),
+            tag("}\n")
+        ).map(|x| x.1).parse(input)?;
         let values: [u16; 4] = std::array::from_fn(|n| values[n]);
         Ok((input, Self { values }))
     }

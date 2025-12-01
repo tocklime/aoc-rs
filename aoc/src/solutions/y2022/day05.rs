@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use aoc_harness::*;
-use nom::{bytes::complete::tag, character::complete::u8, multi::separated_list1, sequence::tuple};
+use nom::{Parser, bytes::complete::tag, character::complete::u8, multi::separated_list1};
 use utils::iter::borrow_mut_twice;
 
 aoc_harness::aoc_main!(2022 day 5, generator whole_input_is::<X>, part1 [solve::<false>] => "GFTNRBZPF", part2 [solve::<true>] => "VRQWPDSGP", example both EG => ("CMZ","MCD"));
@@ -30,7 +30,7 @@ struct Command {
 
 fn parse_line(input: &str) -> nom::IResult<&str, Command> {
     let (input, (_, count, _, from, _, to)) =
-        tuple((tag("move "), u8, tag(" from "), u8, tag(" to "), u8))(input)?;
+        (tag("move "), u8, tag(" from "), u8, tag(" to "), u8).parse(input)?;
     assert_ne!(from, to);
     Ok((
         input,
@@ -48,7 +48,7 @@ impl FromStr for X {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (map, instrs) = s.split_once("\n\n").unwrap();
         let (_, instructions) =
-            separated_list1(tag("\n"), parse_line)(instrs).map_err(|e| e.to_string())?;
+            separated_list1(tag("\n"), parse_line).parse(instrs).map_err(|e| e.to_string())?;
 
         let w = map.lines().map(str::len).max().unwrap();
         let stack_count = (w + 1) / 4;

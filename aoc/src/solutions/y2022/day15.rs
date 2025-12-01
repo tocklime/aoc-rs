@@ -9,8 +9,7 @@ use nom::{
     character::complete::{self, newline},
     combinator::all_consuming,
     multi::many1,
-    sequence::tuple,
-    IResult,
+    IResult, Parser,
 };
 use utils::{aabb::Aabb, cartesian::Point, span::Span};
 
@@ -68,7 +67,7 @@ impl Sensor {
     }
 }
 fn parse_sensor(input: &str) -> IResult<&str, Sensor> {
-    let (input, (_, xa, _, ya, _, xb, _, yb, _)) = tuple((
+    let (input, (_, xa, _, ya, _, xb, _, yb, _)) = ((
         tag("Sensor at x="),
         complete::i64,
         tag(", y="),
@@ -78,7 +77,8 @@ fn parse_sensor(input: &str) -> IResult<&str, Sensor> {
         tag(", y="),
         complete::i64,
         newline,
-    ))(input)?;
+    ))
+        .parse(input)?;
     let location = Point::new(xa, ya);
     let closest_beacon = Point::new(xb, yb);
     Ok((
@@ -91,7 +91,7 @@ fn parse_sensor(input: &str) -> IResult<&str, Sensor> {
     ))
 }
 fn gen(input: &str) -> X {
-    let sensors = all_consuming(many1(parse_sensor))(input).unwrap().1;
+    let sensors = all_consuming(many1(parse_sensor)).parse(input).unwrap().1;
     X {
         sensors,
         max_coord: if input == EG { 20 } else { 4_000_000 },
@@ -155,7 +155,12 @@ fn scanning_axes(input: &X) -> i64 {
         .unwrap();
     //now we know the y coordinate, find the x.
     let found_x = (0..=input.max_coord)
-        .find(|&x| !input.sensors.iter().any(|s| s.can_see(Point::new(x, found_y))))
+        .find(|&x| {
+            !input
+                .sensors
+                .iter()
+                .any(|s| s.can_see(Point::new(x, found_y)))
+        })
         .unwrap();
     tuning_frequency(Point::new(found_x, found_y))
 }

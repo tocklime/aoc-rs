@@ -5,8 +5,7 @@ use nom::bytes::complete::*;
 use nom::character::complete::{alpha1, digit1};
 use nom::combinator::opt;
 use nom::multi::separated_list0;
-use nom::sequence::tuple;
-use nom::IResult;
+use nom::{IResult, Parser};
 use std::cell::Cell;
 use std::cmp::min;
 use std::collections::HashSet;
@@ -27,8 +26,8 @@ impl AttackGroup {
     fn parse_a_status_set<'a>(i: &'a str, name: &'a str) -> IResult<&'a str, Vec<String>> {
         let (i, _) = tag(name)(i)?;
         let (i, _) = tag(" to ")(i)?;
-        let (i, ns) = separated_list0(tag(", "), alpha1)(i)?;
-        let (i, _) = alt((tag("; "), tag(") ")))(i)?;
+        let (i, ns) = separated_list0(tag(", "), alpha1).parse(i)?;
+        let (i, _) = alt((tag("; "), tag(") "))).parse(i)?;
         let our_names = ns
             .iter()
             .map(std::string::ToString::to_string)
@@ -63,7 +62,7 @@ impl AttackGroup {
     }
 
     fn parse(i: &str) -> IResult<&str, AttackGroup> {
-        tuple((
+        (
             digit1,
             tag(" units each with "),
             digit1,
@@ -75,7 +74,7 @@ impl AttackGroup {
             alpha1,
             tag(" damage at initiative "),
             digit1,
-        ))(i)
+        ).parse(i)
         .map(|(i, (s, _, h, _, st, _, a, _, at, _, init))| {
             let st = st.unwrap_or((Vec::new(), Vec::new()));
             let size = s.parse().unwrap();

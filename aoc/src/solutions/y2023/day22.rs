@@ -4,13 +4,8 @@ use std::collections::{HashMap, HashSet};
 use itertools::Itertools;
 use ndarray::{Array3, Dim, IntoDimension, Ix3};
 use nom::{
-    bytes::complete::tag,
-    character::complete::{self, newline},
-    multi::separated_list1,
-    sequence::separated_pair,
-    Parser,
+    Parser, bytes::complete::tag, character::complete::{self, newline}, combinator::all_consuming, multi::separated_list1, sequence::{separated_pair, terminated}
 };
-use nom_supreme::ParserExt;
 use utils::nom::IResult;
 
 aoc_harness::aoc_main!(2023 day 22, both [both] => (495, 76158), example both EG => (5,7));
@@ -105,16 +100,15 @@ fn parse_brick(input: &str) -> IResult<Brick> {
         separated_list1(tag(","), complete::u32.map(|x| x as usize)).map(|x| x.try_into().unwrap()),
         tag("~"),
         separated_list1(tag(","), complete::u32.map(|x| x as usize)).map(|x| x.try_into().unwrap()),
-    )(input)?;
+    )
+    .parse(input)?;
 
     let from = a.into_dimension();
     let to = b.into_dimension();
     Ok((input, Brick { id: 0, from, to }))
 }
 fn parse_bricks(input: &str) -> IResult<Vec<Brick>> {
-    separated_list1(newline, parse_brick)
-        .terminated(newline)
-        .parse(input)
+    terminated(separated_list1(newline, parse_brick), newline).parse(input)
 }
 
 fn could_place(world: &World, brick: usize, fall_dist: usize) -> bool {
@@ -169,9 +163,7 @@ impl World {
 }
 
 fn both(input: &str) -> (usize, usize) {
-    let (_, mut bricks) = parse_bricks
-        .all_consuming()
-        .complete()
+    let (_, mut bricks) = all_consuming(parse_bricks)
         .parse(input)
         .expect("parse");
     bricks.sort_by_key(Brick::min_z);

@@ -5,12 +5,11 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{alpha1, digit1};
 use nom::combinator::all_consuming;
-use nom::sequence::tuple;
-use nom::IResult;
+use nom::{IResult, Parser};
 use std::collections::HashMap;
 
 fn item(i: &str) -> IResult<&str, Item> {
-    alt((item_const, item_name))(i)
+    alt((item_const, item_name)).parse(i)
 }
 
 fn item_const(i: &str) -> IResult<&str, Item> {
@@ -28,19 +27,19 @@ fn lhs_not(i: &str) -> IResult<&str, LineOp> {
 }
 
 fn lhs_lshift(i: &str) -> IResult<&str, LineOp> {
-    tuple((item, tag(" LSHIFT "), item))(i).map(|(i, (a, _, b))| (i, LineOp::LShift(a, b)))
+    (item, tag(" LSHIFT "), item).parse(i).map(|(i, (a, _, b))| (i, LineOp::LShift(a, b)))
 }
 
 fn lhs_rshift(i: &str) -> IResult<&str, LineOp> {
-    tuple((item, tag(" RSHIFT "), item))(i).map(|(i, (a, _, b))| (i, LineOp::RShift(a, b)))
+    (item, tag(" RSHIFT "), item).parse(i).map(|(i, (a, _, b))| (i, LineOp::RShift(a, b)))
 }
 
 fn lhs_or(i: &str) -> IResult<&str, LineOp> {
-    tuple((item, tag(" OR "), item))(i).map(|(i, (a, _, b))| (i, LineOp::Or(a, b)))
+    (item, tag(" OR "), item).parse(i).map(|(i, (a, _, b))| (i, LineOp::Or(a, b)))
 }
 
 fn lhs_and(i: &str) -> IResult<&str, LineOp> {
-    tuple((item, tag(" AND "), item))(i).map(|(i, (a, _, b))| (i, LineOp::And(a, b)))
+    (item, tag(" AND "), item).parse(i).map(|(i, (a, _, b))| (i, LineOp::And(a, b)))
 }
 
 fn lhs_const(i: &str) -> IResult<&str, LineOp> {
@@ -48,11 +47,11 @@ fn lhs_const(i: &str) -> IResult<&str, LineOp> {
 }
 
 fn lhs(i: &str) -> IResult<&str, LineOp> {
-    alt((lhs_and, lhs_or, lhs_not, lhs_lshift, lhs_rshift, lhs_const))(i)
+    alt((lhs_and, lhs_or, lhs_not, lhs_lshift, lhs_rshift, lhs_const)).parse(i)
 }
 
 fn line(i: &str) -> IResult<&str, Line> {
-    all_consuming(tuple((lhs, tag(" -> "), alpha1)))(i)
+    all_consuming((lhs, tag(" -> "), alpha1)).parse(i)
         .map(|(i, (lhs, _, rhs))| (i, Line { lhs, rhs }))
 }
 

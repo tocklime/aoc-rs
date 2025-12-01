@@ -1,28 +1,25 @@
 use nom::{
+    bytes::complete::tag,
     character::complete::{self, hex_digit1, newline, one_of, space1},
     multi::separated_list1,
-    sequence::tuple,
+    sequence::terminated,
     Parser,
 };
-use nom_supreme::{tag::complete::tag, ParserExt};
 use utils::{cartesian::Dir, nom::IResult};
 
 aoc_harness::aoc_main!(2023 day 18, part1 [solve::<0>], part2 [solve::<1>], example both EG => (62, 952_408_144_115));
 
 const DIRS: [Dir; 4] = [Dir::Right, Dir::Down, Dir::Left, Dir::Up];
 fn parse_line(input: &str) -> IResult<[(Dir, isize); 2]> {
-    let (input, p1) = tuple((
-        one_of("UDLR")
-            .map(|x| Dir::from_x("UDLR", x))
-            .terminated(space1),
-        complete::u32.terminated(space1),
-    ))
-    .map(|(a, b)| (a, b as isize))
-    .parse(input)?;
-    let (input, p2) = hex_digit1::<&str, _>
-        .terminated(tag(")"))
-        .preceded_by(tag("(#"))
-        .map(|x| {
+    let (input, p1) = (
+        terminated(one_of("UDLR").map(|x| Dir::from_x("UDLR", x)), space1),
+        complete::u32,
+        space1,
+    )
+        .map(|(a, b, _)| (a, b as isize))
+        .parse(input)?;
+    let (input, p2) = (tag("(#"), hex_digit1::<&str,_>, tag(")"))
+        .map(|(_, x, _)| {
             (
                 DIRS[usize::from_str_radix(&x[5..], 16).unwrap()],
                 isize::from_str_radix(&x[0..5], 16).unwrap(),

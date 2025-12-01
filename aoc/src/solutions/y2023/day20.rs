@@ -7,12 +7,11 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{alpha1, newline},
-    combinator::{success, value},
+    combinator::{all_consuming, success, value},
     multi::separated_list1,
-    sequence::tuple,
+    sequence::terminated,
     Parser,
 };
-use nom_supreme::ParserExt;
 use utils::{collections::VecLookup, nom::IResult};
 
 aoc_harness::aoc_main!(2023 day 20,
@@ -34,7 +33,8 @@ impl ModuleType {
             value(ModuleType::FlipFlop(false), tag("%")),
             value(ModuleType::Conjunction(VecLookup::default()), tag("&")),
             success(ModuleType::Broadcast),
-        ))(input)
+        ))
+        .parse(input)
     }
 }
 thread_local! {
@@ -61,11 +61,12 @@ struct Module {
 }
 impl Module {
     fn parse(input: &str) -> IResult<Self> {
-        let (input, (typ, name, targets)) = tuple((
+        let (input, (typ, name, targets)) = (
             ModuleType::parse,
-            alpha1.terminated(tag(" -> ")),
+            terminated(alpha1, tag(" -> ")),
             separated_list1(tag(", "), alpha1),
-        ))(input)?;
+        )
+            .parse(input)?;
         let name = convert(name);
         // if name == 0 {
         //     dbg!(input, &targets);
@@ -119,13 +120,11 @@ impl System {
             x.0 = 0;
             x.1.clear();
         });
-        let (_, modules) = separated_list1(newline, Module::parse)
-            .terminated(newline)
-            .all_consuming()
-            .complete()
-            .parse(input)
-            .expect("parse");
-        let mut modules : VecLookup<Module>= modules.into_iter().map(|x| (x.name, x)).collect();
+        let (_, modules) =
+            all_consuming(terminated(separated_list1(newline, Module::parse), newline))
+                .parse(input)
+                .expect("parse");
+        let mut modules: VecLookup<Module> = modules.into_iter().map(|x| (x.name, x)).collect();
         // modules.sort_by_key(|x| x.name);
         let mut input_maps: HashMap<usize, Vec<usize>> = HashMap::new();
         for (_, m) in modules.iter() {
@@ -170,7 +169,8 @@ impl System {
         self.pending_signals.is_empty()
     }
     fn next_signal_is(&self, target: usize, value: bool) -> bool {
-        self.pending_signals.front()
+        self.pending_signals
+            .front()
             .map(|s| s.1 == value && s.2 == target)
             .unwrap_or_default()
     }

@@ -1,12 +1,6 @@
 
 use nom::{
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{newline, u64},
-    combinator::{all_consuming, map, value},
-    multi::separated_list1,
-    sequence::{delimited, terminated},
-    IResult,
+    IResult, Parser, branch::alt, bytes::complete::tag, character::complete::{newline, u64}, combinator::{all_consuming, map, value}, multi::separated_list1, sequence::{delimited, terminated}
 };
 
 aoc_harness::aoc_main!(2022 day 11, generator gen, part1 [solve::<3, 20>] => 110_885, part2 [solve::<1, 10000>] => 25_272_176_808, example both EG => (10605, 2_713_310_158));
@@ -57,8 +51,8 @@ struct Monkey {
 
 fn parse_operation(input: &str) -> IResult<&str, Operation> {
     let (input, _) = tag("  Operation: new = old ")(input)?;
-    let (input, op_str) = terminated(alt((tag("+"), tag("*"))), tag(" "))(input)?;
-    let (input, val) = alt((value(None, tag("old")), map(u64, Some)))(input)?;
+    let (input, op_str) = terminated(alt((tag("+"), tag("*"))), tag(" ")).parse(input)?;
+    let (input, val) = alt((value(None, tag("old")), map(u64, Some))).parse(input)?;
     let (input, _) = newline(input)?;
     let ans = match (op_str, val) {
         ("+", None) => Operation::Double,
@@ -70,18 +64,18 @@ fn parse_operation(input: &str) -> IResult<&str, Operation> {
     Ok((input, ans))
 }
 fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
-    let (input, _monkey_ix) = delimited(tag("Monkey "), u64, tag(":\n"))(input)?;
+    let (input, _monkey_ix) = delimited(tag("Monkey "), u64, tag(":\n")).parse(input)?;
     let (input, held) = delimited(
         tag("  Starting items: "),
         separated_list1(tag(", "), u64),
         newline,
-    )(input)?;
+    ).parse(input)?;
     let (input, alter) = parse_operation(input)?;
-    let (input, test_div) = delimited(tag("  Test: divisible by "), u64, newline)(input)?;
+    let (input, test_div) = delimited(tag("  Test: divisible by "), u64, newline).parse(input)?;
     let (input, true_target) =
-        delimited(tag("    If true: throw to monkey "), u64, newline)(input)?;
+        delimited(tag("    If true: throw to monkey "), u64, newline).parse(input)?;
     let (input, false_target) =
-        delimited(tag("    If false: throw to monkey "), u64, newline)(input)?;
+        delimited(tag("    If false: throw to monkey "), u64, newline).parse(input)?;
     let true_target = true_target as usize;
     let false_target = false_target as usize;
     let monkey = Monkey {
@@ -94,7 +88,7 @@ fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
 }
 
 fn gen(input: &str) -> Vec<Monkey> {
-    all_consuming(separated_list1(newline, parse_monkey))(input)
+    all_consuming(separated_list1(newline, parse_monkey)).parse(input)
         .unwrap()
         .1
 }

@@ -1,7 +1,6 @@
 use aoc_harness::*;
 use nom::{
-    bytes::complete::tag, character::complete, combinator::map, multi::separated_list1,
-    sequence::separated_pair, IResult,
+    IResult, Parser, bytes::complete::tag, character::complete, combinator::map, multi::separated_list1, sequence::separated_pair
 };
 use utils::{aabb::Aabb, cartesian::Point, grid2d::Grid2d};
 use std::string::ToString;
@@ -19,7 +18,7 @@ fn line(input: &str) -> IResult<&str, Vec<Point<usize>>> {
             separated_pair(complete::u32, tag(","), complete::u32),
             |(x, y)| Point::new(x as usize, y as usize),
         ),
-    )(input)
+    ).parse(input)
 }
 fn gen(input: &str) -> Grid2d<char> {
     let p = input

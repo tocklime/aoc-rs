@@ -1,11 +1,7 @@
 use std::collections::HashMap;
 
 use nom::{
-    branch::alt,
-    character::complete::u32,
-    combinator::{map, value},
-    multi::many1,
-    IResult,
+    IResult, Parser, branch::alt, character::complete::u32, combinator::{map, value}, multi::many1
 };
 use utils::{
     aabb::Aabb,
@@ -41,7 +37,7 @@ fn instr(input: &str) -> IResult<&str, I> {
         map(u32, I::Go),
         value(I::TurnLeft, nom::character::complete::char('L')),
         value(I::TurnRight, nom::character::complete::char('R')),
-    ))(input)
+    )).parse(input)
 }
 
 fn p1(input: &str) -> u32 {
@@ -56,7 +52,7 @@ fn p1(input: &str) -> u32 {
     }
     let mut log = map.clone();
     let bb: Aabb<u32> = map.keys().collect();
-    let (_, instrs) = many1(instr)(instrs).unwrap();
+    let (_, instrs) = many1(instr).parse(instrs).unwrap();
     // println!("{}", cartesian::render_char_map_w(&map, 1, " ", true));
     let first_x = board.chars().position(|c| c == '.').unwrap();
     let mut position = Point::new(first_x as u32, bb.top_right.y);
@@ -318,7 +314,7 @@ fn p2(input: &str) -> u32 {
     let mut log = map.clone();
     let bb: Aabb<u32> = map.keys().collect();
     // dbg!(bb);
-    let (_, instrs) = many1(instr)(instrs).unwrap();
+    let (_, instrs) = many1(instr).parse(instrs).unwrap();
     // println!("{}", cartesian::render_char_map_w(&map, 1, " ", true));
     let first_x = board.chars().position(|c| c == '.').unwrap();
     let mut position = Point::new(first_x as u32, bb.top_right.y);

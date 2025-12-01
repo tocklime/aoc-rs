@@ -2,15 +2,10 @@ use std::{cmp::Reverse, collections::HashMap, str::FromStr, string::ToString};
 
 use aoc_harness::*;
 use nom::{
-    bytes::{
+    IResult, Parser, bytes::{
         complete::{tag, take_until},
         streaming::take,
-    },
-    character::complete::{self, newline},
-    combinator::all_consuming,
-    multi::{many1, many_m_n, separated_list1},
-    sequence::{terminated, tuple},
-    IResult,
+    }, character::complete::{self, newline}, combinator::all_consuming, multi::{many_m_n, many1, separated_list1}, sequence::terminated
 };
 use utils::{collections::VecLookup, numset::NumSet};
 
@@ -37,14 +32,14 @@ struct Valve {
 }
 //Valve JJ has flow rate=21; tunnel leads to valve II
 fn parse_line(input: &str) -> IResult<&str, Valve> {
-    let (input, (_, name, _, rate, _, connections)) = tuple((
+    let (input, (_, name, _, rate, _, connections)) = (
         tag("Valve "),
         take(2_usize),
         tag(" has flow rate="),
         complete::u32,
-        many_m_n(5, 5, tuple((take_until(" "), tag(" ")))),
+        many_m_n(5, 5, (take_until(" "), tag(" "))),
         separated_list1(tag(", "), take(2_usize)),
-    ))(input)?;
+    ).parse(input)?;
     Ok((
         input,
         Valve {
@@ -66,7 +61,7 @@ impl FromStr for X {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (_, mut valves) = all_consuming(many1(terminated(parse_line, newline)))(s).unwrap();
+        let (_, mut valves) = all_consuming(many1(terminated(parse_line, newline))).parse(s).unwrap();
         valves.sort_by_key(|v| (v.name != "AA", Reverse(v.rate)));
         for (ix, v) in valves.iter_mut().enumerate() {
             v.id = ix as u8;

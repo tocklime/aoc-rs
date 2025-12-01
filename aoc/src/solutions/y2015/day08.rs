@@ -2,7 +2,7 @@
 
 aoc_harness::aoc_main!(2015 day 8, part1 [p1] => 1350, part2 [p2] => 2085);
 use nom::bytes::complete::tag;
-use nom::IResult;
+use nom::{IResult, Parser};
 use nom::multi::many0;
 use nom::branch::alt;
 use nom::bytes::complete::take;
@@ -26,12 +26,12 @@ fn hex(i: &str) -> IResult<&str, char> {
 }
 
 fn character(i: &str) -> IResult<&str, char> {
-    alt((quote, hex, backslash, none_of("\"")))(i)
+    alt((quote, hex, backslash, none_of("\""))).parse(i)
 }
 
 fn interpret_line(i: &str) -> IResult<&str, String> {
     let (i, _) = tag("\"")(i)?;
-    let (i, s) = many0(character)(i)?;
+    let (i, s) = many0(character).parse(i)?;
     let (i, _) = tag("\"")(i)?;
     Ok((i, s.into_iter().collect()))
 }

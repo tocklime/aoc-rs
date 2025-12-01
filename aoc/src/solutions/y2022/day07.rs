@@ -1,11 +1,6 @@
 
 use nom::{
-    branch::alt,
-    bytes::complete::{tag, take_until},
-    character::complete::{newline, u32},
-    combinator::{map, value},
-    sequence::{preceded, terminated, tuple},
-    IResult,
+    IResult, Parser, branch::alt, bytes::complete::{tag, take_until}, character::complete::{newline, u32}, combinator::{map, value}, sequence::{preceded, terminated}
 };
 
 aoc_harness::aoc_main!(2022 day 7, both [solve] => (1_644_735, 1_300_850), example both EG => (95437, 24_933_642));
@@ -50,12 +45,12 @@ fn parse_line(input: &str) -> IResult<&str, Line> {
             preceded(tag("$ cd "), map(take_until("\n"), |_| Line::CdDown)),
             preceded(tag("dir "), map(take_until("\n"), |_| Line::Dir)),
             map(
-                tuple((u32, tag(" "), take_until("\n"))),
+                (u32, tag(" "), take_until("\n")),
                 |(size, _, _name)| Line::File(size),
             ),
         )),
         newline,
-    )(input)
+    ).parse(input)
 }
 
 #[derive(Debug, Default)]

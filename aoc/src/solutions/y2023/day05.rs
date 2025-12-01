@@ -1,12 +1,12 @@
-
 use itertools::Itertools;
+use nom::bytes::complete::tag;
 use nom::Parser;
+use nom::combinator::all_consuming;
 use nom::{
     character::complete::{self, alpha1, newline, space1},
     multi::separated_list1,
-    sequence::{separated_pair, tuple},
+    sequence::separated_pair,
 };
-use nom_supreme::{tag::complete::tag, ParserExt};
 use utils::{nom::IResult, span::Span};
 
 aoc_harness::aoc_main!(2023 day 5, generator gen, part1 [p1] => 289_863_851, part2 [p2] => 60_568_880, example both EG => (35,46));
@@ -26,18 +26,15 @@ struct Almanac {
 impl Map {
     fn parse(input: &str) -> IResult<Self> {
         let (input, (from, to)) = separated_pair(alpha1::<&str, _>, tag("-to-"), alpha1)
-            .terminated(tag(" map:\n"))
             .map(|(a, b)| (a.to_owned(), b.to_owned()))
             .parse(input)?;
+        let (input, _) = tag(" map:").parse(input)?;
         let (input, mut ranges) = nom::multi::separated_list1(
             newline,
-            tuple((
-                complete::i64.terminated(space1),
-                complete::i64.terminated(space1),
-                complete::i64,
-            ))
-            .map(|(t, f, size)| (Span::new(f, f + size), t - f)),
-        )(input)?;
+            (complete::i64, space1, complete::i64, space1, complete::i64)
+                .map(|(t, _, f, _, size)| (Span::new(f, f + size), t - f)),
+        )
+        .parse(input)?;
         ranges.sort();
         Ok((
             input,
@@ -51,11 +48,11 @@ impl Map {
 }
 impl Almanac {
     fn parse(input: &str) -> IResult<Self> {
-        let (input, seeds) = nom::multi::separated_list1(space1, complete::i64)
-            .preceded_by(tag("seeds: "))
+        let (input, seeds) = (tag("seeds: "), separated_list1(space1, complete::i64))
+            .map(|x| x.1)
             .parse(input)?;
         let (input, _) = tag("\n\n")(input)?;
-        let (input, maps) = separated_list1(tuple((newline, newline)), Map::parse)(input)?;
+        let (input, maps) = separated_list1((newline, newline), Map::parse).parse(input)?;
         let (input, _) = newline(input)?;
         Ok((input, Self { seeds, maps }))
     }
@@ -107,9 +104,7 @@ impl Almanac {
 
 fn gen(input: &str) -> Almanac {
     use nom::Parser;
-    Almanac::parse
-        .complete()
-        .all_consuming()
+    all_consuming(Almanac::parse)
         .parse(input)
         .expect("Parse")
         .1

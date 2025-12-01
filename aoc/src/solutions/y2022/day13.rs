@@ -2,13 +2,7 @@ use std::cmp::Ordering;
 
 
 use nom::{
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{newline, u8},
-    combinator::{all_consuming, map},
-    multi::{separated_list0, separated_list1},
-    sequence::{delimited, terminated},
-    IResult,
+    IResult, Parser, branch::alt, bytes::complete::tag, character::complete::{newline, u8}, combinator::{all_consuming, map}, multi::{separated_list0, separated_list1}, sequence::{delimited, terminated}
 };
 
 aoc_harness::aoc_main!(2022 day 13, generator gen, part1 [p1] => 5625, example both EG => (13,140), part2 [p2] => 23111);
@@ -51,7 +45,7 @@ fn parse_list(input: &str) -> IResult<&str, Packet> {
             delimited(tag("["), separated_list0(tag(","), parse_list), tag("]")),
             Packet::List,
         ),
-    ))(input)
+    )).parse(input)
 }
 
 impl PartialOrd for Packet {
@@ -69,7 +63,7 @@ fn gen(input: &str) -> Vec<Vec<Packet>> {
     all_consuming(terminated(
         separated_list1(tag("\n\n"), separated_list1(newline, parse_list)),
         newline,
-    ))(input)
+    )).parse(input)
     .unwrap()
     .1
 }

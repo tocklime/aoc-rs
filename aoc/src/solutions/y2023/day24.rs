@@ -1,15 +1,18 @@
-use gomez::{nalgebra::{self, SVector}, Problem, SolverDriver, System};
+use gomez::{
+    nalgebra::{self, SVector},
+    Problem, SolverDriver, System,
+};
 use itertools::Itertools;
 use nom::{
     bytes::complete::tag,
     character::complete::{self, newline, space1},
+    combinator::all_consuming,
     multi::separated_list1,
-    sequence::separated_pair,
+    sequence::{separated_pair, terminated},
     Parser,
 };
-use nom_supreme::ParserExt;
 use num::rational::Ratio;
-use num_traits::{CheckedDiv, Zero, ToPrimitive};
+use num_traits::{CheckedDiv, ToPrimitive, Zero};
 use utils::nom::IResult;
 
 aoc_harness::aoc_main!(2023 day 24, part1 [p1::<200_000_000_000_000, 400_000_000_000_000>], /* , example part2 EG => 47*/);
@@ -25,10 +28,11 @@ struct Hailstone {
 impl Hailstone {
     fn parse(input: &str) -> IResult<Self> {
         let (input, (pos, vel)) = separated_pair(
-            separated_list1(tag(",").terminated(space1), complete::i128),
-            space1.terminated(tag("@")).terminated(space1),
-            separated_list1(tag(",").terminated(space1), complete::i128),
-        )(input)?;
+            separated_list1((tag(","), space1), complete::i128),
+            (space1, tag("@"), space1),
+            separated_list1((tag(","), space1), complete::i128),
+        )
+        .parse(input)?;
         let pos = SVector::from_fn(|n, _| MyNum::from(pos[n]));
         let vel = SVector::from_fn(|n, _| MyNum::from(vel[n]));
         Ok((input, Self { pos, vel }))
@@ -59,13 +63,13 @@ fn find_cross_x(a: (MyNum, MyNum), b: (MyNum, MyNum)) -> Option<(MyNum, MyNum)> 
     Some((x, y))
 }
 fn p1<const MIN: i128, const MAX: i128>(input: &str) -> u32 {
-    let puzzle = separated_list1(newline, Hailstone::parse)
-        .terminated(newline)
-        .all_consuming()
-        .complete()
-        .parse(input)
-        .expect("parse")
-        .1;
+    let puzzle = all_consuming(terminated(
+        separated_list1(newline, Hailstone::parse),
+        newline,
+    ))
+    .parse(input)
+    .expect("parse")
+    .1;
     let mut count = 0;
     for cs in puzzle.iter().combinations(2) {
         let a = cs[0];
@@ -146,21 +150,30 @@ impl System for Hailstones {
         let h = &self.stones;
         // let [p0,p1,p2,v0,v1,v2,t0,t1,t2] = &x;
         for h_ix in 0..3 {
-            rx[3 * h_ix] = h[h_ix].vel[0].to_f64().unwrap() * x[6] + h[h_ix].pos[0].to_f64().unwrap() - x[3] * x[6] - x[0];
-            rx[3 * h_ix + 1] = h[h_ix].vel[1].to_f64().unwrap() * x[7] + h[h_ix].pos[1].to_f64().unwrap() - x[4] * x[7] - x[1];
-            rx[3 * h_ix + 2] = h[h_ix].vel[2].to_f64().unwrap() * x[8] + h[h_ix].pos[2].to_f64().unwrap() - x[5] * x[8] - x[2];
+            rx[3 * h_ix] = h[h_ix].vel[0].to_f64().unwrap() * x[6]
+                + h[h_ix].pos[0].to_f64().unwrap()
+                - x[3] * x[6]
+                - x[0];
+            rx[3 * h_ix + 1] = h[h_ix].vel[1].to_f64().unwrap() * x[7]
+                + h[h_ix].pos[1].to_f64().unwrap()
+                - x[4] * x[7]
+                - x[1];
+            rx[3 * h_ix + 2] = h[h_ix].vel[2].to_f64().unwrap() * x[8]
+                + h[h_ix].pos[2].to_f64().unwrap()
+                - x[5] * x[8]
+                - x[2];
         }
     }
 }
 #[allow(dead_code)]
 fn p2(input: &str) -> usize {
-    let puzzle = separated_list1(newline, Hailstone::parse)
-        .terminated(newline)
-        .all_consuming()
-        .complete()
-        .parse(input)
-        .expect("parse")
-        .1;
+    let puzzle = all_consuming(terminated(
+        separated_list1(newline, Hailstone::parse),
+        newline,
+    ))
+    .parse(input)
+    .expect("parse")
+    .1;
     //need to find v[0,1,2] and p[0,1,2] and times [t0,t1,...tN] such that
     //we collide.
     //we can get 3 equations from each hailstone
@@ -180,20 +193,22 @@ fn p2(input: &str) -> usize {
     // vx*t2 + px = h[2].vel[0] * t2 + h[2].pos[0]
     // vy*t2 + py = h[2].vel[1] * t2 + h[2].pos[1]
     // vz*t2 + pz = h[2].vel[2] * t2 + h[2].pos[2]
-    let smol = Hailstones{
-        stones: [
-            puzzle[0], puzzle[1],puzzle[2]
-        ]
+    let smol = Hailstones {
+        stones: [puzzle[0], puzzle[1], puzzle[2]],
     };
     let mut solver = SolverDriver::builder(&smol)
-    .with_initial(vec![0.;9])
-    .build();
-let (x, norm) = solver.find(|s| s.norm() <= 1e-6 || s.iter() >= 100)
-.expect("solver err");
-dbg!(x, norm);
+        .with_initial(vec![0.; 9])
+        .build();
+    let (x, norm) = solver
+        .find(|s| s.norm() <= 1e-6 || s.iter() >= 100)
+        .expect("solver err");
+    dbg!(x, norm);
 
     for (ix, h) in puzzle.iter().enumerate().take(3) {
-        println!("pos{}, v{} = ([{},{},{}], [{},{},{}])", ix+1, ix+1, 
+        println!(
+            "pos{}, v{} = ([{},{},{}], [{},{},{}])",
+            ix + 1,
+            ix + 1,
             h.pos[0].to_integer(),
             h.pos[1].to_integer(),
             h.pos[2].to_integer(),
@@ -209,7 +224,7 @@ dbg!(x, norm);
 mod test {
     use super::*;
 
-const EG: &str = "19, 13, 30 @ -2,  1, -2
+    const EG: &str = "19, 13, 30 @ -2,  1, -2
 18, 19, 22 @ -1, -1, -2
 20, 25, 34 @ -2, -2, -4
 12, 31, 28 @ -1, -2, -1

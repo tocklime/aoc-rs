@@ -7,8 +7,7 @@ use nom::character::complete::{alpha1, digit1};
 use nom::combinator::opt;
 use nom::lib::std::collections::HashMap;
 use nom::multi::separated_list0;
-use nom::sequence::tuple;
-use nom::IResult;
+use nom::{IResult, Parser};
 
 #[derive(Debug)]
 struct Program<'a> {
@@ -19,9 +18,9 @@ struct Program<'a> {
 impl<'a> Program<'a> {
     fn parse(input: &'a str) -> IResult<&'a str, Self> {
         let (i, (name, _, size, _, children)) =
-            tuple((alpha1, tag(" ("), digit1, tag(")"), opt(tag(" -> "))))(input)?;
+            (alpha1, tag(" ("), digit1, tag(")"), opt(tag(" -> "))).parse(input)?;
         let (i, holding) = if children.is_some() {
-            separated_list0(tag(", "), alpha1)(i)?
+            separated_list0(tag(", "), alpha1).parse(i)?
         } else {
             (i, Vec::new())
         };

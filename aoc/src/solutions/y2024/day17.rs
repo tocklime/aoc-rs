@@ -20,7 +20,7 @@ struct Machine {
 impl Machine {
     fn from_str(s: &str) -> Self {
         let (regs, prog) = s.trim().split_once("\n\n").unwrap();
-        let mut r = inputs::find_things(regs, nom::character::complete::i64);
+        let mut r = inputs::ThingParser::new(regs, nom::character::complete::i64);
         let stripped = prog.strip_prefix("Program: ").unwrap();
         // dbg!(regs,prog,stripped);
         let program =

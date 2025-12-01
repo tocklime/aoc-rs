@@ -35,7 +35,7 @@ impl BunnyRobot {
 }
 
 fn gen(input: &str, max: Point<isize>) -> Vec<BunnyRobot> {
-    utils::inputs::find_things(input, nom::character::complete::i32)
+    utils::inputs::ThingParser::new(input, nom::character::complete::i32)
         .chunks(4)
         .into_iter()
         .map(|mut i| BunnyRobot {

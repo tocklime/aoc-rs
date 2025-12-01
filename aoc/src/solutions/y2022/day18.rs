@@ -6,8 +6,8 @@ use nom::{
     character::complete::{self, newline},
     combinator::{all_consuming, map, opt},
     multi::many1,
-    sequence::{terminated, tuple},
-    IResult,
+    sequence::terminated,
+    IResult, Parser,
 };
 
 aoc_harness::aoc_main!(2022 day 18, both [fixed_arrays] => (3432,2042),
@@ -31,11 +31,11 @@ const EG: &str = "2,2,2
 ";
 
 fn parse_line(input: &str) -> IResult<&str, (usize, usize, usize)> {
-    tuple((
+    (
         terminated(map(complete::u32, |x| x as usize), tag(",")),
         terminated(map(complete::u32, |x| x as usize), tag(",")),
         terminated(map(complete::u32, |x| x as usize), opt(newline)),
-    ))(input)
+    ).parse(input)
 }
 const WORLD_SIZE: usize = 21;
 fn neighbours(c: &(usize, usize, usize)) -> impl Iterator<Item = Option<(usize, usize, usize)>> {
@@ -51,7 +51,8 @@ fn neighbours(c: &(usize, usize, usize)) -> impl Iterator<Item = Option<(usize, 
     .into_iter()
 }
 fn make_hashset(input: &str) -> HashSet<(usize, usize, usize)> {
-    all_consuming(many1(parse_line))(input)
+    all_consuming(many1(parse_line))
+        .parse(input)
         .unwrap()
         .1
         .into_iter()
@@ -83,7 +84,7 @@ fn count_neighbours(
         .sum()
 }
 fn fixed_arrays(input: &str) -> (usize, usize) {
-    let points = all_consuming(many1(parse_line))(input).unwrap().1;
+    let points = all_consuming(many1(parse_line)).parse(input).unwrap().1;
     let mut world = Array3::from_elem((WORLD_SIZE, WORLD_SIZE, WORLD_SIZE), Air);
     for p in &points {
         world[*p] = Lava;

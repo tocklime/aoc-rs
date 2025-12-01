@@ -1,12 +1,6 @@
 
 use nom::{
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{self, newline},
-    combinator::value,
-    multi::separated_list1,
-    sequence::{delimited, separated_pair},
-    IResult,
+    IResult, Parser, branch::alt, bytes::complete::tag, character::complete::{self, newline}, combinator::value, multi::separated_list1, sequence::{delimited, separated_pair}
 };
 
 aoc_harness::aoc_main!(2022 day 19, generator gen, part1 [p1] => 1199, part2 [p2] => 3510, example part1 EG => 33);
@@ -54,16 +48,16 @@ fn parse_resource(input: &str) -> IResult<&str, Resource> {
         value(CLAY, tag("clay")),
         value(OBSIDIAN, tag("obsidian")),
         value(GEODE, tag("geode")),
-    ))(input)
+    )).parse(input)
 }
 fn parse_cost(input: &str) -> IResult<&str, (Resource, ResourceCount)> {
     //Each XXX robot costs ....
-    let (input, output) = delimited(tag("Each "), parse_resource, tag(" robot costs "))(input)?;
+    let (input, output) = delimited(tag("Each "), parse_resource, tag(" robot costs ")).parse(input)?;
     //2 ore and 3 clay
     let (input, cost_vec) = separated_list1(
         tag(" and "),
         separated_pair(complete::u32, tag(" "), parse_resource),
-    )(input)?;
+    ).parse(input)?;
     let mut costs = ResourceCount::new();
     for (count, res) in cost_vec {
         costs[res] = count;
@@ -71,8 +65,8 @@ fn parse_cost(input: &str) -> IResult<&str, (Resource, ResourceCount)> {
     Ok((input, (output, costs)))
 }
 fn parse_blueprint(input: &str) -> IResult<&str, Blueprint> {
-    let (input, id) = delimited(tag("Blueprint "), complete::u32, tag(": "))(input)?;
-    let (input, costs_vec) = separated_list1(tag(". "), parse_cost)(input)?;
+    let (input, id) = delimited(tag("Blueprint "), complete::u32, tag(": ")).parse(input)?;
+    let (input, costs_vec) = separated_list1(tag(". "), parse_cost).parse(input)?;
     let (input, _) = tag(".")(input)?;
     let mut maximum_demand = ResourceCount::new();
     for res in 0..GEODE {
@@ -195,7 +189,7 @@ impl Blueprint {
 }
 
 fn gen(input: &str) -> Vec<Blueprint> {
-    separated_list1(newline, parse_blueprint)(input).unwrap().1
+    separated_list1(newline, parse_blueprint).parse(input).unwrap().1
 }
 fn p1(blueprints: &[Blueprint]) -> u32 {
     blueprints.iter().map(|b| b.most_geodes_in(24) * b.id).sum()

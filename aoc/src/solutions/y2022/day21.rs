@@ -2,13 +2,7 @@ use std::collections::HashMap;
 
 
 use nom::{
-    branch::alt,
-    bytes::complete::{tag, take},
-    character::complete::{self, anychar, newline},
-    combinator::map,
-    multi::separated_list1,
-    sequence::{separated_pair, tuple},
-    IResult,
+    IResult, Parser, branch::alt, bytes::complete::{tag, take}, character::complete::{self, anychar, newline}, combinator::map, multi::separated_list1, sequence::separated_pair
 };
 
 aoc_harness::aoc_main!(2022 day 21, part1 [p1] => 194_058_098_264_286, part2 [p2] => 3_592_056_845_086, example both EG => (152,301));
@@ -41,7 +35,7 @@ impl<'a> Monkeys<'a> {
         let (_, lines) = separated_list1(
             newline,
             separated_pair(take(4_usize), tag(": "), parse_action),
-        )(s)
+        ).parse(s)
         .unwrap();
         Self(lines.into_iter().collect())
     }
@@ -101,10 +95,10 @@ fn parse_action(input: &str) -> IResult<&str, Action> {
     alt((
         map(complete::u64, Action::Lit),
         map(
-            tuple((take(4_usize), tag(" "), anychar, tag(" "), take(4_usize))),
+            (take(4_usize), tag(" "), anychar, tag(" "), take(4_usize)),
             |(a, _, o, _, b)| Action::Op(o, a, b),
         ),
-    ))(input)
+    )).parse(input)
 }
 fn p1(input: &str) -> u64 {
     Monkeys::from_str(input).eval::<false>("root").unwrap()

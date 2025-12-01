@@ -3,9 +3,7 @@ use std::collections::VecDeque;
 
 use associative_positional_list::AssociativePositionalList;
 use nom::{
-    character::complete::{self, newline},
-    multi::separated_list1,
-    IResult,
+    IResult, Parser, character::complete::{self, newline}, multi::separated_list1
 };
 
 aoc_harness::aoc_main!(2022 day 20, part1 [solve::<1,1>, solve_with_apl::<1,1>] => 5962, part2 [solve::<10,811_589_153>, solve_with_apl::<10,811_589_153>] => 9_862_431_387_256, example both EG => (3,1_623_178_306));
@@ -19,7 +17,7 @@ const EG: &str = "1
 4
 ";
 fn parse_line(input: &str) -> IResult<&str, Vec<i64>> {
-    separated_list1(newline, complete::i64)(input)
+    separated_list1(newline, complete::i64).parse(input)
 }
 fn solve<const ITER: usize, const MUL: i64>(input: &str) -> i64 {
     let (_, numbers) = parse_line(input).unwrap();

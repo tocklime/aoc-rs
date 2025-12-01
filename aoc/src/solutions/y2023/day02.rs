@@ -1,12 +1,6 @@
 
 use nom::{
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{self, newline},
-    combinator::{all_consuming, map},
-    multi::{many1, separated_list1},
-    sequence::{preceded, terminated},
-    IResult,
+    IResult, Parser, branch::alt, bytes::complete::tag, character::complete::{self, newline}, combinator::{all_consuming, map}, multi::{many1, separated_list1}, sequence::{preceded, terminated}
 };
 
 aoc_harness::aoc_main!(2023 day 2, generator gen, part1 [p1] => 2771, part2 [p2] => 70924, example both EG => (8, 2286));
@@ -51,25 +45,25 @@ struct Game {
 fn parse_show(input: &str) -> IResult<&str, Colours> {
     let mut ans = Colours::default();
     let (input, _) = nom::multi::separated_list1(tag(", "), |i| {
-        let (i, count) = terminated(complete::u32, tag(" "))(i)?;
+        let (i, count) = terminated(complete::u32, tag(" ")).parse(i)?;
         let (i, _) = alt((
             map(tag("red"), |_| ans.red += count),
             map(tag("blue"), |_| ans.blue += count),
             map(tag("green"), |_| ans.green += count),
-        ))(i)?;
+        )).parse(i)?;
         Ok((i, ()))
-    })(input)?;
+    }).parse(input)?;
     Ok((input, ans))
 }
 
 fn parse_line(input: &str) -> IResult<&str, Game> {
-    let (input, id) = preceded(tag("Game "), complete::u32)(input)?;
-    let (input, shows) = preceded(tag(": "), separated_list1(tag("; "), parse_show))(input)?;
+    let (input, id) = preceded(tag("Game "), complete::u32).parse(input)?;
+    let (input, shows) = preceded(tag(": "), separated_list1(tag("; "), parse_show)).parse(input)?;
     Ok((input, Game { id, shows }))
 }
 
 fn gen(input: &str) -> Vec<Game> {
-    all_consuming(many1(terminated(parse_line, newline)))(input)
+    all_consuming(many1(terminated(parse_line, newline))).parse(input)
         .unwrap()
         .1
 }

@@ -5,11 +5,11 @@ use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
     character::complete::{newline, u32},
-    combinator::{eof, fail, value},
-    error::Error,
+    combinator::{eof, value},
+    error::{Error, ErrorKind},
     multi::{fold_many0, many0},
-    sequence::{terminated, tuple},
-    Finish, IResult,
+    sequence::terminated,
+    Err, Finish, IResult, Parser,
 };
 
 aoc_harness::aoc_main!(2022 day 7, generator whole_input_is::<Dirs>, part1 [p1] => 1_644_735, part2 [p2] => 1_300_850, example both EG => (95437, 24_933_642));
@@ -58,22 +58,26 @@ impl FromStr for Dirs {
 }
 
 fn rest_of_line(input: &str) -> IResult<&str, &str> {
-    terminated(take_until("\n"), newline)(input)
+    terminated(take_until("\n"), newline).parse(input)
 }
 fn parse_dir(input: &str) -> IResult<&str, Dirs> {
-    let (input, (_, dir, _)) = tuple((tag("$ cd "), rest_of_line, rest_of_line))(input)?;
+    let (input, (_, dir, _)) = (tag("$ cd "), rest_of_line, rest_of_line).parse(input)?;
     if dir == ".." {
-        return fail("");
+        return Err(Err::Failure(Error {
+            input,
+            code: ErrorKind::Fail,
+        }));
     }
     let (input, files) = fold_many0(
         alt((
-            value(0, tuple((tag("dir "), rest_of_line))),
+            value(0, (tag("dir "), rest_of_line)),
             terminated(u32, rest_of_line),
         )),
         || 0,
         |a, b| a + b,
-    )(input)?;
-    let (input, children) = many0(parse_dir)(input)?;
+    )
+    .parse(input)?;
+    let (input, children) = many0(parse_dir).parse(input)?;
     let (my_size, mut sizes) = children
         .into_iter()
         .fold((files, Vec::new()), |mut acc, i| {
@@ -82,7 +86,7 @@ fn parse_dir(input: &str) -> IResult<&str, Dirs> {
             acc
         });
     sizes.push(my_size);
-    let (input, _) = alt((eof, tag("$ cd ..\n")))(input)?;
+    let (input, _) = alt((eof, tag("$ cd ..\n"))).parse(input)?;
     Ok((input, Dirs { my_size, sizes }))
 }
 

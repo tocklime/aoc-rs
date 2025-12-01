@@ -1,11 +1,9 @@
 
 use nom::{
-    character::complete::{self, newline, space1},
-    combinator::{eof, success},
+    bytes::complete::tag, character::complete::{self, space1}, multi::separated_list1
 };
-use nom_supreme::{multi::collect_separated_terminated, tag::complete::tag, ParserExt};
 use utils::{
-    nom::{ws, IResult},
+    nom::IResult,
     numset::NumSet,
 };
 
@@ -14,7 +12,7 @@ aoc_harness::aoc_main!(2023 day 4, generator gen, part1 [p1] => 18619, part2 [p2
 fn gen(input: &str) -> Vec<Card> {
     use nom::Parser;
 
-    collect_separated_terminated(Card::parse, success(()), eof.opt_preceded_by(newline))
+    nom::multi::many1(Card::parse)
         .parse(input)
         .expect("Parse")
         .1
@@ -55,19 +53,13 @@ impl Card {
     }
     fn parse(input: &str) -> IResult<Self> {
         use nom::Parser;
-        let (input, _id) = complete::u32
-            .terminated(tag(":"))
-            .terminated(space1)
-            .preceded_by(tag("Card").terminated(space1))
-            .context("Find ID")
-            .parse(input)?;
+        let (input, _id) = (tag("Card "), complete::u32, tag(":"), space1).map(|(_,id,_,_)| id).parse(input)?;
         let (input, winning) =
-            collect_separated_terminated(complete::u8, space1, ws(tag("|").terminated(space1)))
-                .parse(input)?;
+            separated_list1(space1, complete::u8).parse(input)?;
+        let (input, _) = tag(" | ").parse(input)?;
         let (input, have) =
-            nom_supreme::multi::collect_separated_terminated(complete::u8, space1, newline)
-                .parse(input)?;
-        Ok((input, Self { _id, winning, have }))
+            separated_list1(space1, complete::u8).parse(input)?;
+        Ok((input, Self { _id, winning: winning.into_iter().collect(), have: have.into_iter().collect() }))
     }
 }
 

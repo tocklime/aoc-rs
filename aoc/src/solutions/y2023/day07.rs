@@ -1,10 +1,7 @@
 use itertools::Itertools;
 use nom::{
-    character::complete::{self, alphanumeric1, newline},
-    multi::separated_list1,
-    sequence::separated_pair,
+    Parser, bytes::complete::tag, character::complete::{self, alphanumeric1, newline}, combinator::{all_consuming, opt}, multi::separated_list1, sequence::{separated_pair, terminated}
 };
-use nom_supreme::{final_parser::final_parser, tag::complete::tag, ParserExt};
 use utils::nom::IResult;
 
 aoc_harness::aoc_main!(2023 day 7, part1 [solve::<false>] => 251_545_216, part2 [solve::<true>] => 250_384_185, example both EG => (6440,5905));
@@ -25,7 +22,7 @@ impl Hand {
         }
     }
     fn parse<const J_IS_JOKER: bool>(input: &str) -> IResult<Self> {
-        let (input, (cards, bid)) = separated_pair(alphanumeric1, tag(" "), complete::u32)(input)?;
+        let (input, (cards, bid)) = separated_pair(alphanumeric1, tag(" "), complete::u32).parse(input)?;
         Ok((
             input,
             Self::new(cards.chars().map(card_rank::<J_IS_JOKER>).collect(), bid),
@@ -88,10 +85,10 @@ const fn card_rank<const J_IS_JOKER: bool>(card: char) -> usize {
 }
 
 fn solve<const J_IS_JOKER: bool>(input: &str) -> u32 {
-    let mut hands = final_parser::<_, _, _, ()>(
-        separated_list1(newline, Hand::parse::<J_IS_JOKER>).terminated(newline.opt()),
-    )(input)
-    .unwrap();
+    let mut hands = all_consuming(
+        terminated(separated_list1(newline, Hand::parse::<J_IS_JOKER>),opt(newline)),
+    ).parse(input)
+    .unwrap().1;
     hands.sort();
     hands
         .into_iter()
