@@ -760,5 +760,5 @@
     part2: Unknown
 2025:
   1:
-    part1: !Observed '1147'
-    part2: !Observed '6789'
+    part1: !Checked '1147'
+    part2: !Checked '6789'
