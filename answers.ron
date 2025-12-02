@@ -271,5 +271,6 @@
     },
     2025: {
         1: (part1: Checked("1147"), part2: Checked("6789")),
+        2: (part1: Checked("15873079081"), part2: Checked("22617871034")),
     },
 }
