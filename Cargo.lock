@@ -118,6 +118,7 @@ name = "aoc"
 version = "0.1.0"
 dependencies = [
  "ahash",
+ "anstyle",
  "anyhoo",
  "aoc_harness",
  "associative_positional_list",
@@ -197,6 +198,7 @@ name = "aoc_latest"
 version = "0.1.0"
 dependencies = [
  "ahash",
+ "anstyle",
  "anyhoo",
  "aoc_harness",
  "associative_positional_list",

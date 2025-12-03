@@ -43,6 +43,7 @@ gomez = "0.5.0"
 statistical = "1.0.0"
 qp-trie = "0.8.2"
 proptest = "1.9.0"
+anstyle = "1.0.13"
 
 [lints]
 workspace = true

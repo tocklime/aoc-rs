@@ -7,7 +7,7 @@ use nom::{
 use num_traits::Euclid;
 use utils::nom::NomError;
 
-aoc_harness::aoc_main!(2025 day 2, generator parse, part1 [p1] => 15873079081, part2 [p2, p2a] => 22617871034, example part1 EG => 1227775554, example part2 "1-99" => 495, example part2 EG => 4174379265);
+aoc_harness::aoc_main!(2025 day 2, generator parse, part1 [p1] => 15_873_079_081, part2 [p2, p2a] => 22_617_871_034, example part1 EG => 1_227_775_554, example part2 "1-99" => 495, example part2 EG => 4_174_379_265);
 
 fn parse(input: &str) -> Vec<(u64, u64)> {
     all_consuming::<_, NomError, _>(separated_list1(
