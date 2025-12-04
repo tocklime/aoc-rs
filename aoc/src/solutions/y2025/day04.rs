@@ -73,7 +73,7 @@ fn p2_fast(input: &str) -> usize {
 /// neighbours of removed nodes.
 fn by_counts(input: &str) -> (usize, usize) {
     let g = Grid2d::from_str(input, |x| x);
-    let mut to_remove = FxHashSet::default();
+    let mut to_remove = Vec::new();
     let mut g2 = Grid2d::from_fn(g.dim(), |p| {
         if g[p] == '@' {
             let count = 1 + g
@@ -81,7 +81,7 @@ fn by_counts(input: &str) -> (usize, usize) {
                 .filter(|n| g[*n] == '@')
                 .count() as u8;
             if count < 5 {
-                to_remove.insert(p);
+                to_remove.push(p);
             }
             count
         } else {
@@ -92,13 +92,13 @@ fn by_counts(input: &str) -> (usize, usize) {
     let p1 = to_remove.len();
     while !to_remove.is_empty() {
         removed += to_remove.len();
-        let mut new_to_remove = FxHashSet::default();
+        let mut new_to_remove = Vec::with_capacity(to_remove.len());
         for r in to_remove {
             g2[r] = 0;
             for n in g.neighbours_with_diagonals(r) {
                 g2[n] = g2[n].saturating_sub(1);
                 if 4 == g2[n] {
-                    new_to_remove.insert(n);
+                    new_to_remove.push(n);
                 }
             }
         }
