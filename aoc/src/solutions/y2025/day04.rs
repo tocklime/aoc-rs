@@ -1,4 +1,4 @@
-use std::{collections::BTreeSet, u8};
+use std::collections::BTreeSet;
 
 use utils::{cartesian::Point, grid2d::{Coord, Grid2d}};
 
