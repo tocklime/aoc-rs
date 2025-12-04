@@ -1,8 +1,7 @@
-use std::collections::BTreeSet;
-
+use rustc_hash::FxHashSet;
 use utils::{cartesian::Point, grid2d::{Coord, Grid2d}};
 
-aoc_harness::aoc_main!(2025 day 4, part1 [p1] => 1351, part2 [p2, p2_fast, p2_n_count] => 8345, example part1 EG => 13, example part2 EG => 43);
+aoc_harness::aoc_main!(2025 day 4, part1 [p1] => 1351, part2 [p2, p2_fast] => 8345, both [by_counts], example part1 EG => 13, example part2 EG => 43);
 
 fn is_removable(g: &Grid2d<char>, p: Coord) -> bool {
     let Some(c) = g.get(p) else {return false;};
@@ -39,10 +38,10 @@ fn p2(input: &str) -> usize {
 fn p2_fast(input: &str) -> usize {
     let mut g = Grid2d::from_str(input, |x| x);
     let mut removed = 0;
-    let mut to_remove = g
+    let mut to_remove : FxHashSet<Point<usize>> = g
         .indexes()
         .filter(|p| is_removable(&g, *p))
-        .collect::<BTreeSet<_>>();
+        .collect();
     while !to_remove.is_empty() {
         removed += to_remove.len();
         for r in &to_remove {
@@ -69,9 +68,9 @@ fn p2_fast(input: &str) -> usize {
 /// 
 /// This way, we scan the whole grid once, during construction, and from then only consider 
 /// neighbours of removed nodes.
-fn p2_n_count(input: &str) -> usize {
+fn by_counts(input: &str) -> (usize,usize) {
     let g = Grid2d::from_str(input, |x| x);
-    let mut to_remove = BTreeSet::new();
+    let mut to_remove = FxHashSet::default();
     let mut g2 = Grid2d::from_fn(g.dim(), |p| {
         if g[p] == '@' {
             let count = 1 + g.neighbours_with_diagonals(p).filter(|n| g[*n] == '@').count() as u8;
@@ -84,12 +83,13 @@ fn p2_n_count(input: &str) -> usize {
         }
     });
     let mut removed = 0;
+    let p1 = to_remove.len();
     while !to_remove.is_empty() {
         removed += to_remove.len();
-        let mut new_to_remove = BTreeSet::new();
-        for r in &to_remove {
-            g2[*r] = 0;
-            for n in g.neighbours_with_diagonals(*r) {
+        let mut new_to_remove = FxHashSet::default();
+        for r in to_remove {
+            g2[r] = 0;
+            for n in g.neighbours_with_diagonals(r) {
                 g2[n] = g2[n].saturating_sub(1);
                 if 4 == g2[n] {
                     new_to_remove.insert(n);
@@ -98,7 +98,7 @@ fn p2_n_count(input: &str) -> usize {
         }
         to_remove = new_to_remove;
     }
-    removed
+    (p1, removed)
 }
 
 const EG: &str = "..@@.@@@@.
