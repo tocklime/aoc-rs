@@ -327,6 +327,9 @@ impl<T> Grid2d<T> {
         let w = self.size.x;
         &mut self.data[y * w..(y + 1) * w]
     }
+    pub fn get_col(&self, column: usize) -> ColIterator<'_, T> {
+        ColIterator::new(self, column)
+    }
     pub fn get_col_mut(&mut self, column: usize) -> ColIteratorMut<'_, T> {
         ColIteratorMut::new(self, column)
     }
@@ -484,6 +487,39 @@ impl<T> Grid2d<T> {
     }
 }
 
+pub struct ColIterator<'a, T> {
+    grid: &'a Grid2d<T>,
+    column: usize,
+    row_start: usize,
+    row_end: usize,
+}
+
+impl<'a, T> Iterator for ColIterator<'a, T> {
+    type Item = &'a  T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row_start < self.row_end {
+            let r = self.row_start;
+            self.row_start += 1;
+            let p = & self.grid[(r, self.column)];
+            Some(p)
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a, T> ColIterator<'a, T> {
+    fn new(grid: &'a  Grid2d<T>, column: usize) -> Self {
+        let row_end = grid.dim().y;
+        Self {
+            grid,
+            column,
+            row_start: 0,
+            row_end,
+        }
+    }
+}
 pub struct ColIteratorMut<'a, T> {
     grid: &'a mut Grid2d<T>,
     column: usize,
