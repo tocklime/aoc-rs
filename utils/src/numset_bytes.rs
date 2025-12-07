@@ -57,6 +57,12 @@ impl<const BYTES: usize> NumSet<BYTES> {
         assert!(byte < BYTES);
         self.n[byte].set_bit(u8::try_from(bit).unwrap(), value);
     }
+    pub fn remove<T: Into<usize>>(&mut self, n: T) -> bool {
+        let as_usize: usize = n.into();
+        let was_in = self.contains(as_usize);
+        self.set_bit(as_usize, false);
+        was_in
+    }
     pub fn insert<T: Into<usize>>(&mut self, n: T) -> bool {
         let as_usize: usize = n.into();
         let was_in = self.contains(as_usize);

@@ -495,13 +495,13 @@ pub struct ColIterator<'a, T> {
 }
 
 impl<'a, T> Iterator for ColIterator<'a, T> {
-    type Item = &'a  T;
+    type Item = &'a T;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.row_start < self.row_end {
             let r = self.row_start;
             self.row_start += 1;
-            let p = & self.grid[(r, self.column)];
+            let p = &self.grid[(r, self.column)];
             Some(p)
         } else {
             None
@@ -510,7 +510,7 @@ impl<'a, T> Iterator for ColIterator<'a, T> {
 }
 
 impl<'a, T> ColIterator<'a, T> {
-    fn new(grid: &'a  Grid2d<T>, column: usize) -> Self {
+    fn new(grid: &'a Grid2d<T>, column: usize) -> Self {
         let row_end = grid.dim().y;
         Self {
             grid,
