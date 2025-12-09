@@ -336,7 +336,7 @@ impl<'tree, const K: usize, T: std::fmt::Debug + Copy + PartialEq> Iterator
 
 #[cfg(test)]
 mod test {
-    use std::{collections::HashSet, sync::Arc};
+    use std::{sync::Arc};
 
     use itertools::Itertools;
     use nom::{
@@ -410,14 +410,11 @@ mod test {
         // let a17 = kd.iter_nearest(p17).collect_vec();
         // assert_eq!(a17[1], (111_326, p18, 18));
 
-        dbg!(&kd);
         let mut i = kd.iter_nearest(p18);
         let _ = i.next().unwrap(); //self.
         let expect17 = i.next().unwrap();
         assert_eq!(expect17, (111_326, p17, 17));
         let a18 = kd.iter_nearest(p18).collect_vec();
-        dbg!(&kd, &a18);
         assert_eq!(a18[1], (111_326, p17, 17));
-        panic!();
     }
 }
