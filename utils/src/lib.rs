@@ -20,6 +20,7 @@ pub mod algorithms;
 pub mod assembunny;
 pub mod comp;
 pub mod iter;
+pub mod kdtree;
 pub mod knot_hash;
 pub mod nom;
 pub mod numset_bytes;
