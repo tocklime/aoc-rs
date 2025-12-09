@@ -8,7 +8,7 @@ use nom::{
     combinator::all_consuming,
     multi::separated_list1,
 };
-use utils::{kdtree::KdTree, nom::NomError};
+use utils::{collections::VecLookup, kdtree::KdTree, nom::NomError};
 
 aoc_harness::aoc_main!(2025 day 8, generator generate, both [both] => (96672, 22_517_595), example both EG => (40,25272));
 
@@ -116,7 +116,6 @@ impl<T> Ord for IgnoreOrder<T> {
     }
 }
 
-
 fn both(prob: &Problem) -> (usize, u64) {
     let junction_box_count = prob.coords.len();
     let mut nearests : BTreeSet<_> = prob.coords.iter().enumerate().map(|(ix, point)| {
@@ -128,8 +127,8 @@ fn both(prob: &Problem) -> (usize, u64) {
     //     .dists
     //     .iter()
     //     .flat_map(|(dist, v)| v.iter().map(move |p| (dist, p)));
-    let mut joined: BTreeMap<usize, BTreeSet<usize>> = BTreeMap::new();
-    let mut owners: BTreeMap<usize, usize> = BTreeMap::new();
+    let mut joined: VecLookup<BTreeSet<usize>> = VecLookup::with_capacity(junction_box_count);
+    let mut owners: VecLookup<usize> = VecLookup::with_capacity(junction_box_count);
     let mut p1 = 0;
     let mut skipped_join = 0;
     let mut count = 0;
@@ -173,8 +172,8 @@ fn both(prob: &Problem) -> (usize, u64) {
         //want a list of minimum-index to ordered list of nodes.
         //guarantee a < b.
         //but maybe a is already in something?
-        let a_owner = *owners.get(&a).unwrap_or(&a);
-        let b_owner = *owners.get(&b).unwrap_or(&b);
+        let a_owner = *owners.get(a).unwrap_or(&a);
+        let b_owner = *owners.get(b).unwrap_or(&b);
         // println!("a {a} -> {a_owner}, b {b} -> {b_owner}");
         // assert!(!owners.contains_key(&a_owner));
         // assert!(!owners.contains_key(&b_owner));
@@ -185,7 +184,7 @@ fn both(prob: &Problem) -> (usize, u64) {
         }
         let owner_min = a_owner.min(b_owner);
         let owner_max = a_owner.max(b_owner);
-        let take = joined.remove(&owner_max);
+        let take = joined.remove(owner_max);
         owners.insert(b, owner_min);
         owners.insert(a, owner_min);
         let rcv = joined.entry(owner_min).or_default();
