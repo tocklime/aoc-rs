@@ -98,8 +98,26 @@ where
     })
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct VecLookup<T>(Vec<Option<T>>);
+
+impl<T: std::fmt::Debug> std::fmt::Debug for VecLookup<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("{")?;
+        let mut is_first = true;
+        for (ix, v) in self.0.iter().enumerate() {
+            if let Some(v) = v {
+                if !is_first {
+                    f.write_str(", ")?;
+                }
+                is_first = false;
+                f.write_fmt(format_args!("{ix}: {v:?}"))?;
+            }
+        }
+        f.write_str("}")?;
+        Ok(())
+    }
+}
 
 impl<T> Default for VecLookup<T> {
     fn default() -> Self {

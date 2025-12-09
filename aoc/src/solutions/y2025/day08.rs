@@ -1,4 +1,4 @@
-use std::{collections::{BTreeMap, BTreeSet}, sync::Arc};
+use std::{collections::BTreeSet, sync::Arc};
 
 use itertools::Itertools;
 use nom::{
@@ -21,14 +21,14 @@ fn dist2(a: &[i64; 3], b: &[i64; 3]) -> u64 {
 }
 
 #[allow(dead_code)]
-fn validate(owners: &BTreeMap<usize,usize>, joined: &BTreeMap<usize,BTreeSet<usize>>) {
+fn validate(owners: &VecLookup<usize>, joined: &VecLookup<BTreeSet<usize>>) {
     for (k,v) in joined {
         for child in v {
-            assert_eq!(owners[child], *k);
+            assert_eq!(owners[*child], k);
         }
     }
     for (child, owner) in owners {
-        assert!(joined[owner].contains(child));
+        assert!(joined[*owner].contains(&child));
     }
 }
 
@@ -92,6 +92,7 @@ fn both(prob: &Problem) -> (usize, u64) {
     let junction_box_count = prob.coords.len();
     let mut nearests : BTreeSet<_> = prob.coords.iter().enumerate().map(|(ix, point)| {
         let mut ns = prob.kd_tree.iter_nearest(*point);
+        let _ignore_self_point = ns.next().unwrap();
         let first = ns.next().unwrap();
         (first, ix, IgnoreOrder(ns))
     }).collect();
@@ -105,10 +106,8 @@ fn both(prob: &Problem) -> (usize, u64) {
     let mut skipped_join = 0;
     let mut count = 0;
     // println!("Nearests: ");
-    // for ((dist, point, a), b, ns) in nearests.iter() {
-    //     println!("  dist {dist} point {point:?} ix {a}-->{b} {}", ns.0.base_ix);
-        
-
+    // for ((dist, point, a), b, _) in nearests.iter() {
+    //     println!("{b} --> dist {dist} point {point:?} ix {a}");
     // }
     while let Some(((_dist, _p, ix), ix_b, IgnoreOrder(mut ns))) = nearests.pop_first() {
         let a = ix;
@@ -117,15 +116,13 @@ fn both(prob: &Problem) -> (usize, u64) {
             //put this back in the heap for the next nearest.
             nearests.insert((next, ix_b, IgnoreOrder(ns)));
         }
-        if a < b {
-            //ignore when a >= b. We'll catch it the other way.
+        if a >= b {
+            //ignore when a < b. We'll catch it the other way.
             continue;
         }
         // println!("Nearests: ");
-        // for ((dist, point, a), b, ns) in nearests.iter().take(5) {
-        //     println!("  dist {dist} point {point:?} ix {a}-->{b} {}", ns.0.base_ix);
-            
-
+        // for ((dist, point, a), b, _) in nearests.iter().take(5) {
+        //     println!("  dist {dist} point {point:?} ix {a}-->{b}");
         // }
         count += 1;
         // validate(&owners, &joined);
@@ -150,7 +147,7 @@ fn both(prob: &Problem) -> (usize, u64) {
         // assert!(!owners.contains_key(&b_owner));
         if a_owner == b_owner {
             skipped_join += 1;
-            // println!("Same owner, skip");
+            // println!("Same owner, skip\n");
             continue;
         }
         let owner_min = a_owner.min(b_owner);
@@ -171,6 +168,7 @@ fn both(prob: &Problem) -> (usize, u64) {
         // println!("Done {count} joins, {skipped_join} of which were noops. That's {} real joins. Total box count is {junction_box_count}.", count - skipped_join);
         // println!("owners: {owners:?}");
         // println!("joined: {joined:?}");
+        // println!();
         if count - skipped_join == junction_box_count - 1 {
             // println!("Done.");
             let p2 = prob.coords[a][0] as u64 * prob.coords[b][0] as u64;

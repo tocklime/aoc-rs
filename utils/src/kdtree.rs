@@ -1,8 +1,11 @@
-use std::{collections::HashSet, sync::Arc};
+use std::{
+    collections::{BTreeSet, HashSet},
+    sync::Arc,
+};
 
 use itertools::Itertools;
 
-// #[derive(Debug)]
+#[derive(Debug)]
 enum KdPtr<const K: usize, T> {
     Empty,
     Single([i64; K], T),
@@ -10,7 +13,6 @@ enum KdPtr<const K: usize, T> {
 }
 
 type MetricFn<const K: usize> = Arc<Box<dyn Fn([i64; K], [i64; K]) -> i64>>;
-// #[derive(Debug)]
 pub struct KdTree<const K: usize, T> {
     dim: usize,
     split: i64,
@@ -18,8 +20,18 @@ pub struct KdTree<const K: usize, T> {
     bigger: KdPtr<K, T>,
     metric: MetricFn<K>,
 }
+impl<const K: usize, T : std::fmt::Debug> std::fmt::Debug for KdTree<K, T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("KdTree")
+            .field("dim", &self.dim)
+            .field("split", &self.split)
+            .field("smaller", &self.smaller)
+            .field("bigger", &self.bigger)
+            .finish()
+    }
+}
 
-impl<T: Copy, const K: usize> KdTree<K, T> {
+impl<T: Copy + PartialEq + std::fmt::Debug, const K: usize> KdTree<K, T> {
     pub fn from(points: &[([i64; K], T)], metric: MetricFn<K>) -> Self {
         Self::from_(points, 0, metric)
     }
@@ -78,6 +90,11 @@ impl<T: Copy, const K: usize> KdTree<K, T> {
         }
         vec
     }
+    pub fn closest_plane_point(&self, target: [i64; K]) -> [i64; K] {
+        let mut ans = target;
+        ans[self.dim] = self.split;
+        ans
+    }
     pub fn find_nearest_to(
         &self,
         target: [i64; K],
@@ -119,8 +136,7 @@ impl<T: Copy, const K: usize> KdTree<K, T> {
                 }
                 KdPtr::KdTree(kd_tree) => {
                     //could anything in optr possibly be closer?
-                    let mut closest_plane_point = target;
-                    closest_plane_point[n.dim] = n.split;
+                    let closest_plane_point = n.closest_plane_point(target);
                     let distance_to_plane = (self.metric)(target, closest_plane_point);
                     match closest {
                         None => {
@@ -157,32 +173,162 @@ impl Metrics {
     }
 }
 
+#[derive(Debug)]
+enum NearestOption<'tree, const K: usize, T> {
+    Point {
+        distance: i64,
+        location: [i64; K],
+        label: T,
+    },
+    Thunk {
+        min_distance: i64,
+        tree: &'tree KdTree<K, T>,
+    },
+}
+impl<'tree, const K: usize, T> NearestOption<'tree, K, T> {
+    fn dist(&self) -> i64 {
+        match self {
+            NearestOption::Point { distance, .. } => *distance,
+            NearestOption::Thunk { min_distance, .. } => *min_distance,
+        }
+    }
+    fn rank(&self) -> usize {
+        match self {
+            NearestOption::Point { .. } => 0,
+            NearestOption::Thunk { tree, .. } => std::ptr::addr_of!(*tree) as usize
+        }
+    }
+}
 pub struct Nearests<'tree, const K: usize, T> {
     base_point: [i64; K],
-    kd_tree: &'tree KdTree<K, T>,
-    done_so_far: HashSet<[i64; K]>,
+    stack: BTreeSet<NearestOption<'tree, K, T>>,
+    last_returned_dist: i64,
+    // kd_tree: &'tree KdTree<K, T>,
+    // done_so_far: HashSet<[i64; K]>,
 }
-impl<'tree, const K: usize, T> Nearests<'tree, K, T> {
+
+impl<'tree, const K: usize, T: PartialEq> std::cmp::PartialEq for NearestOption<'tree, K, T> {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (
+                Self::Point {
+                    distance: l_distance,
+                    location: l_location,
+                    label: l_label,
+                },
+                Self::Point {
+                    distance: r_distance,
+                    location: r_location,
+                    label: r_label,
+                },
+            ) => l_distance == r_distance && l_location == r_location && l_label == r_label,
+            (
+                Self::Thunk {
+                    min_distance: l_min_distance,
+                    tree: l_tree,
+                },
+                Self::Thunk {
+                    min_distance: r_min_distance,
+                    tree: r_tree,
+                },
+            ) => l_min_distance == r_min_distance && std::ptr::eq(l_tree, r_tree),
+            _ => false,
+        }
+    }
+}
+impl<'tree, const K: usize, T: PartialEq> std::cmp::Eq for NearestOption<'tree, K, T> {}
+impl<'tree, const K: usize, T: PartialEq> std::cmp::PartialOrd for NearestOption<'tree, K, T> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<'tree, const K: usize, T: PartialEq> std::cmp::Ord for NearestOption<'tree, K, T> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.dist()
+            .cmp(&other.dist())
+            .then(self.rank().cmp(&other.rank()))
+    }
+}
+impl<'tree, const K: usize, T: Copy + PartialEq> Nearests<'tree, K, T> {
     pub fn new(tree: &'tree KdTree<K, T>, point: [i64; K]) -> Self {
+        let mut stack = BTreeSet::new();
+        stack.insert(NearestOption::Thunk {
+            min_distance: 0,
+            tree,
+        });
         Self {
             base_point: point,
-            kd_tree: tree,
-            done_so_far: [point].into_iter().collect(),
+            last_returned_dist: 0,
+            stack,
+            // kd_tree: tree,
+            // done_so_far: [point].into_iter().collect(),
         }
     }
 }
 
-impl<'tree, const K: usize, T: Copy> Iterator for Nearests<'tree, K, T> {
+impl<'tree, const K: usize, T: std::fmt::Debug + Copy + PartialEq> Iterator for Nearests<'tree, K, T> {
     type Item = (i64, [i64; K], T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let ans = self
-            .kd_tree
-            .find_nearest_to(self.base_point, &self.done_so_far);
-        if let Some((_, x, _)) = ans {
-            self.done_so_far.insert(x);
+        loop {
+            match self.stack.pop_first() {
+                Some(NearestOption::Point {
+                    distance,
+                    location,
+                    label,
+                }) => {
+                    assert!(distance >= self.last_returned_dist);
+                    self.last_returned_dist = distance;
+                    return Some((distance, location, label));
+                }
+                Some(NearestOption::Thunk {
+                    min_distance: _,
+                    tree,
+                }) => {
+                    //need to evaluate this path, and put anything found back in the stack,
+                    let dist_to_plane =
+                        (tree.metric)(tree.closest_plane_point(self.base_point), self.base_point);
+                    let (near, far) = if self.base_point[tree.dim] < tree.split {
+                        (&tree.smaller, &tree.bigger)
+                    } else {
+                        (&tree.bigger, &tree.smaller)
+                    };
+                    //save work for later.
+                    for p in [near, far] {
+                        match p {
+                            KdPtr::Empty => {}
+                            KdPtr::Single(p, l) => {
+                                self.stack.insert(NearestOption::Point {
+                                    distance: (tree.metric)(*p, self.base_point),
+                                    location: *p,
+                                    label: *l,
+                                });
+                            }
+                            KdPtr::KdTree(kd_tree) => {
+                                let min_distance = if std::ptr::eq(p, near) {
+                                    0
+                                } else {
+                                    dist_to_plane
+                                };
+                                self.stack.insert(NearestOption::Thunk {
+                                    min_distance,
+                                    tree: kd_tree,
+                                });
+                            }
+                        }
+                    }
+                }
+                None => return None,
+            }
         }
-        ans
+        // let ans = self
+        //     .kd_tree
+        //     .find_nearest_to(self.base_point, &self.done_so_far);
+        // if let Some((_, x, _)) = ans {
+        //     self.done_so_far.insert(x);
+        // }
+        // ans
     }
 }
 
@@ -250,9 +396,26 @@ mod test {
         .zip(0..)
         .collect_vec();
         let kd = KdTree::from(&coords, Arc::new(Box::new(Metrics::straight_line_squared)));
-        let t_point = [862, 61, 35];
-        let exclude: HashSet<[i64; 3]> = [t_point].into_iter().collect();
-        let a = kd.find_nearest_to(t_point, &exclude).unwrap();
-        assert_eq!(a, (111_326, [984, 92, 344], 18));
+        let p17 = coords[17].0;
+        let p18 = coords[18].0;
+        // let exclude: HashSet<[i64; 3]> = [p17].into_iter().collect();
+        // let a = kd.find_nearest_to(p17, &exclude).unwrap();
+        // assert_eq!(a, (111_326, p18, 18));
+        // let exclude: HashSet<[i64; 3]> = [p18].into_iter().collect();
+        // let a = kd.find_nearest_to(p18, &exclude).unwrap();
+        // assert_eq!(a, (111_326, p17, 17));
+
+        // let a17 = kd.iter_nearest(p17).collect_vec();
+        // assert_eq!(a17[1], (111_326, p18, 18));
+
+        dbg!(&kd);
+        let mut i = kd.iter_nearest(p18);
+        let _ = i.next().unwrap(); //self.
+        let expect17 = i.next().unwrap();
+        assert_eq!(expect17, (111_326, p17, 17));
+        let a18 = kd.iter_nearest(p18).collect_vec();
+        dbg!(&kd, &a18);
+        assert_eq!(a18[1], (111_326, p17, 17));
+        panic!();
     }
 }
