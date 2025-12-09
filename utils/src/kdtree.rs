@@ -20,7 +20,7 @@ pub struct KdTree<const K: usize, T> {
     bigger: KdPtr<K, T>,
     metric: MetricFn<K>,
 }
-impl<const K: usize, T : std::fmt::Debug> std::fmt::Debug for KdTree<K, T> {
+impl<const K: usize, T: std::fmt::Debug> std::fmt::Debug for KdTree<K, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("KdTree")
             .field("dim", &self.dim)
@@ -195,7 +195,7 @@ impl<'tree, const K: usize, T> NearestOption<'tree, K, T> {
     fn rank(&self) -> usize {
         match self {
             NearestOption::Point { .. } => 0,
-            NearestOption::Thunk { tree, .. } => std::ptr::addr_of!(*tree) as usize
+            NearestOption::Thunk { tree, .. } => std::ptr::addr_of!(*tree) as usize,
         }
     }
 }
@@ -267,7 +267,9 @@ impl<'tree, const K: usize, T: Copy + PartialEq> Nearests<'tree, K, T> {
     }
 }
 
-impl<'tree, const K: usize, T: std::fmt::Debug + Copy + PartialEq> Iterator for Nearests<'tree, K, T> {
+impl<'tree, const K: usize, T: std::fmt::Debug + Copy + PartialEq> Iterator
+    for Nearests<'tree, K, T>
+{
     type Item = (i64, [i64; K], T);
 
     fn next(&mut self) -> Option<Self::Item> {
