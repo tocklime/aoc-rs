@@ -121,9 +121,11 @@ where
         let x_start = self.bottom_left.x;
         let x_end = self.top_right.x;
         (x_start..=x_end)
+            //every x across the bottom.
             .map(|x| Point::new(x, self.bottom_left.y))
             .chain(
-                (self.bottom_left.y + T::one()..=self.top_right.y - T::one())
+                (self.bottom_left.y + T::one() + T::one()..=self.top_right.y)
+                    .map(|x| x - T::one())
                     .flat_map(move |y| [Point::new(x_start, y), Point::new(x_end, y)]),
             )
             .chain((x_start..=x_end).map(|x| Point::new(x, self.top_right.y)))
@@ -152,32 +154,33 @@ where
         Self::t_as_usize(T::one() + self.top_right.y - self.bottom_left.y)
     }
 }
-impl<'a, T> FromIterator<&'a Point<T>> for Aabb<T>
+impl<T, P> FromIterator<P> for Aabb<T>
 where
-    T: 'a + Num + Copy + TryInto<usize> + Ord + WrappingSub,
+    T: Num + Copy + TryInto<usize> + Ord + WrappingSub,
+    P: Into<Point<T>>,
     RangeInclusive<T>: std::iter::Iterator<Item = T>,
 {
     fn from_iter<I>(iter: I) -> Self
     where
-        I: IntoIterator<Item = &'a Point<T>>,
+        I: IntoIterator<Item = P>,
     {
         let mut i = iter.into_iter();
-        let b = Self::new(*i.next().expect("Non empty iterator"));
-        i.fold(b, |b, n| b.extend(*n))
+        let b = Self::new(i.next().expect("Non empty iterator").into());
+        i.fold(b, |b, n| b.extend(n.into()))
     }
 }
 
-impl<T> FromIterator<Point<T>> for Aabb<T>
-where
-    T: Num + Copy + TryInto<usize> + Ord + WrappingSub,
-    RangeInclusive<T>: std::iter::Iterator<Item = T>,
-{
-    fn from_iter<I>(iter: I) -> Self
-    where
-        I: IntoIterator<Item = Point<T>>,
-    {
-        let mut i = iter.into_iter();
-        let b = Self::new(i.next().expect("Non empty iterator"));
-        i.fold(b, |b, n| b.extend(n))
-    }
-}
+// impl<T> FromIterator<Point<T>> for Aabb<T>
+// where
+//     T: Num + Copy + TryInto<usize> + Ord + WrappingSub,
+//     RangeInclusive<T>: std::iter::Iterator<Item = T>,
+// {
+//     fn from_iter<I>(iter: I) -> Self
+//     where
+//         I: IntoIterator<Item = Point<T>>,
+//     {
+//         let mut i = iter.into_iter();
+//         let b = Self::new(i.next().expect("Non empty iterator"));
+//         i.fold(b, |b, n| b.extend(n))
+//     }
+// }

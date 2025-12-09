@@ -30,6 +30,19 @@ impl<T> From<(T, T)> for Point<T> {
         Self { y, x }
     }
 }
+impl<T: Copy> From<&Point<T>> for Point<T> {
+    fn from(value: &Point<T>) -> Self {
+        *value
+    }
+}
+impl<T: Copy> From<[T; 2]> for Point<T> {
+    fn from(value: [T; 2]) -> Self {
+        Self {
+            x: value[0],
+            y: value[1],
+        }
+    }
+}
 impl<T> From<Point<T>> for (T, T) {
     fn from(value: Point<T>) -> Self {
         (value.y, value.x)

@@ -1,27 +1,29 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 use itertools::Itertools;
 
-#[derive(Debug)]
+// #[derive(Debug)]
 enum KdPtr<const K: usize, T> {
     Empty,
     Single([i64; K], T),
     KdTree(Box<KdTree<K, T>>),
 }
 
-#[derive(Debug)]
+type MetricFn<const K: usize> = Arc<Box<dyn Fn([i64; K], [i64; K]) -> i64>>;
+// #[derive(Debug)]
 pub struct KdTree<const K: usize, T> {
     dim: usize,
     split: i64,
     smaller: KdPtr<K, T>,
     bigger: KdPtr<K, T>,
+    metric: MetricFn<K>,
 }
 
 impl<T: Copy, const K: usize> KdTree<K, T> {
-    pub fn from(points: &[([i64; K], T)]) -> Self {
-        Self::from_(points, 0)
+    pub fn from(points: &[([i64; K], T)], metric: MetricFn<K>) -> Self {
+        Self::from_(points, 0, metric)
     }
-    fn from_(points: &[([i64; K], T)], dim: usize) -> Self {
+    fn from_(points: &[([i64; K], T)], dim: usize, metric: MetricFn<K>) -> Self {
         let sorted: Vec<([i64; K], T)> =
             points.iter().copied().sorted_by_key(|x| x.0[dim]).collect();
         let (smaller_points, bigger_points) = sorted.split_at(sorted.len() / 2);
@@ -29,28 +31,34 @@ impl<T: Copy, const K: usize> KdTree<K, T> {
         let smaller = match smaller_points.len() {
             0 => KdPtr::Empty,
             1 => KdPtr::Single(smaller_points[0].0, smaller_points[0].1),
-            _ => KdPtr::KdTree(Box::new(Self::from_(smaller_points, (dim + 1) % K))),
+            _ => KdPtr::KdTree(Box::new(Self::from_(
+                smaller_points,
+                (dim + 1) % K,
+                metric.clone(),
+            ))),
         };
         let bigger = match bigger_points.len() {
             0 => KdPtr::Empty,
             1 => KdPtr::Single(bigger_points[0].0, bigger_points[0].1),
-            _ => KdPtr::KdTree(Box::new(Self::from_(bigger_points, (dim + 1) % K))),
+            _ => KdPtr::KdTree(Box::new(Self::from_(
+                bigger_points,
+                (dim + 1) % K,
+                metric.clone(),
+            ))),
         };
         Self {
             dim,
             split: median,
             smaller,
             bigger,
+            metric,
         }
     }
-    fn dist2(a: &[i64; K], b: &[i64; K]) -> i64 {
-        (0..K).map(|d| (a[d] - b[d]).abs()).map(|x| x * x).sum()
-    }
-    fn path_to_node_point<'a>(
-        &'a self,
-        target: [i64; K],
-    ) -> Vec<(&'a KdTree<K, T>, &'a KdPtr<K, T>)> {
-        let choose_path = |n: &'a KdTree<K, T>| -> &'a KdPtr<K, T> {
+    // fn dist2(a: &[i64; K], b: &[i64; K]) -> i64 {
+    //     (0..K).map(|d| (a[d] - b[d]).abs()).map(|x| x * x).sum()
+    // }
+    fn path_to_node_point<'a>(&'a self, target: [i64; K]) -> Vec<(&'a Self, &'a KdPtr<K, T>)> {
+        let choose_path = |n: &'a Self| -> &'a KdPtr<K, T> {
             if target[n.dim] < n.split {
                 &n.smaller
             } else {
@@ -93,7 +101,7 @@ impl<T: Copy, const K: usize> KdTree<K, T> {
             };
         match path.last().unwrap().1 {
             KdPtr::Empty => (),
-            KdPtr::Single(p, t) => set_closest(&mut closest, *p, Self::dist2(p, &target), *t),
+            KdPtr::Single(p, t) => set_closest(&mut closest, *p, (self.metric)(*p, target), *t),
             KdPtr::KdTree(_) => unreachable!(), //we cannot end the path on a non-leaf node.
         };
         //walk up the tree, recursing into potentially closer subtrees.
@@ -107,19 +115,20 @@ impl<T: Copy, const K: usize> KdTree<K, T> {
             match optr {
                 KdPtr::Empty => {}
                 KdPtr::Single(p, t) => {
-                    set_closest(&mut closest, *p, Self::dist2(&target, p), *t);
+                    set_closest(&mut closest, *p, (self.metric)(*p, target), *t);
                 }
                 KdPtr::KdTree(kd_tree) => {
                     //could anything in optr possibly be closer?
-                    let distance_to_plane = (n.split - target[n.dim]).abs();
-                    let dist2 = distance_to_plane * distance_to_plane;
+                    let mut closest_plane_point = target;
+                    closest_plane_point[n.dim] = n.split;
+                    let distance_to_plane = (self.metric)(target, closest_plane_point);
                     match closest {
                         None => {
                             if let Some((d, p, t)) = kd_tree.find_nearest_to(target, exclude) {
                                 set_closest(&mut closest, p, d, t);
                             }
                         }
-                        Some((best_d, _, _)) if best_d >= dist2 => {
+                        Some((best_d, _, _)) if best_d >= distance_to_plane => {
                             if let Some((d, p, t)) = kd_tree.find_nearest_to(target, exclude) {
                                 set_closest(&mut closest, p, d, t);
                             }
@@ -131,11 +140,55 @@ impl<T: Copy, const K: usize> KdTree<K, T> {
         }
         closest
     }
+    pub fn iter_nearest(&self, target: [i64; K]) -> impl Iterator<Item = (i64, [i64; K], T)> {
+        Nearests::new(self, target)
+    }
+}
+pub struct Metrics;
+impl Metrics {
+    pub fn straight_line_squared<const K: usize>(a: [i64; K], b: [i64; K]) -> i64 {
+        (0..K).map(|d| (a[d] - b[d]).abs()).map(|x| x * x).sum()
+    }
+    pub fn manhattan<const K: usize>(a: [i64; K], b: [i64; K]) -> i64 {
+        (0..K).map(|d| (a[d] - b[d]).abs()).sum()
+    }
+    pub fn area_between<const K: usize>(a: [i64; K], b: [i64; K]) -> i64 {
+        (0..K).map(|d| (a[d] - b[d]).abs()).product()
+    }
+}
+
+pub struct Nearests<'tree, const K: usize, T> {
+    base_point: [i64; K],
+    kd_tree: &'tree KdTree<K, T>,
+    done_so_far: HashSet<[i64; K]>,
+}
+impl<'tree, const K: usize, T> Nearests<'tree, K, T> {
+    pub fn new(tree: &'tree KdTree<K, T>, point: [i64; K]) -> Self {
+        Self {
+            base_point: point,
+            kd_tree: tree,
+            done_so_far: [point].into_iter().collect(),
+        }
+    }
+}
+
+impl<'tree, const K: usize, T: Copy> Iterator for Nearests<'tree, K, T> {
+    type Item = (i64, [i64; K], T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let ans = self
+            .kd_tree
+            .find_nearest_to(self.base_point, &self.done_so_far);
+        if let Some((_, x, _)) = ans {
+            self.done_so_far.insert(x);
+        }
+        ans
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use std::collections::HashSet;
+    use std::{collections::HashSet, sync::Arc};
 
     use itertools::Itertools;
     use nom::{
@@ -146,19 +199,22 @@ mod test {
         multi::separated_list1,
     };
 
-    use crate::{kdtree::KdTree, nom::NomError};
+    use crate::{
+        kdtree::{KdTree, Metrics},
+        nom::NomError,
+    };
 
     #[test]
     fn single() {
         let points = vec![([1, 2, 3], 0)];
-        let kd = KdTree::from(&points);
-        dbg!(kd);
+        let _kd = KdTree::from(&points, Arc::new(Box::new(Metrics::straight_line_squared)));
+        // dbg!(kd);
     }
     #[test]
     fn some() {
         let points: Vec<([i64; 2], i64)> = (0..10).map(|x| ([10 - x, x], x)).collect();
-        let kd = KdTree::from(&points);
-        dbg!(kd);
+        let _kd = KdTree::from(&points, Arc::new(Box::new(Metrics::straight_line_squared)));
+        // dbg!(kd);
     }
     #[test]
     fn from_2025d8() {
@@ -193,8 +249,7 @@ mod test {
         .into_iter()
         .zip(0..)
         .collect_vec();
-        let kd = KdTree::from(&coords);
-        dbg!(&kd);
+        let kd = KdTree::from(&coords, Arc::new(Box::new(Metrics::straight_line_squared)));
         let t_point = [862, 61, 35];
         let exclude: HashSet<[i64; 3]> = [t_point].into_iter().collect();
         let a = kd.find_nearest_to(t_point, &exclude).unwrap();

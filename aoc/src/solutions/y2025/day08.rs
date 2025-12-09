@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::{collections::{BTreeMap, BTreeSet}, sync::Arc};
 
 use itertools::Itertools;
 use nom::{
@@ -8,7 +8,7 @@ use nom::{
     combinator::all_consuming,
     multi::separated_list1,
 };
-use utils::{collections::VecLookup, kdtree::KdTree, nom::NomError};
+use utils::{collections::VecLookup, kdtree::{KdTree, Metrics}, nom::NomError};
 
 aoc_harness::aoc_main!(2025 day 8, generator generate, both [both] => (96672, 22_517_595), example both EG => (40,25272));
 
@@ -49,7 +49,7 @@ fn generate(input: &str) -> Problem {
     .unwrap()
     .1;
     let coords_with_ixs = coords.iter().copied().zip(0..).collect_vec();
-    let kd_tree = KdTree::from(&coords_with_ixs);
+    let kd_tree = KdTree::from(&coords_with_ixs, Arc::new(Box::new(Metrics::straight_line_squared)));
     //compute distance of all pairs
     // let mut dists: BTreeMap<u64, Vec<(usize, usize)>> = BTreeMap::default();
     // for a in 0..coords.len() {
@@ -66,34 +66,6 @@ fn generate(input: &str) -> Problem {
     }
 }
 
-struct Nearests<'tree> {
-    base_point: [i64;3],
-    base_ix: usize,
-    kd_tree: &'tree KdTree<3, usize>,
-    done_so_far: HashSet<[i64;3]>
-}
-impl<'tree> Nearests<'tree> {
-    fn new(tree: &'tree KdTree<3, usize>, point: [i64;3], ix: usize) -> Self {
-        Self {
-            base_point: point,
-            base_ix: ix,
-            kd_tree: tree,
-            done_so_far: [point].into_iter().collect()
-        }
-    }
-}
-
-impl<'tree> Iterator for Nearests<'tree> {
-    type Item = (i64, [i64;3], usize);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let ans = self.kd_tree.find_nearest_to(self.base_point, &self.done_so_far);
-        if let Some((_,x, _)) = ans {
-            self.done_so_far.insert(x);
-        }
-        ans
-    }
-}
 
 
 struct IgnoreOrder<T>(T);
@@ -119,9 +91,9 @@ impl<T> Ord for IgnoreOrder<T> {
 fn both(prob: &Problem) -> (usize, u64) {
     let junction_box_count = prob.coords.len();
     let mut nearests : BTreeSet<_> = prob.coords.iter().enumerate().map(|(ix, point)| {
-        let mut ns = Nearests::new(&prob.kd_tree, *point, ix);
+        let mut ns = prob.kd_tree.iter_nearest(*point);
         let first = ns.next().unwrap();
-        (first, ns.base_ix, IgnoreOrder(ns))
+        (first, ix, IgnoreOrder(ns))
     }).collect();
     // let dist_iter = p
     //     .dists
@@ -140,7 +112,6 @@ fn both(prob: &Problem) -> (usize, u64) {
     // }
     while let Some(((_dist, _p, ix), ix_b, IgnoreOrder(mut ns))) = nearests.pop_first() {
         let a = ix;
-        assert_eq!(ns.base_ix, ix_b);
         let b = ix_b;
         if let Some(next) = ns.next() {
             //put this back in the heap for the next nearest.
