@@ -45,7 +45,7 @@ impl KnotHash {
     }
     #[must_use]
     pub fn set_bit_count(&self) -> u8 {
-        self.dense().map(bitintr::Popcnt::popcnt).sum()
+        self.dense().map(|n| n.count_ones() as u8).sum()
     }
     #[must_use]
     pub fn bit_arr(&self) -> Vec<u8> {

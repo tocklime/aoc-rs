@@ -336,7 +336,7 @@ impl<'tree, const K: usize, T: std::fmt::Debug + Copy + PartialEq> Iterator
 
 #[cfg(test)]
 mod test {
-    use std::{sync::Arc};
+    use std::sync::Arc;
 
     use itertools::Itertools;
     use nom::{

@@ -279,5 +279,6 @@
         7: (part1: Checked("1687"), part2: Checked("390684413472684")),
         8: (part1: Checked("96672"), part2: Checked("22517595")),
         9: (part1: Checked("4733727792"), part2: Checked("1566346198")),
+        10: (part1: Observed("466"), part2: Observed("17214")),
     },
 }

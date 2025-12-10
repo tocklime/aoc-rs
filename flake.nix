@@ -23,7 +23,7 @@
             pkg-config
             eza
             fd
-            (rust-bin.beta.latest.default.override {
+            (rust-bin.stable.latest.default.override {
               extensions = ["rust-src"];
             })
             bacon
@@ -31,6 +31,16 @@
             cargo-flamegraph
             cargo-make
             bashInteractive
+            llvmPackages.libclang
+            z3
+          ];
+          LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
+          BINDGEN_EXTRA_CLANG_ARGS = ''
+            -I${pkgs.llvmPackages.libclang.lib}/clang/17/include
+            -I${pkgs.z3}/include
+          '';
+          PKG_CONFIG_PATH = pkgs.lib.makeSearchPath "lib/pkgconfig" [
+            pkgs.llvmPackages.libclang
           ];
         };
       }

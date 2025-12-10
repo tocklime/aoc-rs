@@ -3,13 +3,12 @@
 aoc_harness::aoc_main!(2016 day 13, part1 [p1] => 90, part2 [p2] => 135);
 use utils::cartesian::Point;
 use pathfinding::directed::astar::astar;
-use bitintr::Popcnt;
 use itertools::Itertools;
 use pathfinding::directed::dijkstra::dijkstra_all;
 
 fn is_open(p: Point<i64>, n: i64) -> bool {
     let val = n + p.x * p.x + 3*p.x + 2*p.x*p.y + p.y + p.y*p.y;
-    val.popcnt() % 2 == 0
+    val.count_ones().is_multiple_of(2)
 }
 
 
