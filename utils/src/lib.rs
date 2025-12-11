@@ -27,3 +27,4 @@ pub mod numset_bytes;
 pub mod points;
 pub mod polynomials;
 pub mod prelude;
+pub mod linear_programming;

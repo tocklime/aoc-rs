@@ -4,23 +4,23 @@ use nom::{
     Parser,
     bytes::complete::tag,
     character::{
-        complete::{self, newline},
+        complete::{self},
         one_of,
     },
     combinator::all_consuming,
     multi::{many1, separated_list1},
     sequence::delimited,
 };
+use num::Rational64;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use utils::nom::NomError;
-use z3::{
-    Optimize, SatResult, ast::Int
-};
+use utils::{linear_programming, nom::NomError};
+use z3::{Optimize, SatResult, ast::Int};
 
-aoc_harness::aoc_main!(2025 day 10, part1 [p1] => 466, part2 [p2] => 17214, example part1 EG => 7, example part2 EG => 33);
+aoc_harness::aoc_main!(2025 day 10, generator generate, part1 [p1] => 466, part2 [p2_z3, p2_simplex] => 17214, example part1 EG => 7, example part2 EG => 33);
 
 #[derive(Debug)]
 struct Prob {
+    orig: String,
     target: u32,
     buttons: Vec<u32>,
     #[allow(dead_code)]
@@ -41,7 +41,7 @@ impl std::fmt::Debug for Constraint {
 }
 
 impl Prob {
-    fn new(target: u32, buttons: Vec<u32>, joltage: Vec<u32>) -> Self {
+    fn new(input: &str, target: u32, buttons: Vec<u32>, joltage: Vec<u32>) -> Self {
         let constraints = joltage
             .iter()
             .enumerate()
@@ -56,13 +56,14 @@ impl Prob {
             })
             .collect();
         Self {
+            orig: input.to_string(),
             target,
             buttons,
             joltage,
             constraints,
         }
     }
-    fn parser<'a>() -> impl Parser<&'a str, Output = Self, Error = NomError<'a>> {
+    fn parser<'a>(input: &str) -> impl Parser<&'a str, Output = Self, Error = NomError<'a>> {
         (
             nom::sequence::delimited(tag("["), many1(one_of(".#")), tag("] ")).map(|n| {
                 n.iter()
@@ -80,7 +81,7 @@ impl Prob {
             ),
             delimited(tag("{"), separated_list1(tag(","), complete::u32), tag("}")),
         )
-            .map(|(target, buttons, joltage)| Self::new(target, buttons, joltage))
+            .map(|(target, buttons, joltage)| Self::new(input, target, buttons, joltage))
     }
     fn power_up(&self) -> usize {
         //find selection of buttons which xor together to make target.
@@ -100,39 +101,80 @@ impl Prob {
         }
         unreachable!()
     }
-    fn solve_joltage_with_z3(&self) -> u64 {
+    fn solve_joltage_with_simplex(&self) -> u64 {
+        let mut p = linear_programming::SimplexProb::new();
+        for ix in 0..self.buttons.len() {
+            p.declare_var((b'a' + ix as u8) as char);
+        }
+        for c in &self.constraints {
+            let lhs: Vec<(i64, char)> = c
+                .buttons
+                .view_bits::<Lsb0>()
+                .iter_ones()
+                .map(|ix| (1i64, (b'a' + (ix as u8)) as char))
+                .collect();
+            p.add_eq_constraint(&lhs, c.sum as i64);
+        }
+        let all_buttons: Vec<(i64, char)> = (0..self.buttons.len())
+            .map(|x| (-1, (b'a' + (x as u8)) as char))
+            .collect();
+        p.set_objective(&all_buttons);
+        let Some(s) = p.solve_integer(false) else {
+            println!("Problem {} is unsolvable:",self.orig);
+            p.solve_integer(true);
+            panic!()
+        };
+        assert!(s < Rational64::ZERO);
+        (-s).to_integer() as u64
+    }
+    fn solve_joltage_with_z3(&self, print: bool) -> u64 {
         let buttons = (0..self.buttons.len())
-            .map(|_x| Int::fresh_const("B"))
+            .map(|_x| Int::fresh_const(&format!("B{_x}")))
             .collect_vec();
         let o = Optimize::new();
         for b in &buttons {
             o.assert(&b.ge(0));
         }
         for c in &self.constraints {
-            let ns : Int = c.buttons.view_bits::<Lsb0>().iter_ones().map(|ix| &buttons[ix]).fold(0.into(), |a, i| i + a);
+            let ns: Int = c
+                .buttons
+                .view_bits::<Lsb0>()
+                .iter_ones()
+                .map(|ix| &buttons[ix])
+                .fold(0.into(), |a, i| i + a);
             o.assert(&ns.eq(c.sum));
         }
-        let all_buttons : Int = buttons.iter().fold(0.into(), |a, b| a+b);
+        let all_buttons: Int = buttons.iter().fold(0.into(), |a, b| a + b);
         o.minimize(&all_buttons);
         assert_eq!(o.check(&[]), SatResult::Sat);
         let ans = o.get_model().unwrap();
-        buttons.iter().map(|b| ans.get_const_interp(b).unwrap().as_u64().unwrap()).sum::<u64>()
+        if print {
+            println!("{ans:?}");
+        }
+        buttons
+            .iter()
+            .map(|b| ans.get_const_interp(b).unwrap().as_u64().unwrap())
+            .sum::<u64>()
     }
 }
 
-fn p1(input: &str) -> usize {
-    let d = all_consuming(separated_list1(newline, Prob::parser()))
-        .parse(input.trim())
-        .unwrap()
-        .1;
+fn generate(input: &str) -> Vec<Prob> {
+    input
+        .trim()
+        .lines()
+        .map(|l| all_consuming(Prob::parser(l)).parse(l).unwrap().1)
+        .collect()
+}
+fn p1(d: &[Prob]) -> usize {
     d.par_iter().map(Prob::power_up).sum::<usize>()
 }
-fn p2(input: &str) -> u64 {
-    let d = all_consuming(separated_list1(newline, Prob::parser()))
-        .parse(input.trim())
-        .unwrap()
-        .1;
-    d.par_iter().map(Prob::solve_joltage_with_z3).sum::<u64>()
+fn p2_z3(d: &[Prob]) -> u64 {
+    d.par_iter()
+        .map(|p| p.solve_joltage_with_z3(false))
+        .sum::<u64>()
+}
+fn p2_simplex(d: &[Prob]) -> u64 {
+    d.iter().map(Prob::solve_joltage_with_simplex).sum::<u64>()
 }
 
 const EG: &str = "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}

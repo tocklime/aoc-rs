@@ -18,6 +18,7 @@ reformation = "0.5.3"
 bitintr = "0.3"
 parse-display = "0.10"
 nom = "8"
+ansiterm = "0.12.2"
 
 [dev-dependencies]
 proptest = "1.0.0"

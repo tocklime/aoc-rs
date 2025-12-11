@@ -126,6 +126,9 @@ impl<T> Default for VecLookup<T> {
 }
 
 impl<T> VecLookup<T> {
+    pub fn new() -> Self {
+        Self::default()
+    }
     #[must_use]
     pub fn with_capacity(capacity: usize) -> Self {
         Self(Vec::with_capacity(capacity))
