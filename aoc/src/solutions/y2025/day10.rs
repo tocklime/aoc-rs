@@ -17,7 +17,7 @@ use z3::{
     Optimize, SatResult, ast::Int
 };
 
-aoc_harness::aoc_main!(2025 day 10, part1 [p1], part2 [p2], example part1 EG => 7, example part2 EG => 33);
+aoc_harness::aoc_main!(2025 day 10, part1 [p1] => 466, part2 [p2] => 17214, example part1 EG => 7, example part2 EG => 33);
 
 #[derive(Debug)]
 struct Prob {

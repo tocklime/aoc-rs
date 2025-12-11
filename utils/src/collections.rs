@@ -140,6 +140,9 @@ impl<T> VecLookup<T> {
         self.0[key] = Some(value);
         was_empty
     }
+    pub fn fresh_id(&mut self) -> usize {
+        self.0.len()
+    }
     #[must_use]
     pub fn get(&self, key: usize) -> Option<&T> {
         self.0.get(key).and_then(|x| x.as_ref())
