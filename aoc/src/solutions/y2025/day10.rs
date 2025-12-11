@@ -174,7 +174,7 @@ fn p2_z3(d: &[Prob]) -> u64 {
         .sum::<u64>()
 }
 fn p2_simplex(d: &[Prob]) -> u64 {
-    d.iter().map(Prob::solve_joltage_with_simplex).sum::<u64>()
+    d.par_iter().map(Prob::solve_joltage_with_simplex).sum::<u64>()
 }
 
 const EG: &str = "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
