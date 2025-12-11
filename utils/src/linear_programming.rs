@@ -116,7 +116,7 @@ impl<L: Eq + Copy + Display> SimplexProb<L> {
         best_all_int
     }
 }
-impl<L : Display> SimplexProb<L> {
+impl<L: Display> SimplexProb<L> {
     pub fn new() -> Self {
         Self {
             biggest_coefficient: 0.into(),
@@ -296,7 +296,7 @@ impl<Label: Eq + Copy> SimplexProb<Label> {
     }
 }
 
-impl<'prob, L : Display> SimplexTableau<'prob, L> {
+impl<'prob, L: Display> SimplexTableau<'prob, L> {
     pub fn is_solved(&self) -> bool {
         self.select_pivot().is_none()
     }
@@ -326,7 +326,6 @@ impl<'prob, L : Display> SimplexTableau<'prob, L> {
                 panic!(">100 tableau iterations");
             }
             self.execute_pivot(p);
-            
         }
     }
     pub fn select_pivot(&self) -> Option<(usize, usize)> {
@@ -352,7 +351,7 @@ impl<'prob, L : Display> SimplexTableau<'prob, L> {
     }
 }
 
-impl<Label : Display> Default for SimplexProb<Label> {
+impl<Label: Display> Default for SimplexProb<Label> {
     fn default() -> Self {
         Self::new()
     }
@@ -607,9 +606,9 @@ mod test {
             "Simplex Problem:
 Maximise 3x + 4y + 5z
 Under constraints:
-  2x + 1y <= 10
-  2y + 1z <= 20
-  1x + 2z <= 30"
+  2x + y <= 10
+  2y + z <= 20
+  x + 2z <= 30"
         );
         let tab1 = p.build_tableau();
         println!("{tab1}");
