@@ -83,7 +83,7 @@ impl Prob {
         )
             .map(|(target, buttons, joltage)| Self::new(target, buttons, joltage))
     }
-    fn solve_parity(&self, p: u32) -> usize {
+    fn power_up(&self) -> usize {
         //find selection of buttons which xor together to make target.
         //each button is in or out.
         for button_count in 1..=self.buttons.len() {
@@ -93,16 +93,13 @@ impl Prob {
                     .iter()
                     .map(|&ix| self.buttons[ix])
                     .fold(0, |a, b| a ^ b);
-                if value == p {
+                if value == self.target {
                     // println!("Pressing {buttons:?} of {self:?} yields {value}. Thats {button_count} buttons");
                     return button_count;
                 }
             }
         }
         unreachable!()
-    }
-    fn power_up(&self) -> usize {
-        self.solve_parity(self.target)
     }
     fn solve_joltage_with_clear_parity_and_half(&self) -> u32 {
         let mut todo : BTreeSet<(u32, u32, Vec<u32>)> = [(0, 1, self.joltage.clone())].into_iter().collect();
