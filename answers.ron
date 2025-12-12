@@ -281,5 +281,6 @@
         9: (part1: Checked("4733727792"), part2: Checked("1566346198")),
         10: (part1: Checked("466"), part2: Checked("17214")),
         11: (part1: Checked("571"), part2: Checked("511378159390560")),
+        12: (part1: Checked("526"), part2: Unknown),
     },
 }
