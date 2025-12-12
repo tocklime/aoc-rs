@@ -1,10 +1,12 @@
+use std::collections::BTreeSet;
+
 use bitvec::{order::Lsb0, view::BitView};
 use itertools::Itertools;
 use nom::{
     Parser,
     bytes::complete::tag,
     character::{
-        complete::{self},
+        complete::{self, newline},
         one_of,
     },
     combinator::all_consuming,
@@ -13,14 +15,13 @@ use nom::{
 };
 use num::Rational64;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use utils::{linear_programming, nom::NomError};
+use utils::{collections::VecLookup, linear_programming, nom::NomError};
 use z3::{Optimize, SatResult, ast::Int};
 
-aoc_harness::aoc_main!(2025 day 10, generator generate, part1 [p1] => 466, part2 [p2_z3, p2_simplex] => 17214, example part1 EG => 7, example part2 EG => 33);
+aoc_harness::aoc_main!(2025 day 10, generator generate, part1 [p1] => 466, part2 [p2_z3, p2_simplex, p2_clear_parity_and_half] => 17214, example part1 EG => 7, example part2 EG => 33);
 
 #[derive(Debug)]
 struct Prob {
-    orig: String,
     target: u32,
     buttons: Vec<u32>,
     #[allow(dead_code)]
@@ -41,7 +42,7 @@ impl std::fmt::Debug for Constraint {
 }
 
 impl Prob {
-    fn new(input: &str, target: u32, buttons: Vec<u32>, joltage: Vec<u32>) -> Self {
+    fn new(target: u32, buttons: Vec<u32>, joltage: Vec<u32>) -> Self {
         let constraints = joltage
             .iter()
             .enumerate()
@@ -56,14 +57,13 @@ impl Prob {
             })
             .collect();
         Self {
-            orig: input.to_string(),
             target,
             buttons,
             joltage,
             constraints,
         }
     }
-    fn parser<'a>(input: &str) -> impl Parser<&'a str, Output = Self, Error = NomError<'a>> {
+    fn parser<'a>() -> impl Parser<&'a str, Output = Self, Error = NomError<'a>> {
         (
             nom::sequence::delimited(tag("["), many1(one_of(".#")), tag("] ")).map(|n| {
                 n.iter()
@@ -81,9 +81,9 @@ impl Prob {
             ),
             delimited(tag("{"), separated_list1(tag(","), complete::u32), tag("}")),
         )
-            .map(|(target, buttons, joltage)| Self::new(input, target, buttons, joltage))
+            .map(|(target, buttons, joltage)| Self::new(target, buttons, joltage))
     }
-    fn power_up(&self) -> usize {
+    fn solve_parity(&self, p: u32) -> usize {
         //find selection of buttons which xor together to make target.
         //each button is in or out.
         for button_count in 1..=self.buttons.len() {
@@ -93,9 +93,36 @@ impl Prob {
                     .iter()
                     .map(|&ix| self.buttons[ix])
                     .fold(0, |a, b| a ^ b);
-                if value == self.target {
+                if value == p {
                     // println!("Pressing {buttons:?} of {self:?} yields {value}. Thats {button_count} buttons");
                     return button_count;
+                }
+            }
+        }
+        unreachable!()
+    }
+    fn power_up(&self) -> usize {
+        self.solve_parity(self.target)
+    }
+    fn solve_joltage_with_clear_parity_and_half(&self) -> u32 {
+        let mut todo : BTreeSet<(u32, u32, Vec<u32>)> = [(0, 1, self.joltage.clone())].into_iter().collect();
+        let mut parity_options: VecLookup<Vec<(u32, Vec<u32>)>> = VecLookup::new();
+        for b_mix in 0u32..(1<<self.buttons.len()) {
+            let b_effect = b_mix.view_bits::<Lsb0>().iter_ones().fold(vec![0;self.joltage.len()], |mut p, a| {
+                self.buttons[a].view_bits::<Lsb0>().iter_ones().for_each(|j| p[j] += 1);
+                p
+            });
+            let effect_parity = b_effect.iter().enumerate().map(|(ix, b)| if b % 2 == 0 { 0 } else { 1 << ix}).sum::<u32>();
+            parity_options.entry(effect_parity as usize).or_default().push((b_mix.count_ones(), b_effect));
+        }
+        while let Some((count, move_cost, pattern)) = todo.pop_first() {
+            if pattern.iter().all(|x| x == &0) {
+                return count;
+            }
+            let current_parity = pattern.iter().enumerate().map(|(ix, x)| if x % 2 == 0 { 0} else {1<<ix}).sum::<u32>();
+            for (cost, effect) in parity_options.get(current_parity as usize).iter().copied().flatten() {
+                if let Some(new_pattern) = pattern.iter().zip(effect).map(|(a,b)| a.checked_sub(*b).map(|n| n/2)).collect() {
+                    todo.insert((count + cost * move_cost, move_cost*2, new_pattern));
                 }
             }
         }
@@ -120,7 +147,6 @@ impl Prob {
             .collect();
         p.set_objective(&all_buttons);
         let Some(s) = p.solve_integer(false) else {
-            println!("Problem {} is unsolvable:",self.orig);
             p.solve_integer(true);
             panic!()
         };
@@ -159,11 +185,7 @@ impl Prob {
 }
 
 fn generate(input: &str) -> Vec<Prob> {
-    input
-        .trim()
-        .lines()
-        .map(|l| all_consuming(Prob::parser(l)).parse(l).unwrap().1)
-        .collect()
+    all_consuming(separated_list1(newline, Prob::parser())).parse(input.trim()).unwrap().1
 }
 fn p1(d: &[Prob]) -> usize {
     d.par_iter().map(Prob::power_up).sum::<usize>()
@@ -175,6 +197,10 @@ fn p2_z3(d: &[Prob]) -> u64 {
 }
 fn p2_simplex(d: &[Prob]) -> u64 {
     d.par_iter().map(Prob::solve_joltage_with_simplex).sum::<u64>()
+}
+
+fn p2_clear_parity_and_half(d: &[Prob]) -> u32 {
+    d.par_iter().map(Prob::solve_joltage_with_clear_parity_and_half).sum::<u32>()
 }
 
 const EG: &str = "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}

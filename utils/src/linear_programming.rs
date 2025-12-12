@@ -222,7 +222,7 @@ impl<L: Display> SimplexProb<L> {
             final_row[w - 1] -= rhs * big_m;
             final_row[self.labels.len() + slack.len() + ix] += big_m;
         }
-        for (_c_ix, (args, rhs)) in self.eq_constraints.iter().enumerate() {
+        for (args, rhs) in &self.eq_constraints {
             for (a_ix, val) in args {
                 final_row[a_ix] -= big_m * val;
             }
